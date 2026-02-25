@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { flightData, airlines, airports, generateBookingLink } from '@/lib/flightData';
+import { flightData, airlines, airports, departureAirports, generateBookingLink, DepartureAirport } from '@/lib/flightData';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -29,6 +29,7 @@ export default function Home() {
   const [filterAirline, setFilterAirline] = useState<string>('all');
   const [sortBy, setSortBy] = useState<string>('week');
   const [expandedWeek, setExpandedWeek] = useState<number | null>(null);
+  const [departureAirport, setDepartureAirport] = useState<DepartureAirport>('GRU');
 
   // Filtrar dados baseado em mês
   const filteredFlights = useMemo(() => {
@@ -111,13 +112,30 @@ export default function Home() {
       {/* Header */}
       <header className="bg-gradient-to-r from-primary to-primary/80 text-primary-foreground shadow-lg">
         <div className="container py-10">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="bg-primary-foreground/20 p-2 rounded-lg">
-              <Plane className="w-8 h-8" />
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="bg-primary-foreground/20 p-2 rounded-lg">
+                <Plane className="w-8 h-8" />
+              </div>
+              <div>
+                <h1 className="text-4xl font-bold">Planejador de Passagens Aéreas</h1>
+                <p className="text-primary-foreground/90 text-sm mt-1">{departureAirport === 'GRU' ? 'Guarulhos (GRU)' : 'Congonhas (CGH)'} → Navegantes (NVT) • 2026</p>
+              </div>
             </div>
-            <div>
-              <h1 className="text-4xl font-bold">Planejador de Passagens Aéreas</h1>
-              <p className="text-primary-foreground/90 text-sm mt-1">Guarulhos (GRU) → Navegantes (NVT) • 2026</p>
+            <div className="hidden md:block">
+              <label className="text-sm font-medium mb-2 block text-primary-foreground/90">Aeroporto de Saída</label>
+              <Select value={departureAirport} onValueChange={(value) => setDepartureAirport(value as DepartureAirport)}>
+                <SelectTrigger className="bg-primary-foreground/20 border-primary-foreground/30 text-primary-foreground">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {departureAirports.map(airport => (
+                    <SelectItem key={airport.value} value={airport.value}>
+                      {airport.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </div>
         </div>
@@ -127,7 +145,23 @@ export default function Home() {
       <main className="container py-8">
         {/* Filtros e Controles */}
         <div className="bg-card border border-border rounded-lg p-6 mb-8">
-          <h2 className="text-lg font-semibold mb-4">Filtros e Controles</h2>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-semibold">Filtros e Controles</h2>
+            <div className="md:hidden">
+              <Select value={departureAirport} onValueChange={(value) => setDepartureAirport(value as DepartureAirport)}>
+                <SelectTrigger className="w-40">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {departureAirports.map(airport => (
+                    <SelectItem key={airport.value} value={airport.value}>
+                      {airport.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
           
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div>
@@ -272,7 +306,7 @@ export default function Home() {
                                   flight.ida.destino,
                                   flight.ida.data,
                                   flight.retorno.data,
-                                  flight.ida.origem,
+                                  departureAirport,
                                   flight.ida.destino
                                 )}
                                 target="_blank"
@@ -318,7 +352,7 @@ export default function Home() {
                                   flight.retorno.origem,
                                   flight.ida.data,
                                   flight.retorno.data,
-                                  flight.retorno.origem,
+                                  'GRU',
                                   flight.retorno.destino
                                 )}
                                 target="_blank"

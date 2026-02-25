@@ -13,6 +13,8 @@ export interface Flight {
   retorno: FlightLeg;
 }
 
+export type DepartureAirport = 'GRU' | 'CGH';
+
 export interface Airline {
   id: string;
   name: string;
@@ -28,12 +30,18 @@ export const airlines: Airline[] = [
 ];
 
 export const airports = {
-  GRU: { name: 'Guarulhos (GRU)', city: 'São Paulo' },
-  CGH: { name: 'Congonhas (CGH)', city: 'São Paulo' },
-  NVT: { name: 'Navegantes (NVT)', city: 'Santa Catarina' },
+  GRU: { name: 'Guarulhos (GRU)', city: 'São Paulo', code: 'GRU' },
+  CGH: { name: 'Congonhas (CGH)', city: 'São Paulo', code: 'CGH' },
+  NVT: { name: 'Navegantes (NVT)', city: 'Santa Catarina', code: 'NVT' },
 };
 
+export const departureAirports: Array<{ value: DepartureAirport; label: string; description: string }> = [
+  { value: 'GRU', label: 'Guarulhos (GRU)', description: 'Aeroporto Internacional de Guarulhos - Preferencial' },
+  { value: 'CGH', label: 'Congonhas (CGH)', description: 'Aeroporto de Congonhas - Alternativa' },
+];
+
 // Dados de voos gerados automaticamente
+// Modificar dados de voos para usar origem como GRU (será selecionável no frontend)
 export const flightData: Flight[] = [
   {
     "semana": 1,
@@ -873,7 +881,7 @@ export const flightData: Flight[] = [
   }
 ];
 
-export function generateBookingLink(airline: string, departure: string, arrival: string, departDate: string, returnDate: string, origin: string, destination: string): string {
+export function generateBookingLink(airline: string, departure: string, arrival: string, departDate: string, returnDate: string, origin: DepartureAirport, destination: string): string {
   const baseUrls: Record<string, string> = {
     latam: 'https://www.latam.com/pt_br/',
     gol: 'https://www.voegol.com.br/',
@@ -892,6 +900,9 @@ export function generateBookingLink(airline: string, departure: string, arrival:
 
   const depDate = formatDate(departure);
   const retDate = formatDate(returnDate);
+  const originCode = origin === 'CGH' ? 'CGH' : 'GRU';
 
-  return `${baseUrl}?origin=${origin}&destination=${destination}&outbound=${depDate}&inbound=${retDate}&adults=1&cabin=economy`;
+  // Adicionar parâmetro de aeroporto de partida se for CGH
+  const airportParam = origin === 'CGH' ? '&airport=CGH' : '';
+  return `${baseUrl}?origin=${originCode}&destination=${destination}&outbound=${depDate}&inbound=${retDate}&adults=1&cabin=economy${airportParam}`;
 }
