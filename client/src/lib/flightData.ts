@@ -883,11 +883,11 @@ export const flightData: Flight[] = [
 ];
 
 export function generateBookingLink(airline: string, departure: string, arrival: string, departDate: string, returnDate: string, origin: DepartureAirport, destination: string): string {
-  // Se for Kayak, usar formato específico
+  // Se for Kayak, usar formato específico (AAAA-MM-DD)
   if (airline === 'kayak') {
     const formatDateKayak = (dateStr: string) => {
       const [day, month, year] = dateStr.split('/');
-      return `${day}${month}${year}`;
+      return `${year}-${month}-${day}`;
     };
     const depDateKayak = formatDateKayak(departure);
     const retDateKayak = formatDateKayak(returnDate);
