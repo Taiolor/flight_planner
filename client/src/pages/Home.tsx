@@ -30,15 +30,45 @@ export default function Home() {
   const [sortBy, setSortBy] = useState<string>('week');
   const [expandedWeek, setExpandedWeek] = useState<number | null>(null);
   const [departureAirport, setDepartureAirport] = useState<DepartureAirport>('GRU');
+  const [showCheapestOnly, setShowCheapestOnly] = useState<boolean>(false);
+  const [pricePercentile, setPricePercentile] = useState<number>(25); // Top 25% cheapest
 
-  // Filtrar dados baseado em mês
+  const getLowestPrice = (week: number): number | null => {
+    const weekPrices = prices[week];
+    if (!weekPrices) return null;
+    const values = Object.values(weekPrices).map(p => parseFloat(p)).filter(p => !isNaN(p));
+    return values.length > 0 ? Math.min(...values) : null;
+  };
+
+  // Calcular percentil de preço
+  const calculatePricePercentile = useMemo(() => {
+    const allPrices: number[] = [];
+    Object.values(prices).forEach((weekPrices: any) => {
+      Object.values(weekPrices).forEach((price: any) => {
+        const numPrice = parseFloat(price as string);
+        if (!isNaN(numPrice)) allPrices.push(numPrice);
+      });
+    });
+    
+    if (allPrices.length === 0) return null;
+    
+    allPrices.sort((a, b) => a - b);
+    const index = Math.floor((pricePercentile / 100) * allPrices.length);
+    return allPrices[index] || null;
+  }, [prices, pricePercentile]);
+
+  // Filtrar dados baseado em mês e preço
   const filteredFlights = useMemo(() => {
     return flightData.filter(flight => {
       if (filterMonth === 'all') return true;
       const month = flight.ida.data.split('/')[1];
       return month === filterMonth;
+    }).filter(flight => {
+      if (!showCheapestOnly || !calculatePricePercentile) return true;
+      const lowestPrice = getLowestPrice(flight.semana);
+      return lowestPrice && lowestPrice <= calculatePricePercentile;
     });
-  }, [filterMonth]);
+  }, [filterMonth, showCheapestOnly, calculatePricePercentile]);
 
   // Ordenar dados
   const sortedFlights = useMemo(() => {
@@ -49,9 +79,36 @@ export default function Home() {
         const priceB = Math.min(...Object.values(prices[b.semana] || {}).map(p => parseFloat(p) || Infinity));
         return priceA - priceB;
       });
+    } else {
+      sorted.sort((a, b) => a.semana - b.semana);
     }
     return sorted;
   }, [filteredFlights, prices, sortBy]);
+
+  // Função auxiliar para verificar se um preço é "barato"
+  const isCheapPrice = (week: number): boolean => {
+    if (!showCheapestOnly || !calculatePricePercentile) return false;
+    const lowestPrice = getLowestPrice(week);
+    return lowestPrice ? lowestPrice <= calculatePricePercentile : false;
+  };
+
+  const calculateStats = () => {
+    let totalWeeks = 0;
+    let totalCost = 0;
+    let selectedCount = selectedWeeks.size;
+
+    selectedWeeks.forEach(week => {
+      const lowest = getLowestPrice(week);
+      if (lowest) {
+        totalCost += lowest * 2; // Ida + Retorno
+        totalWeeks++;
+      }
+    });
+
+    return { selectedCount, totalWeeks, totalCost };
+  };
+
+  const stats = calculateStats();
 
   const toggleWeek = (week: number) => {
     const newSelected = new Set(selectedWeeks);
@@ -72,40 +129,6 @@ export default function Home() {
       },
     }));
   };
-
-  const getLowestPrice = (week: number): number | null => {
-    const weekPrices = prices[week];
-    if (!weekPrices) return null;
-    const values = Object.values(weekPrices).map(p => parseFloat(p)).filter(p => !isNaN(p));
-    return values.length > 0 ? Math.min(...values) : null;
-  };
-
-  const getPriceColor = (price: number | null, week: number): string => {
-    if (!price) return 'text-muted-foreground';
-    const lowest = getLowestPrice(week);
-    if (!lowest) return 'text-muted-foreground';
-    if (price === lowest) return 'text-green-600 font-semibold';
-    if (price <= lowest * 1.1) return 'text-yellow-600';
-    return 'text-red-600';
-  };
-
-  const calculateStats = () => {
-    let totalWeeks = 0;
-    let totalCost = 0;
-    let selectedCount = selectedWeeks.size;
-
-    selectedWeeks.forEach(week => {
-      const lowest = getLowestPrice(week);
-      if (lowest) {
-        totalCost += lowest * 2; // Ida + Retorno
-        totalWeeks++;
-      }
-    });
-
-    return { selectedCount, totalWeeks, totalCost };
-  };
-
-  const stats = calculateStats();
 
   return (
     <div className="min-h-screen bg-background">
@@ -163,7 +186,7 @@ export default function Home() {
             </div>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
             <div>
               <label className="text-sm font-medium mb-2 block">Mês</label>
               <Select value={filterMonth} onValueChange={setFilterMonth}>
@@ -215,10 +238,40 @@ export default function Home() {
             </div>
 
             <div>
+              <label className="text-sm font-medium mb-2 block">Filtro de Preço</label>
+              <div className="space-y-2">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <Checkbox
+                    checked={showCheapestOnly}
+                    onCheckedChange={(checked) => setShowCheapestOnly(checked as boolean)}
+                  />
+                  <span className="text-sm">Mostrar apenas os mais baratos</span>
+                </label>
+                {showCheapestOnly && (
+                  <div className="bg-secondary p-2 rounded">
+                    <label className="text-xs font-medium mb-1 block">Top {pricePercentile}% mais baratos</label>
+                    <input
+                      type="range"
+                      min="5"
+                      max="50"
+                      step="5"
+                      value={pricePercentile}
+                      onChange={(e) => setPricePercentile(parseInt(e.target.value))}
+                      className="w-full"
+                    />
+                    <div className="text-xs text-muted-foreground mt-1">
+                      Até R$ {calculatePricePercentile?.toFixed(2) || '-'}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div>
               <label className="text-sm font-medium mb-2 block">Resumo</label>
               <div className="bg-accent/10 border border-accent/20 p-3 rounded text-sm">
                 <div className="font-semibold text-accent">{stats.selectedCount} viagens selecionadas</div>
-                <div className="text-muted-foreground text-xs">{sortedFlights.length} semanas disponíveis</div>
+                <div className="text-muted-foreground text-xs">{sortedFlights.length} semanas {showCheapestOnly ? 'nos melhores preços' : 'disponíveis'}</div>
                 {stats.totalCost > 0 && (
                   <div className="mt-2 pt-2 border-t border-accent/20">
                     <div className="text-xs text-muted-foreground">Custo estimado:</div>
@@ -230,10 +283,25 @@ export default function Home() {
           </div>
         </div>
 
+        {/* Aviso de Filtro Ativo */}
+        {showCheapestOnly && (
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6 flex items-start gap-3">
+            <div className="bg-blue-100 p-2 rounded flex-shrink-0">
+              <AlertCircle className="w-5 h-5 text-blue-600" />
+            </div>
+            <div>
+              <h4 className="font-semibold text-blue-900 mb-1">Filtro de Preço Ativo</h4>
+              <p className="text-sm text-blue-800">
+                Mostrando apenas as {sortedFlights.length} semanas com os voos mais baratos (top {pricePercentile}% - até R$ {calculatePricePercentile?.toFixed(2)})
+              </p>
+            </div>
+          </div>
+        )}
+
         {/* Tabela de Voos */}
         <div className="space-y-3">
           {sortedFlights.map(flight => (
-            <div key={flight.semana} className="flight-card">
+            <div key={flight.semana} className={`flight-card ${showCheapestOnly && isCheapPrice(flight.semana) ? 'border-green-300 bg-green-50' : ''}`}>
               <div
                 className="flex items-center justify-between cursor-pointer"
                 onClick={() => setExpandedWeek(expandedWeek === flight.semana ? null : flight.semana)}
@@ -257,6 +325,11 @@ export default function Home() {
                     <span className="text-sm">{flight.ida.origem} → {flight.retorno.origem}</span>
                   </div>
 
+                  {showCheapestOnly && isCheapPrice(flight.semana) && (
+                    <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-green-100 text-green-800 gap-1">
+                      💰 Melhor Preço
+                    </span>
+                  )}
                   {flight.ida.feriado && (
                     <span className="holiday-badge">🎉 {flight.ida.feriado}</span>
                   )}
@@ -434,6 +507,8 @@ export default function Home() {
                 <li>✓ Use os links externos para comparar preços em tempo real</li>
                 <li>✓ O melhor preço é destacado automaticamente em verde</li>
                 <li>✓ Filtre por mês ou companhia para visualizar dados específicos</li>
+                <li>✓ Use o filtro de preço para mostrar apenas as semanas mais baratas</li>
+                <li>✓ Ajuste o percentil (5-50%) para controlar quantas semanas baratas exibir</li>
                 <li>✓ Voos com feriados são destacados com 🎉</li>
               </ul>
             </div>
