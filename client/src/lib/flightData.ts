@@ -23,6 +23,7 @@ export interface Airline {
 }
 
 export const airlines: Airline[] = [
+  { id: 'kayak', name: 'Kayak', color: 'bg-red-500', icon: '🔍' },
   { id: 'latam', name: 'LATAM', color: 'bg-blue-600', icon: '✈️' },
   { id: 'gol', name: 'Gol', color: 'bg-yellow-500', icon: '✈️' },
   { id: 'azul', name: 'Azul', color: 'bg-blue-400', icon: '✈️' },
@@ -882,6 +883,17 @@ export const flightData: Flight[] = [
 ];
 
 export function generateBookingLink(airline: string, departure: string, arrival: string, departDate: string, returnDate: string, origin: DepartureAirport, destination: string): string {
+  // Se for Kayak, usar formato específico
+  if (airline === 'kayak') {
+    const formatDateKayak = (dateStr: string) => {
+      const [day, month, year] = dateStr.split('/');
+      return `${day}${month}${year}`;
+    };
+    const depDateKayak = formatDateKayak(departure);
+    const retDateKayak = formatDateKayak(returnDate);
+    return `https://www.kayak.com.br/flights/${origin}-${destination}/${depDateKayak}/${retDateKayak}?ucs=p1nu6v&sort=bestflight_a`;
+  }
+
   const baseUrls: Record<string, string> = {
     latam: 'https://www.latam.com/pt_br/',
     gol: 'https://www.voegol.com.br/',
