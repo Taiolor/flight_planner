@@ -1,4 +1,8 @@
 import { useState, useMemo, useEffect, useCallback } from 'react';
+import {
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend,
+  LineChart, Line, ResponsiveContainer
+} from 'recharts';
 import { flightData, airlines, departureAirports, generateBookingLink, DepartureAirport } from '@/lib/flightData';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -7,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Checkbox } from '@/components/ui/checkbox';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
-import { ChevronDown, Plane, Calendar, ExternalLink, AlertCircle, Trash2, CheckCircle2, Circle, Pencil, RotateCcw, Loader2 } from 'lucide-react';
+import { ChevronDown, Plane, Calendar, ExternalLink, AlertCircle, Trash2, CheckCircle2, Circle, Pencil, RotateCcw, Loader2, TrendingUp } from 'lucide-react';
 import { trpc } from '@/lib/trpc';
 import { toast } from 'sonner';
 
@@ -170,6 +174,44 @@ export default function Home() {
       .filter(w => w.isSelected)
       .reduce((sum, w) => sum + (getLowestPrice(w.weekNumber) ?? 0), 0);
   }, [weeksData, getLowestPrice]);
+
+  // Dados para o gráfico de variação de preços por mês
+  const chartData = useMemo(() => {
+    const MONTHS = [
+      { num: '03', label: 'Mar' }, { num: '04', label: 'Abr' }, { num: '05', label: 'Mai' },
+      { num: '06', label: 'Jun' }, { num: '07', label: 'Jul' }, { num: '08', label: 'Ago' },
+      { num: '09', label: 'Set' }, { num: '10', label: 'Out' }, { num: '11', label: 'Nov' },
+      { num: '12', label: 'Dez' },
+    ];
+    return MONTHS.map(({ num, label }) => {
+      const monthWeeks = weeksData.filter(w => {
+        const parts = w.departureDate.split('/');
+        return parts[1] === num && !w.isDeleted;
+      });
+      const entry: Record<string, string | number> = { mes: label };
+      // Para cada companhia (exceto kayak), calcular o menor preço médio do mês
+      const airlineIds = airlines.filter(a => a.id !== 'kayak').map(a => a.id);
+      for (const airlineId of airlineIds) {
+        const prices = monthWeeks
+          .map(w => parseFloat(priceMap[w.weekNumber]?.[airlineId] || ''))
+          .filter(p => !isNaN(p) && p > 0);
+        if (prices.length > 0) {
+          entry[airlineId] = Math.round(prices.reduce((a, b) => a + b, 0) / prices.length);
+        }
+      }
+      // Menor preço geral do mês
+      const allPrices = monthWeeks
+        .map(w => getLowestPrice(w.weekNumber))
+        .filter((p): p is number => p !== null && p > 0);
+      if (allPrices.length > 0) {
+        entry['menor'] = Math.round(Math.min(...allPrices));
+        entry['media'] = Math.round(allPrices.reduce((a, b) => a + b, 0) / allPrices.length);
+      }
+      return entry;
+    });
+  }, [weeksData, priceMap, getLowestPrice]);
+
+  const hasChartData = chartData.some(d => Object.keys(d).length > 1);
 
   // Handlers
   const handleToggleSelect = (weekNumber: number, current: number) => {
@@ -575,6 +617,71 @@ export default function Home() {
             </div>
           </Card>
         )}
+
+        {/* Gráfico de Variação de Preços */}
+        <Card className="mt-8 p-6 border-0 shadow-md">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="bg-blue-100 p-2 rounded-lg">
+              <TrendingUp className="w-5 h-5 text-blue-600" />
+            </div>
+            <div>
+              <h2 className="text-xl font-bold text-slate-900">Variação de Preços por Mês</h2>
+              <p className="text-sm text-slate-500">Média dos preços registrados por companhia aérea em cada mês</p>
+            </div>
+          </div>
+
+          {!hasChartData ? (
+            <div className="flex flex-col items-center justify-center py-12 text-center">
+              <TrendingUp className="w-12 h-12 text-slate-200 mb-3" />
+              <p className="text-slate-400 font-medium">Nenhum preço registrado ainda</p>
+              <p className="text-slate-400 text-sm mt-1">Preencha os preços nas semanas acima para visualizar o gráfico</p>
+            </div>
+          ) : (
+            <div className="space-y-8">
+              {/* Gráfico de Barras por Companhia */}
+              <div>
+                <h3 className="text-sm font-semibold text-slate-600 mb-4 uppercase tracking-wide">Preço Médio por Companhia (R$)</h3>
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart data={chartData} margin={{ top: 5, right: 20, left: 10, bottom: 5 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+                    <XAxis dataKey="mes" tick={{ fontSize: 12, fill: '#64748b' }} />
+                    <YAxis tick={{ fontSize: 12, fill: '#64748b' }} tickFormatter={(v) => `R$${v}`} />
+                    <Tooltip formatter={(value: number) => [`R$ ${value.toFixed(2)}`, '']} />
+                    <Legend />
+                    <Bar dataKey="latam" name="LATAM" fill="#2563eb" radius={[4,4,0,0]} />
+                    <Bar dataKey="gol" name="Gol" fill="#eab308" radius={[4,4,0,0]} />
+                    <Bar dataKey="azul" name="Azul" fill="#38bdf8" radius={[4,4,0,0]} />
+                    <Bar dataKey="voepass" name="Voepass" fill="#9333ea" radius={[4,4,0,0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+
+              {/* Gráfico de Linha - Menor Preço e Média */}
+              <div>
+                <h3 className="text-sm font-semibold text-slate-600 mb-4 uppercase tracking-wide">Menor Preço vs. Preço Médio por Mês (R$)</h3>
+                <ResponsiveContainer width="100%" height={260}>
+                  <LineChart data={chartData} margin={{ top: 5, right: 20, left: 10, bottom: 5 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+                    <XAxis dataKey="mes" tick={{ fontSize: 12, fill: '#64748b' }} />
+                    <YAxis tick={{ fontSize: 12, fill: '#64748b' }} tickFormatter={(v) => `R$${v}`} />
+                    <Tooltip formatter={(value: number) => [`R$ ${value.toFixed(2)}`, '']} />
+                    <Legend />
+                    <Line
+                      type="monotone" dataKey="menor" name="Menor Preço"
+                      stroke="#16a34a" strokeWidth={2} dot={{ r: 5, fill: '#16a34a' }}
+                      connectNulls
+                    />
+                    <Line
+                      type="monotone" dataKey="media" name="Preço Médio"
+                      stroke="#f97316" strokeWidth={2} strokeDasharray="5 5" dot={{ r: 4, fill: '#f97316' }}
+                      connectNulls
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+          )}
+        </Card>
 
         {/* Semanas Excluídas */}
         {deletedWeeks.length > 0 && (
