@@ -1,0 +1,203 @@
+import { and, eq } from "drizzle-orm";
+import { drizzle } from "drizzle-orm/mysql2";
+import { InsertUser, users, flightWeeks, flightPrices, InsertFlightWeek, InsertFlightPrice } from "../drizzle/schema";
+import { ENV } from './_core/env';
+
+let _db: ReturnType<typeof drizzle> | null = null;
+
+// Lazily create the drizzle instance so local tooling can run without a DB.
+export async function getDb() {
+  if (!_db && process.env.DATABASE_URL) {
+    try {
+      _db = drizzle(process.env.DATABASE_URL);
+    } catch (error) {
+      console.warn("[Database] Failed to connect:", error);
+      _db = null;
+    }
+  }
+  return _db;
+}
+
+export async function upsertUser(user: InsertUser): Promise<void> {
+  if (!user.openId) {
+    throw new Error("User openId is required for upsert");
+  }
+
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot upsert user: database not available");
+    return;
+  }
+
+  try {
+    const values: InsertUser = {
+      openId: user.openId,
+    };
+    const updateSet: Record<string, unknown> = {};
+
+    const textFields = ["name", "email", "loginMethod"] as const;
+    type TextField = (typeof textFields)[number];
+
+    const assignNullable = (field: TextField) => {
+      const value = user[field];
+      if (value === undefined) return;
+      const normalized = value ?? null;
+      values[field] = normalized;
+      updateSet[field] = normalized;
+    };
+
+    textFields.forEach(assignNullable);
+
+    if (user.lastSignedIn !== undefined) {
+      values.lastSignedIn = user.lastSignedIn;
+      updateSet.lastSignedIn = user.lastSignedIn;
+    }
+    if (user.role !== undefined) {
+      values.role = user.role;
+      updateSet.role = user.role;
+    } else if (user.openId === ENV.ownerOpenId) {
+      values.role = 'admin';
+      updateSet.role = 'admin';
+    }
+
+    if (!values.lastSignedIn) {
+      values.lastSignedIn = new Date();
+    }
+
+    if (Object.keys(updateSet).length === 0) {
+      updateSet.lastSignedIn = new Date();
+    }
+
+    await db.insert(users).values(values).onDuplicateKeyUpdate({
+      set: updateSet,
+    });
+  } catch (error) {
+    console.error("[Database] Failed to upsert user:", error);
+    throw error;
+  }
+}
+
+export async function getUserByOpenId(openId: string) {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot get user: database not available");
+    return undefined;
+  }
+
+  const result = await db.select().from(users).where(eq(users.openId, openId)).limit(1);
+
+  return result.length > 0 ? result[0] : undefined;
+}
+
+// =====================
+// Flight Weeks
+// =====================
+
+export async function getAllFlightWeeks() {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(flightWeeks).orderBy(flightWeeks.weekNumber);
+}
+
+export async function upsertFlightWeek(week: InsertFlightWeek) {
+  const db = await getDb();
+  if (!db) return;
+
+  const existing = await db.select().from(flightWeeks)
+    .where(eq(flightWeeks.weekNumber, week.weekNumber))
+    .limit(1);
+
+  if (existing.length > 0) {
+    await db.update(flightWeeks)
+      .set({
+        departureDate: week.departureDate,
+        returnDate: week.returnDate,
+        departureDayOfWeek: week.departureDayOfWeek,
+        returnDayOfWeek: week.returnDayOfWeek,
+        holiday: week.holiday,
+        isDeleted: week.isDeleted,
+        isTicketIssued: week.isTicketIssued,
+        isSelected: week.isSelected,
+      })
+      .where(eq(flightWeeks.weekNumber, week.weekNumber));
+  } else {
+    await db.insert(flightWeeks).values(week);
+  }
+}
+
+export async function updateFlightWeekStatus(weekNumber: number, data: {
+  isDeleted?: number;
+  isTicketIssued?: number;
+  isSelected?: number;
+  departureDate?: string;
+  returnDate?: string;
+  departureDayOfWeek?: string;
+  returnDayOfWeek?: string;
+}) {
+  const db = await getDb();
+  if (!db) return;
+
+  const existing = await db.select().from(flightWeeks)
+    .where(eq(flightWeeks.weekNumber, weekNumber))
+    .limit(1);
+
+  if (existing.length === 0) return;
+
+  await db.update(flightWeeks)
+    .set(data)
+    .where(eq(flightWeeks.weekNumber, weekNumber));
+}
+
+export async function initFlightWeeks(weeks: InsertFlightWeek[]) {
+  const db = await getDb();
+  if (!db) return;
+
+  const existing = await db.select().from(flightWeeks).limit(1);
+  if (existing.length > 0) return; // Already initialized
+
+  await db.insert(flightWeeks).values(weeks);
+}
+
+// =====================
+// Flight Prices
+// =====================
+
+export async function getAllFlightPrices() {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(flightPrices);
+}
+
+export async function upsertFlightPrice(weekNumber: number, airline: string, price: string) {
+  const db = await getDb();
+  if (!db) return;
+
+  const existing = await db.select().from(flightPrices)
+    .where(and(
+      eq(flightPrices.weekNumber, weekNumber),
+      eq(flightPrices.airline, airline)
+    ))
+    .limit(1);
+
+  if (existing.length > 0) {
+    await db.update(flightPrices)
+      .set({ price })
+      .where(and(
+        eq(flightPrices.weekNumber, weekNumber),
+        eq(flightPrices.airline, airline)
+      ));
+  } else {
+    await db.insert(flightPrices).values({ weekNumber, airline, price });
+  }
+}
+
+export async function deleteFlightPrice(weekNumber: number, airline: string) {
+  const db = await getDb();
+  if (!db) return;
+
+  await db.delete(flightPrices)
+    .where(and(
+      eq(flightPrices.weekNumber, weekNumber),
+      eq(flightPrices.airline, airline)
+    ));
+}

@@ -1,0 +1,20 @@
+{
+  "version": "7",
+  "dialect": "mysql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "5",
+      "when": 1772660450591,
+      "tag": "0000_equal_king_cobra",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "5",
+      "when": 1772660572041,
+      "tag": "0001_careless_star_brand",
+      "breakpoints": true
+    }
+  ]
+}
