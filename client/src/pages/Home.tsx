@@ -27,6 +27,8 @@ interface WeekData {
   isSelected: number;
   departureAirline?: string | null;
   returnAirline?: string | null;
+  departureFlightDatetime?: string | null;
+  returnFlightDatetime?: string | null;
 }
 
 interface PriceMap {
@@ -883,54 +885,90 @@ export default function Home() {
                             }
                           </Button>
                           {week.isTicketIssued ? (
-                            <>
-                              <div className="flex items-center gap-1">
-                                <span className="text-xs text-slate-500 whitespace-nowrap">Ida:</span>
-                                <Select
-                                  value={week.departureAirline ?? ''}
-                                  onValueChange={(val) => {
-                                    requireAuth(() => {
-                                      updateStatusMutation.mutate(
-                                        { weekNumber: week.weekNumber, departureAirline: val || null },
-                                        { onSuccess: () => utils.flights.getWeeks.invalidate() }
-                                      );
-                                    });
-                                  }}
-                                >
-                                  <SelectTrigger className="h-8 text-xs w-24">
-                                    <SelectValue placeholder="Cia" />
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    <SelectItem value="latam">LATAM</SelectItem>
-                                    <SelectItem value="gol">Gol</SelectItem>
-                                    <SelectItem value="azul">Azul</SelectItem>
-                                  </SelectContent>
-                                </Select>
+                            <div className="flex flex-col gap-2 mt-1">
+                              {/* Ida: companhia + data/hora */}
+                              <div className="flex flex-col gap-1">
+                                <div className="flex items-center gap-1">
+                                  <span className="text-xs text-slate-500 whitespace-nowrap w-10">Ida:</span>
+                                  <Select
+                                    value={week.departureAirline ?? ''}
+                                    onValueChange={(val) => {
+                                      requireAuth(() => {
+                                        updateStatusMutation.mutate(
+                                          { weekNumber: week.weekNumber, departureAirline: val || null },
+                                          { onSuccess: () => utils.flights.getWeeks.invalidate() }
+                                        );
+                                      });
+                                    }}
+                                  >
+                                    <SelectTrigger className="h-8 text-xs w-24">
+                                      <SelectValue placeholder="Cia" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      <SelectItem value="latam">LATAM</SelectItem>
+                                      <SelectItem value="gol">Gol</SelectItem>
+                                      <SelectItem value="azul">Azul</SelectItem>
+                                    </SelectContent>
+                                  </Select>
+                                </div>
+                                <div className="flex items-center gap-1 pl-11">
+                                  <input
+                                    type="datetime-local"
+                                    className="h-8 text-xs border border-slate-300 rounded px-2 bg-white text-slate-700 focus:outline-none focus:ring-1 focus:ring-blue-400"
+                                    value={week.departureFlightDatetime ?? ''}
+                                    onChange={(e) => {
+                                      requireAuth(() => {
+                                        updateStatusMutation.mutate(
+                                          { weekNumber: week.weekNumber, departureFlightDatetime: e.target.value || null },
+                                          { onSuccess: () => utils.flights.getWeeks.invalidate() }
+                                        );
+                                      });
+                                    }}
+                                  />
+                                </div>
                               </div>
-                              <div className="flex items-center gap-1">
-                                <span className="text-xs text-slate-500 whitespace-nowrap">Volta:</span>
-                                <Select
-                                  value={week.returnAirline ?? ''}
-                                  onValueChange={(val) => {
-                                    requireAuth(() => {
-                                      updateStatusMutation.mutate(
-                                        { weekNumber: week.weekNumber, returnAirline: val || null },
-                                        { onSuccess: () => utils.flights.getWeeks.invalidate() }
-                                      );
-                                    });
-                                  }}
-                                >
-                                  <SelectTrigger className="h-8 text-xs w-24">
-                                    <SelectValue placeholder="Cia" />
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    <SelectItem value="latam">LATAM</SelectItem>
-                                    <SelectItem value="gol">Gol</SelectItem>
-                                    <SelectItem value="azul">Azul</SelectItem>
-                                  </SelectContent>
-                                </Select>
+                              {/* Volta: companhia + data/hora */}
+                              <div className="flex flex-col gap-1">
+                                <div className="flex items-center gap-1">
+                                  <span className="text-xs text-slate-500 whitespace-nowrap w-10">Volta:</span>
+                                  <Select
+                                    value={week.returnAirline ?? ''}
+                                    onValueChange={(val) => {
+                                      requireAuth(() => {
+                                        updateStatusMutation.mutate(
+                                          { weekNumber: week.weekNumber, returnAirline: val || null },
+                                          { onSuccess: () => utils.flights.getWeeks.invalidate() }
+                                        );
+                                      });
+                                    }}
+                                  >
+                                    <SelectTrigger className="h-8 text-xs w-24">
+                                      <SelectValue placeholder="Cia" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      <SelectItem value="latam">LATAM</SelectItem>
+                                      <SelectItem value="gol">Gol</SelectItem>
+                                      <SelectItem value="azul">Azul</SelectItem>
+                                    </SelectContent>
+                                  </Select>
+                                </div>
+                                <div className="flex items-center gap-1 pl-11">
+                                  <input
+                                    type="datetime-local"
+                                    className="h-8 text-xs border border-slate-300 rounded px-2 bg-white text-slate-700 focus:outline-none focus:ring-1 focus:ring-blue-400"
+                                    value={week.returnFlightDatetime ?? ''}
+                                    onChange={(e) => {
+                                      requireAuth(() => {
+                                        updateStatusMutation.mutate(
+                                          { weekNumber: week.weekNumber, returnFlightDatetime: e.target.value || null },
+                                          { onSuccess: () => utils.flights.getWeeks.invalidate() }
+                                        );
+                                      });
+                                    }}
+                                  />
+                                </div>
                               </div>
-                            </>
+                            </div>
                           ) : null}
                         </div>
                         {/* Excluir */}

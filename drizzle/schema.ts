@@ -43,6 +43,8 @@ export const flightWeeks = mysqlTable("flight_weeks", {
   isSelected: int("isSelected").default(0).notNull(),
   departureAirline: varchar("departureAirline", { length: 50 }),
   returnAirline: varchar("returnAirline", { length: 50 }),
+  departureFlightDatetime: varchar("departureFlightDatetime", { length: 30 }),
+  returnFlightDatetime: varchar("returnFlightDatetime", { length: 30 }),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });
