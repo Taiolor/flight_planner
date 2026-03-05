@@ -226,7 +226,7 @@ export default function Home() {
       .reduce((sum, w) => sum + (getLowestPrice(w.weekNumber) ?? 0), 0);
   }, [weeksData, getLowestPrice]);
 
-  // Dados para o gráfico de variação de preços por mês
+  // Dados para o gráfico de variação de preços por mês (todas as empresas)
   const chartData = useMemo(() => {
     const MONTHS = [
       { num: '03', label: 'Mar' }, { num: '04', label: 'Abr' }, { num: '05', label: 'Mai' },
@@ -240,17 +240,16 @@ export default function Home() {
         return parts[1] === num && !w.isDeleted;
       });
       const entry: Record<string, string | number> = { mes: label };
-      // Para cada companhia (exceto kayak), calcular o menor preço médio do mês
-      const airlineIds = airlines.filter(a => a.id !== 'kayak').map(a => a.id);
-      for (const airlineId of airlineIds) {
+      // Todas as empresas incluindo kayak e onhappy
+      for (const airline of airlines) {
         const prices = monthWeeks
-          .map(w => parseFloat(priceMap[w.weekNumber]?.[airlineId] || ''))
+          .map(w => parseFloat(priceMap[w.weekNumber]?.[airline.id] || ''))
           .filter(p => !isNaN(p) && p > 0);
         if (prices.length > 0) {
-          entry[airlineId] = Math.round(prices.reduce((a, b) => a + b, 0) / prices.length);
+          entry[airline.id] = Math.round(prices.reduce((a, b) => a + b, 0) / prices.length);
         }
       }
-      // Menor preço geral do mês
+      // Menor preço geral do mês (considerando todas as empresas)
       const allPrices = monthWeeks
         .map(w => getLowestPrice(w.weekNumber))
         .filter((p): p is number => p !== null && p > 0);
@@ -414,6 +413,17 @@ export default function Home() {
                   </SelectContent>
                 </Select>
               </div>
+              <Button
+                size="sm"
+                variant="outline"
+                className="bg-white bg-opacity-10 border-white text-white hover:bg-white hover:text-blue-700"
+                onClick={() => {
+                  const el = document.getElementById('price-chart-section');
+                  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }}
+              >
+                <TrendingUp className="w-4 h-4 mr-1" /> Ver Gráfico
+              </Button>
               {isAuthenticated ? (
                 <div className="flex items-center gap-2">
                   <span className="text-xs text-green-300 flex items-center gap-1">
@@ -713,14 +723,14 @@ export default function Home() {
         )}
 
         {/* Gráfico de Variação de Preços */}
-        <Card className="mt-8 p-6 border-0 shadow-md">
+        <Card id="price-chart-section" className="mt-8 p-6 border-0 shadow-md scroll-mt-4">
           <div className="flex items-center gap-3 mb-6">
             <div className="bg-blue-100 p-2 rounded-lg">
               <TrendingUp className="w-5 h-5 text-blue-600" />
             </div>
             <div>
               <h2 className="text-xl font-bold text-slate-900">Variação de Preços por Mês</h2>
-              <p className="text-sm text-slate-500">Média dos preços registrados por companhia aérea em cada mês</p>
+              <p className="text-sm text-slate-500">Média dos preços registrados por todas as empresas e buscadores em cada mês</p>
             </div>
           </div>
 
@@ -735,17 +745,19 @@ export default function Home() {
               {/* Gráfico de Barras por Companhia */}
               <div>
                 <h3 className="text-sm font-semibold text-slate-600 mb-4 uppercase tracking-wide">Preço Médio por Companhia (R$)</h3>
-                <ResponsiveContainer width="100%" height={300}>
+                <ResponsiveContainer width="100%" height={320}>
                   <BarChart data={chartData} margin={{ top: 5, right: 20, left: 10, bottom: 5 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
                     <XAxis dataKey="mes" tick={{ fontSize: 12, fill: '#64748b' }} />
                     <YAxis tick={{ fontSize: 12, fill: '#64748b' }} tickFormatter={(v) => `R$${v}`} />
                     <Tooltip formatter={(value: number) => [`R$ ${value.toFixed(2)}`, '']} />
                     <Legend />
+                    <Bar dataKey="kayak" name="Kayak" fill="#ef4444" radius={[4,4,0,0]} />
                     <Bar dataKey="latam" name="LATAM" fill="#2563eb" radius={[4,4,0,0]} />
                     <Bar dataKey="gol" name="Gol" fill="#eab308" radius={[4,4,0,0]} />
                     <Bar dataKey="azul" name="Azul" fill="#38bdf8" radius={[4,4,0,0]} />
                     <Bar dataKey="voepass" name="Voepass" fill="#9333ea" radius={[4,4,0,0]} />
+                    <Bar dataKey="onhappy" name="Onhappy" fill="#16a34a" radius={[4,4,0,0]} />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
