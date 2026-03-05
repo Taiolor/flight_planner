@@ -236,6 +236,44 @@ export default function Home() {
   }, [filteredWeeks, sortBy, getLowestPrice]);
 
   const deletedWeeks = useMemo(() => weeksData.filter(w => w.isDeleted === 1), [weeksData]);
+
+  // Agrupamento por mês
+  const MONTH_NAMES: Record<string, string> = {
+    '01': 'Janeiro', '02': 'Fevereiro', '03': 'Março', '04': 'Abril',
+    '05': 'Maio', '06': 'Junho', '07': 'Julho', '08': 'Agosto',
+    '09': 'Setembro', '10': 'Outubro', '11': 'Novembro', '12': 'Dezembro',
+  };
+
+  const weeksByMonth = useMemo(() => {
+    const groups: { monthKey: string; monthLabel: string; weeks: WeekData[] }[] = [];
+    const seen = new Set<string>();
+    for (const week of sortedWeeks) {
+      const monthKey = week.departureDate.split('/')[1];
+      if (!seen.has(monthKey)) {
+        seen.add(monthKey);
+        groups.push({ monthKey, monthLabel: MONTH_NAMES[monthKey] || monthKey, weeks: [] });
+      }
+      groups.find(g => g.monthKey === monthKey)!.weeks.push(week);
+    }
+    return groups;
+  }, [sortedWeeks]);
+
+  // Mês corrente para iniciar expandido
+  const currentMonthKey = useMemo(() => {
+    const now = new Date();
+    return String(now.getMonth() + 1).padStart(2, '0');
+  }, []);
+
+  const [expandedMonths, setExpandedMonths] = useState<Set<string>>(() => new Set([currentMonthKey]));
+
+  const toggleMonth = (monthKey: string) => {
+    setExpandedMonths(prev => {
+      const next = new Set(prev);
+      if (next.has(monthKey)) next.delete(monthKey);
+      else next.add(monthKey);
+      return next;
+    });
+  };
   const selectedWeeks = useMemo(() => weeksData.filter(w => w.isSelected === 1), [weeksData]);
   const issuedCount = useMemo(() => weeksData.filter(w => w.isSelected && w.isTicketIssued).length, [weeksData]);
   const totalCost = useMemo(() => {
@@ -580,16 +618,67 @@ export default function Home() {
           </div>
         )}
 
-        {/* Lista de Semanas */}
+        {/* Lista de Semanas agrupada por Mês */}
         {!isLoading && (
-          <div className="space-y-4">
+          <div className="space-y-3">
             {sortedWeeks.length === 0 ? (
               <Card className="p-12 text-center border-0 shadow-md">
                 <Calendar className="w-12 h-12 text-slate-300 mx-auto mb-4" />
                 <p className="text-slate-500 text-lg">Nenhuma semana encontrada com os filtros selecionados</p>
               </Card>
             ) : (
-              sortedWeeks.map(week => {
+              weeksByMonth.map(({ monthKey, monthLabel, weeks: monthWeeks }) => {
+                const isOpen = expandedMonths.has(monthKey);
+                const monthIssued = monthWeeks.filter(w => w.isTicketIssued).length;
+                const monthSelected = monthWeeks.filter(w => w.isSelected).length;
+                const monthHasHoliday = monthWeeks.some(w => getFeriadosDaSemana(w.departureDate, w.returnDate).length > 0);
+                return (
+                  <div key={monthKey} className="rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                    {/* Cabeçalho do Mês */}
+                    <button
+                      onClick={() => toggleMonth(monthKey)}
+                      className={`w-full flex items-center justify-between px-6 py-4 transition-colors ${
+                        isOpen ? 'bg-blue-600 text-white' : 'bg-white hover:bg-slate-50 text-slate-900'
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <ChevronDown className={`w-5 h-5 transition-transform ${
+                          isOpen ? 'rotate-180 text-white' : 'text-slate-500'
+                        }`} />
+                        <span className="text-lg font-bold">{monthLabel} 2026</span>
+                        {monthHasHoliday && (
+                          <span className={`text-xs px-2 py-0.5 rounded-full font-semibold ${
+                            isOpen ? 'bg-white/20 text-white' : 'bg-orange-100 text-orange-700'
+                          }`}>
+                            🎉 Feriado
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-4 text-sm">
+                        <span className={isOpen ? 'text-blue-100' : 'text-slate-500'}>
+                          {monthWeeks.length} semana{monthWeeks.length !== 1 ? 's' : ''}
+                        </span>
+                        {monthSelected > 0 && (
+                          <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${
+                            isOpen ? 'bg-white/20 text-white' : 'bg-green-100 text-green-700'
+                          }`}>
+                            ✓ {monthSelected} selecionada{monthSelected !== 1 ? 's' : ''}
+                          </span>
+                        )}
+                        {monthIssued > 0 && (
+                          <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${
+                            isOpen ? 'bg-white/20 text-white' : 'bg-blue-100 text-blue-700'
+                          }`}>
+                            ✓ {monthIssued} emitido{monthIssued !== 1 ? 's' : ''}
+                          </span>
+                        )}
+                      </div>
+                    </button>
+
+                    {/* Semanas do Mês */}
+                    {isOpen && (
+                      <div className="divide-y divide-slate-100">
+                        {monthWeeks.map(week => {
                 const lowestPrice = getLowestPrice(week.weekNumber);
                 const isCheap = showCheapestOnly && priceThreshold && lowestPrice && lowestPrice <= priceThreshold;
                 return (
@@ -757,6 +846,11 @@ export default function Home() {
                       )}
                     </div>
                   </Card>
+                );
+              })}
+                      </div>
+                    )}
+                  </div>
                 );
               })
             )}
