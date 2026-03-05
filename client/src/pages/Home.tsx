@@ -25,6 +25,8 @@ interface WeekData {
   isDeleted: number;
   isTicketIssued: number;
   isSelected: number;
+  departureAirline?: string | null;
+  returnAirline?: string | null;
 }
 
 interface PriceMap {
@@ -868,17 +870,69 @@ export default function Home() {
                           title="Editar datas">
                           <Pencil className="w-4 h-4" />
                         </Button>
-                        {/* Status bilhete */}
-                        <Button
-                          variant="outline" size="sm"
-                          onClick={() => handleToggleTicket(week.weekNumber, week.isTicketIssued)}
-                          className={week.isTicketIssued ? 'bg-blue-100 border-blue-300 text-blue-700' : ''}
-                        >
-                          {week.isTicketIssued
-                            ? <><CheckCircle2 className="w-4 h-4 mr-1" />Emitido</>
-                            : <><Circle className="w-4 h-4 mr-1" />Não Emitido</>
-                          }
-                        </Button>
+                        {/* Status bilhete + companhias */}
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <Button
+                            variant="outline" size="sm"
+                            onClick={() => handleToggleTicket(week.weekNumber, week.isTicketIssued)}
+                            className={week.isTicketIssued ? 'bg-blue-100 border-blue-300 text-blue-700' : ''}
+                          >
+                            {week.isTicketIssued
+                              ? <><CheckCircle2 className="w-4 h-4 mr-1" />Emitido</>
+                              : <><Circle className="w-4 h-4 mr-1" />Não Emitido</>
+                            }
+                          </Button>
+                          {week.isTicketIssued ? (
+                            <>
+                              <div className="flex items-center gap-1">
+                                <span className="text-xs text-slate-500 whitespace-nowrap">Ida:</span>
+                                <Select
+                                  value={week.departureAirline ?? ''}
+                                  onValueChange={(val) => {
+                                    requireAuth(() => {
+                                      updateStatusMutation.mutate(
+                                        { weekNumber: week.weekNumber, departureAirline: val || null },
+                                        { onSuccess: () => utils.flights.getWeeks.invalidate() }
+                                      );
+                                    });
+                                  }}
+                                >
+                                  <SelectTrigger className="h-8 text-xs w-24">
+                                    <SelectValue placeholder="Cia" />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="latam">LATAM</SelectItem>
+                                    <SelectItem value="gol">Gol</SelectItem>
+                                    <SelectItem value="azul">Azul</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <span className="text-xs text-slate-500 whitespace-nowrap">Volta:</span>
+                                <Select
+                                  value={week.returnAirline ?? ''}
+                                  onValueChange={(val) => {
+                                    requireAuth(() => {
+                                      updateStatusMutation.mutate(
+                                        { weekNumber: week.weekNumber, returnAirline: val || null },
+                                        { onSuccess: () => utils.flights.getWeeks.invalidate() }
+                                      );
+                                    });
+                                  }}
+                                >
+                                  <SelectTrigger className="h-8 text-xs w-24">
+                                    <SelectValue placeholder="Cia" />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="latam">LATAM</SelectItem>
+                                    <SelectItem value="gol">Gol</SelectItem>
+                                    <SelectItem value="azul">Azul</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                              </div>
+                            </>
+                          ) : null}
+                        </div>
                         {/* Excluir */}
                         <Button variant="outline" size="sm"
                           onClick={() => handleDelete(week.weekNumber)}

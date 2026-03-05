@@ -148,6 +148,8 @@ export const appRouter = router({
         isDeleted: z.number().optional(),
         isTicketIssued: z.number().optional(),
         isSelected: z.number().optional(),
+        departureAirline: z.string().nullable().optional(),
+        returnAirline: z.string().nullable().optional(),
       }))
       .mutation(async ({ input, ctx }) => {
         const session = await getSessionFromCookie(ctx.req);
@@ -158,6 +160,8 @@ export const appRouter = router({
           isDeleted: input.isDeleted,
           isTicketIssued: input.isTicketIssued,
           isSelected: input.isSelected,
+          departureAirline: input.departureAirline,
+          returnAirline: input.returnAirline,
         });
         return { success: true };
       }),

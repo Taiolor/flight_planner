@@ -112,3 +112,42 @@ describe("flightAuth.logout", () => {
     expect(clearedCookies).toContain("flight_session");
   });
 });
+
+describe("flights.updateWeekStatus with airline fields", () => {
+  it("should accept departureAirline and returnAirline fields", async () => {
+    const { validateAuthSession, updateFlightWeekStatus } = await import("./db");
+    (validateAuthSession as ReturnType<typeof vi.fn>).mockResolvedValueOnce({ email: "taiolor@gmail.com" });
+
+    const ctx = createTestContext("flight_session=valid-token");
+    const caller = appRouter.createCaller(ctx);
+
+    const result = await caller.flights.updateWeekStatus({
+      weekNumber: 5,
+      isTicketIssued: 1,
+      departureAirline: "latam",
+      returnAirline: "gol",
+    });
+
+    expect(result.success).toBe(true);
+    expect(updateFlightWeekStatus).toHaveBeenCalledWith(5, expect.objectContaining({
+      isTicketIssued: 1,
+      departureAirline: "latam",
+      returnAirline: "gol",
+    }));
+  });
+
+  it("should reject update without authentication", async () => {
+    const { validateAuthSession } = await import("./db");
+    (validateAuthSession as ReturnType<typeof vi.fn>).mockResolvedValueOnce(null);
+
+    const ctx = createTestContext("");
+    const caller = appRouter.createCaller(ctx);
+
+    await expect(
+      caller.flights.updateWeekStatus({
+        weekNumber: 5,
+        departureAirline: "latam",
+      })
+    ).rejects.toThrow("Faça login para editar.");
+  });
+});
