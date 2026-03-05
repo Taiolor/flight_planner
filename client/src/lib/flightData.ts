@@ -919,3 +919,71 @@ export function generateBookingLink(airline: string, departure: string, arrival:
   const airportParam = origin === 'CGH' ? '&airport=CGH' : '';
   return `${baseUrl}?origin=${originCode}&destination=${destination}&outbound=${depDate}&inbound=${retDate}&adults=1&cabin=economy${airportParam}`;
 }
+
+// Lista completa de feriados nacionais e pontos facultativos de 2026
+export interface Feriado {
+  data: string; // DD/MM/YYYY
+  nome: string;
+  tipo: 'nacional' | 'facultativo';
+}
+
+export const feriados2026: Feriado[] = [
+  { data: '01/01/2026', nome: 'Confraternização Universal', tipo: 'nacional' },
+  { data: '16/02/2026', nome: 'Carnaval (segunda)', tipo: 'facultativo' },
+  { data: '17/02/2026', nome: 'Carnaval (terça)', tipo: 'facultativo' },
+  { data: '18/02/2026', nome: 'Quarta-feira de Cinzas (meio dia)', tipo: 'facultativo' },
+  { data: '03/04/2026', nome: 'Sexta-feira Santa (Paixão de Cristo)', tipo: 'nacional' },
+  { data: '05/04/2026', nome: 'Páscoa', tipo: 'nacional' },
+  { data: '21/04/2026', nome: 'Tiradentes', tipo: 'nacional' },
+  { data: '01/05/2026', nome: 'Dia do Trabalho', tipo: 'nacional' },
+  { data: '04/06/2026', nome: 'Corpus Christi', tipo: 'nacional' },
+  { data: '05/06/2026', nome: 'Ponto Facultativo (após Corpus Christi)', tipo: 'facultativo' },
+  { data: '07/09/2026', nome: 'Independência do Brasil', tipo: 'nacional' },
+  { data: '12/10/2026', nome: 'Nossa Senhora Aparecida', tipo: 'nacional' },
+  { data: '02/11/2026', nome: 'Finados', tipo: 'nacional' },
+  { data: '15/11/2026', nome: 'Proclamação da República', tipo: 'nacional' },
+  { data: '20/11/2026', nome: 'Consciência Negra', tipo: 'nacional' },
+  { data: '24/12/2026', nome: 'Véspera de Natal (ponto facultativo)', tipo: 'facultativo' },
+  { data: '25/12/2026', nome: 'Natal', tipo: 'nacional' },
+  { data: '31/12/2026', nome: 'Véspera de Ano Novo (ponto facultativo)', tipo: 'facultativo' },
+  { data: '01/01/2027', nome: 'Confraternização Universal', tipo: 'nacional' },
+];
+
+// Converte DD/MM/YYYY para objeto Date
+function parseDate(dateStr: string): Date {
+  const [day, month, year] = dateStr.split('/').map(Number);
+  return new Date(year, month - 1, day);
+}
+
+export interface FeriadoInfo {
+  feriado: Feriado;
+  tipo: 'ida' | 'retorno' | 'intervalo';
+}
+
+/**
+ * Retorna todos os feriados relacionados a uma semana:
+ * - na data de ida
+ * - na data de retorno
+ * - no intervalo entre ida e retorno (exclusive as datas extremas)
+ */
+export function getFeriadosDaSemana(departureDate: string, returnDate: string): FeriadoInfo[] {
+  const result: FeriadoInfo[] = [];
+  const depDate = parseDate(departureDate);
+  const retDate = parseDate(returnDate);
+
+  for (const f of feriados2026) {
+    const fDate = parseDate(f.data);
+    const fTime = fDate.getTime();
+    const depTime = depDate.getTime();
+    const retTime = retDate.getTime();
+
+    if (fTime === depTime) {
+      result.push({ feriado: f, tipo: 'ida' });
+    } else if (fTime === retTime) {
+      result.push({ feriado: f, tipo: 'retorno' });
+    } else if (fTime > depTime && fTime < retTime) {
+      result.push({ feriado: f, tipo: 'intervalo' });
+    }
+  }
+  return result;
+}

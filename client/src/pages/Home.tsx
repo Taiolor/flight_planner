@@ -3,7 +3,7 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend,
   LineChart, Line, ResponsiveContainer
 } from 'recharts';
-import { flightData, airlines, departureAirports, generateBookingLink, DepartureAirport } from '@/lib/flightData';
+import { flightData, airlines, departureAirports, generateBookingLink, DepartureAirport, getFeriadosDaSemana, FeriadoInfo } from '@/lib/flightData';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -86,6 +86,24 @@ export default function Home() {
   const [filterMonth, setFilterMonth] = useState<string>('all');
   const [filterAirline, setFilterAirline] = useState<string>('all');
   const [filterTicketStatus, setFilterTicketStatus] = useState<string>('all');
+  // Estado para filtro de empresas no gráfico (todas selecionadas por padrão)
+  const [chartSelectedAirlines, setChartSelectedAirlines] = useState<Set<string>>(
+    () => new Set(airlines.map(a => a.id))
+  );
+  const toggleChartAirline = (id: string) => {
+    setChartSelectedAirlines(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        if (next.size === 1) return prev; // manter pelo menos 1
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  };
+  const selectAllChartAirlines = () => setChartSelectedAirlines(new Set(airlines.map(a => a.id)));
+  const clearChartAirlines = () => setChartSelectedAirlines(new Set([airlines[0].id]));
   const [sortBy, setSortBy] = useState<string>('week');
   const [expandedWeek, setExpandedWeek] = useState<number | null>(null);
   const [departureAirport, setDepartureAirport] = useState<DepartureAirport>('GRU');
@@ -608,10 +626,53 @@ export default function Home() {
                               </span>
                             ) : null}
                           </div>
-                          <p className="text-sm text-slate-600">
-                            <Calendar className="w-4 h-4 inline mr-1" />
-                            {week.departureDate} ({week.departureDayOfWeek}) → {week.returnDate} ({week.returnDayOfWeek})
-                          </p>
+                          {/* Datas com indicadores de feriado */}
+                          {(() => {
+                            const feriados = getFeriadosDaSemana(week.departureDate, week.returnDate);
+                            const feriadoIda = feriados.filter(f => f.tipo === 'ida');
+                            const feriadoRetorno = feriados.filter(f => f.tipo === 'retorno');
+                            const feriadosIntervalo = feriados.filter(f => f.tipo === 'intervalo');
+                            return (
+                              <div className="space-y-1">
+                                <p className="text-sm text-slate-600 flex items-center gap-1 flex-wrap">
+                                  <Calendar className="w-4 h-4 flex-shrink-0" />
+                                  <span className="font-medium">Ida:</span>
+                                  <span>{week.departureDate} ({week.departureDayOfWeek})</span>
+                                  {feriadoIda.map(f => (
+                                    <span key={f.feriado.data} className={`text-xs px-2 py-0.5 rounded-full font-semibold ${
+                                      f.feriado.tipo === 'nacional' ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700'
+                                    }`}>
+                                      🎉 {f.feriado.nome}
+                                    </span>
+                                  ))}
+                                </p>
+                                <p className="text-sm text-slate-600 flex items-center gap-1 flex-wrap">
+                                  <Calendar className="w-4 h-4 flex-shrink-0" />
+                                  <span className="font-medium">Retorno:</span>
+                                  <span>{week.returnDate} ({week.returnDayOfWeek})</span>
+                                  {feriadoRetorno.map(f => (
+                                    <span key={f.feriado.data} className={`text-xs px-2 py-0.5 rounded-full font-semibold ${
+                                      f.feriado.tipo === 'nacional' ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700'
+                                    }`}>
+                                      🎉 {f.feriado.nome}
+                                    </span>
+                                  ))}
+                                </p>
+                                {feriadosIntervalo.length > 0 && (
+                                  <p className="text-xs text-slate-500 flex items-center gap-1 flex-wrap pl-5">
+                                    <span className="text-orange-600 font-semibold">⚠️ Feriados no período:</span>
+                                    {feriadosIntervalo.map(f => (
+                                      <span key={f.feriado.data} className={`px-2 py-0.5 rounded-full ${
+                                        f.feriado.tipo === 'nacional' ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700'
+                                      }`}>
+                                        {f.feriado.data.slice(0,5)} – {f.feriado.nome}
+                                      </span>
+                                    ))}
+                                  </p>
+                                )}
+                              </div>
+                            );
+                          })()}
                         </div>
                       </div>
 
@@ -734,6 +795,56 @@ export default function Home() {
             </div>
           </div>
 
+          {/* Filtro de empresas do gráfico - sempre visível */}
+          <div className="mb-6 p-4 bg-slate-50 rounded-xl border border-slate-200">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-sm font-semibold text-slate-700">Filtrar Empresas no Gráfico</span>
+              <div className="flex gap-2">
+                <button
+                  onClick={selectAllChartAirlines}
+                  className="text-xs text-blue-600 hover:text-blue-800 font-medium px-2 py-1 rounded hover:bg-blue-50 transition-colors"
+                >
+                  Selecionar todas
+                </button>
+                <span className="text-slate-300">|</span>
+                <button
+                  onClick={clearChartAirlines}
+                  className="text-xs text-slate-500 hover:text-slate-700 font-medium px-2 py-1 rounded hover:bg-slate-100 transition-colors"
+                >
+                  Limpar
+                </button>
+              </div>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {airlines.map(airline => {
+                const colorMap: Record<string, string> = {
+                  kayak: 'bg-red-500', latam: 'bg-blue-600', gol: 'bg-yellow-500',
+                  azul: 'bg-sky-400', voepass: 'bg-purple-600', onhappy: 'bg-green-600',
+                };
+                const isSelected = chartSelectedAirlines.has(airline.id);
+                return (
+                  <button
+                    key={airline.id}
+                    onClick={() => toggleChartAirline(airline.id)}
+                    className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium border-2 transition-all ${
+                      isSelected
+                        ? 'border-transparent text-white shadow-sm'
+                        : 'border-slate-300 text-slate-500 bg-white hover:border-slate-400'
+                    }`}
+                    style={isSelected ? { backgroundColor: {
+                      kayak: '#ef4444', latam: '#2563eb', gol: '#eab308',
+                      azul: '#38bdf8', voepass: '#9333ea', onhappy: '#16a34a',
+                    }[airline.id] } : {}}
+                  >
+                    <span>{airline.icon}</span>
+                    {airline.name}
+                    {isSelected && <span className="ml-1 opacity-80">✓</span>}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
           {!hasChartData ? (
             <div className="flex flex-col items-center justify-center py-12 text-center">
               <TrendingUp className="w-12 h-12 text-slate-200 mb-3" />
@@ -752,12 +863,12 @@ export default function Home() {
                     <YAxis tick={{ fontSize: 12, fill: '#64748b' }} tickFormatter={(v) => `R$${v}`} />
                     <Tooltip formatter={(value: number) => [`R$ ${value.toFixed(2)}`, '']} />
                     <Legend />
-                    <Bar dataKey="kayak" name="Kayak" fill="#ef4444" radius={[4,4,0,0]} />
-                    <Bar dataKey="latam" name="LATAM" fill="#2563eb" radius={[4,4,0,0]} />
-                    <Bar dataKey="gol" name="Gol" fill="#eab308" radius={[4,4,0,0]} />
-                    <Bar dataKey="azul" name="Azul" fill="#38bdf8" radius={[4,4,0,0]} />
-                    <Bar dataKey="voepass" name="Voepass" fill="#9333ea" radius={[4,4,0,0]} />
-                    <Bar dataKey="onhappy" name="Onhappy" fill="#16a34a" radius={[4,4,0,0]} />
+                    {chartSelectedAirlines.has('kayak') && <Bar dataKey="kayak" name="Kayak" fill="#ef4444" radius={[4,4,0,0]} />}
+                    {chartSelectedAirlines.has('latam') && <Bar dataKey="latam" name="LATAM" fill="#2563eb" radius={[4,4,0,0]} />}
+                    {chartSelectedAirlines.has('gol') && <Bar dataKey="gol" name="Gol" fill="#eab308" radius={[4,4,0,0]} />}
+                    {chartSelectedAirlines.has('azul') && <Bar dataKey="azul" name="Azul" fill="#38bdf8" radius={[4,4,0,0]} />}
+                    {chartSelectedAirlines.has('voepass') && <Bar dataKey="voepass" name="Voepass" fill="#9333ea" radius={[4,4,0,0]} />}
+                    {chartSelectedAirlines.has('onhappy') && <Bar dataKey="onhappy" name="Onhappy" fill="#16a34a" radius={[4,4,0,0]} />}
                   </BarChart>
                 </ResponsiveContainer>
               </div>
