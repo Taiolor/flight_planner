@@ -632,6 +632,9 @@ export default function Home() {
                 const monthIssued = monthWeeks.filter(w => w.isTicketIssued).length;
                 const monthSelected = monthWeeks.filter(w => w.isSelected).length;
                 const monthHasHoliday = monthWeeks.some(w => getFeriadosPorIntervalo(w.weekNumber, w.departureDate, w.returnDate).length > 0);
+                const monthIssuedTotal = monthWeeks
+                  .filter(w => w.isTicketIssued)
+                  .reduce((sum, w) => sum + (getLowestPrice(w.weekNumber) ?? 0), 0);
                 return (
                   <div key={monthKey} className="rounded-xl border border-slate-200 shadow-sm overflow-hidden">
                     {/* Cabeçalho do Mês */}
@@ -670,6 +673,13 @@ export default function Home() {
                             isOpen ? 'bg-white/20 text-white' : 'bg-blue-100 text-blue-700'
                           }`}>
                             ✓ {monthIssued} emitido{monthIssued !== 1 ? 's' : ''}
+                          </span>
+                        )}
+                        {monthIssuedTotal > 0 && (
+                          <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${
+                            isOpen ? 'bg-white/30 text-white' : 'bg-emerald-100 text-emerald-700'
+                          }`}>
+                            R$ {monthIssuedTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                           </span>
                         )}
                       </div>
