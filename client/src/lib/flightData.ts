@@ -28,6 +28,7 @@ export const airlines: Airline[] = [
   { id: 'gol', name: 'Gol', color: 'bg-yellow-500', icon: '✈️' },
   { id: 'azul', name: 'Azul', color: 'bg-blue-400', icon: '✈️' },
   { id: 'voepass', name: 'Voepass', color: 'bg-purple-600', icon: '✈️' },
+  { id: 'onhappy', name: 'Onhappy', color: 'bg-green-600', icon: '😊' },
 ];
 
 export const airports = {

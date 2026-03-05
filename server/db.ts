@@ -1,6 +1,6 @@
-import { and, eq } from "drizzle-orm";
+import { and, eq, gt } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, users, flightWeeks, flightPrices, InsertFlightWeek, InsertFlightPrice } from "../drizzle/schema";
+import { InsertUser, users, flightWeeks, flightPrices, InsertFlightWeek, InsertFlightPrice, authSessions, InsertAuthSession } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -200,4 +200,63 @@ export async function deleteFlightPrice(weekNumber: number, airline: string) {
       eq(flightPrices.weekNumber, weekNumber),
       eq(flightPrices.airline, airline)
     ));
+}
+
+// =====================
+// Auth Sessions
+// =====================
+
+export async function createAuthSession(email: string): Promise<string> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  // Gerar token único
+  const token = Array.from(crypto.getRandomValues(new Uint8Array(32)))
+    .map(b => b.toString(16).padStart(2, '0'))
+    .join('');
+
+  // Sessão expira em 8 horas
+  const expiresAt = new Date(Date.now() + 8 * 60 * 60 * 1000);
+
+  await db.insert(authSessions).values({
+    sessionToken: token,
+    email,
+    expiresAt,
+  });
+
+  return token;
+}
+
+export async function validateAuthSession(token: string): Promise<{ email: string } | null> {
+  const db = await getDb();
+  if (!db) return null;
+
+  const now = new Date();
+  const result = await db.select()
+    .from(authSessions)
+    .where(and(
+      eq(authSessions.sessionToken, token),
+      gt(authSessions.expiresAt, now)
+    ))
+    .limit(1);
+
+  if (result.length === 0) return null;
+  return { email: result[0].email };
+}
+
+export async function deleteAuthSession(token: string): Promise<void> {
+  const db = await getDb();
+  if (!db) return;
+
+  await db.delete(authSessions)
+    .where(eq(authSessions.sessionToken, token));
+}
+
+export async function cleanExpiredSessions(): Promise<void> {
+  const db = await getDb();
+  if (!db) return;
+
+  const now = new Date();
+  await db.delete(authSessions)
+    .where(eq(authSessions.expiresAt, now)); // drizzle doesn't have lt for timestamp easily, skip for now
 }

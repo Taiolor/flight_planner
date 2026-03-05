@@ -62,3 +62,32 @@ export const flightPrices = mysqlTable("flight_prices", {
 
 export type FlightPrice = typeof flightPrices.$inferSelect;
 export type InsertFlightPrice = typeof flightPrices.$inferInsert;
+
+/**
+ * Tabela para armazenar códigos OTP de autenticação por e-mail
+ */
+export const otpCodes = mysqlTable("otp_codes", {
+  id: int("id").autoincrement().primaryKey(),
+  email: varchar("email", { length: 320 }).notNull(),
+  code: varchar("code", { length: 10 }).notNull(),
+  expiresAt: timestamp("expiresAt").notNull(),
+  used: int("used").default(0).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type OtpCode = typeof otpCodes.$inferSelect;
+export type InsertOtpCode = typeof otpCodes.$inferInsert;
+
+/**
+ * Tabela para armazenar sessões autenticadas
+ */
+export const authSessions = mysqlTable("auth_sessions", {
+  id: int("id").autoincrement().primaryKey(),
+  sessionToken: varchar("sessionToken", { length: 128 }).notNull().unique(),
+  email: varchar("email", { length: 320 }).notNull(),
+  expiresAt: timestamp("expiresAt").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type AuthSession = typeof authSessions.$inferSelect;
+export type InsertAuthSession = typeof authSessions.$inferInsert;

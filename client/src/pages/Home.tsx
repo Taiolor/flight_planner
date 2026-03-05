@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Checkbox } from '@/components/ui/checkbox';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
-import { ChevronDown, Plane, Calendar, ExternalLink, AlertCircle, Trash2, CheckCircle2, Circle, Pencil, RotateCcw, Loader2, TrendingUp } from 'lucide-react';
+import { ChevronDown, Plane, Calendar, ExternalLink, AlertCircle, Trash2, CheckCircle2, Circle, Pencil, RotateCcw, Loader2, TrendingUp, Lock, LogOut, Eye, EyeOff } from 'lucide-react';
 import { trpc } from '@/lib/trpc';
 import { toast } from 'sonner';
 
@@ -32,6 +32,57 @@ interface PriceMap {
 }
 
 export default function Home() {
+  // Auth state
+  const [showLoginModal, setShowLoginModal] = useState(false);
+  const [loginEmail, setLoginEmail] = useState('');
+  const [loginPassword, setLoginPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [loginError, setLoginError] = useState('');
+
+  const authCheckQuery = trpc.flightAuth.check.useQuery();
+  const loginMutation = trpc.flightAuth.login.useMutation();
+  const logoutAuthMutation = trpc.flightAuth.logout.useMutation();
+  const authUtils = trpc.useUtils();
+
+  const isAuthenticated = authCheckQuery.data?.authenticated ?? false;
+
+  const handleLogin = () => {
+    setLoginError('');
+    loginMutation.mutate(
+      { email: loginEmail, password: loginPassword },
+      {
+        onSuccess: () => {
+          setShowLoginModal(false);
+          setLoginEmail('');
+          setLoginPassword('');
+          authUtils.flightAuth.check.invalidate();
+          toast.success('Login realizado com sucesso!');
+        },
+        onError: (err) => {
+          setLoginError(err.message || 'E-mail ou senha incorretos.');
+        },
+      }
+    );
+  };
+
+  const handleLogout = () => {
+    logoutAuthMutation.mutate(undefined, {
+      onSuccess: () => {
+        authUtils.flightAuth.check.invalidate();
+        toast.success('Sessão encerrada.');
+      },
+    });
+  };
+
+  // Guard: show login modal when unauthenticated mutation fails
+  const requireAuth = (fn: () => void) => {
+    if (!isAuthenticated) {
+      setShowLoginModal(true);
+      return;
+    }
+    fn();
+  };
+
   const [filterMonth, setFilterMonth] = useState<string>('all');
   const [filterAirline, setFilterAirline] = useState<string>('all');
   const [filterTicketStatus, setFilterTicketStatus] = useState<string>('all');
@@ -215,49 +266,61 @@ export default function Home() {
 
   // Handlers
   const handleToggleSelect = (weekNumber: number, current: number) => {
-    updateStatusMutation.mutate(
-      { weekNumber, isSelected: current ? 0 : 1 },
-      { onSuccess: () => utils.flights.getWeeks.invalidate() }
-    );
+    requireAuth(() => {
+      updateStatusMutation.mutate(
+        { weekNumber, isSelected: current ? 0 : 1 },
+        { onSuccess: () => utils.flights.getWeeks.invalidate() }
+      );
+    });
   };
 
   const handleDelete = (weekNumber: number) => {
-    updateStatusMutation.mutate(
-      { weekNumber, isDeleted: 1 },
-      {
-        onSuccess: () => {
-          utils.flights.getWeeks.invalidate();
-          toast.success(`Semana ${weekNumber} excluída`);
+    requireAuth(() => {
+      updateStatusMutation.mutate(
+        { weekNumber, isDeleted: 1 },
+        {
+          onSuccess: () => {
+            utils.flights.getWeeks.invalidate();
+            toast.success(`Semana ${weekNumber} excluída`);
+          }
         }
-      }
-    );
+      );
+    });
   };
 
   const handleRestore = (weekNumber: number) => {
-    updateStatusMutation.mutate(
-      { weekNumber, isDeleted: 0 },
-      {
-        onSuccess: () => {
-          utils.flights.getWeeks.invalidate();
-          toast.success(`Semana ${weekNumber} restaurada`);
+    requireAuth(() => {
+      updateStatusMutation.mutate(
+        { weekNumber, isDeleted: 0 },
+        {
+          onSuccess: () => {
+            utils.flights.getWeeks.invalidate();
+            toast.success(`Semana ${weekNumber} restaurada`);
+          }
         }
-      }
-    );
+      );
+    });
   };
 
   const handleToggleTicket = (weekNumber: number, current: number) => {
-    updateStatusMutation.mutate(
-      { weekNumber, isTicketIssued: current ? 0 : 1 },
-      {
-        onSuccess: () => {
-          utils.flights.getWeeks.invalidate();
-          toast.success(current ? 'Bilhete marcado como não emitido' : 'Bilhete marcado como emitido');
+    requireAuth(() => {
+      updateStatusMutation.mutate(
+        { weekNumber, isTicketIssued: current ? 0 : 1 },
+        {
+          onSuccess: () => {
+            utils.flights.getWeeks.invalidate();
+            toast.success(current ? 'Bilhete marcado como não emitido' : 'Bilhete marcado como emitido');
+          }
         }
-      }
-    );
+      );
+    });
   };
 
   const handlePriceBlur = (weekNumber: number, airline: string, value: string) => {
+    if (!isAuthenticated) {
+      setShowLoginModal(true);
+      return;
+    }
     setSavingPrice({ week: weekNumber, airline });
     savePriceMutation.mutate(
       { weekNumber, airline, price: value },
@@ -266,20 +329,25 @@ export default function Home() {
           utils.flights.getPrices.invalidate();
           setSavingPrice(null);
         },
-        onError: () => setSavingPrice(null),
+        onError: (err) => {
+          setSavingPrice(null);
+          if (err.message?.includes('login')) setShowLoginModal(true);
+        },
       }
     );
   };
 
   const openEditModal = (week: WeekData) => {
-    setEditingWeek(week);
-    // Convert DD/MM/YYYY to YYYY-MM-DD for date input
-    const toInputDate = (d: string) => {
-      const [day, month, year] = d.split('/');
-      return `${year}-${month}-${day}`;
-    };
-    setEditDepartureDate(toInputDate(week.departureDate));
-    setEditReturnDate(toInputDate(week.returnDate));
+    requireAuth(() => {
+      setEditingWeek(week);
+      // Convert DD/MM/YYYY to YYYY-MM-DD for date input
+      const toInputDate = (d: string) => {
+        const [day, month, year] = d.split('/');
+        return `${year}-${month}-${day}`;
+      };
+      setEditDepartureDate(toInputDate(week.departureDate));
+      setEditReturnDate(toInputDate(week.returnDate));
+    });
   };
 
   const handleSaveDates = () => {
@@ -332,18 +400,44 @@ export default function Home() {
                 <p className="text-blue-100">{departureAirport} → Navegantes (NVT) • 2026</p>
               </div>
             </div>
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-blue-100">Aeroporto de Saída</span>
-              <Select value={departureAirport} onValueChange={(v) => setDepartureAirport(v as DepartureAirport)}>
-                <SelectTrigger className="w-44 bg-white bg-opacity-20 border-white text-white">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {departureAirports.map(a => (
-                    <SelectItem key={a.value} value={a.value}>{a.label}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+            <div className="flex items-center gap-3 flex-wrap">
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-blue-100">Aeroporto de Saída</span>
+                <Select value={departureAirport} onValueChange={(v) => setDepartureAirport(v as DepartureAirport)}>
+                  <SelectTrigger className="w-44 bg-white bg-opacity-20 border-white text-white">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {departureAirports.map(a => (
+                      <SelectItem key={a.value} value={a.value}>{a.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              {isAuthenticated ? (
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-green-300 flex items-center gap-1">
+                    <CheckCircle2 className="w-3 h-3" /> {authCheckQuery.data?.email}
+                  </span>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="bg-white bg-opacity-10 border-white text-white hover:bg-white hover:text-blue-700"
+                    onClick={handleLogout}
+                  >
+                    <LogOut className="w-4 h-4 mr-1" /> Sair
+                  </Button>
+                </div>
+              ) : (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="bg-white bg-opacity-10 border-white text-white hover:bg-white hover:text-blue-700"
+                  onClick={() => setShowLoginModal(true)}
+                >
+                  <Lock className="w-4 h-4 mr-1" /> Entrar
+                </Button>
+              )}
             </div>
           </div>
         </div>
@@ -739,6 +833,71 @@ export default function Home() {
             <Button onClick={handleSaveDates} disabled={updateDatesMutation.isPending}>
               {updateDatesMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
               Salvar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal de Login */}
+      <Dialog open={showLoginModal} onOpenChange={setShowLoginModal}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Lock className="w-5 h-5 text-blue-600" />
+              Acesso Restrito
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <p className="text-sm text-slate-500">Faça login para editar preços, datas e status dos bilhetes.</p>
+            {loginError && (
+              <div className="bg-red-50 border border-red-200 text-red-700 rounded-lg px-4 py-2 text-sm flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                {loginError}
+              </div>
+            )}
+            <div>
+              <Label htmlFor="login-email">E-mail</Label>
+              <Input
+                id="login-email"
+                type="email"
+                placeholder="seu@email.com"
+                value={loginEmail}
+                onChange={(e) => setLoginEmail(e.target.value)}
+                className="mt-1"
+                onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
+              />
+            </div>
+            <div>
+              <Label htmlFor="login-password">Senha</Label>
+              <div className="relative mt-1">
+                <Input
+                  id="login-password"
+                  type={showPassword ? 'text' : 'password'}
+                  placeholder="••••••••"
+                  value={loginPassword}
+                  onChange={(e) => setLoginPassword(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
+                  className="pr-10"
+                />
+                <button
+                  type="button"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => { setShowLoginModal(false); setLoginError(''); }}>Cancelar</Button>
+            <Button
+              onClick={handleLogin}
+              disabled={loginMutation.isPending || !loginEmail || !loginPassword}
+              className="bg-blue-600 hover:bg-blue-700"
+            >
+              {loginMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Lock className="w-4 h-4 mr-2" />}
+              Entrar
             </Button>
           </DialogFooter>
         </DialogContent>
