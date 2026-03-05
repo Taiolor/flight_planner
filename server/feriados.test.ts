@@ -102,3 +102,49 @@ describe("getFeriadosDaSemana", () => {
     expect(result).toHaveLength(0);
   });
 });
+
+// Simular flightData para testar getFeriadosPorIntervalo
+const mockFlightData = [
+  { semana: 1, ida: { data: '01/03/2026' }, retorno: { data: '06/03/2026' } },
+  { semana: 6, ida: { data: '05/04/2026' }, retorno: { data: '10/04/2026' } }, // Páscoa na ida
+  { semana: 7, ida: { data: '19/04/2026' }, retorno: { data: '24/04/2026' } }, // Tiradentes no intervalo
+];
+
+function getFeriadosPorIntervalo(
+  weekNumber: number,
+  departureDate?: string,
+  returnDate?: string
+): FeriadoInfo[] {
+  const defaultFlight = mockFlightData.find(f => f.semana === weekNumber);
+  const depStr = departureDate || defaultFlight?.ida.data;
+  const retStr = returnDate || defaultFlight?.retorno.data;
+  if (!depStr || !retStr) return [];
+  return getFeriadosDaSemana(depStr, retStr);
+}
+
+describe("getFeriadosPorIntervalo", () => {
+  it("usa datas padrão do flightData quando não há datas fornecidas", () => {
+    // Semana 7: 19/04 a 24/04 - Tiradentes (21/04) no intervalo
+    const result = getFeriadosPorIntervalo(7);
+    expect(result.some(f => f.feriado.nome === 'Tiradentes')).toBe(true);
+  });
+
+  it("usa datas fornecidas quando disponíveis, ignorando o flightData", () => {
+    // Semana 1 padrão seria 01/03 a 06/03 (sem feriados)
+    // Mas fornecemos datas com Páscoa na ida
+    const result = getFeriadosPorIntervalo(1, '05/04/2026', '10/04/2026');
+    expect(result.some(f => f.feriado.nome === 'Páscoa')).toBe(true);
+  });
+
+  it("retorna array vazio quando semana não existe e sem datas fornecidas", () => {
+    const result = getFeriadosPorIntervalo(999);
+    expect(result).toHaveLength(0);
+  });
+
+  it("detecta feriado na ida usando datas padrão", () => {
+    // Semana 6: 05/04 a 10/04 - Páscoa (05/04) na ida
+    const result = getFeriadosPorIntervalo(6);
+    const feriadoIda = result.filter(f => f.tipo === 'ida');
+    expect(feriadoIda.some(f => f.feriado.nome === 'Páscoa')).toBe(true);
+  });
+});

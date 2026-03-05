@@ -3,7 +3,7 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend,
   LineChart, Line, ResponsiveContainer
 } from 'recharts';
-import { flightData, airlines, departureAirports, generateBookingLink, DepartureAirport, getFeriadosDaSemana, FeriadoInfo } from '@/lib/flightData';
+import { flightData, airlines, departureAirports, generateBookingLink, DepartureAirport, getFeriadosDaSemana, getFeriadosPorIntervalo, FeriadoInfo } from '@/lib/flightData';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -631,7 +631,7 @@ export default function Home() {
                 const isOpen = expandedMonths.has(monthKey);
                 const monthIssued = monthWeeks.filter(w => w.isTicketIssued).length;
                 const monthSelected = monthWeeks.filter(w => w.isSelected).length;
-                const monthHasHoliday = monthWeeks.some(w => getFeriadosDaSemana(w.departureDate, w.returnDate).length > 0);
+                const monthHasHoliday = monthWeeks.some(w => getFeriadosPorIntervalo(w.weekNumber, w.departureDate, w.returnDate).length > 0);
                 return (
                   <div key={monthKey} className="rounded-xl border border-slate-200 shadow-sm overflow-hidden">
                     {/* Cabeçalho do Mês */}
@@ -717,7 +717,7 @@ export default function Home() {
                           </div>
                           {/* Datas com indicadores de feriado */}
                           {(() => {
-                            const feriados = getFeriadosDaSemana(week.departureDate, week.returnDate);
+                            const feriados = getFeriadosPorIntervalo(week.weekNumber, week.departureDate, week.returnDate);
                             const feriadoIda = feriados.filter(f => f.tipo === 'ida');
                             const feriadoRetorno = feriados.filter(f => f.tipo === 'retorno');
                             const feriadosIntervalo = feriados.filter(f => f.tipo === 'intervalo');

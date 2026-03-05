@@ -987,3 +987,21 @@ export function getFeriadosDaSemana(departureDate: string, returnDate: string): 
   }
   return result;
 }
+
+/**
+ * Retorna todos os feriados no intervalo de uma semana.
+ * Aceita datas opcionais — se não fornecidas, usa as datas padrão do flightData pelo número da semana.
+ * Sempre mostra feriados no intervalo independente de haver viagem cadastrada.
+ */
+export function getFeriadosPorIntervalo(
+  weekNumber: number,
+  departureDate?: string,
+  returnDate?: string
+): FeriadoInfo[] {
+  const defaultFlight = flightData.find(f => f.semana === weekNumber);
+  const depStr = departureDate || defaultFlight?.ida.data;
+  const retStr = returnDate || defaultFlight?.retorno.data;
+
+  if (!depStr || !retStr) return [];
+  return getFeriadosDaSemana(depStr, retStr);
+}
