@@ -893,12 +893,17 @@ export default function Home() {
                                   <Select
                                     value={week.departureAirline ?? ''}
                                     onValueChange={(val) => {
-                                      requireAuth(() => {
-                                        updateStatusMutation.mutate(
-                                          { weekNumber: week.weekNumber, departureAirline: val || null },
-                                          { onSuccess: () => utils.flights.getWeeks.invalidate() }
-                                        );
-                                      });
+                                      if (!isAuthenticated) { setShowLoginModal(true); return; }
+                                      updateStatusMutation.mutate(
+                                        { weekNumber: week.weekNumber, departureAirline: val || null },
+                                        {
+                                          onSuccess: () => {
+                                            utils.flights.getWeeks.invalidate();
+                                            toast.success('Companhia de ida salva');
+                                          },
+                                          onError: () => toast.error('Erro ao salvar companhia de ida'),
+                                        }
+                                      );
                                     }}
                                   >
                                     <SelectTrigger className="h-8 text-xs w-24">
@@ -934,12 +939,17 @@ export default function Home() {
                                   <Select
                                     value={week.returnAirline ?? ''}
                                     onValueChange={(val) => {
-                                      requireAuth(() => {
-                                        updateStatusMutation.mutate(
-                                          { weekNumber: week.weekNumber, returnAirline: val || null },
-                                          { onSuccess: () => utils.flights.getWeeks.invalidate() }
-                                        );
-                                      });
+                                      if (!isAuthenticated) { setShowLoginModal(true); return; }
+                                      updateStatusMutation.mutate(
+                                        { weekNumber: week.weekNumber, returnAirline: val || null },
+                                        {
+                                          onSuccess: () => {
+                                            utils.flights.getWeeks.invalidate();
+                                            toast.success('Companhia de volta salva');
+                                          },
+                                          onError: () => toast.error('Erro ao salvar companhia de volta'),
+                                        }
+                                      );
                                     }}
                                   >
                                     <SelectTrigger className="h-8 text-xs w-24">
