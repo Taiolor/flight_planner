@@ -118,6 +118,10 @@ export default function Home() {
   const [editReturnDate, setEditReturnDate] = useState('');
   const [savingPrice, setSavingPrice] = useState<{ week: number; airline: string } | null>(null);
 
+  // Estado temporário para data/hora de voo (antes de confirmar com OK)
+  const [tempDepartureDatetime, setTempDepartureDatetime] = useState<{ [weekNumber: number]: string }>({});
+  const [tempReturnDatetime, setTempReturnDatetime] = useState<{ [weekNumber: number]: string }>({});
+
   // tRPC queries
   const weeksQuery = trpc.flights.getWeeks.useQuery();
   const pricesQuery = trpc.flights.getPrices.useQuery();
@@ -906,8 +910,10 @@ export default function Home() {
                                       );
                                     }}
                                   >
-                                    <SelectTrigger className="h-8 text-xs w-24">
-                                      <SelectValue placeholder="Cia" />
+                                    <SelectTrigger className="h-8 text-xs w-28 bg-white border-slate-300">
+                                      <SelectValue placeholder="Selecionar">
+                                        {week.departureAirline === 'latam' ? 'LATAM' : week.departureAirline === 'gol' ? 'Gol' : week.departureAirline === 'azul' ? 'Azul' : 'Selecionar'}
+                                      </SelectValue>
                                     </SelectTrigger>
                                     <SelectContent>
                                       <SelectItem value="latam">LATAM</SelectItem>
@@ -920,16 +926,30 @@ export default function Home() {
                                   <input
                                     type="datetime-local"
                                     className="h-8 text-xs border border-slate-300 rounded px-2 bg-white text-slate-700 focus:outline-none focus:ring-1 focus:ring-blue-400"
-                                    value={week.departureFlightDatetime ?? ''}
+                                    value={tempDepartureDatetime[week.weekNumber] ?? week.departureFlightDatetime ?? ''}
                                     onChange={(e) => {
-                                      requireAuth(() => {
-                                        updateStatusMutation.mutate(
-                                          { weekNumber: week.weekNumber, departureFlightDatetime: e.target.value || null },
-                                          { onSuccess: () => utils.flights.getWeeks.invalidate() }
-                                        );
-                                      });
+                                      setTempDepartureDatetime(prev => ({ ...prev, [week.weekNumber]: e.target.value }));
                                     }}
                                   />
+                                  <button
+                                    className="h-8 px-2 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 font-semibold whitespace-nowrap"
+                                    onClick={() => {
+                                      if (!isAuthenticated) { setShowLoginModal(true); return; }
+                                      const val = tempDepartureDatetime[week.weekNumber];
+                                      if (!val) return;
+                                      updateStatusMutation.mutate(
+                                        { weekNumber: week.weekNumber, departureFlightDatetime: val || null },
+                                        {
+                                          onSuccess: () => {
+                                            utils.flights.getWeeks.invalidate();
+                                            setTempDepartureDatetime(prev => { const n = { ...prev }; delete n[week.weekNumber]; return n; });
+                                            toast.success('Data/hora de ida salva');
+                                          },
+                                          onError: () => toast.error('Erro ao salvar data/hora de ida'),
+                                        }
+                                      );
+                                    }}
+                                  >OK</button>
                                 </div>
                               </div>
                               {/* Volta: companhia + data/hora */}
@@ -952,8 +972,10 @@ export default function Home() {
                                       );
                                     }}
                                   >
-                                    <SelectTrigger className="h-8 text-xs w-24">
-                                      <SelectValue placeholder="Cia" />
+                                    <SelectTrigger className="h-8 text-xs w-28 bg-white border-slate-300">
+                                      <SelectValue placeholder="Selecionar">
+                                        {week.returnAirline === 'latam' ? 'LATAM' : week.returnAirline === 'gol' ? 'Gol' : week.returnAirline === 'azul' ? 'Azul' : 'Selecionar'}
+                                      </SelectValue>
                                     </SelectTrigger>
                                     <SelectContent>
                                       <SelectItem value="latam">LATAM</SelectItem>
@@ -966,16 +988,30 @@ export default function Home() {
                                   <input
                                     type="datetime-local"
                                     className="h-8 text-xs border border-slate-300 rounded px-2 bg-white text-slate-700 focus:outline-none focus:ring-1 focus:ring-blue-400"
-                                    value={week.returnFlightDatetime ?? ''}
+                                    value={tempReturnDatetime[week.weekNumber] ?? week.returnFlightDatetime ?? ''}
                                     onChange={(e) => {
-                                      requireAuth(() => {
-                                        updateStatusMutation.mutate(
-                                          { weekNumber: week.weekNumber, returnFlightDatetime: e.target.value || null },
-                                          { onSuccess: () => utils.flights.getWeeks.invalidate() }
-                                        );
-                                      });
+                                      setTempReturnDatetime(prev => ({ ...prev, [week.weekNumber]: e.target.value }));
                                     }}
                                   />
+                                  <button
+                                    className="h-8 px-2 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 font-semibold whitespace-nowrap"
+                                    onClick={() => {
+                                      if (!isAuthenticated) { setShowLoginModal(true); return; }
+                                      const val = tempReturnDatetime[week.weekNumber];
+                                      if (!val) return;
+                                      updateStatusMutation.mutate(
+                                        { weekNumber: week.weekNumber, returnFlightDatetime: val || null },
+                                        {
+                                          onSuccess: () => {
+                                            utils.flights.getWeeks.invalidate();
+                                            setTempReturnDatetime(prev => { const n = { ...prev }; delete n[week.weekNumber]; return n; });
+                                            toast.success('Data/hora de volta salva');
+                                          },
+                                          onError: () => toast.error('Erro ao salvar data/hora de volta'),
+                                        }
+                                      );
+                                    }}
+                                  >OK</button>
                                 </div>
                               </div>
                             </div>
