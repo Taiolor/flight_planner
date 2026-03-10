@@ -152,6 +152,8 @@ export const appRouter = router({
         returnAirline: z.string().nullable().optional(),
         departureFlightDatetime: z.string().nullable().optional(),
         returnFlightDatetime: z.string().nullable().optional(),
+        departureAirport: z.string().nullable().optional(),
+        returnAirport: z.string().nullable().optional(),
       }))
       .mutation(async ({ input, ctx }) => {
         const session = await getSessionFromCookie(ctx.req);
@@ -166,6 +168,8 @@ export const appRouter = router({
           returnAirline: input.returnAirline,
           departureFlightDatetime: input.departureFlightDatetime,
           returnFlightDatetime: input.returnFlightDatetime,
+          departureAirport: input.departureAirport,
+          returnAirport: input.returnAirport,
         });
         return { success: true };
       }),

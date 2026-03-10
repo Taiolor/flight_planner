@@ -29,6 +29,8 @@ interface WeekData {
   returnAirline?: string | null;
   departureFlightDatetime?: string | null;
   returnFlightDatetime?: string | null;
+  departureAirport?: string | null;
+  returnAirport?: string | null;
 }
 
 interface PriceMap {
@@ -175,6 +177,12 @@ export default function Home() {
         isDeleted: w.isDeleted,
         isTicketIssued: w.isTicketIssued,
         isSelected: w.isSelected,
+        departureAirline: w.departureAirline ?? null,
+        returnAirline: w.returnAirline ?? null,
+        departureFlightDatetime: w.departureFlightDatetime ?? null,
+        returnFlightDatetime: w.returnFlightDatetime ?? null,
+        departureAirport: (w as any).departureAirport ?? null,
+        returnAirport: (w as any).returnAirport ?? null,
       }));
     }
     // Fallback to static data
@@ -889,11 +897,39 @@ export default function Home() {
                             }
                           </Button>
                           {week.isTicketIssued ? (
-                            <div className="flex flex-col gap-2 mt-1">
-                              {/* Ida: companhia + data/hora */}
-                              <div className="flex flex-col gap-1">
-                                <div className="flex items-center gap-1">
-                                  <span className="text-xs text-slate-500 whitespace-nowrap w-10">Ida:</span>
+                            <div className="flex flex-col gap-3 mt-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                              {/* IDA */}
+                              <div className="flex flex-col gap-1.5">
+                                <span className="text-xs font-bold text-blue-700 uppercase tracking-wide">✈ Ida</span>
+                                <div className="flex flex-wrap items-center gap-1.5">
+                                  {/* Aeroporto de Ida */}
+                                  <Select
+                                    value={week.departureAirport ?? ''}
+                                    onValueChange={(val) => {
+                                      if (!isAuthenticated) { setShowLoginModal(true); return; }
+                                      updateStatusMutation.mutate(
+                                        { weekNumber: week.weekNumber, departureAirport: val || null },
+                                        {
+                                          onSuccess: () => { utils.flights.getWeeks.invalidate(); toast.success('Aeroporto de ida salvo'); },
+                                          onError: () => toast.error('Erro ao salvar aeroporto de ida'),
+                                        }
+                                      );
+                                    }}
+                                  >
+                                    <SelectTrigger className="h-8 text-xs w-36 bg-white border-blue-300">
+                                      <SelectValue>
+                                        <span>{week.departureAirport === 'GRU' ? '🛫 Guarulhos (GRU)' : week.departureAirport === 'CGH' ? '🛫 Congonhas (CGH)' : week.departureAirport === 'VCP' ? '🛫 Viracopos (VCP)' : week.departureAirport === 'NVT' ? '🛬 Navegantes (NVT)' : week.departureAirport === 'JOI' ? '🛬 Joinville (JOI)' : 'Aeroporto ida'}</span>
+                                      </SelectValue>
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      <SelectItem value="GRU">🛫 Guarulhos (GRU)</SelectItem>
+                                      <SelectItem value="CGH">🛫 Congonhas (CGH)</SelectItem>
+                                      <SelectItem value="VCP">🛫 Viracopos (VCP)</SelectItem>
+                                      <SelectItem value="NVT">🛬 Navegantes (NVT)</SelectItem>
+                                      <SelectItem value="JOI">🛬 Joinville (JOI)</SelectItem>
+                                    </SelectContent>
+                                  </Select>
+                                  {/* Companhia de Ida */}
                                   <Select
                                     value={week.departureAirline ?? ''}
                                     onValueChange={(val) => {
@@ -901,18 +937,15 @@ export default function Home() {
                                       updateStatusMutation.mutate(
                                         { weekNumber: week.weekNumber, departureAirline: val || null },
                                         {
-                                          onSuccess: () => {
-                                            utils.flights.getWeeks.invalidate();
-                                            toast.success('Companhia de ida salva');
-                                          },
+                                          onSuccess: () => { utils.flights.getWeeks.invalidate(); toast.success('Companhia de ida salva'); },
                                           onError: () => toast.error('Erro ao salvar companhia de ida'),
                                         }
                                       );
                                     }}
                                   >
-                                    <SelectTrigger className="h-8 text-xs w-28 bg-white border-slate-300">
-                                      <SelectValue placeholder="Selecionar">
-                                        {week.departureAirline === 'latam' ? 'LATAM' : week.departureAirline === 'gol' ? 'Gol' : week.departureAirline === 'azul' ? 'Azul' : 'Selecionar'}
+                                    <SelectTrigger className="h-8 text-xs w-28 bg-white border-blue-300">
+                                      <SelectValue>
+                                        <span>{week.departureAirline === 'latam' ? 'LATAM' : week.departureAirline === 'gol' ? 'Gol' : week.departureAirline === 'azul' ? 'Azul' : 'Companhia'}</span>
                                       </SelectValue>
                                     </SelectTrigger>
                                     <SelectContent>
@@ -922,20 +955,19 @@ export default function Home() {
                                     </SelectContent>
                                   </Select>
                                 </div>
-                                <div className="flex items-center gap-1 pl-11">
+                                {/* Data/hora de Ida */}
+                                <div className="flex items-center gap-1.5">
                                   <input
                                     type="datetime-local"
-                                    className="h-8 text-xs border border-slate-300 rounded px-2 bg-white text-slate-700 focus:outline-none focus:ring-1 focus:ring-blue-400"
+                                    className="h-8 text-xs border border-blue-300 rounded px-2 bg-white text-slate-700 focus:outline-none focus:ring-1 focus:ring-blue-400"
                                     value={tempDepartureDatetime[week.weekNumber] ?? week.departureFlightDatetime ?? ''}
-                                    onChange={(e) => {
-                                      setTempDepartureDatetime(prev => ({ ...prev, [week.weekNumber]: e.target.value }));
-                                    }}
+                                    onChange={(e) => setTempDepartureDatetime(prev => ({ ...prev, [week.weekNumber]: e.target.value }))}
                                   />
                                   <button
-                                    className="h-8 px-2 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 font-semibold whitespace-nowrap"
+                                    className="h-8 px-3 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 font-semibold whitespace-nowrap"
                                     onClick={() => {
                                       if (!isAuthenticated) { setShowLoginModal(true); return; }
-                                      const val = tempDepartureDatetime[week.weekNumber];
+                                      const val = tempDepartureDatetime[week.weekNumber] ?? week.departureFlightDatetime;
                                       if (!val) return;
                                       updateStatusMutation.mutate(
                                         { weekNumber: week.weekNumber, departureFlightDatetime: val || null },
@@ -950,12 +982,44 @@ export default function Home() {
                                       );
                                     }}
                                   >OK</button>
+                                  {week.departureFlightDatetime && !tempDepartureDatetime[week.weekNumber] && (
+                                    <span className="text-xs text-green-700 font-semibold">✓ {new Date(week.departureFlightDatetime).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}</span>
+                                  )}
                                 </div>
                               </div>
-                              {/* Volta: companhia + data/hora */}
-                              <div className="flex flex-col gap-1">
-                                <div className="flex items-center gap-1">
-                                  <span className="text-xs text-slate-500 whitespace-nowrap w-10">Volta:</span>
+
+                              {/* VOLTA */}
+                              <div className="flex flex-col gap-1.5 border-t border-blue-200 pt-2">
+                                <span className="text-xs font-bold text-blue-700 uppercase tracking-wide">✈ Volta</span>
+                                <div className="flex flex-wrap items-center gap-1.5">
+                                  {/* Aeroporto de Volta */}
+                                  <Select
+                                    value={week.returnAirport ?? ''}
+                                    onValueChange={(val) => {
+                                      if (!isAuthenticated) { setShowLoginModal(true); return; }
+                                      updateStatusMutation.mutate(
+                                        { weekNumber: week.weekNumber, returnAirport: val || null },
+                                        {
+                                          onSuccess: () => { utils.flights.getWeeks.invalidate(); toast.success('Aeroporto de volta salvo'); },
+                                          onError: () => toast.error('Erro ao salvar aeroporto de volta'),
+                                        }
+                                      );
+                                    }}
+                                  >
+                                    <SelectTrigger className="h-8 text-xs w-36 bg-white border-blue-300">
+                                      <SelectValue>
+                                        <span>{week.returnAirport === 'GRU' ? '🛫 Guarulhos (GRU)' : week.returnAirport === 'CGH' ? '🛫 Congonhas (CGH)' : week.returnAirport === 'VCP' ? '🛫 Viracopos (VCP)' : week.returnAirport === 'NVT' ? '🛬 Navegantes (NVT)' : week.returnAirport === 'JOI' ? '🛬 Joinville (JOI)' : 'Aeroporto volta'}</span>
+                                      </SelectValue>
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      <SelectItem value="GRU">🛫 Guarulhos (GRU)</SelectItem>
+                                      <SelectItem value="CGH">🛫 Congonhas (CGH)</SelectItem>
+                                      <SelectItem value="VCP">🛫 Viracopos (VCP)</SelectItem>
+                                      <SelectItem value="NVT">🛬 Navegantes (NVT)</SelectItem>
+                                      <SelectItem value="JOI">🛬 Joinville (JOI)</SelectItem>
+                                    </SelectContent>
+                                  </Select>
+                                  {/* Companhia de Volta */}
                                   <Select
                                     value={week.returnAirline ?? ''}
                                     onValueChange={(val) => {
@@ -963,18 +1027,15 @@ export default function Home() {
                                       updateStatusMutation.mutate(
                                         { weekNumber: week.weekNumber, returnAirline: val || null },
                                         {
-                                          onSuccess: () => {
-                                            utils.flights.getWeeks.invalidate();
-                                            toast.success('Companhia de volta salva');
-                                          },
+                                          onSuccess: () => { utils.flights.getWeeks.invalidate(); toast.success('Companhia de volta salva'); },
                                           onError: () => toast.error('Erro ao salvar companhia de volta'),
                                         }
                                       );
                                     }}
                                   >
-                                    <SelectTrigger className="h-8 text-xs w-28 bg-white border-slate-300">
-                                      <SelectValue placeholder="Selecionar">
-                                        {week.returnAirline === 'latam' ? 'LATAM' : week.returnAirline === 'gol' ? 'Gol' : week.returnAirline === 'azul' ? 'Azul' : 'Selecionar'}
+                                    <SelectTrigger className="h-8 text-xs w-28 bg-white border-blue-300">
+                                      <SelectValue>
+                                        <span>{week.returnAirline === 'latam' ? 'LATAM' : week.returnAirline === 'gol' ? 'Gol' : week.returnAirline === 'azul' ? 'Azul' : 'Companhia'}</span>
                                       </SelectValue>
                                     </SelectTrigger>
                                     <SelectContent>
@@ -984,20 +1045,19 @@ export default function Home() {
                                     </SelectContent>
                                   </Select>
                                 </div>
-                                <div className="flex items-center gap-1 pl-11">
+                                {/* Data/hora de Volta */}
+                                <div className="flex items-center gap-1.5">
                                   <input
                                     type="datetime-local"
-                                    className="h-8 text-xs border border-slate-300 rounded px-2 bg-white text-slate-700 focus:outline-none focus:ring-1 focus:ring-blue-400"
+                                    className="h-8 text-xs border border-blue-300 rounded px-2 bg-white text-slate-700 focus:outline-none focus:ring-1 focus:ring-blue-400"
                                     value={tempReturnDatetime[week.weekNumber] ?? week.returnFlightDatetime ?? ''}
-                                    onChange={(e) => {
-                                      setTempReturnDatetime(prev => ({ ...prev, [week.weekNumber]: e.target.value }));
-                                    }}
+                                    onChange={(e) => setTempReturnDatetime(prev => ({ ...prev, [week.weekNumber]: e.target.value }))}
                                   />
                                   <button
-                                    className="h-8 px-2 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 font-semibold whitespace-nowrap"
+                                    className="h-8 px-3 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 font-semibold whitespace-nowrap"
                                     onClick={() => {
                                       if (!isAuthenticated) { setShowLoginModal(true); return; }
-                                      const val = tempReturnDatetime[week.weekNumber];
+                                      const val = tempReturnDatetime[week.weekNumber] ?? week.returnFlightDatetime;
                                       if (!val) return;
                                       updateStatusMutation.mutate(
                                         { weekNumber: week.weekNumber, returnFlightDatetime: val || null },
@@ -1012,6 +1072,9 @@ export default function Home() {
                                       );
                                     }}
                                   >OK</button>
+                                  {week.returnFlightDatetime && !tempReturnDatetime[week.weekNumber] && (
+                                    <span className="text-xs text-green-700 font-semibold">✓ {new Date(week.returnFlightDatetime).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}</span>
+                                  )}
                                 </div>
                               </div>
                             </div>
