@@ -31,6 +31,8 @@ interface WeekData {
   returnFlightDatetime?: string | null;
   departureAirport?: string | null;
   returnAirport?: string | null;
+  departureLocator?: string | null;
+  returnLocator?: string | null;
 }
 
 interface PriceMap {
@@ -183,6 +185,8 @@ export default function Home() {
         returnFlightDatetime: w.returnFlightDatetime ?? null,
         departureAirport: (w as any).departureAirport ?? null,
         returnAirport: (w as any).returnAirport ?? null,
+        departureLocator: (w as any).departureLocator ?? null,
+        returnLocator: (w as any).returnLocator ?? null,
       }));
     }
     // Fallback to static data
@@ -986,6 +990,32 @@ export default function Home() {
                                     <span className="text-xs text-green-700 font-semibold">✓ {new Date(week.departureFlightDatetime).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}</span>
                                   )}
                                 </div>
+                                {/* Localizador de Ida */}
+                                <div className="flex items-center gap-1.5">
+                                  <span className="text-xs text-slate-500 whitespace-nowrap">Localizador:</span>
+                                  <input
+                                    type="text"
+                                    maxLength={20}
+                                    placeholder="Ex: ABC123"
+                                    className="h-7 text-xs border border-blue-300 rounded px-2 bg-white text-slate-700 uppercase focus:outline-none focus:ring-1 focus:ring-blue-400 w-28"
+                                    defaultValue={week.departureLocator ?? ''}
+                                    onBlur={(e) => {
+                                      if (!isAuthenticated) { setShowLoginModal(true); return; }
+                                      const val = e.target.value.trim().toUpperCase();
+                                      if (val === (week.departureLocator ?? '')) return;
+                                      updateStatusMutation.mutate(
+                                        { weekNumber: week.weekNumber, departureLocator: val || null },
+                                        {
+                                          onSuccess: () => { utils.flights.getWeeks.invalidate(); toast.success('Localizador de ida salvo'); },
+                                          onError: () => toast.error('Erro ao salvar localizador de ida'),
+                                        }
+                                      );
+                                    }}
+                                  />
+                                  {week.departureLocator && (
+                                    <span className="text-xs font-mono font-bold text-blue-700 bg-blue-100 px-2 py-0.5 rounded">{week.departureLocator}</span>
+                                  )}
+                                </div>
                               </div>
 
                               {/* VOLTA */}
@@ -1074,6 +1104,32 @@ export default function Home() {
                                   >OK</button>
                                   {week.returnFlightDatetime && !tempReturnDatetime[week.weekNumber] && (
                                     <span className="text-xs text-green-700 font-semibold">✓ {new Date(week.returnFlightDatetime).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}</span>
+                                  )}
+                                </div>
+                                {/* Localizador de Volta */}
+                                <div className="flex items-center gap-1.5">
+                                  <span className="text-xs text-slate-500 whitespace-nowrap">Localizador:</span>
+                                  <input
+                                    type="text"
+                                    maxLength={20}
+                                    placeholder="Ex: XYZ456"
+                                    className="h-7 text-xs border border-blue-300 rounded px-2 bg-white text-slate-700 uppercase focus:outline-none focus:ring-1 focus:ring-blue-400 w-28"
+                                    defaultValue={week.returnLocator ?? ''}
+                                    onBlur={(e) => {
+                                      if (!isAuthenticated) { setShowLoginModal(true); return; }
+                                      const val = e.target.value.trim().toUpperCase();
+                                      if (val === (week.returnLocator ?? '')) return;
+                                      updateStatusMutation.mutate(
+                                        { weekNumber: week.weekNumber, returnLocator: val || null },
+                                        {
+                                          onSuccess: () => { utils.flights.getWeeks.invalidate(); toast.success('Localizador de volta salvo'); },
+                                          onError: () => toast.error('Erro ao salvar localizador de volta'),
+                                        }
+                                      );
+                                    }}
+                                  />
+                                  {week.returnLocator && (
+                                    <span className="text-xs font-mono font-bold text-blue-700 bg-blue-100 px-2 py-0.5 rounded">{week.returnLocator}</span>
                                   )}
                                 </div>
                               </div>

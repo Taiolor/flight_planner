@@ -43,6 +43,13 @@
       "when": 1773153034735,
       "tag": "0005_late_sasquatch",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "5",
+      "when": 1773153615544,
+      "tag": "0006_complete_leo",
+      "breakpoints": true
     }
   ]
 }
