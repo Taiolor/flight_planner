@@ -125,10 +125,27 @@ export default function Home() {
   // Estado temporário para data/hora de voo (antes de confirmar com OK)
   const [tempDepartureDatetime, setTempDepartureDatetime] = useState<{ [weekNumber: number]: string }>({});
   const [tempReturnDatetime, setTempReturnDatetime] = useState<{ [weekNumber: number]: string }>({});
+  // Estado controlado para localizadores (para persistência correta)
+  const [tempDepartureLocator, setTempDepartureLocator] = useState<{ [weekNumber: number]: string }>({});
+  const [tempReturnLocator, setTempReturnLocator] = useState<{ [weekNumber: number]: string }>({});
 
   // tRPC queries
   const weeksQuery = trpc.flights.getWeeks.useQuery();
   const pricesQuery = trpc.flights.getPrices.useQuery();
+
+  // Sincronizar localizadores do banco para estado local quando dados carregam
+  useEffect(() => {
+    if (weeksQuery.data) {
+      const depLoc: { [k: number]: string } = {};
+      const retLoc: { [k: number]: string } = {};
+      for (const w of weeksQuery.data) {
+        depLoc[w.weekNumber] = (w as any).departureLocator ?? '';
+        retLoc[w.weekNumber] = (w as any).returnLocator ?? '';
+      }
+      setTempDepartureLocator(depLoc);
+      setTempReturnLocator(retLoc);
+    }
+  }, [weeksQuery.data]);
   const initWeeksMutation = trpc.flights.initWeeks.useMutation();
   const updateStatusMutation = trpc.flights.updateWeekStatus.useMutation();
   const updateDatesMutation = trpc.flights.updateWeekDates.useMutation();
@@ -901,237 +918,315 @@ export default function Home() {
                             }
                           </Button>
                           {week.isTicketIssued ? (
-                            <div className="flex flex-col gap-3 mt-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                              {/* IDA */}
-                              <div className="flex flex-col gap-1.5">
-                                <span className="text-xs font-bold text-blue-700 uppercase tracking-wide">✈ Ida</span>
-                                <div className="flex flex-wrap items-center gap-1.5">
-                                  {/* Aeroporto de Ida */}
-                                  <Select
-                                    value={week.departureAirport ?? ''}
-                                    onValueChange={(val) => {
-                                      if (!isAuthenticated) { setShowLoginModal(true); return; }
-                                      updateStatusMutation.mutate(
-                                        { weekNumber: week.weekNumber, departureAirport: val || null },
-                                        {
-                                          onSuccess: () => { utils.flights.getWeeks.invalidate(); toast.success('Aeroporto de ida salvo'); },
-                                          onError: () => toast.error('Erro ao salvar aeroporto de ida'),
-                                        }
-                                      );
-                                    }}
-                                  >
-                                    <SelectTrigger className="h-8 text-xs w-36 bg-white border-blue-300">
-                                      <SelectValue>
-                                        <span>{week.departureAirport === 'GRU' ? '🛫 Guarulhos (GRU)' : week.departureAirport === 'CGH' ? '🛫 Congonhas (CGH)' : week.departureAirport === 'VCP' ? '🛫 Viracopos (VCP)' : week.departureAirport === 'NVT' ? '🛬 Navegantes (NVT)' : week.departureAirport === 'JOI' ? '🛬 Joinville (JOI)' : 'Aeroporto ida'}</span>
-                                      </SelectValue>
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                      <SelectItem value="GRU">🛫 Guarulhos (GRU)</SelectItem>
-                                      <SelectItem value="CGH">🛫 Congonhas (CGH)</SelectItem>
-                                      <SelectItem value="VCP">🛫 Viracopos (VCP)</SelectItem>
-                                      <SelectItem value="NVT">🛬 Navegantes (NVT)</SelectItem>
-                                      <SelectItem value="JOI">🛬 Joinville (JOI)</SelectItem>
-                                    </SelectContent>
-                                  </Select>
-                                  {/* Companhia de Ida */}
-                                  <Select
-                                    value={week.departureAirline ?? ''}
-                                    onValueChange={(val) => {
-                                      if (!isAuthenticated) { setShowLoginModal(true); return; }
-                                      updateStatusMutation.mutate(
-                                        { weekNumber: week.weekNumber, departureAirline: val || null },
-                                        {
-                                          onSuccess: () => { utils.flights.getWeeks.invalidate(); toast.success('Companhia de ida salva'); },
-                                          onError: () => toast.error('Erro ao salvar companhia de ida'),
-                                        }
-                                      );
-                                    }}
-                                  >
-                                    <SelectTrigger className="h-8 text-xs w-28 bg-white border-blue-300">
-                                      <SelectValue>
-                                        <span>{week.departureAirline === 'latam' ? 'LATAM' : week.departureAirline === 'gol' ? 'Gol' : week.departureAirline === 'azul' ? 'Azul' : 'Companhia'}</span>
-                                      </SelectValue>
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                      <SelectItem value="latam">LATAM</SelectItem>
-                                      <SelectItem value="gol">Gol</SelectItem>
-                                      <SelectItem value="azul">Azul</SelectItem>
-                                    </SelectContent>
-                                  </Select>
-                                </div>
-                                {/* Data/hora de Ida */}
-                                <div className="flex items-center gap-1.5">
-                                  <input
-                                    type="datetime-local"
-                                    className="h-8 text-xs border border-blue-300 rounded px-2 bg-white text-slate-700 focus:outline-none focus:ring-1 focus:ring-blue-400"
-                                    value={tempDepartureDatetime[week.weekNumber] ?? week.departureFlightDatetime ?? ''}
-                                    onChange={(e) => setTempDepartureDatetime(prev => ({ ...prev, [week.weekNumber]: e.target.value }))}
-                                  />
-                                  <button
-                                    className="h-8 px-3 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 font-semibold whitespace-nowrap"
-                                    onClick={() => {
-                                      if (!isAuthenticated) { setShowLoginModal(true); return; }
-                                      const val = tempDepartureDatetime[week.weekNumber] ?? week.departureFlightDatetime;
-                                      if (!val) return;
-                                      updateStatusMutation.mutate(
-                                        { weekNumber: week.weekNumber, departureFlightDatetime: val || null },
-                                        {
-                                          onSuccess: () => {
-                                            utils.flights.getWeeks.invalidate();
-                                            setTempDepartureDatetime(prev => { const n = { ...prev }; delete n[week.weekNumber]; return n; });
-                                            toast.success('Data/hora de ida salva');
-                                          },
-                                          onError: () => toast.error('Erro ao salvar data/hora de ida'),
-                                        }
-                                      );
-                                    }}
-                                  >OK</button>
-                                  {week.departureFlightDatetime && !tempDepartureDatetime[week.weekNumber] && (
-                                    <span className="text-xs text-green-700 font-semibold">✓ {new Date(week.departureFlightDatetime).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}</span>
-                                  )}
-                                </div>
-                                {/* Localizador de Ida */}
-                                <div className="flex items-center gap-1.5">
-                                  <span className="text-xs text-slate-500 whitespace-nowrap">Localizador:</span>
-                                  <input
-                                    type="text"
-                                    maxLength={20}
-                                    placeholder="Ex: ABC123"
-                                    className="h-7 text-xs border border-blue-300 rounded px-2 bg-white text-slate-700 uppercase focus:outline-none focus:ring-1 focus:ring-blue-400 w-28"
-                                    defaultValue={week.departureLocator ?? ''}
-                                    onBlur={(e) => {
-                                      if (!isAuthenticated) { setShowLoginModal(true); return; }
-                                      const val = e.target.value.trim().toUpperCase();
-                                      if (val === (week.departureLocator ?? '')) return;
-                                      updateStatusMutation.mutate(
-                                        { weekNumber: week.weekNumber, departureLocator: val || null },
-                                        {
-                                          onSuccess: () => { utils.flights.getWeeks.invalidate(); toast.success('Localizador de ida salvo'); },
-                                          onError: () => toast.error('Erro ao salvar localizador de ida'),
-                                        }
-                                      );
-                                    }}
-                                  />
-                                  {week.departureLocator && (
-                                    <span className="text-xs font-mono font-bold text-blue-700 bg-blue-100 px-2 py-0.5 rounded">{week.departureLocator}</span>
-                                  )}
-                                </div>
-                              </div>
+                            <div className="w-full mt-3">
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
 
-                              {/* VOLTA */}
-                              <div className="flex flex-col gap-1.5 border-t border-blue-200 pt-2">
-                                <span className="text-xs font-bold text-blue-700 uppercase tracking-wide">✈ Volta</span>
-                                <div className="flex flex-wrap items-center gap-1.5">
-                                  {/* Aeroporto de Volta */}
-                                  <Select
-                                    value={week.returnAirport ?? ''}
-                                    onValueChange={(val) => {
-                                      if (!isAuthenticated) { setShowLoginModal(true); return; }
-                                      updateStatusMutation.mutate(
-                                        { weekNumber: week.weekNumber, returnAirport: val || null },
-                                        {
-                                          onSuccess: () => { utils.flights.getWeeks.invalidate(); toast.success('Aeroporto de volta salvo'); },
-                                          onError: () => toast.error('Erro ao salvar aeroporto de volta'),
-                                        }
-                                      );
-                                    }}
-                                  >
-                                    <SelectTrigger className="h-8 text-xs w-36 bg-white border-blue-300">
-                                      <SelectValue>
-                                        <span>{week.returnAirport === 'GRU' ? '🛫 Guarulhos (GRU)' : week.returnAirport === 'CGH' ? '🛫 Congonhas (CGH)' : week.returnAirport === 'VCP' ? '🛫 Viracopos (VCP)' : week.returnAirport === 'NVT' ? '🛬 Navegantes (NVT)' : week.returnAirport === 'JOI' ? '🛬 Joinville (JOI)' : 'Aeroporto volta'}</span>
-                                      </SelectValue>
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                      <SelectItem value="GRU">🛫 Guarulhos (GRU)</SelectItem>
-                                      <SelectItem value="CGH">🛫 Congonhas (CGH)</SelectItem>
-                                      <SelectItem value="VCP">🛫 Viracopos (VCP)</SelectItem>
-                                      <SelectItem value="NVT">🛬 Navegantes (NVT)</SelectItem>
-                                      <SelectItem value="JOI">🛬 Joinville (JOI)</SelectItem>
-                                    </SelectContent>
-                                  </Select>
-                                  {/* Companhia de Volta */}
-                                  <Select
-                                    value={week.returnAirline ?? ''}
-                                    onValueChange={(val) => {
-                                      if (!isAuthenticated) { setShowLoginModal(true); return; }
-                                      updateStatusMutation.mutate(
-                                        { weekNumber: week.weekNumber, returnAirline: val || null },
-                                        {
-                                          onSuccess: () => { utils.flights.getWeeks.invalidate(); toast.success('Companhia de volta salva'); },
-                                          onError: () => toast.error('Erro ao salvar companhia de volta'),
-                                        }
-                                      );
-                                    }}
-                                  >
-                                    <SelectTrigger className="h-8 text-xs w-28 bg-white border-blue-300">
-                                      <SelectValue>
-                                        <span>{week.returnAirline === 'latam' ? 'LATAM' : week.returnAirline === 'gol' ? 'Gol' : week.returnAirline === 'azul' ? 'Azul' : 'Companhia'}</span>
-                                      </SelectValue>
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                      <SelectItem value="latam">LATAM</SelectItem>
-                                      <SelectItem value="gol">Gol</SelectItem>
-                                      <SelectItem value="azul">Azul</SelectItem>
-                                    </SelectContent>
-                                  </Select>
+                                {/* ===== CARD IDA ===== */}
+                                <div className="rounded-xl border border-blue-200 bg-gradient-to-br from-blue-50 to-indigo-50 overflow-hidden shadow-sm">
+                                  <div className="bg-blue-600 px-3 py-2 flex items-center gap-2">
+                                    <Plane className="w-3.5 h-3.5 text-white rotate-0" />
+                                    <span className="text-xs font-bold text-white uppercase tracking-wider">Ida</span>
+                                  </div>
+                                  <div className="p-3 flex flex-col gap-2.5">
+                                    {/* Aeroporto de Ida */}
+                                    <div className="flex flex-col gap-1">
+                                      <label className="text-[10px] font-semibold text-blue-600 uppercase tracking-wide">Aeroporto</label>
+                                      <Select
+                                        value={week.departureAirport ?? ''}
+                                        onValueChange={(val) => {
+                                          if (!isAuthenticated) { setShowLoginModal(true); return; }
+                                          updateStatusMutation.mutate(
+                                            { weekNumber: week.weekNumber, departureAirport: val || null },
+                                            {
+                                              onSuccess: () => { utils.flights.getWeeks.invalidate(); toast.success('Aeroporto de ida salvo'); },
+                                              onError: () => toast.error('Erro ao salvar aeroporto de ida'),
+                                            }
+                                          );
+                                        }}
+                                      >
+                                        <SelectTrigger className="h-8 text-xs bg-white border-blue-200 w-full">
+                                          <SelectValue placeholder="Selecionar aeroporto">
+                                            <span>{
+                                              week.departureAirport === 'GRU' ? '🛫 Guarulhos (GRU)' :
+                                              week.departureAirport === 'CGH' ? '🛫 Congonhas (CGH)' :
+                                              week.departureAirport === 'VCP' ? '🛫 Viracopos (VCP)' :
+                                              week.departureAirport === 'NVT' ? '🛬 Navegantes (NVT)' :
+                                              week.departureAirport === 'JOI' ? '🛬 Joinville (JOI)' : 'Selecionar aeroporto'
+                                            }</span>
+                                          </SelectValue>
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                          <SelectItem value="GRU">🛫 Guarulhos (GRU)</SelectItem>
+                                          <SelectItem value="CGH">🛫 Congonhas (CGH)</SelectItem>
+                                          <SelectItem value="VCP">🛫 Viracopos (VCP)</SelectItem>
+                                          <SelectItem value="NVT">🛬 Navegantes (NVT)</SelectItem>
+                                          <SelectItem value="JOI">🛬 Joinville (JOI)</SelectItem>
+                                        </SelectContent>
+                                      </Select>
+                                    </div>
+                                    {/* Companhia de Ida */}
+                                    <div className="flex flex-col gap-1">
+                                      <label className="text-[10px] font-semibold text-blue-600 uppercase tracking-wide">Companhia Aérea</label>
+                                      <Select
+                                        value={week.departureAirline ?? ''}
+                                        onValueChange={(val) => {
+                                          if (!isAuthenticated) { setShowLoginModal(true); return; }
+                                          updateStatusMutation.mutate(
+                                            { weekNumber: week.weekNumber, departureAirline: val || null },
+                                            {
+                                              onSuccess: () => { utils.flights.getWeeks.invalidate(); toast.success('Companhia de ida salva'); },
+                                              onError: () => toast.error('Erro ao salvar companhia de ida'),
+                                            }
+                                          );
+                                        }}
+                                      >
+                                        <SelectTrigger className="h-8 text-xs bg-white border-blue-200 w-full">
+                                          <SelectValue placeholder="Selecionar companhia">
+                                            <span>{
+                                              week.departureAirline === 'latam' ? '🟥 LATAM' :
+                                              week.departureAirline === 'gol' ? '🟧 Gol' :
+                                              week.departureAirline === 'azul' ? '🟦 Azul' : 'Selecionar companhia'
+                                            }</span>
+                                          </SelectValue>
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                          <SelectItem value="latam">🟥 LATAM</SelectItem>
+                                          <SelectItem value="gol">🟧 Gol</SelectItem>
+                                          <SelectItem value="azul">🟦 Azul</SelectItem>
+                                        </SelectContent>
+                                      </Select>
+                                    </div>
+                                    {/* Data/hora de Ida */}
+                                    <div className="flex flex-col gap-1">
+                                      <label className="text-[10px] font-semibold text-blue-600 uppercase tracking-wide">Data e Hora do Voo</label>
+                                      <div className="flex gap-1.5">
+                                        <input
+                                          type="datetime-local"
+                                          className="flex-1 h-8 text-xs border border-blue-200 rounded-md px-2 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                                          value={tempDepartureDatetime[week.weekNumber] ?? week.departureFlightDatetime ?? ''}
+                                          onChange={(e) => setTempDepartureDatetime(prev => ({ ...prev, [week.weekNumber]: e.target.value }))}
+                                        />
+                                        <button
+                                          className="h-8 px-3 text-xs bg-blue-600 text-white rounded-md hover:bg-blue-700 font-bold whitespace-nowrap transition-colors"
+                                          onClick={() => {
+                                            if (!isAuthenticated) { setShowLoginModal(true); return; }
+                                            const val = tempDepartureDatetime[week.weekNumber] ?? week.departureFlightDatetime;
+                                            if (!val) return;
+                                            updateStatusMutation.mutate(
+                                              { weekNumber: week.weekNumber, departureFlightDatetime: val || null },
+                                              {
+                                                onSuccess: () => {
+                                                  utils.flights.getWeeks.invalidate();
+                                                  setTempDepartureDatetime(prev => { const n = { ...prev }; delete n[week.weekNumber]; return n; });
+                                                  toast.success('Data/hora de ida salva');
+                                                },
+                                                onError: () => toast.error('Erro ao salvar data/hora de ida'),
+                                              }
+                                            );
+                                          }}
+                                        >OK</button>
+                                      </div>
+                                      {week.departureFlightDatetime && !tempDepartureDatetime[week.weekNumber] && (
+                                        <span className="text-xs text-emerald-700 font-semibold bg-emerald-50 px-2 py-1 rounded-md">✓ {new Date(week.departureFlightDatetime).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}</span>
+                                      )}
+                                    </div>
+                                    {/* Localizador de Ida */}
+                                    <div className="flex flex-col gap-1">
+                                      <label className="text-[10px] font-semibold text-blue-600 uppercase tracking-wide">Localizador (PNR)</label>
+                                      <div className="flex gap-1.5">
+                                        <input
+                                          type="text"
+                                          maxLength={20}
+                                          placeholder="Ex: ABC123"
+                                          className="flex-1 h-8 text-xs border border-blue-200 rounded-md px-2 bg-white text-slate-700 uppercase font-mono focus:outline-none focus:ring-2 focus:ring-blue-400"
+                                          value={tempDepartureLocator[week.weekNumber] ?? ''}
+                                          onChange={(e) => setTempDepartureLocator(prev => ({ ...prev, [week.weekNumber]: e.target.value.toUpperCase() }))}
+                                          onKeyDown={(e) => {
+                                            if (e.key === 'Enter') {
+                                              if (!isAuthenticated) { setShowLoginModal(true); return; }
+                                              const val = (tempDepartureLocator[week.weekNumber] ?? '').trim();
+                                              updateStatusMutation.mutate(
+                                                { weekNumber: week.weekNumber, departureLocator: val || null },
+                                                {
+                                                  onSuccess: () => { utils.flights.getWeeks.invalidate(); toast.success('Localizador de ida salvo'); },
+                                                  onError: () => toast.error('Erro ao salvar localizador de ida'),
+                                                }
+                                              );
+                                            }
+                                          }}
+                                        />
+                                        <button
+                                          className="h-8 px-3 text-xs bg-blue-600 text-white rounded-md hover:bg-blue-700 font-bold whitespace-nowrap transition-colors"
+                                          onClick={() => {
+                                            if (!isAuthenticated) { setShowLoginModal(true); return; }
+                                            const val = (tempDepartureLocator[week.weekNumber] ?? '').trim();
+                                            updateStatusMutation.mutate(
+                                              { weekNumber: week.weekNumber, departureLocator: val || null },
+                                              {
+                                                onSuccess: () => { utils.flights.getWeeks.invalidate(); toast.success('Localizador de ida salvo'); },
+                                                onError: () => toast.error('Erro ao salvar localizador de ida'),
+                                              }
+                                            );
+                                          }}
+                                        >OK</button>
+                                      </div>
+                                    </div>
+                                  </div>
                                 </div>
-                                {/* Data/hora de Volta */}
-                                <div className="flex items-center gap-1.5">
-                                  <input
-                                    type="datetime-local"
-                                    className="h-8 text-xs border border-blue-300 rounded px-2 bg-white text-slate-700 focus:outline-none focus:ring-1 focus:ring-blue-400"
-                                    value={tempReturnDatetime[week.weekNumber] ?? week.returnFlightDatetime ?? ''}
-                                    onChange={(e) => setTempReturnDatetime(prev => ({ ...prev, [week.weekNumber]: e.target.value }))}
-                                  />
-                                  <button
-                                    className="h-8 px-3 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 font-semibold whitespace-nowrap"
-                                    onClick={() => {
-                                      if (!isAuthenticated) { setShowLoginModal(true); return; }
-                                      const val = tempReturnDatetime[week.weekNumber] ?? week.returnFlightDatetime;
-                                      if (!val) return;
-                                      updateStatusMutation.mutate(
-                                        { weekNumber: week.weekNumber, returnFlightDatetime: val || null },
-                                        {
-                                          onSuccess: () => {
-                                            utils.flights.getWeeks.invalidate();
-                                            setTempReturnDatetime(prev => { const n = { ...prev }; delete n[week.weekNumber]; return n; });
-                                            toast.success('Data/hora de volta salva');
-                                          },
-                                          onError: () => toast.error('Erro ao salvar data/hora de volta'),
-                                        }
-                                      );
-                                    }}
-                                  >OK</button>
-                                  {week.returnFlightDatetime && !tempReturnDatetime[week.weekNumber] && (
-                                    <span className="text-xs text-green-700 font-semibold">✓ {new Date(week.returnFlightDatetime).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}</span>
-                                  )}
+
+                                {/* ===== CARD VOLTA ===== */}
+                                <div className="rounded-xl border border-orange-200 bg-gradient-to-br from-orange-50 to-amber-50 overflow-hidden shadow-sm">
+                                  <div className="bg-orange-500 px-3 py-2 flex items-center gap-2">
+                                    <Plane className="w-3.5 h-3.5 text-white rotate-180" />
+                                    <span className="text-xs font-bold text-white uppercase tracking-wider">Volta</span>
+                                  </div>
+                                  <div className="p-3 flex flex-col gap-2.5">
+                                    {/* Aeroporto de Volta */}
+                                    <div className="flex flex-col gap-1">
+                                      <label className="text-[10px] font-semibold text-orange-600 uppercase tracking-wide">Aeroporto</label>
+                                      <Select
+                                        value={week.returnAirport ?? ''}
+                                        onValueChange={(val) => {
+                                          if (!isAuthenticated) { setShowLoginModal(true); return; }
+                                          updateStatusMutation.mutate(
+                                            { weekNumber: week.weekNumber, returnAirport: val || null },
+                                            {
+                                              onSuccess: () => { utils.flights.getWeeks.invalidate(); toast.success('Aeroporto de volta salvo'); },
+                                              onError: () => toast.error('Erro ao salvar aeroporto de volta'),
+                                            }
+                                          );
+                                        }}
+                                      >
+                                        <SelectTrigger className="h-8 text-xs bg-white border-orange-200 w-full">
+                                          <SelectValue placeholder="Selecionar aeroporto">
+                                            <span>{
+                                              week.returnAirport === 'GRU' ? '🛫 Guarulhos (GRU)' :
+                                              week.returnAirport === 'CGH' ? '🛫 Congonhas (CGH)' :
+                                              week.returnAirport === 'VCP' ? '🛫 Viracopos (VCP)' :
+                                              week.returnAirport === 'NVT' ? '🛬 Navegantes (NVT)' :
+                                              week.returnAirport === 'JOI' ? '🛬 Joinville (JOI)' : 'Selecionar aeroporto'
+                                            }</span>
+                                          </SelectValue>
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                          <SelectItem value="GRU">🛫 Guarulhos (GRU)</SelectItem>
+                                          <SelectItem value="CGH">🛫 Congonhas (CGH)</SelectItem>
+                                          <SelectItem value="VCP">🛫 Viracopos (VCP)</SelectItem>
+                                          <SelectItem value="NVT">🛬 Navegantes (NVT)</SelectItem>
+                                          <SelectItem value="JOI">🛬 Joinville (JOI)</SelectItem>
+                                        </SelectContent>
+                                      </Select>
+                                    </div>
+                                    {/* Companhia de Volta */}
+                                    <div className="flex flex-col gap-1">
+                                      <label className="text-[10px] font-semibold text-orange-600 uppercase tracking-wide">Companhia Aérea</label>
+                                      <Select
+                                        value={week.returnAirline ?? ''}
+                                        onValueChange={(val) => {
+                                          if (!isAuthenticated) { setShowLoginModal(true); return; }
+                                          updateStatusMutation.mutate(
+                                            { weekNumber: week.weekNumber, returnAirline: val || null },
+                                            {
+                                              onSuccess: () => { utils.flights.getWeeks.invalidate(); toast.success('Companhia de volta salva'); },
+                                              onError: () => toast.error('Erro ao salvar companhia de volta'),
+                                            }
+                                          );
+                                        }}
+                                      >
+                                        <SelectTrigger className="h-8 text-xs bg-white border-orange-200 w-full">
+                                          <SelectValue placeholder="Selecionar companhia">
+                                            <span>{
+                                              week.returnAirline === 'latam' ? '🟥 LATAM' :
+                                              week.returnAirline === 'gol' ? '🟧 Gol' :
+                                              week.returnAirline === 'azul' ? '🟦 Azul' : 'Selecionar companhia'
+                                            }</span>
+                                          </SelectValue>
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                          <SelectItem value="latam">🟥 LATAM</SelectItem>
+                                          <SelectItem value="gol">🟧 Gol</SelectItem>
+                                          <SelectItem value="azul">🟦 Azul</SelectItem>
+                                        </SelectContent>
+                                      </Select>
+                                    </div>
+                                    {/* Data/hora de Volta */}
+                                    <div className="flex flex-col gap-1">
+                                      <label className="text-[10px] font-semibold text-orange-600 uppercase tracking-wide">Data e Hora do Voo</label>
+                                      <div className="flex gap-1.5">
+                                        <input
+                                          type="datetime-local"
+                                          className="flex-1 h-8 text-xs border border-orange-200 rounded-md px-2 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-orange-400"
+                                          value={tempReturnDatetime[week.weekNumber] ?? week.returnFlightDatetime ?? ''}
+                                          onChange={(e) => setTempReturnDatetime(prev => ({ ...prev, [week.weekNumber]: e.target.value }))}
+                                        />
+                                        <button
+                                          className="h-8 px-3 text-xs bg-orange-500 text-white rounded-md hover:bg-orange-600 font-bold whitespace-nowrap transition-colors"
+                                          onClick={() => {
+                                            if (!isAuthenticated) { setShowLoginModal(true); return; }
+                                            const val = tempReturnDatetime[week.weekNumber] ?? week.returnFlightDatetime;
+                                            if (!val) return;
+                                            updateStatusMutation.mutate(
+                                              { weekNumber: week.weekNumber, returnFlightDatetime: val || null },
+                                              {
+                                                onSuccess: () => {
+                                                  utils.flights.getWeeks.invalidate();
+                                                  setTempReturnDatetime(prev => { const n = { ...prev }; delete n[week.weekNumber]; return n; });
+                                                  toast.success('Data/hora de volta salva');
+                                                },
+                                                onError: () => toast.error('Erro ao salvar data/hora de volta'),
+                                              }
+                                            );
+                                          }}
+                                        >OK</button>
+                                      </div>
+                                      {week.returnFlightDatetime && !tempReturnDatetime[week.weekNumber] && (
+                                        <span className="text-xs text-emerald-700 font-semibold bg-emerald-50 px-2 py-1 rounded-md">✓ {new Date(week.returnFlightDatetime).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}</span>
+                                      )}
+                                    </div>
+                                    {/* Localizador de Volta */}
+                                    <div className="flex flex-col gap-1">
+                                      <label className="text-[10px] font-semibold text-orange-600 uppercase tracking-wide">Localizador (PNR)</label>
+                                      <div className="flex gap-1.5">
+                                        <input
+                                          type="text"
+                                          maxLength={20}
+                                          placeholder="Ex: XYZ456"
+                                          className="flex-1 h-8 text-xs border border-orange-200 rounded-md px-2 bg-white text-slate-700 uppercase font-mono focus:outline-none focus:ring-2 focus:ring-orange-400"
+                                          value={tempReturnLocator[week.weekNumber] ?? ''}
+                                          onChange={(e) => setTempReturnLocator(prev => ({ ...prev, [week.weekNumber]: e.target.value.toUpperCase() }))}
+                                          onKeyDown={(e) => {
+                                            if (e.key === 'Enter') {
+                                              if (!isAuthenticated) { setShowLoginModal(true); return; }
+                                              const val = (tempReturnLocator[week.weekNumber] ?? '').trim();
+                                              updateStatusMutation.mutate(
+                                                { weekNumber: week.weekNumber, returnLocator: val || null },
+                                                {
+                                                  onSuccess: () => { utils.flights.getWeeks.invalidate(); toast.success('Localizador de volta salvo'); },
+                                                  onError: () => toast.error('Erro ao salvar localizador de volta'),
+                                                }
+                                              );
+                                            }
+                                          }}
+                                        />
+                                        <button
+                                          className="h-8 px-3 text-xs bg-orange-500 text-white rounded-md hover:bg-orange-600 font-bold whitespace-nowrap transition-colors"
+                                          onClick={() => {
+                                            if (!isAuthenticated) { setShowLoginModal(true); return; }
+                                            const val = (tempReturnLocator[week.weekNumber] ?? '').trim();
+                                            updateStatusMutation.mutate(
+                                              { weekNumber: week.weekNumber, returnLocator: val || null },
+                                              {
+                                                onSuccess: () => { utils.flights.getWeeks.invalidate(); toast.success('Localizador de volta salvo'); },
+                                                onError: () => toast.error('Erro ao salvar localizador de volta'),
+                                              }
+                                            );
+                                          }}
+                                        >OK</button>
+                                      </div>
+                                    </div>
+                                  </div>
                                 </div>
-                                {/* Localizador de Volta */}
-                                <div className="flex items-center gap-1.5">
-                                  <span className="text-xs text-slate-500 whitespace-nowrap">Localizador:</span>
-                                  <input
-                                    type="text"
-                                    maxLength={20}
-                                    placeholder="Ex: XYZ456"
-                                    className="h-7 text-xs border border-blue-300 rounded px-2 bg-white text-slate-700 uppercase focus:outline-none focus:ring-1 focus:ring-blue-400 w-28"
-                                    defaultValue={week.returnLocator ?? ''}
-                                    onBlur={(e) => {
-                                      if (!isAuthenticated) { setShowLoginModal(true); return; }
-                                      const val = e.target.value.trim().toUpperCase();
-                                      if (val === (week.returnLocator ?? '')) return;
-                                      updateStatusMutation.mutate(
-                                        { weekNumber: week.weekNumber, returnLocator: val || null },
-                                        {
-                                          onSuccess: () => { utils.flights.getWeeks.invalidate(); toast.success('Localizador de volta salvo'); },
-                                          onError: () => toast.error('Erro ao salvar localizador de volta'),
-                                        }
-                                      );
-                                    }}
-                                  />
-                                  {week.returnLocator && (
-                                    <span className="text-xs font-mono font-bold text-blue-700 bg-blue-100 px-2 py-0.5 rounded">{week.returnLocator}</span>
-                                  )}
-                                </div>
+
                               </div>
                             </div>
                           ) : null}
