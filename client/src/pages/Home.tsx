@@ -33,6 +33,8 @@ interface WeekData {
   returnAirport?: string | null;
   departureLocator?: string | null;
   returnLocator?: string | null;
+  departureFlightNumber?: string | null;
+  returnFlightNumber?: string | null;
 }
 
 interface PriceMap {
@@ -128,22 +130,30 @@ export default function Home() {
   // Estado controlado para localizadores (para persistência correta)
   const [tempDepartureLocator, setTempDepartureLocator] = useState<{ [weekNumber: number]: string }>({});
   const [tempReturnLocator, setTempReturnLocator] = useState<{ [weekNumber: number]: string }>({});
+  const [tempDepartureFlightNumber, setTempDepartureFlightNumber] = useState<{ [weekNumber: number]: string }>({});
+  const [tempReturnFlightNumber, setTempReturnFlightNumber] = useState<{ [weekNumber: number]: string }>({});
 
   // tRPC queries
   const weeksQuery = trpc.flights.getWeeks.useQuery();
   const pricesQuery = trpc.flights.getPrices.useQuery();
 
-  // Sincronizar localizadores do banco para estado local quando dados carregam
+  // Sincronizar localizadores e números de voo do banco para estado local quando dados carregam
   useEffect(() => {
     if (weeksQuery.data) {
       const depLoc: { [k: number]: string } = {};
       const retLoc: { [k: number]: string } = {};
+      const depFN: { [k: number]: string } = {};
+      const retFN: { [k: number]: string } = {};
       for (const w of weeksQuery.data) {
         depLoc[w.weekNumber] = (w as any).departureLocator ?? '';
         retLoc[w.weekNumber] = (w as any).returnLocator ?? '';
+        depFN[w.weekNumber] = (w as any).departureFlightNumber ?? '';
+        retFN[w.weekNumber] = (w as any).returnFlightNumber ?? '';
       }
       setTempDepartureLocator(depLoc);
       setTempReturnLocator(retLoc);
+      setTempDepartureFlightNumber(depFN);
+      setTempReturnFlightNumber(retFN);
     }
   }, [weeksQuery.data]);
   const initWeeksMutation = trpc.flights.initWeeks.useMutation();
@@ -204,6 +214,8 @@ export default function Home() {
         returnAirport: (w as any).returnAirport ?? null,
         departureLocator: (w as any).departureLocator ?? null,
         returnLocator: (w as any).returnLocator ?? null,
+        departureFlightNumber: (w as any).departureFlightNumber ?? null,
+        returnFlightNumber: (w as any).returnFlightNumber ?? null,
       }));
     }
     // Fallback to static data
@@ -1001,6 +1013,13 @@ export default function Home() {
                                 </Select>
                               </div>
                               <div className="flex flex-col gap-1">
+                                <label className="text-[10px] font-semibold text-blue-600 uppercase tracking-wide">Número do Voo</label>
+                                <div className="flex gap-1.5">
+                                  <input type="text" maxLength={10} placeholder="Ex: LA3045" className="flex-1 h-8 text-xs border border-blue-200 rounded-md px-2 bg-white text-slate-700 uppercase font-mono focus:outline-none focus:ring-2 focus:ring-blue-400" value={tempDepartureFlightNumber[week.weekNumber] ?? week.departureFlightNumber ?? ''} onChange={(e) => setTempDepartureFlightNumber(prev => ({ ...prev, [week.weekNumber]: e.target.value.toUpperCase() }))} onKeyDown={(e) => { if (e.key === 'Enter') { if (!isAuthenticated) { setShowLoginModal(true); return; } const val = (tempDepartureFlightNumber[week.weekNumber] ?? '').trim(); updateStatusMutation.mutate({ weekNumber: week.weekNumber, departureFlightNumber: val || null }, { onSuccess: () => { utils.flights.getWeeks.invalidate(); toast.success('Número do voo de ida salvo'); }, onError: () => toast.error('Erro ao salvar número do voo de ida') }); } }} />
+                                  <button className="h-8 px-3 text-xs bg-blue-600 text-white rounded-md hover:bg-blue-700 font-bold whitespace-nowrap transition-colors" onClick={() => { if (!isAuthenticated) { setShowLoginModal(true); return; } const val = (tempDepartureFlightNumber[week.weekNumber] ?? '').trim(); updateStatusMutation.mutate({ weekNumber: week.weekNumber, departureFlightNumber: val || null }, { onSuccess: () => { utils.flights.getWeeks.invalidate(); toast.success('Número do voo de ida salvo'); }, onError: () => toast.error('Erro ao salvar número do voo de ida') }); }}>OK</button>
+                                </div>
+                              </div>
+                              <div className="flex flex-col gap-1">
                                 <label className="text-[10px] font-semibold text-blue-600 uppercase tracking-wide">Data e Hora do Voo</label>
                                 <div className="flex gap-1.5">
                                   <input type="datetime-local" className="flex-1 h-8 text-xs border border-blue-200 rounded-md px-2 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-400" value={tempDepartureDatetime[week.weekNumber] ?? week.departureFlightDatetime ?? ''} onChange={(e) => setTempDepartureDatetime(prev => ({ ...prev, [week.weekNumber]: e.target.value }))} />
@@ -1037,6 +1056,13 @@ export default function Home() {
                                   <SelectTrigger className="h-8 text-xs bg-white border-orange-200 w-full"><SelectValue placeholder="Selecionar companhia"><span>{week.returnAirline === 'latam' ? '🟥 LATAM' : week.returnAirline === 'gol' ? '🟧 Gol' : week.returnAirline === 'azul' ? '🟦 Azul' : 'Selecionar companhia'}</span></SelectValue></SelectTrigger>
                                   <SelectContent><SelectItem value="latam">🟥 LATAM</SelectItem><SelectItem value="gol">🟧 Gol</SelectItem><SelectItem value="azul">🟦 Azul</SelectItem></SelectContent>
                                 </Select>
+                              </div>
+                              <div className="flex flex-col gap-1">
+                                <label className="text-[10px] font-semibold text-orange-600 uppercase tracking-wide">Número do Voo</label>
+                                <div className="flex gap-1.5">
+                                  <input type="text" maxLength={10} placeholder="Ex: G31234" className="flex-1 h-8 text-xs border border-orange-200 rounded-md px-2 bg-white text-slate-700 uppercase font-mono focus:outline-none focus:ring-2 focus:ring-orange-400" value={tempReturnFlightNumber[week.weekNumber] ?? week.returnFlightNumber ?? ''} onChange={(e) => setTempReturnFlightNumber(prev => ({ ...prev, [week.weekNumber]: e.target.value.toUpperCase() }))} onKeyDown={(e) => { if (e.key === 'Enter') { if (!isAuthenticated) { setShowLoginModal(true); return; } const val = (tempReturnFlightNumber[week.weekNumber] ?? '').trim(); updateStatusMutation.mutate({ weekNumber: week.weekNumber, returnFlightNumber: val || null }, { onSuccess: () => { utils.flights.getWeeks.invalidate(); toast.success('Número do voo de volta salvo'); }, onError: () => toast.error('Erro ao salvar número do voo de volta') }); } }} />
+                                  <button className="h-8 px-3 text-xs bg-orange-500 text-white rounded-md hover:bg-orange-600 font-bold whitespace-nowrap transition-colors" onClick={() => { if (!isAuthenticated) { setShowLoginModal(true); return; } const val = (tempReturnFlightNumber[week.weekNumber] ?? '').trim(); updateStatusMutation.mutate({ weekNumber: week.weekNumber, returnFlightNumber: val || null }, { onSuccess: () => { utils.flights.getWeeks.invalidate(); toast.success('Número do voo de volta salvo'); }, onError: () => toast.error('Erro ao salvar número do voo de volta') }); }}>OK</button>
+                                </div>
                               </div>
                               <div className="flex flex-col gap-1">
                                 <label className="text-[10px] font-semibold text-orange-600 uppercase tracking-wide">Data e Hora do Voo</label>

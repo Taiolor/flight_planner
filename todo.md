@@ -20,5 +20,5 @@
 ## Pendente
 
 - [ ] Exportar para PDF
-- [ ] Campo de número do voo
+- [x] Adicionar campo "Número do Voo" (departureFlightNumber / returnFlightNumber) nos cards de Ida e Volta
 - [ ] Publicar o site

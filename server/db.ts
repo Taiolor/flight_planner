@@ -141,6 +141,8 @@ export async function updateFlightWeekStatus(weekNumber: number, data: {
   returnAirport?: string | null;
   departureLocator?: string | null;
   returnLocator?: string | null;
+  departureFlightNumber?: string | null;
+  returnFlightNumber?: string | null;
 }) {
   const db = await getDb();
   if (!db) return;
