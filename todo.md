@@ -22,3 +22,4 @@
 - [ ] Exportar para PDF
 - [x] Adicionar campo "Número do Voo" (departureFlightNumber / returnFlightNumber) nos cards de Ida e Volta
 - [ ] Publicar o site
+- [x] Remover filtro "Aeroporto de Saída" (label + combobox) do cabeçalho

@@ -534,19 +534,6 @@ export default function Home() {
               </div>
             </div>
             <div className="flex items-center gap-3 flex-wrap">
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-blue-100">Aeroporto de Saída</span>
-                <Select value={departureAirport} onValueChange={(v) => setDepartureAirport(v as DepartureAirport)}>
-                  <SelectTrigger className="w-44 bg-white bg-opacity-20 border-white text-white">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {departureAirports.map(a => (
-                      <SelectItem key={a.value} value={a.value}>{a.label}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
               <Button
                 size="sm"
                 variant="outline"
