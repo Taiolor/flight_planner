@@ -521,16 +521,16 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
       {/* Header */}
-      <header className="bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg">
-        <div className="container py-6">
-          <div className="flex items-center justify-between gap-4 flex-wrap">
-            <div className="flex items-center gap-3">
-              <div className="bg-white bg-opacity-20 p-3 rounded-lg">
-                <Plane className="w-6 h-6" />
+      <header className="bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg sticky top-0 z-50">
+        <div className="container py-3 sm:py-6">
+          <div className="flex items-center justify-between gap-2 flex-wrap">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <div className="bg-white bg-opacity-20 p-2 sm:p-3 rounded-lg">
+                <Plane className="w-5 h-5 sm:w-6 sm:h-6" />
               </div>
               <div>
-                <h1 className="text-3xl font-bold">Planejador de Passagens Aéreas</h1>
-                <p className="text-blue-100">{departureAirport} → Navegantes (NVT) • 2026</p>
+                <h1 className="text-lg sm:text-3xl font-bold leading-tight">Passagens Aéreas</h1>
+                <p className="text-blue-100 text-xs sm:text-sm">{departureAirport} → NVT • 2026</p>
               </div>
             </div>
             <div className="flex items-center gap-3 flex-wrap">
@@ -574,28 +574,28 @@ export default function Home() {
         </div>
       </header>
 
-      <main className="container py-8">
+      <main className="container py-4 sm:py-8">
         {/* Resumo Anual */}
-        <Card className="p-6 mb-8 border-0 shadow-md bg-gradient-to-br from-blue-700 to-blue-900 text-white">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+        <Card className="p-4 sm:p-6 mb-4 sm:mb-8 border-0 shadow-md bg-gradient-to-br from-blue-700 to-blue-900 text-white">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-4 sm:mb-6">
             <div>
-              <h2 className="text-2xl font-bold text-white">Resumo Anual 2026</h2>
-              <p className="text-blue-200 text-sm mt-1">Passagens emitidas — GRU / CGH → NVT</p>
+              <h2 className="text-xl sm:text-2xl font-bold text-white">Resumo Anual 2026</h2>
+              <p className="text-blue-200 text-xs sm:text-sm mt-1">Passagens emitidas — GRU / CGH → NVT</p>
             </div>
-            <div className="flex flex-wrap gap-6">
+            <div className="flex flex-wrap gap-3 sm:gap-6">
               <div className="text-center">
-                <p className="text-blue-200 text-xs uppercase tracking-wider mb-1">Bilhetes Emitidos</p>
-                <p className="text-4xl font-black text-white">{annualIssuedCount}</p>
+                <p className="text-blue-200 text-[10px] sm:text-xs uppercase tracking-wider mb-1">Bilhetes Emitidos</p>
+                <p className="text-3xl sm:text-4xl font-black text-white">{annualIssuedCount}</p>
               </div>
               <div className="text-center">
-                <p className="text-blue-200 text-xs uppercase tracking-wider mb-1">Total Investido</p>
-                <p className="text-4xl font-black text-emerald-300">
+                <p className="text-blue-200 text-[10px] sm:text-xs uppercase tracking-wider mb-1">Total Investido</p>
+                <p className="text-2xl sm:text-4xl font-black text-emerald-300">
                   R$ {annualTotalIssued.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </p>
               </div>
               <div className="text-center">
-                <p className="text-blue-200 text-xs uppercase tracking-wider mb-1">Média por Viagem</p>
-                <p className="text-4xl font-black text-amber-300">
+                <p className="text-blue-200 text-[10px] sm:text-xs uppercase tracking-wider mb-1">Média por Viagem</p>
+                <p className="text-2xl sm:text-4xl font-black text-amber-300">
                   {annualIssuedCount > 0
                     ? `R$ ${(annualTotalIssued / annualIssuedCount).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
                     : '—'}
@@ -634,9 +634,9 @@ export default function Home() {
         </Card>
 
         {/* Filtros */}
-        <Card className="p-6 mb-8 border-0 shadow-md">
-          <h2 className="text-xl font-bold text-slate-900 mb-6">Filtros e Controles</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
+        <Card className="p-4 sm:p-6 mb-4 sm:mb-8 border-0 shadow-md">
+          <h2 className="text-base sm:text-xl font-bold text-slate-900 mb-3 sm:mb-6">Filtros e Controles</h2>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
             <div>
               <label className="text-sm font-semibold text-slate-700 mb-2 block">Mês</label>
               <Select value={filterMonth} onValueChange={setFilterMonth}>
@@ -763,7 +763,7 @@ export default function Home() {
                     {/* Cabeçalho do Mês */}
                     <button
                       onClick={() => toggleMonth(monthKey)}
-                      className={`w-full flex items-center justify-between px-6 py-4 transition-colors ${
+                      className={`w-full flex items-center justify-between px-3 sm:px-6 py-3 sm:py-4 transition-colors ${
                         isOpen ? 'bg-blue-600 text-white' : 'bg-white hover:bg-slate-50 text-slate-900'
                       }`}
                     >
@@ -771,7 +771,7 @@ export default function Home() {
                         <ChevronDown className={`w-5 h-5 transition-transform ${
                           isOpen ? 'rotate-180 text-white' : 'text-slate-500'
                         }`} />
-                        <span className="text-lg font-bold">{monthLabel} 2026</span>
+                        <span className="text-sm sm:text-lg font-bold">{monthLabel} 2026</span>
                         {monthHasHoliday && (
                           <span className={`text-xs px-2 py-0.5 rounded-full font-semibold ${
                             isOpen ? 'bg-white/20 text-white' : 'bg-orange-100 text-orange-700'
@@ -780,7 +780,7 @@ export default function Home() {
                           </span>
                         )}
                       </div>
-                      <div className="flex items-center gap-4 text-sm">
+                      <div className="flex items-center gap-1 sm:gap-4 text-xs sm:text-sm flex-wrap justify-end">
                         <span className={isOpen ? 'text-blue-100' : 'text-slate-500'}>
                           {monthWeeks.length} semana{monthWeeks.length !== 1 ? 's' : ''}
                         </span>
@@ -817,13 +817,13 @@ export default function Home() {
                 return (
                   <Card
                     key={week.weekNumber}
-                    className={`p-6 border-0 shadow-md transition-all hover:shadow-lg ${
+                    className={`p-3 sm:p-6 border-0 shadow-md transition-all hover:shadow-lg ${
                       week.isSelected ? 'ring-2 ring-green-500 bg-green-50' :
                       week.isTicketIssued ? 'bg-blue-50' : ''
                     } ${isCheap ? 'border-l-4 border-l-orange-400' : ''}`}
                   >
-                    <div className="flex items-start justify-between gap-4 mb-4">
-                      <div className="flex items-start gap-4 flex-1">
+                    <div className="flex items-start justify-between gap-2 sm:gap-4 mb-3 sm:mb-4">
+                      <div className="flex items-start gap-2 sm:gap-4 flex-1">
                         <Checkbox
                           checked={!!week.isSelected}
                           onCheckedChange={() => handleToggleSelect(week.weekNumber, week.isSelected)}
@@ -928,7 +928,7 @@ export default function Home() {
                     </div>
 
                     {/* Buscadores de preços + Cards Ida/Volta lado a lado */}
-                    <div className="flex flex-col lg:flex-row gap-4 mt-2">
+                    <div className="flex flex-col lg:flex-row gap-3 sm:gap-4 mt-2">
                       {/* Coluna esquerda: Buscadores de preços */}
                       <div className="lg:w-72 xl:w-80 flex-shrink-0">
                         <div className="rounded-xl border border-slate-200 bg-slate-50 overflow-hidden">

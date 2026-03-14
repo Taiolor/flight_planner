@@ -23,3 +23,7 @@
 - [x] Adicionar campo "Número do Voo" (departureFlightNumber / returnFlightNumber) nos cards de Ida e Volta
 - [ ] Publicar o site
 - [x] Remover filtro "Aeroporto de Saída" (label + combobox) do cabeçalho
+- [x] Criar manifesto PWA (manifest.json) com ícone, nome e cores do app
+- [x] Adicionar meta tags iOS (apple-touch-icon, status bar, viewport)
+- [x] Implementar Service Worker para cache offline
+- [x] Otimizar layout responsivo mobile-first (cabeçalho, cards, filtros, buscadores)

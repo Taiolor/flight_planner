@@ -1,0 +1,27 @@
+{
+  "name": "Planejador de Passagens Aéreas",
+  "short_name": "Passagens GRU",
+  "description": "Planejador de passagens aéreas GRU → NVT 2026",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#1e3a8a",
+  "theme_color": "#2563eb",
+  "orientation": "portrait-primary",
+  "lang": "pt-BR",
+  "icons": [
+    {
+      "src": "https://d2xsxph8kpxj0f.cloudfront.net/310419663028456038/HQ655wm9a6bck22hJAwYRc/pwa-icon-512-nQ49nRugiHFuvZMD3Za27r.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "https://d2xsxph8kpxj0f.cloudfront.net/310419663028456038/HQ655wm9a6bck22hJAwYRc/pwa-icon-512-nQ49nRugiHFuvZMD3Za27r.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ],
+  "categories": ["travel", "productivity"],
+  "screenshots": []
+}
