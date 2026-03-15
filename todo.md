@@ -27,3 +27,4 @@
 - [x] Adicionar meta tags iOS (apple-touch-icon, status bar, viewport)
 - [x] Implementar Service Worker para cache offline
 - [x] Otimizar layout responsivo mobile-first (cabeçalho, cards, filtros, buscadores)
+- [x] Botão de olho no cabeçalho para ocultar/exibir todos os valores monetários

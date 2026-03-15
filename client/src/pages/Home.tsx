@@ -124,6 +124,20 @@ export default function Home() {
   const [editReturnDate, setEditReturnDate] = useState('');
   const [savingPrice, setSavingPrice] = useState<{ week: number; airline: string } | null>(null);
 
+  // Estado para ocultar valores monetários (privacidade)
+  const [hideValues, setHideValues] = useState<boolean>(() => {
+    try { return localStorage.getItem('hideValues') === 'true'; } catch { return false; }
+  });
+  const toggleHideValues = () => {
+    setHideValues(prev => {
+      const next = !prev;
+      try { localStorage.setItem('hideValues', String(next)); } catch {}
+      return next;
+    });
+  };
+  // Função helper para mascarar valores monetários
+  const maskValue = (value: string | number) => hideValues ? '••••' : String(value);
+
   // Estado temporário para data/hora de voo (antes de confirmar com OK)
   const [tempDepartureDatetime, setTempDepartureDatetime] = useState<{ [weekNumber: number]: string }>({});
   const [tempReturnDatetime, setTempReturnDatetime] = useState<{ [weekNumber: number]: string }>({});
@@ -533,7 +547,23 @@ export default function Home() {
                 <p className="text-blue-100 text-xs sm:text-sm">{departureAirport} → NVT • 2026</p>
               </div>
             </div>
-            <div className="flex items-center gap-3 flex-wrap">
+            <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
+              {/* Botão ocultar valores */}
+              <Button
+                size="sm"
+                variant="outline"
+                title={hideValues ? 'Exibir valores' : 'Ocultar valores'}
+                className={`border-white text-white hover:bg-white hover:text-blue-700 ${
+                  hideValues
+                    ? 'bg-white/30 border-white/80'
+                    : 'bg-white/10'
+                }`}
+                onClick={toggleHideValues}
+              >
+                {hideValues
+                  ? <EyeOff className="w-4 h-4" />
+                  : <Eye className="w-4 h-4" />}
+              </Button>
               <Button
                 size="sm"
                 variant="outline"
@@ -590,13 +620,13 @@ export default function Home() {
               <div className="text-center">
                 <p className="text-blue-200 text-[10px] sm:text-xs uppercase tracking-wider mb-1">Total Investido</p>
                 <p className="text-2xl sm:text-4xl font-black text-emerald-300">
-                  R$ {annualTotalIssued.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  {hideValues ? '••••' : `R$ ${annualTotalIssued.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
                 </p>
               </div>
               <div className="text-center">
                 <p className="text-blue-200 text-[10px] sm:text-xs uppercase tracking-wider mb-1">Média por Viagem</p>
                 <p className="text-2xl sm:text-4xl font-black text-amber-300">
-                  {annualIssuedCount > 0
+                  {hideValues ? '••••' : annualIssuedCount > 0
                     ? `R$ ${(annualTotalIssued / annualIssuedCount).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
                     : '—'}
                 </p>
@@ -614,14 +644,14 @@ export default function Home() {
                     tickFormatter={(v) => v > 0 ? `R$${(v/1000).toFixed(0)}k` : ''} />
                   <Tooltip
                     contentStyle={{ background: '#1e3a5f', border: 'none', borderRadius: 8, color: '#fff' }}
-                    formatter={(value: number) => [`R$ ${value.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`, 'Total Emitido']}
+                    formatter={(value: number) => [hideValues ? '••••' : `R$ ${value.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`, 'Total Emitido']}
                     labelStyle={{ color: '#93c5fd', fontWeight: 600 }}
                   />
                   <Bar dataKey="total" fill="#34d399" radius={[4, 4, 0, 0]} label={{
                     position: 'top',
                     fill: '#a7f3d0',
                     fontSize: 10,
-                    formatter: (v: number) => v > 0 ? `R$${(v/1000).toFixed(1)}k` : ''
+                    formatter: (v: number) => v > 0 ? (hideValues ? '•••' : `R$${(v/1000).toFixed(1)}k`) : ''
                   }} />
                 </BarChart>
               </ResponsiveContainer>
@@ -700,7 +730,7 @@ export default function Home() {
               <p className="text-sm font-semibold text-green-900">{sortedWeeks.length} viagens</p>
               <p className="text-xs text-green-700">{44 - deletedWeeks.length} semanas disponíveis</p>
               {showCheapestOnly && priceThreshold && (
-                <p className="text-xs text-green-700 mt-1">Limite: R$ {priceThreshold.toFixed(2)}</p>
+                <p className="text-xs text-green-700 mt-1">Limite: {hideValues ? '••••' : `R$ ${priceThreshold.toFixed(2)}`}</p>
               )}
             </div>
           </div>
@@ -802,7 +832,7 @@ export default function Home() {
                           <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${
                             isOpen ? 'bg-white/30 text-white' : 'bg-emerald-100 text-emerald-700'
                           }`}>
-                            R$ {monthIssuedTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                            {hideValues ? '••••' : `R$ ${monthIssuedTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
                           </span>
                         )}
                       </div>
@@ -839,7 +869,7 @@ export default function Home() {
                             )}
                             {lowestPrice && (
                               <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded font-semibold">
-                                💰 R$ {lowestPrice.toFixed(2)}
+                                💰 {hideValues ? '••••' : `R$ ${lowestPrice.toFixed(2)}`}
                               </span>
                             )}
                             {week.isTicketIssued ? (
@@ -946,6 +976,9 @@ export default function Home() {
                                     {airline.icon} {airline.name}
                                   </span>
                                   <div className="relative flex-1">
+                                    {hideValues ? (
+                                      <div className="h-8 rounded-md border border-input bg-muted flex items-center px-3 text-xs text-muted-foreground tracking-widest">••••</div>
+                                    ) : (
                                     <Input
                                       type="number"
                                       placeholder="R$ 0,00"
@@ -954,6 +987,7 @@ export default function Home() {
                                       onBlur={(e) => handlePriceBlur(week.weekNumber, airline.id, e.target.value)}
                                       className="h-8 text-xs"
                                     />
+                                    )}
                                     {isSaving && (
                                       <Loader2 className="w-3.5 h-3.5 animate-spin absolute right-2 top-2 text-blue-500" />
                                     )}
@@ -1180,8 +1214,8 @@ export default function Home() {
                   <BarChart data={chartData} margin={{ top: 5, right: 20, left: 10, bottom: 5 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
                     <XAxis dataKey="mes" tick={{ fontSize: 12, fill: '#64748b' }} />
-                    <YAxis tick={{ fontSize: 12, fill: '#64748b' }} tickFormatter={(v) => `R$${v}`} />
-                    <Tooltip formatter={(value: number) => [`R$ ${value.toFixed(2)}`, '']} />
+                    <YAxis tick={{ fontSize: 12, fill: '#64748b' }} tickFormatter={(v) => hideValues ? '•••' : `R$${v}`} />
+                    <Tooltip formatter={(value: number) => [hideValues ? '••••' : `R$ ${value.toFixed(2)}`, '']} />
                     <Legend />
                     {chartSelectedAirlines.has('kayak') && <Bar dataKey="kayak" name="Kayak" fill="#ef4444" radius={[4,4,0,0]} />}
                     {chartSelectedAirlines.has('latam') && <Bar dataKey="latam" name="LATAM" fill="#2563eb" radius={[4,4,0,0]} />}
@@ -1200,8 +1234,8 @@ export default function Home() {
                   <LineChart data={chartData} margin={{ top: 5, right: 20, left: 10, bottom: 5 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
                     <XAxis dataKey="mes" tick={{ fontSize: 12, fill: '#64748b' }} />
-                    <YAxis tick={{ fontSize: 12, fill: '#64748b' }} tickFormatter={(v) => `R$${v}`} />
-                    <Tooltip formatter={(value: number) => [`R$ ${value.toFixed(2)}`, '']} />
+                    <YAxis tick={{ fontSize: 12, fill: '#64748b' }} tickFormatter={(v) => hideValues ? '•••' : `R$${v}`} />
+                    <Tooltip formatter={(value: number) => [hideValues ? '••••' : `R$ ${value.toFixed(2)}`, '']} />
                     <Legend />
                     <Line
                       type="monotone" dataKey="menor" name="Menor Preço"
