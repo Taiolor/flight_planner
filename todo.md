@@ -28,3 +28,4 @@
 - [x] Implementar Service Worker para cache offline
 - [x] Otimizar layout responsivo mobile-first (cabeçalho, cards, filtros, buscadores)
 - [x] Botão de olho no cabeçalho para ocultar/exibir todos os valores monetários
+- [x] Corrigir safe-area-inset no cabeçalho para iPhone (barra de status/relógio)

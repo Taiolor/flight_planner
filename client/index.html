@@ -25,10 +25,18 @@
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="https://d2xsxph8kpxj0f.cloudfront.net/310419663028456038/HQ655wm9a6bck22hJAwYRc/pwa-icon-512-nQ49nRugiHFuvZMD3Za27r.png" />
 
-    <!-- Prevent tap highlight on mobile -->
+    <!-- Prevent tap highlight on mobile + iOS safe area -->
     <style>
       * { -webkit-tap-highlight-color: transparent; }
-      body { overscroll-behavior-y: none; }
+      body {
+        overscroll-behavior-y: none;
+        /* Garante que a cor do header se estenda atrás da barra de status no iOS */
+        background-color: #2563eb;
+      }
+      #root {
+        background-color: #f8fafc;
+        min-height: 100dvh;
+      }
     </style>
   </head>
 
