@@ -30,3 +30,4 @@
 - [x] Botão de olho no cabeçalho para ocultar/exibir todos os valores monetários
 - [x] Corrigir safe-area-inset no cabeçalho para iPhone (barra de status/relógio)
 - [x] Substituir botões OK individuais dos cards Ida/Volta por um único botão "Salvar" unificado
+- [x] Corrigir bug: campos dos cards Ida/Volta apagam sozinhos enquanto usuário digita (useEffect de sincronização sobrescreve estado local)

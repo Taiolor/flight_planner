@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useCallback } from 'react';
+import { useState, useMemo, useEffect, useCallback, useRef } from 'react';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend,
   LineChart, Line, ResponsiveContainer
@@ -156,42 +156,72 @@ export default function Home() {
   const weeksQuery = trpc.flights.getWeeks.useQuery();
   const pricesQuery = trpc.flights.getPrices.useQuery();
 
-  // Sincronizar todos os campos do banco para estado local quando dados carregam
+  // Ref que rastreia quais semanas já foram inicializadas — evita sobrescrever
+  // o que o usuário está digitando quando o tRPC faz refetch em background.
+  const initializedWeeks = useRef<Set<number>>(new Set());
+
+  // Sincronizar campos do banco para estado local APENAS na primeira vez que
+  // cada semana aparece. Refetches posteriores não sobrescrevem o estado local.
   useEffect(() => {
-    if (weeksQuery.data) {
-      const depLoc: { [k: number]: string } = {};
-      const retLoc: { [k: number]: string } = {};
-      const depFN: { [k: number]: string } = {};
-      const retFN: { [k: number]: string } = {};
-      const depAirport: { [k: number]: string } = {};
-      const retAirport: { [k: number]: string } = {};
-      const depAirline: { [k: number]: string } = {};
-      const retAirline: { [k: number]: string } = {};
-      const depDt: { [k: number]: string } = {};
-      const retDt: { [k: number]: string } = {};
-      for (const w of weeksQuery.data) {
-        depLoc[w.weekNumber] = (w as any).departureLocator ?? '';
-        retLoc[w.weekNumber] = (w as any).returnLocator ?? '';
-        depFN[w.weekNumber] = (w as any).departureFlightNumber ?? '';
-        retFN[w.weekNumber] = (w as any).returnFlightNumber ?? '';
-        depAirport[w.weekNumber] = (w as any).departureAirport ?? '';
-        retAirport[w.weekNumber] = (w as any).returnAirport ?? '';
-        depAirline[w.weekNumber] = (w as any).departureAirline ?? '';
-        retAirline[w.weekNumber] = (w as any).returnAirline ?? '';
-        depDt[w.weekNumber] = (w as any).departureFlightDatetime ?? '';
-        retDt[w.weekNumber] = (w as any).returnFlightDatetime ?? '';
-      }
-      setTempDepartureLocator(depLoc);
-      setTempReturnLocator(retLoc);
-      setTempDepartureFlightNumber(depFN);
-      setTempReturnFlightNumber(retFN);
-      setTempDepartureAirport(depAirport);
-      setTempReturnAirport(retAirport);
-      setTempDepartureAirline(depAirline);
-      setTempReturnAirline(retAirline);
-      setTempDepartureDatetime(depDt);
-      setTempReturnDatetime(retDt);
-    }
+    if (!weeksQuery.data) return;
+    const newWeeks = weeksQuery.data.filter(
+      (w) => !initializedWeeks.current.has(w.weekNumber)
+    );
+    if (newWeeks.length === 0) return;
+
+    setTempDepartureLocator((prev) => {
+      const next = { ...prev };
+      newWeeks.forEach((w) => { next[w.weekNumber] = (w as any).departureLocator ?? ''; });
+      return next;
+    });
+    setTempReturnLocator((prev) => {
+      const next = { ...prev };
+      newWeeks.forEach((w) => { next[w.weekNumber] = (w as any).returnLocator ?? ''; });
+      return next;
+    });
+    setTempDepartureFlightNumber((prev) => {
+      const next = { ...prev };
+      newWeeks.forEach((w) => { next[w.weekNumber] = (w as any).departureFlightNumber ?? ''; });
+      return next;
+    });
+    setTempReturnFlightNumber((prev) => {
+      const next = { ...prev };
+      newWeeks.forEach((w) => { next[w.weekNumber] = (w as any).returnFlightNumber ?? ''; });
+      return next;
+    });
+    setTempDepartureAirport((prev) => {
+      const next = { ...prev };
+      newWeeks.forEach((w) => { next[w.weekNumber] = (w as any).departureAirport ?? ''; });
+      return next;
+    });
+    setTempReturnAirport((prev) => {
+      const next = { ...prev };
+      newWeeks.forEach((w) => { next[w.weekNumber] = (w as any).returnAirport ?? ''; });
+      return next;
+    });
+    setTempDepartureAirline((prev) => {
+      const next = { ...prev };
+      newWeeks.forEach((w) => { next[w.weekNumber] = (w as any).departureAirline ?? ''; });
+      return next;
+    });
+    setTempReturnAirline((prev) => {
+      const next = { ...prev };
+      newWeeks.forEach((w) => { next[w.weekNumber] = (w as any).returnAirline ?? ''; });
+      return next;
+    });
+    setTempDepartureDatetime((prev) => {
+      const next = { ...prev };
+      newWeeks.forEach((w) => { next[w.weekNumber] = (w as any).departureFlightDatetime ?? ''; });
+      return next;
+    });
+    setTempReturnDatetime((prev) => {
+      const next = { ...prev };
+      newWeeks.forEach((w) => { next[w.weekNumber] = (w as any).returnFlightDatetime ?? ''; });
+      return next;
+    });
+
+    // Marcar estas semanas como inicializadas
+    newWeeks.forEach((w) => initializedWeeks.current.add(w.weekNumber));
   }, [weeksQuery.data]);
   const initWeeksMutation = trpc.flights.initWeeks.useMutation();
   const updateStatusMutation = trpc.flights.updateWeekStatus.useMutation();
