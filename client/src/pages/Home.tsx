@@ -15,6 +15,7 @@ import { ChevronDown, Plane, Calendar, ExternalLink, AlertCircle, Trash2, CheckC
 import { getGoogleCalendarLink, getOutlookLink, downloadICS, airportNames, airportAddresses, airlineNames, airlineIataCodes, buildFlightTrackUrl, buildWhatsAppShareUrl, CalendarEventParams, LEAD_OPTIONS, DURATION_OPTIONS } from '@/lib/calendarHelper';
 import { usePullToRefresh } from '@/hooks/usePullToRefresh';
 import { usePushNotifications } from '@/hooks/usePushNotifications';
+import { ExportPdfButton } from '@/components/FlightPdfExport';
 import { trpc } from '@/lib/trpc';
 import { toast } from 'sonner';
 
@@ -860,6 +861,12 @@ export default function Home() {
               )}
 
 
+              <ExportPdfButton
+                weeksData={weeksData}
+                priceMap={priceMap}
+                totalInvested={annualTotalIssued}
+              />
+
               <Button
                 size="sm"
                 variant="outline"
@@ -1420,7 +1427,13 @@ export default function Home() {
                                   <input
                                     type="datetime-local"
                                     className="h-8 text-xs border border-blue-200 rounded-md px-2 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-400 w-full"
-                                    value={tempDepartureDatetime[week.weekNumber] ?? ''}
+                                    value={tempDepartureDatetime[week.weekNumber] || (() => {
+                                      // Fallback: usar valor do banco ou data da semana
+                                      const saved = week.departureFlightDatetime ?? '';
+                                      if (saved) return saved;
+                                      const parts = week.departureDate.split('/');
+                                      return parts.length === 3 ? `${parts[2]}-${parts[1]}-${parts[0]}` : '';
+                                    })()}
                                     onChange={(e) => setTempDepartureDatetime(prev => ({ ...prev, [week.weekNumber]: e.target.value }))}
                                   />
                                   {tempDepartureDatetime[week.weekNumber] && (() => {
@@ -1559,7 +1572,13 @@ export default function Home() {
                                   <input
                                     type="datetime-local"
                                     className="h-8 text-xs border border-orange-200 rounded-md px-2 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-orange-400 w-full"
-                                    value={tempReturnDatetime[week.weekNumber] ?? ''}
+                                    value={tempReturnDatetime[week.weekNumber] || (() => {
+                                      // Fallback: usar valor do banco ou data da semana
+                                      const saved = week.returnFlightDatetime ?? '';
+                                      if (saved) return saved;
+                                      const parts = week.returnDate.split('/');
+                                      return parts.length === 3 ? `${parts[2]}-${parts[1]}-${parts[0]}` : '';
+                                    })()}
                                     onChange={(e) => setTempReturnDatetime(prev => ({ ...prev, [week.weekNumber]: e.target.value }))}
                                   />
                                   {tempReturnDatetime[week.weekNumber] && (

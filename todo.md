@@ -74,3 +74,9 @@
 - [x] Bug: campo datetime com apenas data (sem horário) exibe "Invalid Date" no badge do dia da semana
 - [x] Remover botão "Testar Notificação" do header (funcionalidade validada)
 - [x] Bug: campos datetime de ida e volta não herdam os valores já gravados no banco ao abrir o card de bilhete
+
+## Sessão atual
+- [x] Bug: ao clicar em "Não Emitido" os campos datetime não herdam os valores do banco (data de ida/volta da semana)
+- [x] Exportar para PDF: botão no cabeçalho, layout visual colorido A4, quebra de páginas por mês
+- [x] Job agendado no servidor: enviar notificação push 24h antes do voo
+- [x] Service Worker: receber e exibir notificações push corretamente
