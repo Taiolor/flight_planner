@@ -84,3 +84,4 @@
 - [ ] Bug: herança de data de ida/volta a partir dos dias da semana ainda não funciona ao clicar em "Não Emitido"
 - [x] Bug PDF: quebras de página não respeitam limite por mês (mês cortado no meio)
 - [x] Bug PDF: label da companhia aérea não está centralizada horizontalmente
+- [x] SEO: adicionar meta tags keywords, description, Open Graph, Twitter Card, canonical e JSON-LD no index.html
