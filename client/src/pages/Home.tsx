@@ -12,7 +12,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { ChevronDown, Plane, Calendar, ExternalLink, AlertCircle, Trash2, CheckCircle2, Circle, Pencil, RotateCcw, Loader2, TrendingUp, Lock, LogOut, Eye, EyeOff, CalendarPlus, Download } from 'lucide-react';
-import { getGoogleCalendarLink, getOutlookLink, downloadICS, airportNames, airlineNames, CalendarEventParams, LEAD_OPTIONS } from '@/lib/calendarHelper';
+import { getGoogleCalendarLink, getOutlookLink, downloadICS, airportNames, airlineNames, CalendarEventParams, LEAD_OPTIONS, DURATION_OPTIONS } from '@/lib/calendarHelper';
 import { trpc } from '@/lib/trpc';
 import { toast } from 'sonner';
 
@@ -156,6 +156,11 @@ export default function Home() {
   const [calendarLeadMinutes, setCalendarLeadMinutes] = useState<number>(() => {
     const saved = localStorage.getItem('calendarLeadMinutes');
     return saved ? parseInt(saved, 10) : 120;
+  });
+  // Duração estimada do voo configurável (persiste no dispositivo)
+  const [calendarDurationMinutes, setCalendarDurationMinutes] = useState<number>(() => {
+    const saved = localStorage.getItem('calendarDurationMinutes');
+    return saved ? parseInt(saved, 10) : 75;
   });
 
   // tRPC queries
@@ -1309,21 +1314,39 @@ export default function Home() {
                                 <div className="bg-slate-50 px-3 py-2 flex items-center gap-2 border-b border-slate-200 flex-wrap">
                                   <CalendarPlus className="w-3.5 h-3.5 text-slate-500 shrink-0" />
                                   <span className="text-[11px] font-semibold text-slate-600 uppercase tracking-wide">Adicionar à Agenda</span>
-                                  <div className="ml-auto flex items-center gap-1.5">
-                                    <span className="text-[10px] text-slate-500">Antecedência:</span>
-                                    <select
-                                      value={calendarLeadMinutes}
-                                      onChange={e => {
-                                        const val = parseInt(e.target.value, 10);
-                                        setCalendarLeadMinutes(val);
-                                        localStorage.setItem('calendarLeadMinutes', String(val));
-                                      }}
-                                      className="text-[11px] font-medium text-slate-700 bg-white border border-slate-300 rounded-md px-1.5 py-0.5 focus:outline-none focus:ring-1 focus:ring-blue-400 cursor-pointer"
-                                    >
-                                      {LEAD_OPTIONS.map(opt => (
-                                        <option key={opt.minutes} value={opt.minutes}>{opt.label}</option>
-                                      ))}
-                                    </select>
+                                  <div className="ml-auto flex items-center gap-2 flex-wrap justify-end">
+                                    <div className="flex items-center gap-1">
+                                      <span className="text-[10px] text-slate-500">Antecedência:</span>
+                                      <select
+                                        value={calendarLeadMinutes}
+                                        onChange={e => {
+                                          const val = parseInt(e.target.value, 10);
+                                          setCalendarLeadMinutes(val);
+                                          localStorage.setItem('calendarLeadMinutes', String(val));
+                                        }}
+                                        className="text-[11px] font-medium text-slate-700 bg-white border border-slate-300 rounded-md px-1.5 py-0.5 focus:outline-none focus:ring-1 focus:ring-blue-400 cursor-pointer"
+                                      >
+                                        {LEAD_OPTIONS.map(opt => (
+                                          <option key={opt.minutes} value={opt.minutes}>{opt.label}</option>
+                                        ))}
+                                      </select>
+                                    </div>
+                                    <div className="flex items-center gap-1">
+                                      <span className="text-[10px] text-slate-500">Duração:</span>
+                                      <select
+                                        value={calendarDurationMinutes}
+                                        onChange={e => {
+                                          const val = parseInt(e.target.value, 10);
+                                          setCalendarDurationMinutes(val);
+                                          localStorage.setItem('calendarDurationMinutes', String(val));
+                                        }}
+                                        className="text-[11px] font-medium text-slate-700 bg-white border border-slate-300 rounded-md px-1.5 py-0.5 focus:outline-none focus:ring-1 focus:ring-blue-400 cursor-pointer"
+                                      >
+                                        {DURATION_OPTIONS.map(opt => (
+                                          <option key={opt.minutes} value={opt.minutes}>{opt.label}</option>
+                                        ))}
+                                      </select>
+                                    </div>
                                   </div>
                                 </div>
                                 <div className="p-2 flex flex-col gap-1.5">
@@ -1331,7 +1354,7 @@ export default function Home() {
                                   <div className="flex gap-1.5">
                                     {depEvent && (
                                       <a
-                                        href={getGoogleCalendarLink(depEvent, calendarLeadMinutes)}
+                                        href={getGoogleCalendarLink(depEvent, calendarLeadMinutes, calendarDurationMinutes)}
                                         target="_blank" rel="noopener noreferrer"
                                         className="flex-1 flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg bg-white border border-blue-200 hover:bg-blue-50 transition-colors text-[11px] font-medium text-blue-700"
                                       >
@@ -1341,7 +1364,7 @@ export default function Home() {
                                     )}
                                     {retEvent && (
                                       <a
-                                        href={getGoogleCalendarLink(retEvent, calendarLeadMinutes)}
+                                        href={getGoogleCalendarLink(retEvent, calendarLeadMinutes, calendarDurationMinutes)}
                                         target="_blank" rel="noopener noreferrer"
                                         className="flex-1 flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg bg-white border border-orange-200 hover:bg-orange-50 transition-colors text-[11px] font-medium text-orange-700"
                                       >
@@ -1354,7 +1377,7 @@ export default function Home() {
                                   <div className="flex gap-1.5">
                                     {depEvent && (
                                       <a
-                                        href={getOutlookLink(depEvent, calendarLeadMinutes)}
+                                        href={getOutlookLink(depEvent, calendarLeadMinutes, calendarDurationMinutes)}
                                         target="_blank" rel="noopener noreferrer"
                                         className="flex-1 flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg bg-white border border-blue-200 hover:bg-blue-50 transition-colors text-[11px] font-medium text-blue-700"
                                       >
@@ -1364,7 +1387,7 @@ export default function Home() {
                                     )}
                                     {retEvent && (
                                       <a
-                                        href={getOutlookLink(retEvent, calendarLeadMinutes)}
+                                        href={getOutlookLink(retEvent, calendarLeadMinutes, calendarDurationMinutes)}
                                         target="_blank" rel="noopener noreferrer"
                                         className="flex-1 flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg bg-white border border-orange-200 hover:bg-orange-50 transition-colors text-[11px] font-medium text-orange-700"
                                       >
@@ -1375,7 +1398,7 @@ export default function Home() {
                                   </div>
                                   {/* Download .ics */}
                                   <button
-                                    onClick={() => downloadICS(allEvents, `voo-semana-${week.weekNumber}.ics`, calendarLeadMinutes)}
+                                    onClick={() => downloadICS(allEvents, `voo-semana-${week.weekNumber}.ics`, calendarLeadMinutes, calendarDurationMinutes)}
                                     className="w-full flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg bg-slate-100 hover:bg-slate-200 transition-colors text-[11px] font-medium text-slate-700 border border-slate-200"
                                   >
                                     <Download className="w-3.5 h-3.5" />

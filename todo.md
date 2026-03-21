@@ -36,3 +36,4 @@
 - [x] Botão "Adicionar à Agenda" (Google Calendar, Outlook, .ics) com evento 2h antes do voo
 - [x] Lembrete de antecedência configurável nos eventos de calendário (1h, 1h30, 2h, 2h30, 3h)
 - [x] Ajustar duração do evento de chegada somando +1h15 ao horário do voo de partida
+- [x] Seletor configurável para duração estimada do voo (tempo de chegada) no painel de agenda

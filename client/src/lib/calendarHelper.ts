@@ -26,8 +26,14 @@ export const LEAD_OPTIONS: { label: string; minutes: number }[] = [
   { label: '3h antes', minutes: 180 },
 ];
 
-/** Duração estimada do voo GRU ↔ NVT em minutos */
-const FLIGHT_DURATION_MINUTES = 75; // 1h15
+/** Opções de duração do voo (tempo de chegada) */
+export const DURATION_OPTIONS: { label: string; minutes: number }[] = [
+  { label: '1h de voo', minutes: 60 },
+  { label: '1h15 de voo', minutes: 75 },
+  { label: '1h30 de voo', minutes: 90 },
+  { label: '1h45 de voo', minutes: 105 },
+  { label: '2h de voo', minutes: 120 },
+];
 
 /** Formata data para o formato Google/Outlook: YYYYMMDDTHHmmss */
 function toCalendarDate(date: Date): string {
@@ -51,10 +57,11 @@ function toCalendarDate(date: Date): string {
 function getEventTimes(
   flightDatetime: string,
   leadMinutes: number = 120,
+  durationMinutes: number = 75,
 ): { start: Date; end: Date } {
   const flightDate = new Date(flightDatetime);
   const start = new Date(flightDate.getTime() - leadMinutes * 60 * 1000);
-  const end = new Date(flightDate.getTime() + FLIGHT_DURATION_MINUTES * 60 * 1000);
+  const end = new Date(flightDate.getTime() + durationMinutes * 60 * 1000);
   return { start, end };
 }
 
@@ -62,9 +69,11 @@ function getEventTimes(
 export function getGoogleCalendarLink(
   params: CalendarEventParams,
   leadMinutes?: number,
+  durationMinutes?: number,
 ): string {
   const lead = leadMinutes ?? params.leadMinutes ?? 120;
-  const { start, end } = getEventTimes(params.flightDatetime, lead);
+  const dur = durationMinutes ?? 75;
+  const { start, end } = getEventTimes(params.flightDatetime, lead, dur);
   const fmt = toCalendarDate;
   const base = 'https://calendar.google.com/calendar/render?action=TEMPLATE';
   const query = new URLSearchParams({
@@ -80,9 +89,11 @@ export function getGoogleCalendarLink(
 export function getOutlookLink(
   params: CalendarEventParams,
   leadMinutes?: number,
+  durationMinutes?: number,
 ): string {
   const lead = leadMinutes ?? params.leadMinutes ?? 120;
-  const { start, end } = getEventTimes(params.flightDatetime, lead);
+  const dur = durationMinutes ?? 75;
+  const { start, end } = getEventTimes(params.flightDatetime, lead, dur);
   const base =
     'https://outlook.live.com/calendar/0/deeplink/compose?path=/calendar/action/compose&rru=addevent';
   const query = new URLSearchParams({
@@ -99,6 +110,7 @@ export function getOutlookLink(
 export function generateICS(
   events: CalendarEventParams[],
   leadMinutes: number = 120,
+  durationMinutes: number = 75,
 ): string {
   const fmt = toCalendarDate;
   const lines: string[] = [
@@ -111,7 +123,7 @@ export function generateICS(
 
   events.forEach((params, idx) => {
     const lead = leadMinutes ?? params.leadMinutes ?? 120;
-    const { start, end } = getEventTimes(params.flightDatetime, lead);
+    const { start, end } = getEventTimes(params.flightDatetime, lead, durationMinutes);
     const uid = `flight-${Date.now()}-${idx}@passagens`;
     lines.push(
       'BEGIN:VEVENT',
@@ -140,8 +152,9 @@ export function downloadICS(
   events: CalendarEventParams[],
   filename: string,
   leadMinutes: number = 120,
+  durationMinutes: number = 75,
 ): void {
-  const content = generateICS(events, leadMinutes);
+  const content = generateICS(events, leadMinutes, durationMinutes);
   const blob = new Blob([content], { type: 'text/calendar;charset=utf-8' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
