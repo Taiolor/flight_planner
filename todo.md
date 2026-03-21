@@ -64,3 +64,6 @@
 
 - [x] Preencher automaticamente o localizador com sigla da companhia (LA/G3/AD) ao selecionar airline, se o campo estiver vazio
 - [x] Criar memória histórica de números de voo por companhia/dia da semana/horário para sugerir número do voo automaticamente
+- [x] Pré-preencher data do campo datetime-local de ida/volta com a data da semana (DD/MM/YYYY → YYYY-MM-DD), deixando horário vazio para o usuário preencher
+- [x] Adicionar botão "Ativar Notificações" no header com feedback visual de status (ativo/inativo/sem suporte)
+- [x] Indicador visual de sugestão automática no campo de número do voo (ícone + estado sugerido/confirmado)

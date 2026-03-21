@@ -11,9 +11,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Checkbox } from '@/components/ui/checkbox';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
-import { ChevronDown, Plane, Calendar, ExternalLink, AlertCircle, Trash2, CheckCircle2, Circle, Pencil, RotateCcw, Loader2, TrendingUp, Lock, LogOut, Eye, EyeOff, CalendarPlus, Download, Radar, RotateCw } from 'lucide-react';
+import { ChevronDown, Plane, Calendar, ExternalLink, AlertCircle, Trash2, CheckCircle2, Circle, Pencil, RotateCcw, Loader2, TrendingUp, Lock, LogOut, Eye, EyeOff, CalendarPlus, Download, Radar, RotateCw, Bell, BellOff, BellRing, Sparkles, Wand2 } from 'lucide-react';
 import { getGoogleCalendarLink, getOutlookLink, downloadICS, airportNames, airportAddresses, airlineNames, airlineIataCodes, buildFlightTrackUrl, buildWhatsAppShareUrl, CalendarEventParams, LEAD_OPTIONS, DURATION_OPTIONS } from '@/lib/calendarHelper';
 import { usePullToRefresh } from '@/hooks/usePullToRefresh';
+import { usePushNotifications } from '@/hooks/usePushNotifications';
 import { trpc } from '@/lib/trpc';
 import { toast } from 'sonner';
 
@@ -233,6 +234,10 @@ export default function Home() {
   const [tempReturnAirline, setTempReturnAirline] = useState<{ [weekNumber: number]: string }>({});
   // Controle de salvamento em andamento por semana
   const [savingTicket, setSavingTicket] = useState<{ [weekNumber: number]: boolean }>({});
+  // Rastreia quais campos de número do voo foram preenchidos por sugestão automática
+  // (e ainda não foram editados manualmente pelo usuário)
+  const [suggestedDepartureFlightNumber, setSuggestedDepartureFlightNumber] = useState<{ [weekNumber: number]: boolean }>({});
+  const [suggestedReturnFlightNumber, setSuggestedReturnFlightNumber] = useState<{ [weekNumber: number]: boolean }>({});
   // Antecedência configurável para eventos de calendário (persiste no dispositivo)
   const [calendarLeadMinutes, setCalendarLeadMinutes] = useState<number>(() => {
     const saved = localStorage.getItem('calendarLeadMinutes');
@@ -263,6 +268,17 @@ export default function Home() {
     maxPull: 120,
     onRefresh: handleRefresh,
   });
+
+  // Push Notifications
+  const {
+    status: pushStatus,
+    isSubscribed: pushSubscribed,
+    isLoading: pushLoading,
+    subscribe: pushSubscribe,
+    unsubscribe: pushUnsubscribe,
+    sendTest: pushSendTest,
+    isSendingTest: pushSendingTest,
+  } = usePushNotifications();
 
   // Ref que rastreia quais semanas já foram inicializadas — evita sobrescrever
   // o que o usuário está digitando quando o tRPC faz refetch em background.
@@ -319,12 +335,42 @@ export default function Home() {
     });
     setTempDepartureDatetime((prev) => {
       const next = { ...prev };
-      newWeeks.forEach((w) => { next[w.weekNumber] = (w as any).departureFlightDatetime ?? ''; });
+      newWeeks.forEach((w) => {
+        const saved = (w as any).departureFlightDatetime ?? '';
+        if (saved) {
+          // Valor já salvo no banco: usar como está
+          next[w.weekNumber] = saved;
+        } else {
+          // Sem valor salvo: pré-preencher com a data de ida da semana (DD/MM/YYYY → YYYY-MM-DD)
+          // O campo datetime-local espera "YYYY-MM-DDThh:mm"; sem horário fica "YYYY-MM-DD"
+          // o que faz o input mostrar a data correta e aguardar apenas o horário do usuário
+          const parts = w.departureDate.split('/');
+          if (parts.length === 3) {
+            next[w.weekNumber] = `${parts[2]}-${parts[1]}-${parts[0]}`;
+          } else {
+            next[w.weekNumber] = '';
+          }
+        }
+      });
       return next;
     });
     setTempReturnDatetime((prev) => {
       const next = { ...prev };
-      newWeeks.forEach((w) => { next[w.weekNumber] = (w as any).returnFlightDatetime ?? ''; });
+      newWeeks.forEach((w) => {
+        const saved = (w as any).returnFlightDatetime ?? '';
+        if (saved) {
+          // Valor já salvo no banco: usar como está
+          next[w.weekNumber] = saved;
+        } else {
+          // Sem valor salvo: pré-preencher com a data de retorno da semana (DD/MM/YYYY → YYYY-MM-DD)
+          const parts = w.returnDate.split('/');
+          if (parts.length === 3) {
+            next[w.weekNumber] = `${parts[2]}-${parts[1]}-${parts[0]}`;
+          } else {
+            next[w.weekNumber] = '';
+          }
+        }
+      });
       return next;
     });
 
@@ -752,6 +798,58 @@ export default function Home() {
                   ? <EyeOff className="w-4 h-4" />
                   : <Eye className="w-4 h-4" />}
               </Button>
+
+              {/* Botão Ativar Notificações Push */}
+              {pushStatus !== 'unsupported' && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  title={
+                    pushStatus === 'denied'
+                      ? 'Notificações bloqueadas pelo navegador'
+                      : pushSubscribed
+                      ? 'Notificações ativas — clique para desativar'
+                      : 'Ativar notificações de voo'
+                  }
+                  disabled={pushLoading || pushStatus === 'denied'}
+                  className={`border-white text-white hover:bg-white hover:text-blue-700 transition-all ${
+                    pushSubscribed
+                      ? 'bg-green-500/30 border-green-300'
+                      : pushStatus === 'denied'
+                      ? 'bg-red-500/20 border-red-300 opacity-60'
+                      : 'bg-white/10'
+                  }`}
+                  onClick={async () => {
+                    if (!isAuthenticated) { setShowLoginModal(true); return; }
+                    if (pushSubscribed) {
+                      await pushUnsubscribe();
+                      toast.success('Notificações desativadas.');
+                    } else {
+                      await pushSubscribe();
+                      if (pushStatus !== 'denied') {
+                        toast.success('Notificações ativadas! Você será avisado 24h antes de cada voo.');
+                      }
+                    }
+                  }}
+                >
+                  {pushLoading ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : pushStatus === 'denied' ? (
+                    <BellOff className="w-4 h-4" />
+                  ) : pushSubscribed ? (
+                    <BellRing className="w-4 h-4" />
+                  ) : (
+                    <Bell className="w-4 h-4" />
+                  )}
+                  <span className="hidden sm:inline ml-1">
+                    {pushStatus === 'denied'
+                      ? 'Bloqueado'
+                      : pushSubscribed
+                      ? 'Notif. Ativas'
+                      : 'Notificações'}
+                  </span>
+                </Button>
+              )}
               <Button
                 size="sm"
                 variant="outline"
@@ -1255,6 +1353,7 @@ export default function Home() {
                                       const suggestion = suggestFlightNumber(val, tempDepartureDatetime[week.weekNumber] ?? '', 'departure', weeksData);
                                       if (suggestion && !(tempDepartureFlightNumber[week.weekNumber] ?? '').trim()) {
                                         setTempDepartureFlightNumber(prev => ({ ...prev, [week.weekNumber]: suggestion }));
+                                        setSuggestedDepartureFlightNumber(prev => ({ ...prev, [week.weekNumber]: true }));
                                       }
                                     }}
                                   >
@@ -1274,12 +1373,31 @@ export default function Home() {
                                   </Select>
                                 </div>
                                 <div className="flex flex-col gap-1">
-                                  <label className="text-[10px] font-semibold text-blue-600 uppercase tracking-wide">Número do Voo</label>
+                                  <div className="flex items-center justify-between">
+                                    <label className="text-[10px] font-semibold text-blue-600 uppercase tracking-wide">Número do Voo</label>
+                                    {suggestedDepartureFlightNumber[week.weekNumber] && (
+                                      <span
+                                        title="Sugerido pelo histórico de voos anteriores. Confirme ou edite."
+                                        className="flex items-center gap-0.5 text-[10px] font-medium text-amber-600 bg-amber-50 border border-amber-200 rounded px-1.5 py-0.5 cursor-default"
+                                      >
+                                        <Wand2 className="w-2.5 h-2.5" />
+                                        Sugerido
+                                      </span>
+                                    )}
+                                  </div>
                                   <input
                                     type="text" maxLength={10} placeholder="Ex: LA3045"
-                                    className="h-8 text-xs border border-blue-200 rounded-md px-2 bg-white text-slate-700 uppercase font-mono focus:outline-none focus:ring-2 focus:ring-blue-400 w-full"
+                                    className={`h-8 text-xs rounded-md px-2 bg-white text-slate-700 uppercase font-mono focus:outline-none focus:ring-2 w-full transition-colors ${
+                                      suggestedDepartureFlightNumber[week.weekNumber]
+                                        ? 'border border-amber-300 focus:ring-amber-400'
+                                        : 'border border-blue-200 focus:ring-blue-400'
+                                    }`}
                                     value={tempDepartureFlightNumber[week.weekNumber] ?? ''}
-                                    onChange={(e) => setTempDepartureFlightNumber(prev => ({ ...prev, [week.weekNumber]: e.target.value.toUpperCase() }))}
+                                    onChange={(e) => {
+                                      setTempDepartureFlightNumber(prev => ({ ...prev, [week.weekNumber]: e.target.value.toUpperCase() }));
+                                      // Ao editar manualmente, remover o indicador de sugestão
+                                      setSuggestedDepartureFlightNumber(prev => ({ ...prev, [week.weekNumber]: false }));
+                                    }}
                                   />
                                 </div>
                                 <div className="flex flex-col gap-1">
@@ -1361,6 +1479,7 @@ export default function Home() {
                                       const suggestion = suggestFlightNumber(val, tempReturnDatetime[week.weekNumber] ?? '', 'return', weeksData);
                                       if (suggestion && !(tempReturnFlightNumber[week.weekNumber] ?? '').trim()) {
                                         setTempReturnFlightNumber(prev => ({ ...prev, [week.weekNumber]: suggestion }));
+                                        setSuggestedReturnFlightNumber(prev => ({ ...prev, [week.weekNumber]: true }));
                                       }
                                     }}
                                   >
@@ -1380,12 +1499,31 @@ export default function Home() {
                                   </Select>
                                 </div>
                                 <div className="flex flex-col gap-1">
-                                  <label className="text-[10px] font-semibold text-orange-600 uppercase tracking-wide">Número do Voo</label>
+                                  <div className="flex items-center justify-between">
+                                    <label className="text-[10px] font-semibold text-orange-600 uppercase tracking-wide">Número do Voo</label>
+                                    {suggestedReturnFlightNumber[week.weekNumber] && (
+                                      <span
+                                        title="Sugerido pelo histórico de voos anteriores. Confirme ou edite."
+                                        className="flex items-center gap-0.5 text-[10px] font-medium text-amber-600 bg-amber-50 border border-amber-200 rounded px-1.5 py-0.5 cursor-default"
+                                      >
+                                        <Wand2 className="w-2.5 h-2.5" />
+                                        Sugerido
+                                      </span>
+                                    )}
+                                  </div>
                                   <input
                                     type="text" maxLength={10} placeholder="Ex: G31234"
-                                    className="h-8 text-xs border border-orange-200 rounded-md px-2 bg-white text-slate-700 uppercase font-mono focus:outline-none focus:ring-2 focus:ring-orange-400 w-full"
+                                    className={`h-8 text-xs rounded-md px-2 bg-white text-slate-700 uppercase font-mono focus:outline-none focus:ring-2 w-full transition-colors ${
+                                      suggestedReturnFlightNumber[week.weekNumber]
+                                        ? 'border border-amber-300 focus:ring-amber-400'
+                                        : 'border border-orange-200 focus:ring-orange-400'
+                                    }`}
                                     value={tempReturnFlightNumber[week.weekNumber] ?? ''}
-                                    onChange={(e) => setTempReturnFlightNumber(prev => ({ ...prev, [week.weekNumber]: e.target.value.toUpperCase() }))}
+                                    onChange={(e) => {
+                                      setTempReturnFlightNumber(prev => ({ ...prev, [week.weekNumber]: e.target.value.toUpperCase() }));
+                                      // Ao editar manualmente, remover o indicador de sugestão
+                                      setSuggestedReturnFlightNumber(prev => ({ ...prev, [week.weekNumber]: false }));
+                                    }}
                                   />
                                 </div>
                                 <div className="flex flex-col gap-1">
