@@ -11,8 +11,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Checkbox } from '@/components/ui/checkbox';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
-import { ChevronDown, Plane, Calendar, ExternalLink, AlertCircle, Trash2, CheckCircle2, Circle, Pencil, RotateCcw, Loader2, TrendingUp, Lock, LogOut, Eye, EyeOff, CalendarPlus, Download } from 'lucide-react';
-import { getGoogleCalendarLink, getOutlookLink, downloadICS, airportNames, airportAddresses, airlineNames, CalendarEventParams, LEAD_OPTIONS, DURATION_OPTIONS } from '@/lib/calendarHelper';
+import { ChevronDown, Plane, Calendar, ExternalLink, AlertCircle, Trash2, CheckCircle2, Circle, Pencil, RotateCcw, Loader2, TrendingUp, Lock, LogOut, Eye, EyeOff, CalendarPlus, Download, Radar } from 'lucide-react';
+import { getGoogleCalendarLink, getOutlookLink, downloadICS, airportNames, airportAddresses, airlineNames, airlineIataCodes, buildFlightTrackUrl, CalendarEventParams, LEAD_OPTIONS, DURATION_OPTIONS } from '@/lib/calendarHelper';
 import { trpc } from '@/lib/trpc';
 import { toast } from 'sonner';
 
@@ -1291,6 +1291,13 @@ export default function Home() {
                               const airportAddress = airport ? (airportAddresses[airport] ?? airportName) : airportName;
                               const locator = type === 'ida' ? week.departureLocator : week.returnLocator;
                               const label = type === 'ida' ? 'IDA' : 'VOLTA';
+                              // Aeroporto de destino: Ida vai para NVT, Volta vai para GRU/CGH
+                              const destAirport = type === 'ida'
+                                ? (week.returnAirport || 'NVT')
+                                : (week.departureAirport || 'GRU');
+                              const trackUrl = (airline && flightNum && airport)
+                                ? buildFlightTrackUrl(airline, flightNum, airport, destAirport, dt)
+                                : null;
                               return {
                                 title: `✈️ Voo ${label} ${flightNum ? flightNum : ''} — ${airlineName}`,
                                 flightDatetime: dt,
@@ -1301,6 +1308,7 @@ export default function Home() {
                                   `Aeroporto: ${airportAddress}`,
                                   locator ? `Localizador: ${locator}` : '',
                                   `Semana ${week.weekNumber} — ${week.departureDate} a ${week.returnDate}`,
+                                  trackUrl ? `Rastrear voo: ${trackUrl}` : '',
                                 ].filter(Boolean).join('\n'),
                               };
                             };
@@ -1405,6 +1413,47 @@ export default function Home() {
                                     <Download className="w-3.5 h-3.5" />
                                     Baixar .ics (Apple Calendar / outros)
                                   </button>
+
+                                  {/* Rastrear Voo */}
+                                  {(() => {
+                                    const depTrack = (week.departureAirline && week.departureFlightNumber && week.departureAirport && week.departureFlightDatetime)
+                                      ? buildFlightTrackUrl(week.departureAirline, week.departureFlightNumber, week.departureAirport, week.returnAirport || 'NVT', week.departureFlightDatetime)
+                                      : null;
+                                    const retTrack = (week.returnAirline && week.returnFlightNumber && week.returnAirport && week.returnFlightDatetime)
+                                      ? buildFlightTrackUrl(week.returnAirline, week.returnFlightNumber, week.returnAirport, week.departureAirport || 'GRU', week.returnFlightDatetime)
+                                      : null;
+                                    if (!depTrack && !retTrack) return null;
+                                    return (
+                                      <>
+                                        <div className="flex items-center gap-1.5 pt-0.5">
+                                          <Radar className="w-3 h-3 text-slate-400" />
+                                          <span className="text-[10px] font-semibold text-slate-500 uppercase tracking-wide">Rastrear Voo</span>
+                                        </div>
+                                        <div className="flex gap-1.5">
+                                          {depTrack && (
+                                            <a
+                                              href={depTrack}
+                                              target="_blank" rel="noopener noreferrer"
+                                              className="flex-1 flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg bg-blue-50 border border-blue-200 hover:bg-blue-100 transition-colors text-[11px] font-semibold text-blue-700"
+                                            >
+                                              <Radar className="w-3.5 h-3.5" />
+                                              Rastrear Ida
+                                            </a>
+                                          )}
+                                          {retTrack && (
+                                            <a
+                                              href={retTrack}
+                                              target="_blank" rel="noopener noreferrer"
+                                              className="flex-1 flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg bg-orange-50 border border-orange-200 hover:bg-orange-100 transition-colors text-[11px] font-semibold text-orange-700"
+                                            >
+                                              <Radar className="w-3.5 h-3.5" />
+                                              Rastrear Volta
+                                            </a>
+                                          )}
+                                        </div>
+                                      </>
+                                    );
+                                  })()}
                                 </div>
                               </div>
                             );

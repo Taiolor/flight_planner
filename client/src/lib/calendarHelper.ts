@@ -193,3 +193,41 @@ export const airlineNames: Record<string, string> = {
   gol: 'Gol Linhas Aéreas',
   azul: 'Azul Linhas Aéreas',
 };
+
+/**
+ * Prefixos IATA das companhias aéreas (2 letras)
+ * Usados para montar a URL de rastreamento de voo no Google.
+ */
+export const airlineIataCodes: Record<string, string> = {
+  latam: 'LA',
+  gol:   'G3',
+  azul:  'AD',
+};
+
+/**
+ * Monta a URL de rastreamento de voo no Google.
+ *
+ * Formato:
+ *   https://www.google.com/search?q=LA+flight+3045+from+GRU+to+NVT,+2026-03-21
+ *
+ * @param airline       - chave da companhia (ex: 'latam')
+ * @param flightNumber  - número completo do voo (ex: 'LA3045' ou '3045')
+ * @param departureAirport - sigla do aeroporto de partida (ex: 'GRU')
+ * @param arrivalAirport   - sigla do aeroporto de destino (ex: 'NVT')
+ * @param flightDatetime   - ISO local 'YYYY-MM-DDTHH:mm'
+ */
+export function buildFlightTrackUrl(
+  airline: string,
+  flightNumber: string,
+  departureAirport: string,
+  arrivalAirport: string,
+  flightDatetime: string,
+): string {
+  const iata = airlineIataCodes[airline.toLowerCase()] ?? airline.toUpperCase().slice(0, 2);
+  // Extrair apenas os dígitos do número do voo (ex: 'LA3045' -> '3045', '3045' -> '3045')
+  const digits = flightNumber.replace(/[^0-9]/g, '').padStart(4, '0');
+  // Extrair data no formato YYYY-MM-DD
+  const date = flightDatetime.slice(0, 10);
+  const query = `${iata}+flight+${digits}+from+${departureAirport.toUpperCase()}+to+${arrivalAirport.toUpperCase()},+${date}`;
+  return `https://www.google.com/search?q=${query}`;
+}

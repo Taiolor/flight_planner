@@ -38,3 +38,5 @@
 - [x] Ajustar duração do evento de chegada somando +1h15 ao horário do voo de partida
 - [x] Seletor configurável para duração estimada do voo (tempo de chegada) no painel de agenda
 - [x] Incluir endereço completo dos aeroportos (GRU, CGH, NVT) no campo de localização dos eventos de calendário
+- [x] Botões "Rastrear Voo" (Ida e Volta) com URL dinâmica do Google
+- [x] Incluir link de rastreamento nas observações dos eventos de calendário
