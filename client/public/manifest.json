@@ -1,7 +1,7 @@
 {
-  "name": "Planejador de Passagens Aéreas",
-  "short_name": "Passagens GRU",
-  "description": "Planejador de passagens aéreas GRU → NVT 2026",
+  "name": "Smart Fly",
+  "short_name": "Smart Fly",
+  "description": "Smart Fly — Planejamento inteligente de passagens aéreas GRU → NVT 2026",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#1e3a8a",

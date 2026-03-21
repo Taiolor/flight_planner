@@ -11,8 +11,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Checkbox } from '@/components/ui/checkbox';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
-import { ChevronDown, Plane, Calendar, ExternalLink, AlertCircle, Trash2, CheckCircle2, Circle, Pencil, RotateCcw, Loader2, TrendingUp, Lock, LogOut, Eye, EyeOff, CalendarPlus, Download, Radar } from 'lucide-react';
+import { ChevronDown, Plane, Calendar, ExternalLink, AlertCircle, Trash2, CheckCircle2, Circle, Pencil, RotateCcw, Loader2, TrendingUp, Lock, LogOut, Eye, EyeOff, CalendarPlus, Download, Radar, RotateCw } from 'lucide-react';
 import { getGoogleCalendarLink, getOutlookLink, downloadICS, airportNames, airportAddresses, airlineNames, airlineIataCodes, buildFlightTrackUrl, CalendarEventParams, LEAD_OPTIONS, DURATION_OPTIONS } from '@/lib/calendarHelper';
+import { usePullToRefresh } from '@/hooks/usePullToRefresh';
 import { trpc } from '@/lib/trpc';
 import { toast } from 'sonner';
 
@@ -166,6 +167,22 @@ export default function Home() {
   // tRPC queries
   const weeksQuery = trpc.flights.getWeeks.useQuery();
   const pricesQuery = trpc.flights.getPrices.useQuery();
+  const utils = trpc.useUtils();
+
+  // Pull-to-refresh: puxar para baixo no topo da página para recarregar os dados
+  const handleRefresh = useCallback(async () => {
+    await Promise.all([
+      utils.flights.getWeeks.invalidate(),
+      utils.flights.getPrices.invalidate(),
+    ]);
+    toast.success('Dados atualizados!', { duration: 1500 });
+  }, [utils]);
+
+  const { pullDistance, isRefreshing, isPulling } = usePullToRefresh({
+    threshold: 80,
+    maxPull: 120,
+    onRefresh: handleRefresh,
+  });
 
   // Ref que rastreia quais semanas já foram inicializadas — evita sobrescrever
   // o que o usuário está digitando quando o tRPC faz refetch em background.
@@ -238,7 +255,6 @@ export default function Home() {
   const updateStatusMutation = trpc.flights.updateWeekStatus.useMutation();
   const updateDatesMutation = trpc.flights.updateWeekDates.useMutation();
   const savePriceMutation = trpc.flights.savePrice.useMutation();
-  const utils = trpc.useUtils();
 
   // Initialize weeks in DB if empty
   useEffect(() => {
@@ -598,6 +614,31 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
+      {/* Pull-to-refresh indicator */}
+      {(isPulling || isRefreshing) && (
+        <div
+          className="fixed top-0 left-0 right-0 z-[100] flex items-center justify-center transition-all duration-200"
+          style={{
+            height: isRefreshing ? '52px' : `${Math.max(pullDistance, 0)}px`,
+            paddingTop: 'env(safe-area-inset-top)',
+            background: 'linear-gradient(to bottom, #2563eb, #1d4ed8)',
+            transform: isRefreshing ? 'translateY(0)' : undefined,
+          }}
+        >
+          <div className="flex items-center gap-2 text-white">
+            <RotateCw
+              className={`w-5 h-5 ${isRefreshing ? 'animate-spin' : ''}`}
+              style={{
+                transform: !isRefreshing ? `rotate(${Math.min(pullDistance / 80 * 360, 360)}deg)` : undefined,
+                transition: isRefreshing ? undefined : 'transform 0.05s linear',
+              }}
+            />
+            {isRefreshing && <span className="text-sm font-medium">Atualizando...</span>}
+            {!isRefreshing && pullDistance >= 80 && <span className="text-sm font-medium">Solte para atualizar</span>}
+            {!isRefreshing && pullDistance < 80 && pullDistance > 20 && <span className="text-sm font-medium">Puxe para atualizar</span>}
+          </div>
+        </div>
+      )}
       {/* Header */}
       <header
         className="bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg sticky top-0 z-50"
@@ -610,7 +651,7 @@ export default function Home() {
                 <Plane className="w-5 h-5 sm:w-6 sm:h-6" />
               </div>
               <div>
-                <h1 className="text-lg sm:text-3xl font-bold leading-tight">Passagens Aéreas</h1>
+                <h1 className="text-lg sm:text-3xl font-bold leading-tight">Smart Fly</h1>
                 <p className="text-blue-100 text-xs sm:text-sm">{departureAirport} → NVT • 2026</p>
               </div>
             </div>
@@ -1107,7 +1148,20 @@ export default function Home() {
                                   </Select>
                                 </div>
                                 <div className="flex flex-col gap-1">
-                                  <label className="text-[10px] font-semibold text-blue-600 uppercase tracking-wide">Companhia Aérea</label>
+                                  <div className="flex items-center justify-between">
+                                    <label className="text-[10px] font-semibold text-blue-600 uppercase tracking-wide">Companhia Aérea</label>
+                                    {tempDepartureAirline[week.weekNumber] && (
+                                      <button
+                                        type="button"
+                                        title="Copiar companhia para Volta"
+                                        onClick={() => setTempReturnAirline(prev => ({ ...prev, [week.weekNumber]: tempDepartureAirline[week.weekNumber] }))}
+                                        className="flex items-center gap-0.5 text-[10px] font-medium text-blue-500 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded px-1.5 py-0.5 transition-colors"
+                                      >
+                                        <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
+                                        Copiar → Volta
+                                      </button>
+                                    )}
+                                  </div>
                                   <Select
                                     value={tempDepartureAirline[week.weekNumber] ?? ''}
                                     onValueChange={(val) => setTempDepartureAirline(prev => ({ ...prev, [week.weekNumber]: val }))}
@@ -1151,7 +1205,20 @@ export default function Home() {
                                   )}
                                 </div>
                                 <div className="flex flex-col gap-1">
-                                  <label className="text-[10px] font-semibold text-blue-600 uppercase tracking-wide">Localizador (PNR)</label>
+                                  <div className="flex items-center justify-between">
+                                    <label className="text-[10px] font-semibold text-blue-600 uppercase tracking-wide">Localizador (PNR)</label>
+                                    {(tempDepartureLocator[week.weekNumber] ?? '').trim() && (
+                                      <button
+                                        type="button"
+                                        title="Copiar localizador para Volta"
+                                        onClick={() => setTempReturnLocator(prev => ({ ...prev, [week.weekNumber]: tempDepartureLocator[week.weekNumber] }))}
+                                        className="flex items-center gap-0.5 text-[10px] font-medium text-blue-500 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded px-1.5 py-0.5 transition-colors"
+                                      >
+                                        <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
+                                        Copiar → Volta
+                                      </button>
+                                    )}
+                                  </div>
                                   <input
                                     type="text" maxLength={20} placeholder="Ex: ABC123"
                                     className="h-8 text-xs border border-blue-200 rounded-md px-2 bg-white text-slate-700 uppercase font-mono focus:outline-none focus:ring-2 focus:ring-blue-400 w-full"

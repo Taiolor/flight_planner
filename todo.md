@@ -40,3 +40,6 @@
 - [x] Incluir endereço completo dos aeroportos (GRU, CGH, NVT) no campo de localização dos eventos de calendário
 - [x] Botões "Rastrear Voo" (Ida e Volta) com URL dinâmica do Google
 - [x] Incluir link de rastreamento nas observações dos eventos de calendário
+- [x] Botões de cópia no card de Ida: copiar Companhia Aérea e Localizador para os campos da Volta
+- [x] Pull-to-refresh: puxar para baixo no topo da página para recarregar os dados (equivalente a F5)
+- [x] Renomear site para Smart Fly (título, cabeçalho, PWA manifest, index.html)
