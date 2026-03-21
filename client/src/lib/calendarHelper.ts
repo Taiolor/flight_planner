@@ -224,8 +224,11 @@ export function buildFlightTrackUrl(
   flightDatetime: string,
 ): string {
   const iata = airlineIataCodes[airline.toLowerCase()] ?? airline.toUpperCase().slice(0, 2);
-  // Extrair apenas os dígitos do número do voo (ex: 'LA3045' -> '3045', '3045' -> '3045')
-  const digits = flightNumber.replace(/[^0-9]/g, '').padStart(4, '0');
+  // Extrair apenas os dígitos do número do voo e pegar os últimos 4
+  // Padrão: [AA][9999] — 2 letras da companhia + 4 dígitos do voo
+  // Ex: 'LA3045' -> '3045', 'G31234' -> '1234', '3045' -> '3045'
+  const allDigits = flightNumber.replace(/[^0-9]/g, '');
+  const digits = allDigits.slice(-4).padStart(4, '0');
   // Extrair data no formato YYYY-MM-DD
   const date = flightDatetime.slice(0, 10);
   const query = `${iata}+flight+${digits}+from+${departureAirport.toUpperCase()}+to+${arrivalAirport.toUpperCase()},+${date}`;
