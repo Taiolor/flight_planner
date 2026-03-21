@@ -92,3 +92,4 @@
 - [x] Gerenciador de push notifications: botão no cabeçalho, popup com Aviso 1 e Aviso 2, cada um com combo de antecedência (48h, 24h, 12h, 6h, 4h, 3h, 2h, 1h, 30min)
 - [x] Bug UX: popup de avisos push não centralizado no mobile — corrigir para fixed+transform centrado em telas pequenas
 - [x] Limpar base de push subscriptions duplicadas do banco (alertas repetidos)
+- [x] Bug: overlay do popup de push notifications captura cliques e impede interação com selects e botões internos
