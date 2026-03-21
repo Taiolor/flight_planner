@@ -850,6 +850,33 @@ export default function Home() {
                   </span>
                 </Button>
               )}
+
+              {/* Botão Testar Notificação Push — visível apenas quando subscrito */}
+              {pushSubscribed && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  title="Enviar uma notificação de teste para este dispositivo"
+                  disabled={pushSendingTest}
+                  className="bg-white/10 border-white text-white hover:bg-white hover:text-blue-700 transition-all"
+                  onClick={async () => {
+                    try {
+                      await pushSendTest();
+                      toast.success('Notificação de teste enviada! Verifique seu dispositivo.');
+                    } catch {
+                      toast.error('Erro ao enviar notificação de teste. Tente novamente.');
+                    }
+                  }}
+                >
+                  {pushSendingTest ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Sparkles className="w-4 h-4" />
+                  )}
+                  <span className="hidden sm:inline ml-1">Testar</span>
+                </Button>
+              )}
+
               <Button
                 size="sm"
                 variant="outline"

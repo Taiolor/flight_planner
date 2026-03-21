@@ -67,3 +67,4 @@
 - [x] Pré-preencher data do campo datetime-local de ida/volta com a data da semana (DD/MM/YYYY → YYYY-MM-DD), deixando horário vazio para o usuário preencher
 - [x] Adicionar botão "Ativar Notificações" no header com feedback visual de status (ativo/inativo/sem suporte)
 - [x] Indicador visual de sugestão automática no campo de número do voo (ícone + estado sugerido/confirmado)
+- [x] Botão "Testar Notificação" visível apenas quando push está ativo, envia notificação de teste via endpoint push.sendTest
