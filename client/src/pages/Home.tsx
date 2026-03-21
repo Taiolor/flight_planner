@@ -1313,7 +1313,7 @@ export default function Home() {
                       </div>
 
                       {/* Coluna direita: Cards Ida/Volta (só quando bilhete emitido) */}
-                      {week.isTicketIssued && (
+                      {!!week.isTicketIssued && (
                         <div className="flex-1 flex flex-col gap-3">
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
 

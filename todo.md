@@ -80,3 +80,7 @@
 - [x] Exportar para PDF: botão no cabeçalho, layout visual colorido A4, quebra de páginas por mês
 - [x] Job agendado no servidor: enviar notificação push 24h antes do voo
 - [x] Service Worker: receber e exibir notificações push corretamente
+- [ ] Bug: caractere '0' aparecendo visualmente quando o bilhete não está marcado como emitido
+- [ ] Bug: herança de data de ida/volta a partir dos dias da semana ainda não funciona ao clicar em "Não Emitido"
+- [x] Bug PDF: quebras de página não respeitam limite por mês (mês cortado no meio)
+- [x] Bug PDF: label da companhia aérea não está centralizada horizontalmente
