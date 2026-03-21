@@ -1,4 +1,5 @@
-import { useRef, useState } from 'react';
+import { useState } from 'react';
+import { createRoot } from 'react-dom/client';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import { Button } from '@/components/ui/button';
@@ -67,7 +68,7 @@ function CoverPage({ issued, totalInvested }: { issued: WeekData[]; totalInveste
       background: 'linear-gradient(135deg, #1e3a8a 0%, #1d4ed8 50%, #0ea5e9 100%)',
       padding: '60px 48px 48px',
       color: '#fff',
-      minHeight: '297mm',
+      minHeight: '1123px',
       boxSizing: 'border-box',
     }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '32px' }}>
@@ -168,34 +169,35 @@ function MonthPage({ monthLabel, weeks, priceMap }: {
               border: '1px solid #e2e8f0',
               marginBottom: wi < weeks.length - 1 ? '16px' : '0',
               overflow: 'hidden',
-              boxShadow: '0 1px 4px rgba(0,0,0,0.08)',
             }}
           >
-            {/* Header do card */}
+            {/* Cabeçalho do card */}
             <div style={{
               background: 'linear-gradient(90deg, #1e3a8a 0%, #1d4ed8 100%)',
+              color: '#fff',
               padding: '10px 20px',
-              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
             }}>
-              <div style={{ color: '#fff', fontWeight: 700, fontSize: '14px' }}>
-                Semana {week.weekNumber}
+              <div style={{ fontWeight: 700, fontSize: '14px' }}>
+                Semana {week.weekNumber} — {week.departureDate} → {week.returnDate}
               </div>
-              <div style={{ color: 'rgba(255,255,255,0.85)', fontSize: '12px' }}>
-                {week.departureDate} → {week.returnDate}
-              </div>
-              {depPrice !== null && (
+              {depPrice !== null && !isNaN(depPrice) && (
                 <div style={{
-                  background: '#34d399', color: '#064e3b',
-                  borderRadius: '6px', padding: '3px 12px',
-                  fontSize: '13px', fontWeight: 800,
+                  background: 'rgba(255,255,255,0.2)',
+                  borderRadius: '6px',
+                  padding: '3px 12px',
+                  fontSize: '13px',
+                  fontWeight: 700,
                 }}>
                   R$ {depPrice.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                 </div>
               )}
             </div>
 
-            {/* Corpo: IDA e VOLTA lado a lado */}
-            <div style={{ display: 'flex' }}>
+            {/* Corpo: IDA e VOLTA */}
+            <div style={{ display: 'flex', gap: '0' }}>
               {/* IDA */}
               <div style={{ flex: 1, padding: '16px 20px', borderRight: '1px solid #e2e8f0' }}>
                 <div style={{
@@ -203,7 +205,7 @@ function MonthPage({ monthLabel, weeks, priceMap }: {
                   letterSpacing: '1px', color: '#1d4ed8', marginBottom: '10px',
                   display: 'flex', alignItems: 'center', gap: '6px',
                 }}>
-                  <span>✈</span> IDA
+                  <span>→</span> IDA
                 </div>
                 <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px' }}>
                   <tbody>
@@ -334,9 +336,10 @@ function MonthPage({ monthLabel, weeks, priceMap }: {
         );
       })}
 
-      {/* Rodapé da página */}
+      {/* Rodapé */}
       <div style={{
-        marginTop: '24px', borderTop: '1px solid #e2e8f0', paddingTop: '12px',
+        marginTop: '24px', paddingTop: '12px',
+        borderTop: '1px solid #e2e8f0',
         fontSize: '10px', color: '#94a3b8', textAlign: 'center',
       }}>
         Smart Fly • Relatório gerado automaticamente • {new Date().toLocaleDateString('pt-BR')}
@@ -345,13 +348,55 @@ function MonthPage({ monthLabel, weeks, priceMap }: {
   );
 }
 
+// ─── Função auxiliar: renderiza JSX em container temporário e captura como canvas ─
+async function renderToCanvas(jsx: React.ReactElement): Promise<HTMLCanvasElement> {
+  return new Promise((resolve, reject) => {
+    // Criar container temporário visível mas fora da tela
+    const container = document.createElement('div');
+    container.style.cssText = [
+      'position:absolute',
+      'top:0',
+      'left:0',
+      'width:794px',
+      'opacity:0',
+      'pointer-events:none',
+      'z-index:-9999',
+      'overflow:visible',
+    ].join(';');
+    document.body.appendChild(container);
+
+    const root = createRoot(container);
+    root.render(jsx);
+
+    // Aguardar o React renderizar (dois frames para garantir layout completo)
+    requestAnimationFrame(() => {
+      requestAnimationFrame(async () => {
+        try {
+          const canvas = await html2canvas(container.firstElementChild as HTMLElement, {
+            scale: 2,
+            useCORS: true,
+            backgroundColor: '#ffffff',
+            width: 794,
+            windowWidth: 794,
+            logging: false,
+          });
+          resolve(canvas);
+        } catch (err) {
+          reject(err);
+        } finally {
+          root.unmount();
+          document.body.removeChild(container);
+        }
+      });
+    });
+  });
+}
+
 // ─── Botão de exportação ─────────────────────────────────────────────────────
 export function ExportPdfButton({ weeksData, priceMap, totalInvested }: FlightPdfExportProps) {
   const [exporting, setExporting] = useState(false);
-  const coverRef = useRef<HTMLDivElement>(null);
-  const monthRefs = useRef<(HTMLDivElement | null)[]>([]);
 
-  const issued = weeksData.filter(w => w.isTicketIssued && !w.isDeleted);
+  const issued = weeksData.filter(w => !!w.isTicketIssued && !w.isDeleted);
 
   // Agrupar por mês
   const byMonth: Record<string, WeekData[]> = {};
@@ -363,7 +408,7 @@ export function ExportPdfButton({ weeksData, priceMap, totalInvested }: FlightPd
   const months = Object.entries(byMonth);
 
   const handleExport = async () => {
-    if (!coverRef.current) return;
+    if (issued.length === 0) return;
     setExporting(true);
 
     try {
@@ -371,49 +416,43 @@ export function ExportPdfButton({ weeksData, priceMap, totalInvested }: FlightPd
       const pdfW = pdf.internal.pageSize.getWidth();   // 210mm
       const pdfH = pdf.internal.pageSize.getHeight();  // 297mm
 
-      // Função auxiliar: renderiza um elemento como imagem e adiciona ao PDF
-      const addElementToPdf = async (el: HTMLDivElement, isFirst: boolean) => {
+      // Função auxiliar: adiciona canvas ao PDF (com fatiamento se necessário)
+      const addCanvasToPdf = (canvas: HTMLCanvasElement, isFirst: boolean) => {
         if (!isFirst) pdf.addPage();
 
-        const canvas = await html2canvas(el, {
-          scale: 2,
-          useCORS: true,
-          backgroundColor: null,
-          width: 794,
-          windowWidth: 794,
-        });
-
-        const imgData = canvas.toDataURL('image/jpeg', 0.95);
+        const imgData = canvas.toDataURL('image/jpeg', 0.92);
         const canvasW = canvas.width;
         const canvasH = canvas.height;
 
-        // Calcular dimensões mantendo proporção dentro do A4
-        const ratio = pdfW / (canvasW / 2);
-        const imgH = (canvasH / 2) * ratio;
+        // Escala: 794px (largura do elemento) → 210mm (largura A4)
+        const scale = pdfW / (canvasW / 2); // canvasW/2 porque scale=2 no html2canvas
+        const imgH = (canvasH / 2) * scale;
 
         if (imgH <= pdfH) {
           // Cabe em uma página
           pdf.addImage(imgData, 'JPEG', 0, 0, pdfW, imgH);
         } else {
-          // Conteúdo maior que A4: fatiar verticalmente
+          // Conteúdo maior que A4: fatiar verticalmente sem cortar cards
           let yOffset = 0;
           let firstSlice = true;
           while (yOffset < imgH) {
             if (!firstSlice) pdf.addPage();
             firstSlice = false;
 
-            const sliceHeightPx = Math.round((pdfH / ratio) * 2);
-            const sliceYPx = Math.round((yOffset / ratio) * 2);
+            const sliceHeightPx = Math.round((pdfH / scale) * 2);
+            const sliceYPx = Math.round((yOffset / scale) * 2);
             const actualSliceH = Math.min(sliceHeightPx, canvasH - sliceYPx);
 
             const sliceCanvas = document.createElement('canvas');
             sliceCanvas.width = canvasW;
             sliceCanvas.height = actualSliceH;
             const ctx = sliceCanvas.getContext('2d')!;
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, canvasW, actualSliceH);
             ctx.drawImage(canvas, 0, sliceYPx, canvasW, actualSliceH, 0, 0, canvasW, actualSliceH);
 
-            const sliceData = sliceCanvas.toDataURL('image/jpeg', 0.95);
-            const sliceHMm = (actualSliceH / 2) * ratio;
+            const sliceData = sliceCanvas.toDataURL('image/jpeg', 0.92);
+            const sliceHMm = (actualSliceH / 2) * scale;
             pdf.addImage(sliceData, 'JPEG', 0, 0, pdfW, sliceHMm);
             yOffset += pdfH;
           }
@@ -421,52 +460,44 @@ export function ExportPdfButton({ weeksData, priceMap, totalInvested }: FlightPd
       };
 
       // 1. Capa
-      await addElementToPdf(coverRef.current, true);
+      const coverCanvas = await renderToCanvas(
+        <CoverPage issued={issued} totalInvested={totalInvested} />
+      );
+      addCanvasToPdf(coverCanvas, true);
 
       // 2. Uma página por mês
       for (let i = 0; i < months.length; i++) {
-        const ref = monthRefs.current[i];
-        if (ref) await addElementToPdf(ref, false);
+        const [monthLabel, weeks] = months[i];
+        const monthCanvas = await renderToCanvas(
+          <MonthPage monthLabel={monthLabel} weeks={weeks} priceMap={priceMap} />
+        );
+        addCanvasToPdf(monthCanvas, false);
       }
 
       pdf.save('SmartFly-Passagens-2026.pdf');
+    } catch (err) {
+      console.error('[PDF Export Error]', err);
+      alert('Erro ao gerar o PDF. Tente novamente.');
     } finally {
       setExporting(false);
     }
   };
 
   return (
-    <>
-      <Button
-        size="sm"
-        variant="outline"
-        onClick={handleExport}
-        disabled={exporting || issued.length === 0}
-        title={issued.length === 0 ? 'Nenhum bilhete emitido para exportar' : 'Exportar relatório em PDF'}
-        className="bg-white/10 border-white text-white hover:bg-white hover:text-blue-700 transition-all"
-      >
-        {exporting ? (
-          <Loader2 className="w-4 h-4 animate-spin" />
-        ) : (
-          <FileDown className="w-4 h-4" />
-        )}
-        <span className="hidden sm:inline ml-1">PDF</span>
-      </Button>
-
-      {/* Containers ocultos para renderização — um por seção */}
-      <div style={{ position: 'fixed', top: '-9999px', left: '-9999px', zIndex: -1, pointerEvents: 'none' }}>
-        {/* Capa */}
-        <div ref={coverRef}>
-          <CoverPage issued={issued} totalInvested={totalInvested} />
-        </div>
-
-        {/* Uma div por mês */}
-        {months.map(([monthLabel, weeks], i) => (
-          <div key={monthLabel} ref={el => { monthRefs.current[i] = el; }}>
-            <MonthPage monthLabel={monthLabel} weeks={weeks} priceMap={priceMap} />
-          </div>
-        ))}
-      </div>
-    </>
+    <Button
+      size="sm"
+      variant="outline"
+      onClick={handleExport}
+      disabled={exporting || issued.length === 0}
+      title={issued.length === 0 ? 'Nenhum bilhete emitido para exportar' : 'Exportar relatório em PDF'}
+      className="bg-white/10 border-white text-white hover:bg-white hover:text-blue-700 transition-all"
+    >
+      {exporting ? (
+        <Loader2 className="w-4 h-4 animate-spin" />
+      ) : (
+        <FileDown className="w-4 h-4" />
+      )}
+      <span className="hidden sm:inline ml-1">PDF</span>
+    </Button>
   );
 }

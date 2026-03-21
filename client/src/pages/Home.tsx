@@ -664,8 +664,35 @@ export default function Home() {
     });
   };
 
+  // Converte DD/MM/YYYY para YYYY-MM-DD (formato aceito pelo input datetime-local)
+  const toInputDate = (dateStr: string): string => {
+    const parts = dateStr.split('/');
+    if (parts.length !== 3) return '';
+    const [day, month, year] = parts;
+    return `${year}-${month}-${day}`;
+  };
+
   const handleToggleTicket = (weekNumber: number, current: number) => {
     requireAuth(() => {
+      // Ao abrir o card (marcar como emitido), pré-preencher as datas da semana
+      // se os campos ainda não tiverem valor
+      if (!current) {
+        const week = weeksData.find(w => w.weekNumber === weekNumber);
+        if (week) {
+          const depDate = toInputDate(week.departureDate);
+          const retDate = toInputDate(week.returnDate);
+          // Preenche apenas se o campo estiver vazio (não sobrescreve valor já digitado)
+          setTempDepartureDatetime(prev => ({
+            ...prev,
+            [weekNumber]: prev[weekNumber] || depDate,
+          }));
+          setTempReturnDatetime(prev => ({
+            ...prev,
+            [weekNumber]: prev[weekNumber] || retDate,
+          }));
+        }
+      }
+
       updateStatusMutation.mutate(
         { weekNumber, isTicketIssued: current ? 0 : 1 },
         {
