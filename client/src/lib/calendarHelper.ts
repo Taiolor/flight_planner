@@ -171,8 +171,20 @@ export const airportNames: Record<string, string> = {
   GRU: 'Aeroporto Internacional de Guarulhos (GRU)',
   CGH: 'Aeroporto de Congonhas (CGH)',
   VCP: 'Aeroporto Internacional de Viracopos (VCP)',
-  NVT: 'Aeroporto de Navegantes (NVT)',
+  NVT: 'Aeroporto Internacional de Navegantes (NVT)',
   JOI: 'Aeroporto de Joinville (JOI)',
+};
+
+/**
+ * Endereços completos dos aeroportos para uso no campo de localização
+ * dos eventos de calendário (Google Calendar, Outlook, .ics).
+ */
+export const airportAddresses: Record<string, string> = {
+  GRU: 'Aeroporto Internacional de Guarulhos (GRU) — Rod. Hélio Smidt, s/nº, Cumbica, Guarulhos - SP, CEP 07190-100',
+  CGH: 'Aeroporto de Congonhas (CGH) — Av. Washington Luís, s/nº, Vila Congonhas, São Paulo - SP, CEP 04626-911',
+  VCP: 'Aeroporto Internacional de Viracopos (VCP) — Rod. Santos Dumont, km 66, Campinas - SP, CEP 13055-900',
+  NVT: 'Aeroporto Internacional de Navegantes - Ministro Victor Konder (NVT) — Rua Osmar Gaya, 1297, Meia Praia, Navegantes - SC, CEP 88372-900',
+  JOI: 'Aeroporto de Joinville - Lauro Carneiro de Loyola (JOI) — Rua Araranguá, 2011, América, Joinville - SC, CEP 89204-000',
 };
 
 /** Mapa de companhias para nomes completos */

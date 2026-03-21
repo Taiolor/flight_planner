@@ -37,3 +37,4 @@
 - [x] Lembrete de antecedência configurável nos eventos de calendário (1h, 1h30, 2h, 2h30, 3h)
 - [x] Ajustar duração do evento de chegada somando +1h15 ao horário do voo de partida
 - [x] Seletor configurável para duração estimada do voo (tempo de chegada) no painel de agenda
+- [x] Incluir endereço completo dos aeroportos (GRU, CGH, NVT) no campo de localização dos eventos de calendário

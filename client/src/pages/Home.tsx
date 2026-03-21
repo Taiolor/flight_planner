@@ -12,7 +12,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { ChevronDown, Plane, Calendar, ExternalLink, AlertCircle, Trash2, CheckCircle2, Circle, Pencil, RotateCcw, Loader2, TrendingUp, Lock, LogOut, Eye, EyeOff, CalendarPlus, Download } from 'lucide-react';
-import { getGoogleCalendarLink, getOutlookLink, downloadICS, airportNames, airlineNames, CalendarEventParams, LEAD_OPTIONS, DURATION_OPTIONS } from '@/lib/calendarHelper';
+import { getGoogleCalendarLink, getOutlookLink, downloadICS, airportNames, airportAddresses, airlineNames, CalendarEventParams, LEAD_OPTIONS, DURATION_OPTIONS } from '@/lib/calendarHelper';
 import { trpc } from '@/lib/trpc';
 import { toast } from 'sonner';
 
@@ -1288,16 +1288,17 @@ export default function Home() {
                               const airport = type === 'ida' ? week.departureAirport : week.returnAirport;
                               const airlineName = airline ? (airlineNames[airline] ?? airline.toUpperCase()) : 'Companhia';
                               const airportName = airport ? (airportNames[airport] ?? airport) : 'Aeroporto';
+                              const airportAddress = airport ? (airportAddresses[airport] ?? airportName) : airportName;
                               const locator = type === 'ida' ? week.departureLocator : week.returnLocator;
                               const label = type === 'ida' ? 'IDA' : 'VOLTA';
                               return {
                                 title: `✈️ Voo ${label} ${flightNum ? flightNum : ''} — ${airlineName}`,
                                 flightDatetime: dt,
-                                location: airportName,
+                                location: airportAddress,
                                 description: [
                                   `Voo: ${flightNum || 'N/A'}`,
                                   `Companhia: ${airlineName}`,
-                                  `Aeroporto: ${airportName}`,
+                                  `Aeroporto: ${airportAddress}`,
                                   locator ? `Localizador: ${locator}` : '',
                                   `Semana ${week.weekNumber} — ${week.departureDate} a ${week.returnDate}`,
                                 ].filter(Boolean).join('\n'),
