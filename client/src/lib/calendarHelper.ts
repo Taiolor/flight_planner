@@ -231,3 +231,81 @@ export function buildFlightTrackUrl(
   const query = `${iata}+flight+${digits}+from+${departureAirport.toUpperCase()}+to+${arrivalAirport.toUpperCase()},+${date}`;
   return `https://www.google.com/search?q=${query}`;
 }
+
+/** Retorna o dia da semana em português para uma data no formato YYYY-MM-DD */
+function getDayOfWeek(dateStr: string): string {
+  if (!dateStr) return '';
+  const days = ['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado'];
+  // Adicionar T12:00 para evitar problemas de fuso horário
+  const d = new Date(dateStr + 'T12:00:00');
+  return days[d.getDay()] ?? '';
+}
+
+/**
+ * Monta a URL de compartilhamento WhatsApp com texto criativo,
+ * emojis e links de rastreamento dos voos de ida e volta.
+ */
+export function buildWhatsAppShareUrl(params: {
+  weekLabel: string;
+  departureDate: string;
+  departureTime: string;
+  departureAirport: string;
+  departureAirline: string;
+  departureFlightNumber: string;
+  departureLocator: string;
+  returnDate: string;
+  returnTime: string;
+  returnAirport: string;
+  returnAirline: string;
+  returnFlightNumber: string;
+  returnLocator: string;
+  price?: string;
+}): string {
+  const {
+    weekLabel,
+    departureDate, departureTime, departureAirport,
+    departureAirline, departureFlightNumber, departureLocator,
+    returnDate, returnTime, returnAirport,
+    returnAirline, returnFlightNumber, returnLocator,
+    price,
+  } = params;
+
+  const depDow = departureDate ? getDayOfWeek(departureDate) : '';
+  const retDow = returnDate ? getDayOfWeek(returnDate) : '';
+
+  const depAirlineName = airlineNames[departureAirline?.toLowerCase()] ?? departureAirline ?? '';
+  const retAirlineName = airlineNames[returnAirline?.toLowerCase()] ?? returnAirline ?? '';
+
+  // Montar URLs de rastreamento
+  const depTrackUrl = (departureFlightNumber && departureDate)
+    ? buildFlightTrackUrl(departureAirline, departureFlightNumber, departureAirport || 'GRU', returnAirport || 'NVT', departureDate + 'T00:00')
+    : '';
+  const retTrackUrl = (returnFlightNumber && returnDate)
+    ? buildFlightTrackUrl(returnAirline, returnFlightNumber, returnAirport || 'NVT', departureAirport || 'GRU', returnDate + 'T00:00')
+    : '';
+
+  const lines: string[] = [];
+  lines.push(`✈️ *Smart Fly — Passagem Confirmada!*`);
+  lines.push(`📅 *${weekLabel}*`);
+  lines.push('');
+  lines.push(`🛫 *IDA — ${departureAirport || 'GRU'} → ${returnAirport || 'NVT'}*`);
+  if (departureDate) lines.push(`   📆 ${depDow ? depDow + ', ' : ''}${departureDate}${departureTime ? ' às ' + departureTime : ''}`);
+  if (depAirlineName) lines.push(`   🏢 ${depAirlineName}${departureFlightNumber ? ' • Voo ' + departureFlightNumber : ''}`);
+  if (departureLocator) lines.push(`   🔑 Localizador: *${departureLocator}*`);
+  if (depTrackUrl) lines.push(`   🔍 Rastrear: ${depTrackUrl}`);
+  lines.push('');
+  lines.push(`🛬 *VOLTA — ${returnAirport || 'NVT'} → ${departureAirport || 'GRU'}*`);
+  if (returnDate) lines.push(`   📆 ${retDow ? retDow + ', ' : ''}${returnDate}${returnTime ? ' às ' + returnTime : ''}`);
+  if (retAirlineName) lines.push(`   🏢 ${retAirlineName}${returnFlightNumber ? ' • Voo ' + returnFlightNumber : ''}`);
+  if (returnLocator) lines.push(`   🔑 Localizador: *${returnLocator}*`);
+  if (retTrackUrl) lines.push(`   🔍 Rastrear: ${retTrackUrl}`);
+  if (price) {
+    lines.push('');
+    lines.push(`💰 Valor: *${price}*`);
+  }
+  lines.push('');
+  lines.push(`🚀 _Gerado pelo Smart Fly_`);
+
+  const text = lines.join('\n');
+  return `https://wa.me/?text=${encodeURIComponent(text)}`;
+}

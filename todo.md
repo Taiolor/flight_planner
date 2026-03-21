@@ -43,3 +43,5 @@
 - [x] Botões de cópia no card de Ida: copiar Companhia Aérea e Localizador para os campos da Volta
 - [x] Pull-to-refresh: puxar para baixo no topo da página para recarregar os dados (equivalente a F5)
 - [x] Renomear site para Smart Fly (título, cabeçalho, PWA manifest, index.html)
+- [x] Gerar ícone personalizado Smart Fly (SF + avião estilizado) e atualizar PWA
+- [x] Botão de compartilhamento WhatsApp com texto criativo, emojis e links de rastreamento
