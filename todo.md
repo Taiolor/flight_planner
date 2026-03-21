@@ -33,3 +33,4 @@
 - [x] Corrigir bug: campos dos cards Ida/Volta apagam sozinhos enquanto usuário digita (useEffect de sincronização sobrescreve estado local)
 - [x] Adicionar ícones reais das companhias aéreas (LATAM, Gol, Azul) nos combos
 - [x] Exibir dia da semana ao lado das datas de ida e volta
+- [x] Botão "Adicionar à Agenda" (Google Calendar, Outlook, .ics) com evento 2h antes do voo

@@ -11,7 +11,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Checkbox } from '@/components/ui/checkbox';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
-import { ChevronDown, Plane, Calendar, ExternalLink, AlertCircle, Trash2, CheckCircle2, Circle, Pencil, RotateCcw, Loader2, TrendingUp, Lock, LogOut, Eye, EyeOff } from 'lucide-react';
+import { ChevronDown, Plane, Calendar, ExternalLink, AlertCircle, Trash2, CheckCircle2, Circle, Pencil, RotateCcw, Loader2, TrendingUp, Lock, LogOut, Eye, EyeOff, CalendarPlus, Download } from 'lucide-react';
+import { getGoogleCalendarLink, getOutlookLink, downloadICS, airportNames, airlineNames, CalendarEventParams } from '@/lib/calendarHelper';
 import { trpc } from '@/lib/trpc';
 import { toast } from 'sonner';
 
@@ -1264,8 +1265,104 @@ export default function Home() {
                           >
                             {savingTicket[week.weekNumber]
                               ? <><Loader2 className="w-4 h-4 animate-spin" /> Salvando...</>
-                              : <>✓ Salvar Dados do Bilhete</>}
+                              : <>&#10003; Salvar Dados do Bilhete</>}
                           </button>
+
+                          {/* Botões de Agenda — aparecem apenas quando há data salva */}
+                          {(week.departureFlightDatetime || week.returnFlightDatetime) && (() => {
+                            const buildEvent = (type: 'ida' | 'volta'): CalendarEventParams | null => {
+                              const dt = type === 'ida' ? week.departureFlightDatetime : week.returnFlightDatetime;
+                              if (!dt) return null;
+                              const airline = type === 'ida' ? week.departureAirline : week.returnAirline;
+                              const flightNum = type === 'ida' ? week.departureFlightNumber : week.returnFlightNumber;
+                              const airport = type === 'ida' ? week.departureAirport : week.returnAirport;
+                              const airlineName = airline ? (airlineNames[airline] ?? airline.toUpperCase()) : 'Companhia';
+                              const airportName = airport ? (airportNames[airport] ?? airport) : 'Aeroporto';
+                              const locator = type === 'ida' ? week.departureLocator : week.returnLocator;
+                              const label = type === 'ida' ? 'IDA' : 'VOLTA';
+                              return {
+                                title: `✈️ Voo ${label} ${flightNum ? flightNum : ''} — ${airlineName}`,
+                                flightDatetime: dt,
+                                location: airportName,
+                                description: [
+                                  `Voo: ${flightNum || 'N/A'}`,
+                                  `Companhia: ${airlineName}`,
+                                  `Aeroporto: ${airportName}`,
+                                  locator ? `Localizador: ${locator}` : '',
+                                  `Semana ${week.weekNumber} — ${week.departureDate} a ${week.returnDate}`,
+                                ].filter(Boolean).join('\n'),
+                              };
+                            };
+                            const depEvent = buildEvent('ida');
+                            const retEvent = buildEvent('volta');
+                            const allEvents = [depEvent, retEvent].filter(Boolean) as CalendarEventParams[];
+                            if (allEvents.length === 0) return null;
+                            return (
+                              <div className="border border-slate-200 rounded-xl overflow-hidden">
+                                <div className="bg-slate-50 px-3 py-2 flex items-center gap-2 border-b border-slate-200">
+                                  <CalendarPlus className="w-3.5 h-3.5 text-slate-500" />
+                                  <span className="text-[11px] font-semibold text-slate-600 uppercase tracking-wide">Adicionar à Agenda</span>
+                                  <span className="text-[10px] text-slate-400 ml-1">(2h antes do voo)</span>
+                                </div>
+                                <div className="p-2 flex flex-col gap-1.5">
+                                  {/* Google Calendar */}
+                                  <div className="flex gap-1.5">
+                                    {depEvent && (
+                                      <a
+                                        href={getGoogleCalendarLink(depEvent)}
+                                        target="_blank" rel="noopener noreferrer"
+                                        className="flex-1 flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg bg-white border border-blue-200 hover:bg-blue-50 transition-colors text-[11px] font-medium text-blue-700"
+                                      >
+                                        <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none"><rect width="24" height="24" rx="4" fill="#4285F4"/><path d="M12 11v2h2.5c-.1.6-.8 1.8-2.5 1.8-1.5 0-2.8-1.2-2.8-2.8s1.2-2.8 2.8-2.8c.9 0 1.5.4 1.8.7l1.2-1.2C14.3 8.3 13.3 8 12 8c-2.2 0-4 1.8-4 4s1.8 4 4 4c2.3 0 3.8-1.6 3.8-3.9 0-.3 0-.5-.1-.7H12z" fill="white"/></svg>
+                                        Google • Ida
+                                      </a>
+                                    )}
+                                    {retEvent && (
+                                      <a
+                                        href={getGoogleCalendarLink(retEvent)}
+                                        target="_blank" rel="noopener noreferrer"
+                                        className="flex-1 flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg bg-white border border-orange-200 hover:bg-orange-50 transition-colors text-[11px] font-medium text-orange-700"
+                                      >
+                                        <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none"><rect width="24" height="24" rx="4" fill="#4285F4"/><path d="M12 11v2h2.5c-.1.6-.8 1.8-2.5 1.8-1.5 0-2.8-1.2-2.8-2.8s1.2-2.8 2.8-2.8c.9 0 1.5.4 1.8.7l1.2-1.2C14.3 8.3 13.3 8 12 8c-2.2 0-4 1.8-4 4s1.8 4 4 4c2.3 0 3.8-1.6 3.8-3.9 0-.3 0-.5-.1-.7H12z" fill="white"/></svg>
+                                        Google • Volta
+                                      </a>
+                                    )}
+                                  </div>
+                                  {/* Outlook */}
+                                  <div className="flex gap-1.5">
+                                    {depEvent && (
+                                      <a
+                                        href={getOutlookLink(depEvent)}
+                                        target="_blank" rel="noopener noreferrer"
+                                        className="flex-1 flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg bg-white border border-blue-200 hover:bg-blue-50 transition-colors text-[11px] font-medium text-blue-700"
+                                      >
+                                        <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none"><rect width="24" height="24" rx="4" fill="#0078D4"/><path d="M7 8h4v8H7V8zm5 0h5v3.5L15 13l-3-1.5V8zm0 5.5l3 1.5V18h-5v-3l2-1.5z" fill="white"/></svg>
+                                        Outlook • Ida
+                                      </a>
+                                    )}
+                                    {retEvent && (
+                                      <a
+                                        href={getOutlookLink(retEvent)}
+                                        target="_blank" rel="noopener noreferrer"
+                                        className="flex-1 flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg bg-white border border-orange-200 hover:bg-orange-50 transition-colors text-[11px] font-medium text-orange-700"
+                                      >
+                                        <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none"><rect width="24" height="24" rx="4" fill="#0078D4"/><path d="M7 8h4v8H7V8zm5 0h5v3.5L15 13l-3-1.5V8zm0 5.5l3 1.5V18h-5v-3l2-1.5z" fill="white"/></svg>
+                                        Outlook • Volta
+                                      </a>
+                                    )}
+                                  </div>
+                                  {/* Download .ics */}
+                                  <button
+                                    onClick={() => downloadICS(allEvents, `voo-semana-${week.weekNumber}.ics`)}
+                                    className="w-full flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg bg-slate-100 hover:bg-slate-200 transition-colors text-[11px] font-medium text-slate-700 border border-slate-200"
+                                  >
+                                    <Download className="w-3.5 h-3.5" />
+                                    Baixar .ics (Apple Calendar / outros)
+                                  </button>
+                                </div>
+                              </div>
+                            );
+                          })()}
                         </div>
                       )}
                     </div>
