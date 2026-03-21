@@ -1,15 +1,33 @@
 /**
  * Calendar helper — gera links e arquivos .ics para eventos de voo.
- * O evento começa 2h antes do horário do voo (check-in / deslocamento ao aeroporto).
- * Duração padrão do evento: 2h (até o horário do voo).
+ *
+ * Lógica de horários:
+ *   - Início do evento: horário do voo MENOS a antecedência configurável (padrão 2h)
+ *   - Fim do evento: horário do voo MAIS 1h15 (tempo estimado de voo GRU↔NVT)
+ *
+ * Exemplo com antecedência de 2h e voo às 10:00:
+ *   Evento: 08:00 → 11:15
  */
 
 export interface CalendarEventParams {
-  title: string;          // ex: "✈️ Voo LATAM LA3045 — GRU → NVT"
-  flightDatetime: string; // ISO local "YYYY-MM-DDTHH:mm"
-  location: string;       // ex: "Aeroporto de Guarulhos (GRU)"
-  description: string;    // ex: "Localizador: ABC123 | Companhia: LATAM"
+  title: string;           // ex: "✈️ Voo IDA LA3045 — LATAM Airlines"
+  flightDatetime: string;  // ISO local "YYYY-MM-DDTHH:mm"
+  location: string;        // ex: "Aeroporto de Guarulhos (GRU)"
+  description: string;     // ex: "Localizador: ABC123\nCompanhia: LATAM"
+  leadMinutes?: number;    // antecedência em minutos antes do voo (padrão: 120)
 }
+
+/** Opções de antecedência disponíveis para o usuário */
+export const LEAD_OPTIONS: { label: string; minutes: number }[] = [
+  { label: '1h antes', minutes: 60 },
+  { label: '1h30 antes', minutes: 90 },
+  { label: '2h antes', minutes: 120 },
+  { label: '2h30 antes', minutes: 150 },
+  { label: '3h antes', minutes: 180 },
+];
+
+/** Duração estimada do voo GRU ↔ NVT em minutos */
+const FLIGHT_DURATION_MINUTES = 75; // 1h15
 
 /** Formata data para o formato Google/Outlook: YYYYMMDDTHHmmss */
 function toCalendarDate(date: Date): string {
@@ -25,16 +43,28 @@ function toCalendarDate(date: Date): string {
   );
 }
 
-/** Retorna a data de início do evento (2h antes do voo) e fim (horário do voo) */
-function getEventTimes(flightDatetime: string): { start: Date; end: Date } {
+/**
+ * Retorna os horários do evento:
+ *   start = horário do voo - antecedência (leadMinutes)
+ *   end   = horário do voo + duração do voo (1h15)
+ */
+function getEventTimes(
+  flightDatetime: string,
+  leadMinutes: number = 120,
+): { start: Date; end: Date } {
   const flightDate = new Date(flightDatetime);
-  const start = new Date(flightDate.getTime() - 2 * 60 * 60 * 1000); // -2h
-  return { start, end: flightDate };
+  const start = new Date(flightDate.getTime() - leadMinutes * 60 * 1000);
+  const end = new Date(flightDate.getTime() + FLIGHT_DURATION_MINUTES * 60 * 1000);
+  return { start, end };
 }
 
 /** Gera link para Google Calendar */
-export function getGoogleCalendarLink(params: CalendarEventParams): string {
-  const { start, end } = getEventTimes(params.flightDatetime);
+export function getGoogleCalendarLink(
+  params: CalendarEventParams,
+  leadMinutes?: number,
+): string {
+  const lead = leadMinutes ?? params.leadMinutes ?? 120;
+  const { start, end } = getEventTimes(params.flightDatetime, lead);
   const fmt = toCalendarDate;
   const base = 'https://calendar.google.com/calendar/render?action=TEMPLATE';
   const query = new URLSearchParams({
@@ -47,10 +77,14 @@ export function getGoogleCalendarLink(params: CalendarEventParams): string {
 }
 
 /** Gera link para Outlook Web */
-export function getOutlookLink(params: CalendarEventParams): string {
-  const { start, end } = getEventTimes(params.flightDatetime);
-  // Outlook usa ISO 8601 com timezone local
-  const base = 'https://outlook.live.com/calendar/0/deeplink/compose?path=/calendar/action/compose&rru=addevent';
+export function getOutlookLink(
+  params: CalendarEventParams,
+  leadMinutes?: number,
+): string {
+  const lead = leadMinutes ?? params.leadMinutes ?? 120;
+  const { start, end } = getEventTimes(params.flightDatetime, lead);
+  const base =
+    'https://outlook.live.com/calendar/0/deeplink/compose?path=/calendar/action/compose&rru=addevent';
   const query = new URLSearchParams({
     subject: params.title,
     startdt: start.toISOString(),
@@ -62,7 +96,10 @@ export function getOutlookLink(params: CalendarEventParams): string {
 }
 
 /** Gera conteúdo de arquivo .ics para download */
-export function generateICS(events: CalendarEventParams[]): string {
+export function generateICS(
+  events: CalendarEventParams[],
+  leadMinutes: number = 120,
+): string {
   const fmt = toCalendarDate;
   const lines: string[] = [
     'BEGIN:VCALENDAR',
@@ -73,7 +110,8 @@ export function generateICS(events: CalendarEventParams[]): string {
   ];
 
   events.forEach((params, idx) => {
-    const { start, end } = getEventTimes(params.flightDatetime);
+    const lead = leadMinutes ?? params.leadMinutes ?? 120;
+    const { start, end } = getEventTimes(params.flightDatetime, lead);
     const uid = `flight-${Date.now()}-${idx}@passagens`;
     lines.push(
       'BEGIN:VEVENT',
@@ -85,7 +123,7 @@ export function generateICS(events: CalendarEventParams[]): string {
       `DESCRIPTION:${params.description.replace(/\n/g, '\\n')}`,
       `LOCATION:${params.location}`,
       'BEGIN:VALARM',
-      'TRIGGER:-PT30M',
+      `TRIGGER:-PT${lead}M`,
       'ACTION:DISPLAY',
       'DESCRIPTION:Lembrete de voo',
       'END:VALARM',
@@ -98,8 +136,12 @@ export function generateICS(events: CalendarEventParams[]): string {
 }
 
 /** Dispara download de arquivo .ics no browser */
-export function downloadICS(events: CalendarEventParams[], filename: string): void {
-  const content = generateICS(events);
+export function downloadICS(
+  events: CalendarEventParams[],
+  filename: string,
+  leadMinutes: number = 120,
+): void {
+  const content = generateICS(events, leadMinutes);
   const blob = new Blob([content], { type: 'text/calendar;charset=utf-8' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');

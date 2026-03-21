@@ -34,3 +34,5 @@
 - [x] Adicionar ícones reais das companhias aéreas (LATAM, Gol, Azul) nos combos
 - [x] Exibir dia da semana ao lado das datas de ida e volta
 - [x] Botão "Adicionar à Agenda" (Google Calendar, Outlook, .ics) com evento 2h antes do voo
+- [x] Lembrete de antecedência configurável nos eventos de calendário (1h, 1h30, 2h, 2h30, 3h)
+- [x] Ajustar duração do evento de chegada somando +1h15 ao horário do voo de partida

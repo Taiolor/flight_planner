@@ -12,7 +12,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { ChevronDown, Plane, Calendar, ExternalLink, AlertCircle, Trash2, CheckCircle2, Circle, Pencil, RotateCcw, Loader2, TrendingUp, Lock, LogOut, Eye, EyeOff, CalendarPlus, Download } from 'lucide-react';
-import { getGoogleCalendarLink, getOutlookLink, downloadICS, airportNames, airlineNames, CalendarEventParams } from '@/lib/calendarHelper';
+import { getGoogleCalendarLink, getOutlookLink, downloadICS, airportNames, airlineNames, CalendarEventParams, LEAD_OPTIONS } from '@/lib/calendarHelper';
 import { trpc } from '@/lib/trpc';
 import { toast } from 'sonner';
 
@@ -152,6 +152,11 @@ export default function Home() {
   const [tempReturnAirline, setTempReturnAirline] = useState<{ [weekNumber: number]: string }>({});
   // Controle de salvamento em andamento por semana
   const [savingTicket, setSavingTicket] = useState<{ [weekNumber: number]: boolean }>({});
+  // Antecedência configurável para eventos de calendário (persiste no dispositivo)
+  const [calendarLeadMinutes, setCalendarLeadMinutes] = useState<number>(() => {
+    const saved = localStorage.getItem('calendarLeadMinutes');
+    return saved ? parseInt(saved, 10) : 120;
+  });
 
   // tRPC queries
   const weeksQuery = trpc.flights.getWeeks.useQuery();
@@ -1297,19 +1302,36 @@ export default function Home() {
                             const retEvent = buildEvent('volta');
                             const allEvents = [depEvent, retEvent].filter(Boolean) as CalendarEventParams[];
                             if (allEvents.length === 0) return null;
+                            const currentLeadLabel = LEAD_OPTIONS.find(o => o.minutes === calendarLeadMinutes)?.label ?? '2h antes';
                             return (
                               <div className="border border-slate-200 rounded-xl overflow-hidden">
-                                <div className="bg-slate-50 px-3 py-2 flex items-center gap-2 border-b border-slate-200">
-                                  <CalendarPlus className="w-3.5 h-3.5 text-slate-500" />
+                                {/* Cabeçalho com seletor de antecedência */}
+                                <div className="bg-slate-50 px-3 py-2 flex items-center gap-2 border-b border-slate-200 flex-wrap">
+                                  <CalendarPlus className="w-3.5 h-3.5 text-slate-500 shrink-0" />
                                   <span className="text-[11px] font-semibold text-slate-600 uppercase tracking-wide">Adicionar à Agenda</span>
-                                  <span className="text-[10px] text-slate-400 ml-1">(2h antes do voo)</span>
+                                  <div className="ml-auto flex items-center gap-1.5">
+                                    <span className="text-[10px] text-slate-500">Antecedência:</span>
+                                    <select
+                                      value={calendarLeadMinutes}
+                                      onChange={e => {
+                                        const val = parseInt(e.target.value, 10);
+                                        setCalendarLeadMinutes(val);
+                                        localStorage.setItem('calendarLeadMinutes', String(val));
+                                      }}
+                                      className="text-[11px] font-medium text-slate-700 bg-white border border-slate-300 rounded-md px-1.5 py-0.5 focus:outline-none focus:ring-1 focus:ring-blue-400 cursor-pointer"
+                                    >
+                                      {LEAD_OPTIONS.map(opt => (
+                                        <option key={opt.minutes} value={opt.minutes}>{opt.label}</option>
+                                      ))}
+                                    </select>
+                                  </div>
                                 </div>
                                 <div className="p-2 flex flex-col gap-1.5">
                                   {/* Google Calendar */}
                                   <div className="flex gap-1.5">
                                     {depEvent && (
                                       <a
-                                        href={getGoogleCalendarLink(depEvent)}
+                                        href={getGoogleCalendarLink(depEvent, calendarLeadMinutes)}
                                         target="_blank" rel="noopener noreferrer"
                                         className="flex-1 flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg bg-white border border-blue-200 hover:bg-blue-50 transition-colors text-[11px] font-medium text-blue-700"
                                       >
@@ -1319,7 +1341,7 @@ export default function Home() {
                                     )}
                                     {retEvent && (
                                       <a
-                                        href={getGoogleCalendarLink(retEvent)}
+                                        href={getGoogleCalendarLink(retEvent, calendarLeadMinutes)}
                                         target="_blank" rel="noopener noreferrer"
                                         className="flex-1 flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg bg-white border border-orange-200 hover:bg-orange-50 transition-colors text-[11px] font-medium text-orange-700"
                                       >
@@ -1332,7 +1354,7 @@ export default function Home() {
                                   <div className="flex gap-1.5">
                                     {depEvent && (
                                       <a
-                                        href={getOutlookLink(depEvent)}
+                                        href={getOutlookLink(depEvent, calendarLeadMinutes)}
                                         target="_blank" rel="noopener noreferrer"
                                         className="flex-1 flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg bg-white border border-blue-200 hover:bg-blue-50 transition-colors text-[11px] font-medium text-blue-700"
                                       >
@@ -1342,7 +1364,7 @@ export default function Home() {
                                     )}
                                     {retEvent && (
                                       <a
-                                        href={getOutlookLink(retEvent)}
+                                        href={getOutlookLink(retEvent, calendarLeadMinutes)}
                                         target="_blank" rel="noopener noreferrer"
                                         className="flex-1 flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg bg-white border border-orange-200 hover:bg-orange-50 transition-colors text-[11px] font-medium text-orange-700"
                                       >
@@ -1353,7 +1375,7 @@ export default function Home() {
                                   </div>
                                   {/* Download .ics */}
                                   <button
-                                    onClick={() => downloadICS(allEvents, `voo-semana-${week.weekNumber}.ics`)}
+                                    onClick={() => downloadICS(allEvents, `voo-semana-${week.weekNumber}.ics`, calendarLeadMinutes)}
                                     className="w-full flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg bg-slate-100 hover:bg-slate-200 transition-colors text-[11px] font-medium text-slate-700 border border-slate-200"
                                   >
                                     <Download className="w-3.5 h-3.5" />
