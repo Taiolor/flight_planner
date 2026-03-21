@@ -284,66 +284,75 @@ export default function Home() {
   // o que o usuário está digitando quando o tRPC faz refetch em background.
   const initializedWeeks = useRef<Set<number>>(new Set());
 
-  // Sincronizar campos do banco para estado local APENAS na primeira vez que
-  // cada semana aparece. Refetches posteriores não sobrescrevem o estado local.
+  // Sincronizar campos do banco para estado local.
+  // Regra: campos de texto (localizador, número do voo, etc.) só são inicializados
+  // UMA VEZ por semana para não sobrescrever o que o usuário está digitando.
+  // Campos de data/hora são SEMPRE re-sincronizados com o banco para garantir que
+  // valores já salvos sejam exibidos corretamente ao abrir o card.
   useEffect(() => {
     if (!weeksQuery.data) return;
+
+    // Semanas novas (nunca inicializadas) — inicializar todos os campos
     const newWeeks = weeksQuery.data.filter(
       (w) => !initializedWeeks.current.has(w.weekNumber)
     );
-    if (newWeeks.length === 0) return;
 
-    setTempDepartureLocator((prev) => {
-      const next = { ...prev };
-      newWeeks.forEach((w) => { next[w.weekNumber] = (w as any).departureLocator ?? ''; });
-      return next;
-    });
-    setTempReturnLocator((prev) => {
-      const next = { ...prev };
-      newWeeks.forEach((w) => { next[w.weekNumber] = (w as any).returnLocator ?? ''; });
-      return next;
-    });
-    setTempDepartureFlightNumber((prev) => {
-      const next = { ...prev };
-      newWeeks.forEach((w) => { next[w.weekNumber] = (w as any).departureFlightNumber ?? ''; });
-      return next;
-    });
-    setTempReturnFlightNumber((prev) => {
-      const next = { ...prev };
-      newWeeks.forEach((w) => { next[w.weekNumber] = (w as any).returnFlightNumber ?? ''; });
-      return next;
-    });
-    setTempDepartureAirport((prev) => {
-      const next = { ...prev };
-      newWeeks.forEach((w) => { next[w.weekNumber] = (w as any).departureAirport ?? ''; });
-      return next;
-    });
-    setTempReturnAirport((prev) => {
-      const next = { ...prev };
-      newWeeks.forEach((w) => { next[w.weekNumber] = (w as any).returnAirport ?? ''; });
-      return next;
-    });
-    setTempDepartureAirline((prev) => {
-      const next = { ...prev };
-      newWeeks.forEach((w) => { next[w.weekNumber] = (w as any).departureAirline ?? ''; });
-      return next;
-    });
-    setTempReturnAirline((prev) => {
-      const next = { ...prev };
-      newWeeks.forEach((w) => { next[w.weekNumber] = (w as any).returnAirline ?? ''; });
-      return next;
-    });
+    if (newWeeks.length > 0) {
+      setTempDepartureLocator((prev) => {
+        const next = { ...prev };
+        newWeeks.forEach((w) => { next[w.weekNumber] = (w as any).departureLocator ?? ''; });
+        return next;
+      });
+      setTempReturnLocator((prev) => {
+        const next = { ...prev };
+        newWeeks.forEach((w) => { next[w.weekNumber] = (w as any).returnLocator ?? ''; });
+        return next;
+      });
+      setTempDepartureFlightNumber((prev) => {
+        const next = { ...prev };
+        newWeeks.forEach((w) => { next[w.weekNumber] = (w as any).departureFlightNumber ?? ''; });
+        return next;
+      });
+      setTempReturnFlightNumber((prev) => {
+        const next = { ...prev };
+        newWeeks.forEach((w) => { next[w.weekNumber] = (w as any).returnFlightNumber ?? ''; });
+        return next;
+      });
+      setTempDepartureAirport((prev) => {
+        const next = { ...prev };
+        newWeeks.forEach((w) => { next[w.weekNumber] = (w as any).departureAirport ?? ''; });
+        return next;
+      });
+      setTempReturnAirport((prev) => {
+        const next = { ...prev };
+        newWeeks.forEach((w) => { next[w.weekNumber] = (w as any).returnAirport ?? ''; });
+        return next;
+      });
+      setTempDepartureAirline((prev) => {
+        const next = { ...prev };
+        newWeeks.forEach((w) => { next[w.weekNumber] = (w as any).departureAirline ?? ''; });
+        return next;
+      });
+      setTempReturnAirline((prev) => {
+        const next = { ...prev };
+        newWeeks.forEach((w) => { next[w.weekNumber] = (w as any).returnAirline ?? ''; });
+        return next;
+      });
+      // Marcar estas semanas como inicializadas
+      newWeeks.forEach((w) => initializedWeeks.current.add(w.weekNumber));
+    }
+
+    // Campos de data/hora: sempre re-sincronizar com o banco para TODAS as semanas
+    // Isso garante que valores já salvos aparecem ao abrir o card, mesmo após refetch
     setTempDepartureDatetime((prev) => {
       const next = { ...prev };
-      newWeeks.forEach((w) => {
+      weeksQuery.data!.forEach((w) => {
         const saved = (w as any).departureFlightDatetime ?? '';
         if (saved) {
-          // Valor já salvo no banco: usar como está
+          // Valor já salvo no banco: usar como está (formato: YYYY-MM-DDTHH:mm)
           next[w.weekNumber] = saved;
-        } else {
-          // Sem valor salvo: pré-preencher com a data de ida da semana (DD/MM/YYYY → YYYY-MM-DD)
-          // O campo datetime-local espera "YYYY-MM-DDThh:mm"; sem horário fica "YYYY-MM-DD"
-          // o que faz o input mostrar a data correta e aguardar apenas o horário do usuário
+        } else if (!(w.weekNumber in next) || !next[w.weekNumber]) {
+          // Sem valor salvo e sem valor local: pré-preencher com a data de ida da semana
           const parts = w.departureDate.split('/');
           if (parts.length === 3) {
             next[w.weekNumber] = `${parts[2]}-${parts[1]}-${parts[0]}`;
@@ -351,18 +360,19 @@ export default function Home() {
             next[w.weekNumber] = '';
           }
         }
+        // Se já há valor local e não há valor no banco: manter o que o usuário digitou
       });
       return next;
     });
     setTempReturnDatetime((prev) => {
       const next = { ...prev };
-      newWeeks.forEach((w) => {
+      weeksQuery.data!.forEach((w) => {
         const saved = (w as any).returnFlightDatetime ?? '';
         if (saved) {
-          // Valor já salvo no banco: usar como está
+          // Valor já salvo no banco: usar como está (formato: YYYY-MM-DDTHH:mm)
           next[w.weekNumber] = saved;
-        } else {
-          // Sem valor salvo: pré-preencher com a data de retorno da semana (DD/MM/YYYY → YYYY-MM-DD)
+        } else if (!(w.weekNumber in next) || !next[w.weekNumber]) {
+          // Sem valor salvo e sem valor local: pré-preencher com a data de retorno da semana
           const parts = w.returnDate.split('/');
           if (parts.length === 3) {
             next[w.weekNumber] = `${parts[2]}-${parts[1]}-${parts[0]}`;
@@ -370,12 +380,10 @@ export default function Home() {
             next[w.weekNumber] = '';
           }
         }
+        // Se já há valor local e não há valor no banco: manter o que o usuário digitou
       });
       return next;
     });
-
-    // Marcar estas semanas como inicializadas
-    newWeeks.forEach((w) => initializedWeeks.current.add(w.weekNumber));
   }, [weeksQuery.data]);
   const initWeeksMutation = trpc.flights.initWeeks.useMutation();
   const updateStatusMutation = trpc.flights.updateWeekStatus.useMutation();

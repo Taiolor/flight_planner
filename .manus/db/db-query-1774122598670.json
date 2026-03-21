@@ -1,0 +1,35 @@
+{
+  "query": "SELECT weekNumber, departureFlightDatetime, returnFlightDatetime FROM flight_weeks WHERE departureFlightDatetime IS NOT NULL LIMIT 5;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3hTCxLMFFnvwjKu.root --database HQ655wm9a6bck22hJAwYRc --execute SELECT weekNumber, departureFlightDatetime, returnFlightDatetime FROM flight_weeks WHERE departureFlightDatetime IS NOT NULL LIMIT 5;",
+  "rows": [
+    {
+      "weekNumber": "1",
+      "departureFlightDatetime": "2026-02-22T17:55",
+      "returnFlightDatetime": "2026-03-06T19:50"
+    },
+    {
+      "weekNumber": "2",
+      "departureFlightDatetime": "2026-03-08T17:55",
+      "returnFlightDatetime": "2026-03-13T19:50"
+    },
+    {
+      "weekNumber": "3",
+      "departureFlightDatetime": "2026-03-15T17:15",
+      "returnFlightDatetime": "2026-03-19T06:20"
+    },
+    {
+      "weekNumber": "4",
+      "departureFlightDatetime": "2026-03-22T22:15",
+      "returnFlightDatetime": "2026-03-27T19:50"
+    },
+    {
+      "weekNumber": "5",
+      "departureFlightDatetime": "2026-03-29T10:20",
+      "returnFlightDatetime": "2026-04-02T20:00"
+    }
+  ],
+  "messages": [],
+  "stdout": "weekNumber\tdepartureFlightDatetime\treturnFlightDatetime\n1\t2026-02-22T17:55\t2026-03-06T19:50\n2\t2026-03-08T17:55\t2026-03-13T19:50\n3\t2026-03-15T17:15\t2026-03-19T06:20\n4\t2026-03-22T22:15\t2026-03-27T19:50\n5\t2026-03-29T10:20\t2026-04-02T20:00\n",
+  "stderr": "",
+  "execution_time_ms": 810
+}

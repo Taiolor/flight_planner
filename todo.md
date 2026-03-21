@@ -73,3 +73,4 @@
 - [x] Bug: ao trocar companhia no combo, o localizador com 2 chars (sigla anterior) não é atualizado para a nova sigla
 - [x] Bug: campo datetime com apenas data (sem horário) exibe "Invalid Date" no badge do dia da semana
 - [x] Remover botão "Testar Notificação" do header (funcionalidade validada)
+- [x] Bug: campos datetime de ida e volta não herdam os valores já gravados no banco ao abrir o card de bilhete
