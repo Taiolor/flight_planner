@@ -1,6 +1,6 @@
 import { and, eq, gt } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, users, flightWeeks, flightPrices, InsertFlightWeek, InsertFlightPrice, authSessions, InsertAuthSession } from "../drizzle/schema";
+import { InsertUser, users, flightWeeks, flightPrices, InsertFlightWeek, InsertFlightPrice, authSessions, InsertAuthSession, pushSubscriptions, InsertPushSubscription } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -269,4 +269,54 @@ export async function cleanExpiredSessions(): Promise<void> {
   const now = new Date();
   await db.delete(authSessions)
     .where(eq(authSessions.expiresAt, now)); // drizzle doesn't have lt for timestamp easily, skip for now
+}
+
+// =====================
+// Push Subscriptions
+// =====================
+
+export async function savePushSubscription(data: InsertPushSubscription): Promise<void> {
+  const db = await getDb();
+  if (!db) return;
+
+  // Verificar se já existe uma subscription com o mesmo endpoint
+  const existing = await db.select()
+    .from(pushSubscriptions)
+    .where(eq(pushSubscriptions.endpoint, data.endpoint))
+    .limit(1);
+
+  if (existing.length > 0) {
+    // Atualizar chaves caso tenham mudado
+    await db.update(pushSubscriptions)
+      .set({ p256dh: data.p256dh, auth: data.auth, userAgent: data.userAgent ?? null })
+      .where(eq(pushSubscriptions.endpoint, data.endpoint));
+  } else {
+    await db.insert(pushSubscriptions).values(data);
+  }
+}
+
+export async function deletePushSubscription(endpoint: string): Promise<void> {
+  const db = await getDb();
+  if (!db) return;
+
+  await db.delete(pushSubscriptions)
+    .where(eq(pushSubscriptions.endpoint, endpoint));
+}
+
+export async function getAllPushSubscriptions() {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(pushSubscriptions);
+}
+
+export async function getPushSubscriptionByEndpoint(endpoint: string) {
+  const db = await getDb();
+  if (!db) return null;
+
+  const result = await db.select()
+    .from(pushSubscriptions)
+    .where(eq(pushSubscriptions.endpoint, endpoint))
+    .limit(1);
+
+  return result.length > 0 ? result[0] : null;
 }

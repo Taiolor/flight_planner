@@ -50,3 +50,17 @@
 - [ ] Implementar job agendado no servidor para enviar notificação 24h antes do voo
 - [ ] Atualizar Service Worker para receber e exibir notificações push
 - [ ] Adicionar botão "Ativar Notificações" na UI com feedback de status
+
+## Push Notifications (nova sessão)
+
+- [ ] Instalar web-push e gerar chaves VAPID
+- [ ] Criar schema push_subscriptions no banco de dados
+- [ ] Criar endpoints tRPC para salvar/remover subscriptions push
+- [ ] Implementar job agendado no servidor para enviar notificação 24h antes do voo
+- [ ] Atualizar Service Worker para receber e exibir notificações push
+- [ ] Adicionar botão "Ativar Notificações" na UI com feedback de status
+
+## Melhorias nos campos de bilhete (nova sessão)
+
+- [x] Preencher automaticamente o localizador com sigla da companhia (LA/G3/AD) ao selecionar airline, se o campo estiver vazio
+- [x] Criar memória histórica de números de voo por companhia/dia da semana/horário para sugerir número do voo automaticamente

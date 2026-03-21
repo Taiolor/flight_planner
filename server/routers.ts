@@ -15,7 +15,11 @@ import {
   createAuthSession,
   validateAuthSession,
   deleteAuthSession,
+  savePushSubscription,
+  deletePushSubscription,
+  getPushSubscriptionByEndpoint,
 } from "./db";
+import { ENV } from "./_core/env";
 
 const SESSION_COOKIE = "flight_session";
 
@@ -100,6 +104,72 @@ export const appRouter = router({
       });
       return { success: true };
     }),
+  }),
+
+  // =====================
+  // Push Notifications
+  // =====================
+  push: router({
+    // Retorna a chave pública VAPID para o frontend criar a subscription
+    getVapidPublicKey: publicProcedure.query(() => {
+      return { publicKey: ENV.vapidPublicKey || process.env.VITE_VAPID_PUBLIC_KEY || "" };
+    }),
+
+    // Salvar subscription do dispositivo
+    subscribe: publicProcedure
+      .input(z.object({
+        endpoint: z.string(),
+        p256dh: z.string(),
+        auth: z.string(),
+        userAgent: z.string().optional(),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        const session = await getSessionFromCookie(ctx.req);
+        if (!session) {
+          throw new TRPCError({ code: "UNAUTHORIZED", message: "Faça login para ativar notificações." });
+        }
+        await savePushSubscription({
+          endpoint: input.endpoint,
+          p256dh: input.p256dh,
+          auth: input.auth,
+          userAgent: input.userAgent ?? null,
+        });
+        return { success: true };
+      }),
+
+    // Remover subscription do dispositivo
+    unsubscribe: publicProcedure
+      .input(z.object({ endpoint: z.string() }))
+      .mutation(async ({ input }) => {
+        await deletePushSubscription(input.endpoint);
+        return { success: true };
+      }),
+
+    // Verificar se este dispositivo já tem subscription ativa
+    checkSubscription: publicProcedure
+      .input(z.object({ endpoint: z.string() }))
+      .query(async ({ input }) => {
+        const sub = await getPushSubscriptionByEndpoint(input.endpoint);
+        return { subscribed: !!sub };
+      }),
+
+    // Enviar notificação de teste
+    sendTest: publicProcedure
+      .mutation(async ({ ctx }) => {
+        const session = await getSessionFromCookie(ctx.req);
+        if (!session) {
+          throw new TRPCError({ code: "UNAUTHORIZED", message: "Faça login para testar notificações." });
+        }
+        const { sendPushToAll } = await import("./pushNotifications");
+        const sent = await sendPushToAll({
+          title: "✈️ Smart Fly — Teste",
+          body: "Notificações push estão funcionando!",
+          icon: "/icons/icon-192.png",
+          badge: "/icons/icon-192.png",
+          tag: "test",
+        });
+        return { success: true, sent };
+      }),
   }),
 
   // =====================

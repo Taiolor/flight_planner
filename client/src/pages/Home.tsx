@@ -17,6 +17,86 @@ import { usePullToRefresh } from '@/hooks/usePullToRefresh';
 import { trpc } from '@/lib/trpc';
 import { toast } from 'sonner';
 
+/**
+ * Memória histórica de números de voo.
+ * Analisa todos os voos já salvos e sugere o número mais frequente
+ * para a combinação: companhia + direção (ida/volta) + dia da semana + faixa de horário.
+ *
+ * Regras de match (em ordem de prioridade):
+ *   1. Mesma companhia + mesma direção + mesmo dia da semana + mesma faixa de horário (±1h)
+ *   2. Mesma companhia + mesma direção + mesmo dia da semana
+ *   3. Mesma companhia + mesma direção
+ */
+function suggestFlightNumber(
+  airline: string,
+  datetime: string,
+  direction: 'departure' | 'return',
+  allWeeks: WeekData[]
+): string | null {
+  if (!airline) return null;
+
+  // Coletar todos os voos já salvos com número de voo preenchido
+  const candidates = allWeeks
+    .filter(w => {
+      const a = direction === 'departure' ? w.departureAirline : w.returnAirline;
+      const fn = direction === 'departure' ? w.departureFlightNumber : w.returnFlightNumber;
+      return a === airline && fn && fn.trim();
+    })
+    .map(w => {
+      const fn = (direction === 'departure' ? w.departureFlightNumber : w.returnFlightNumber) ?? '';
+      const dt = direction === 'departure' ? w.departureFlightDatetime : w.returnFlightDatetime;
+      return { flightNumber: fn.trim().toUpperCase(), datetime: dt ?? '' };
+    });
+
+  if (candidates.length === 0) return null;
+
+  // Extrair dia da semana e hora do datetime fornecido
+  let targetDow: number | null = null;
+  let targetHour: number | null = null;
+  if (datetime) {
+    const d = new Date(datetime);
+    if (!isNaN(d.getTime())) {
+      targetDow = d.getDay(); // 0=Dom, 1=Seg, ..., 6=Sáb
+      targetHour = d.getHours();
+    }
+  }
+
+  // Função auxiliar: retorna o número de voo mais frequente em uma lista
+  function mostFrequent(items: string[]): string | null {
+    if (items.length === 0) return null;
+    const freq: Record<string, number> = {};
+    for (const item of items) freq[item] = (freq[item] ?? 0) + 1;
+    return Object.entries(freq).sort((a, b) => b[1] - a[1])[0][0];
+  }
+
+  // Nível 1: mesmo dia da semana + faixa de horário (±1h)
+  if (targetDow !== null && targetHour !== null) {
+    const level1 = candidates.filter(c => {
+      if (!c.datetime) return false;
+      const d = new Date(c.datetime);
+      if (isNaN(d.getTime())) return false;
+      return d.getDay() === targetDow && Math.abs(d.getHours() - targetHour!) <= 1;
+    });
+    const result1 = mostFrequent(level1.map(c => c.flightNumber));
+    if (result1) return result1;
+  }
+
+  // Nível 2: mesmo dia da semana
+  if (targetDow !== null) {
+    const level2 = candidates.filter(c => {
+      if (!c.datetime) return false;
+      const d = new Date(c.datetime);
+      if (isNaN(d.getTime())) return false;
+      return d.getDay() === targetDow;
+    });
+    const result2 = mostFrequent(level2.map(c => c.flightNumber));
+    if (result2) return result2;
+  }
+
+  // Nível 3: qualquer voo da mesma companhia na mesma direção
+  return mostFrequent(candidates.map(c => c.flightNumber));
+}
+
 interface WeekData {
   weekNumber: number;
   departureDate: string;
@@ -1164,7 +1244,19 @@ export default function Home() {
                                   </div>
                                   <Select
                                     value={tempDepartureAirline[week.weekNumber] ?? ''}
-                                    onValueChange={(val) => setTempDepartureAirline(prev => ({ ...prev, [week.weekNumber]: val }))}
+                                    onValueChange={(val) => {
+                                      setTempDepartureAirline(prev => ({ ...prev, [week.weekNumber]: val }));
+                                      // Preencher localizador com sigla IATA se estiver vazio
+                                      const iata = airlineIataCodes[val] ?? val.toUpperCase().slice(0, 2);
+                                      if (!(tempDepartureLocator[week.weekNumber] ?? '').trim()) {
+                                        setTempDepartureLocator(prev => ({ ...prev, [week.weekNumber]: iata }));
+                                      }
+                                      // Sugerir número do voo baseado no histórico
+                                      const suggestion = suggestFlightNumber(val, tempDepartureDatetime[week.weekNumber] ?? '', 'departure', weeksData);
+                                      if (suggestion && !(tempDepartureFlightNumber[week.weekNumber] ?? '').trim()) {
+                                        setTempDepartureFlightNumber(prev => ({ ...prev, [week.weekNumber]: suggestion }));
+                                      }
+                                    }}
                                   >
                                     <SelectTrigger className="h-8 text-xs bg-white border-blue-200 w-full">
                                       <SelectValue placeholder="Selecionar companhia">
@@ -1258,7 +1350,19 @@ export default function Home() {
                                   <label className="text-[10px] font-semibold text-orange-600 uppercase tracking-wide">Companhia Aérea</label>
                                   <Select
                                     value={tempReturnAirline[week.weekNumber] ?? ''}
-                                    onValueChange={(val) => setTempReturnAirline(prev => ({ ...prev, [week.weekNumber]: val }))}
+                                    onValueChange={(val) => {
+                                      setTempReturnAirline(prev => ({ ...prev, [week.weekNumber]: val }));
+                                      // Preencher localizador com sigla IATA se estiver vazio
+                                      const iata = airlineIataCodes[val] ?? val.toUpperCase().slice(0, 2);
+                                      if (!(tempReturnLocator[week.weekNumber] ?? '').trim()) {
+                                        setTempReturnLocator(prev => ({ ...prev, [week.weekNumber]: iata }));
+                                      }
+                                      // Sugerir número do voo baseado no histórico
+                                      const suggestion = suggestFlightNumber(val, tempReturnDatetime[week.weekNumber] ?? '', 'return', weeksData);
+                                      if (suggestion && !(tempReturnFlightNumber[week.weekNumber] ?? '').trim()) {
+                                        setTempReturnFlightNumber(prev => ({ ...prev, [week.weekNumber]: suggestion }));
+                                      }
+                                    }}
                                   >
                                     <SelectTrigger className="h-8 text-xs bg-white border-orange-200 w-full">
                                       <SelectValue placeholder="Selecionar companhia">
