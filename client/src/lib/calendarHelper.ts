@@ -259,7 +259,6 @@ export function buildWhatsAppShareUrl(params: {
   returnAirline: string;
   returnFlightNumber: string;
   returnLocator: string;
-  price?: string;
 }): string {
   const {
     weekLabel,
@@ -267,7 +266,6 @@ export function buildWhatsAppShareUrl(params: {
     departureAirline, departureFlightNumber, departureLocator,
     returnDate, returnTime, returnAirport,
     returnAirline, returnFlightNumber, returnLocator,
-    price,
   } = params;
 
   const depDow = departureDate ? getDayOfWeek(departureDate) : '';
@@ -299,10 +297,6 @@ export function buildWhatsAppShareUrl(params: {
   if (retAirlineName) lines.push(`   🏢 ${retAirlineName}${returnFlightNumber ? ' • Voo ' + returnFlightNumber : ''}`);
   if (returnLocator) lines.push(`   🔑 Localizador: *${returnLocator}*`);
   if (retTrackUrl) lines.push(`   🔍 Rastrear: ${retTrackUrl}`);
-  if (price) {
-    lines.push('');
-    lines.push(`💰 Valor: *${price}*`);
-  }
   lines.push('');
   lines.push(`🚀 _Gerado pelo Smart Fly_`);
 

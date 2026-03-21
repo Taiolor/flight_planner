@@ -101,3 +101,18 @@ export const authSessions = mysqlTable("auth_sessions", {
 
 export type AuthSession = typeof authSessions.$inferSelect;
 export type InsertAuthSession = typeof authSessions.$inferInsert;
+
+/**
+ * Tabela para armazenar subscriptions de notificações push Web Push
+ */
+export const pushSubscriptions = mysqlTable("push_subscriptions", {
+  id: int("id").autoincrement().primaryKey(),
+  endpoint: text("endpoint").notNull(),
+  p256dh: text("p256dh").notNull(),
+  auth: text("auth").notNull(),
+  userAgent: varchar("userAgent", { length: 255 }),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type PushSubscription = typeof pushSubscriptions.$inferSelect;
+export type InsertPushSubscription = typeof pushSubscriptions.$inferInsert;

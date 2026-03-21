@@ -45,3 +45,8 @@
 - [x] Renomear site para Smart Fly (título, cabeçalho, PWA manifest, index.html)
 - [x] Gerar ícone personalizado Smart Fly (SF + avião estilizado) e atualizar PWA
 - [x] Botão de compartilhamento WhatsApp com texto criativo, emojis e links de rastreamento
+- [ ] Instalar web-push, criar schema de push_subscriptions e gerar chaves VAPID
+- [ ] Criar endpoints tRPC para salvar/remover subscriptions push
+- [ ] Implementar job agendado no servidor para enviar notificação 24h antes do voo
+- [ ] Atualizar Service Worker para receber e exibir notificações push
+- [ ] Adicionar botão "Ativar Notificações" na UI com feedback de status

@@ -1524,8 +1524,6 @@ export default function Home() {
 
                                   {/* Compartilhar no WhatsApp */}
                                   {(() => {
-                                    const lowestPrice = getLowestPrice(week.weekNumber);
-                                    const priceStr = lowestPrice ? `R$ ${lowestPrice.toFixed(2).replace('.', ',')}` : undefined;
                                     const depDt = tempDepartureDatetime[week.weekNumber] || week.departureFlightDatetime || '';
                                     const retDt = tempReturnDatetime[week.weekNumber] || week.returnFlightDatetime || '';
                                     const whatsappUrl = buildWhatsAppShareUrl({
@@ -1542,7 +1540,6 @@ export default function Home() {
                                       returnAirline: week.returnAirline || '',
                                       returnFlightNumber: week.returnFlightNumber || '',
                                       returnLocator: (tempReturnLocator[week.weekNumber] ?? week.returnLocator ?? ''),
-                                      price: priceStr,
                                     });
                                     return (
                                       <>
