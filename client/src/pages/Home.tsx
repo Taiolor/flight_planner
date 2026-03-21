@@ -675,20 +675,27 @@ export default function Home() {
   const handleToggleTicket = (weekNumber: number, current: number) => {
     requireAuth(() => {
       // Ao abrir o card (marcar como emitido), pré-preencher as datas da semana
-      // se os campos ainda não tiverem valor
       if (!current) {
         const week = weeksData.find(w => w.weekNumber === weekNumber);
         if (week) {
           const depDate = toInputDate(week.departureDate);
           const retDate = toInputDate(week.returnDate);
-          // Preenche apenas se o campo estiver vazio (não sobrescreve valor já digitado)
+
+          // Para o campo de IDA: usar data+hora do banco se existir e tiver horário,
+          // caso contrário usar a data da semana (sobrescreve qualquer valor anterior sem horário)
+          const savedDep = week.departureFlightDatetime ?? '';
+          const hasSavedDepTime = savedDep.includes('T') && savedDep.length > 10;
           setTempDepartureDatetime(prev => ({
             ...prev,
-            [weekNumber]: prev[weekNumber] || depDate,
+            [weekNumber]: hasSavedDepTime ? savedDep : depDate,
           }));
+
+          // Para o campo de VOLTA: mesma lógica
+          const savedRet = week.returnFlightDatetime ?? '';
+          const hasSavedRetTime = savedRet.includes('T') && savedRet.length > 10;
           setTempReturnDatetime(prev => ({
             ...prev,
-            [weekNumber]: prev[weekNumber] || retDate,
+            [weekNumber]: hasSavedRetTime ? savedRet : retDate,
           }));
         }
       }

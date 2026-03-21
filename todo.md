@@ -81,10 +81,11 @@
 - [x] Job agendado no servidor: enviar notificação push 24h antes do voo
 - [x] Service Worker: receber e exibir notificações push corretamente
 - [ ] Bug: caractere '0' aparecendo visualmente quando o bilhete não está marcado como emitido
-- [ ] Bug: herança de data de ida/volta a partir dos dias da semana ainda não funciona ao clicar em "Não Emitido"
+- [x] Bug: herança de data de ida/volta a partir dos dias da semana ainda não funciona ao clicar em "Não Emitido"
 - [x] Bug PDF: quebras de página não respeitam limite por mês (mês cortado no meio)
 - [x] Bug PDF: label da companhia aérea não está centralizada horizontalmente
 - [x] SEO: adicionar meta tags keywords, description, Open Graph, Twitter Card, canonical e JSON-LD no index.html
 - [x] Bug definitivo: ao clicar em "Não Emitido", preencher tempDepartureDatetime e tempReturnDatetime com as datas da semana (DD/MM/YYYY → YYYY-MM-DD) no momento do clique, hora nula aceita
 - [x] Bug: botão PDF parou de exportar dados após última atualização
 - [x] Bug: createRoot no FlightPdfExport cria segunda instância do React causando "Cannot read properties of null (reading 'useState')"
+- [x] Bug persistente: herança de data de ida/volta ao clicar em "Não Emitido" ainda não funciona — corrigir definitivamente
