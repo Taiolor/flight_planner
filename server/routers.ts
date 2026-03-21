@@ -18,6 +18,8 @@ import {
   savePushSubscription,
   deletePushSubscription,
   getPushSubscriptionByEndpoint,
+  getNotificationSettings,
+  updateNotificationSettings,
 } from "./db";
 import { ENV } from "./_core/env";
 
@@ -292,6 +294,30 @@ export const appRouter = router({
         } else {
           await upsertFlightPrice(input.weekNumber, input.airline, input.price);
         }
+        return { success: true };
+      }),
+  }),
+
+  // =====================
+  // Notification Settings
+  // =====================
+  notificationSettings: router({
+    // Buscar configurações atuais de agendamento
+    get: publicProcedure.query(async ({ ctx }) => {
+      const session = await getSessionFromCookie(ctx.req);
+      if (!session) throw new TRPCError({ code: "UNAUTHORIZED", message: "Faça login para acessar." });
+      return getNotificationSettings();
+    }),
+    // Salvar configurações de agendamento
+    update: publicProcedure
+      .input(z.object({
+        aviso1Minutes: z.number().min(0).max(2880),
+        aviso2Minutes: z.number().min(0).max(2880),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        const session = await getSessionFromCookie(ctx.req);
+        if (!session) throw new TRPCError({ code: "UNAUTHORIZED", message: "Faça login para editar." });
+        await updateNotificationSettings(input.aviso1Minutes, input.aviso2Minutes);
         return { success: true };
       }),
   }),

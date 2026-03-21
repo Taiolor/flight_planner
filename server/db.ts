@@ -1,6 +1,6 @@
 import { and, eq, gt } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, users, flightWeeks, flightPrices, InsertFlightWeek, InsertFlightPrice, authSessions, InsertAuthSession, pushSubscriptions, InsertPushSubscription } from "../drizzle/schema";
+import { InsertUser, users, flightWeeks, flightPrices, InsertFlightWeek, InsertFlightPrice, authSessions, InsertAuthSession, pushSubscriptions, InsertPushSubscription, notificationSettings } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -319,4 +319,35 @@ export async function getPushSubscriptionByEndpoint(endpoint: string) {
     .limit(1);
 
   return result.length > 0 ? result[0] : null;
+}
+
+// =====================
+// Notification Settings
+// =====================
+
+export async function getNotificationSettings() {
+  const db = await getDb();
+  if (!db) return { aviso1Minutes: 1440, aviso2Minutes: 0 };
+
+  const rows = await db.select().from(notificationSettings).limit(1);
+  if (rows.length === 0) {
+    // Criar registro padrão se não existir
+    await db.insert(notificationSettings).values({ aviso1Minutes: 1440, aviso2Minutes: 0 });
+    return { aviso1Minutes: 1440, aviso2Minutes: 0 };
+  }
+  return { aviso1Minutes: rows[0].aviso1Minutes, aviso2Minutes: rows[0].aviso2Minutes };
+}
+
+export async function updateNotificationSettings(aviso1Minutes: number, aviso2Minutes: number) {
+  const db = await getDb();
+  if (!db) return;
+
+  const rows = await db.select().from(notificationSettings).limit(1);
+  if (rows.length === 0) {
+    await db.insert(notificationSettings).values({ aviso1Minutes, aviso2Minutes });
+  } else {
+    await db.update(notificationSettings)
+      .set({ aviso1Minutes, aviso2Minutes })
+      .where(eq(notificationSettings.id, rows[0].id));
+  }
 }

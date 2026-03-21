@@ -116,3 +116,16 @@ export const pushSubscriptions = mysqlTable("push_subscriptions", {
 
 export type PushSubscription = typeof pushSubscriptions.$inferSelect;
 export type InsertPushSubscription = typeof pushSubscriptions.$inferInsert;
+/**
+ * Tabela para armazenar configurações de agendamento de notificações push
+ * aviso1Minutes e aviso2Minutes: antecedência em minutos (ex: 1440 = 24h, 30 = 30min)
+ * 0 significa desativado
+ */
+export const notificationSettings = mysqlTable("notification_settings", {
+  id: int("id").autoincrement().primaryKey(),
+  aviso1Minutes: int("aviso1Minutes").notNull().default(1440), // 24h por padrão
+  aviso2Minutes: int("aviso2Minutes").notNull().default(0),    // desativado por padrão
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+export type NotificationSettings = typeof notificationSettings.$inferSelect;
+export type InsertNotificationSettings = typeof notificationSettings.$inferInsert;

@@ -16,6 +16,7 @@ import { getGoogleCalendarLink, getOutlookLink, downloadICS, airportNames, airpo
 import { usePullToRefresh } from '@/hooks/usePullToRefresh';
 import { usePushNotifications } from '@/hooks/usePushNotifications';
 import { ExportPdfButton } from '@/components/FlightPdfExport';
+import { NotificationSettingsPopup } from '@/components/NotificationSettingsPopup';
 import { trpc } from '@/lib/trpc';
 import { toast } from 'sonner';
 
@@ -841,6 +842,14 @@ export default function Home() {
                   ? <EyeOff className="w-4 h-4" />
                   : <Eye className="w-4 h-4" />}
               </Button>
+
+              {/* Botão Configurar Avisos Push */}
+              {pushStatus !== 'unsupported' && pushSubscribed && (
+                <NotificationSettingsPopup
+                  isAuthenticated={isAuthenticated}
+                  onLoginRequired={() => setShowLoginModal(true)}
+                />
+              )}
 
               {/* Botão Ativar Notificações Push */}
               {pushStatus !== 'unsupported' && (
