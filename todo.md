@@ -68,3 +68,7 @@
 - [x] Adicionar botão "Ativar Notificações" no header com feedback visual de status (ativo/inativo/sem suporte)
 - [x] Indicador visual de sugestão automática no campo de número do voo (ícone + estado sugerido/confirmado)
 - [x] Botão "Testar Notificação" visível apenas quando push está ativo, envia notificação de teste via endpoint push.sendTest
+
+## Bugs (sessão atual)
+- [x] Bug: ao trocar companhia no combo, o localizador com 2 chars (sigla anterior) não é atualizado para a nova sigla
+- [x] Bug: campo datetime com apenas data (sem horário) exibe "Invalid Date" no badge do dia da semana

@@ -1370,11 +1370,16 @@ export default function Home() {
                                   <Select
                                     value={tempDepartureAirline[week.weekNumber] ?? ''}
                                     onValueChange={(val) => {
+                                      const prevAirline = tempDepartureAirline[week.weekNumber] ?? '';
                                       setTempDepartureAirline(prev => ({ ...prev, [week.weekNumber]: val }));
-                                      // Preencher localizador com sigla IATA se estiver vazio
-                                      const iata = airlineIataCodes[val] ?? val.toUpperCase().slice(0, 2);
-                                      if (!(tempDepartureLocator[week.weekNumber] ?? '').trim()) {
-                                        setTempDepartureLocator(prev => ({ ...prev, [week.weekNumber]: iata }));
+                                      // Atualizar localizador com a nova sigla IATA se:
+                                      //   (a) estiver vazio, OU
+                                      //   (b) contiver exatamente a sigla da companhia anterior (2 chars)
+                                      const newIata = airlineIataCodes[val] ?? val.toUpperCase().slice(0, 2);
+                                      const prevIata = airlineIataCodes[prevAirline] ?? prevAirline.toUpperCase().slice(0, 2);
+                                      const currentLocator = (tempDepartureLocator[week.weekNumber] ?? '').trim();
+                                      if (!currentLocator || currentLocator === prevIata) {
+                                        setTempDepartureLocator(prev => ({ ...prev, [week.weekNumber]: newIata }));
                                       }
                                       // Sugerir número do voo baseado no histórico
                                       const suggestion = suggestFlightNumber(val, tempDepartureDatetime[week.weekNumber] ?? '', 'departure', weeksData);
@@ -1435,11 +1440,19 @@ export default function Home() {
                                     value={tempDepartureDatetime[week.weekNumber] ?? ''}
                                     onChange={(e) => setTempDepartureDatetime(prev => ({ ...prev, [week.weekNumber]: e.target.value }))}
                                   />
-                                  {tempDepartureDatetime[week.weekNumber] && (
-                                    <span className="text-[11px] font-semibold text-blue-700 bg-blue-100 px-2 py-0.5 rounded-md w-fit">
-                                      {new Date(tempDepartureDatetime[week.weekNumber] + ':00').toLocaleDateString('pt-BR', { weekday: 'long' }).replace(/^w/, c => c.toUpperCase())}
-                                    </span>
-                                  )}
+                                  {tempDepartureDatetime[week.weekNumber] && (() => {
+                                    // Suporta tanto 'YYYY-MM-DD' (só data) quanto 'YYYY-MM-DDTHH:mm' (data+hora)
+                                    const raw = tempDepartureDatetime[week.weekNumber];
+                                    const iso = raw.includes('T') ? raw : raw + 'T12:00';
+                                    const d = new Date(iso);
+                                    if (isNaN(d.getTime())) return null;
+                                    const label = d.toLocaleDateString('pt-BR', { weekday: 'long' });
+                                    return (
+                                      <span className="text-[11px] font-semibold text-blue-700 bg-blue-100 px-2 py-0.5 rounded-md w-fit">
+                                        {label.charAt(0).toUpperCase() + label.slice(1)}
+                                      </span>
+                                    );
+                                  })()}
                                 </div>
                                 <div className="flex flex-col gap-1">
                                   <div className="flex items-center justify-between">
@@ -1496,11 +1509,16 @@ export default function Home() {
                                   <Select
                                     value={tempReturnAirline[week.weekNumber] ?? ''}
                                     onValueChange={(val) => {
+                                      const prevAirline = tempReturnAirline[week.weekNumber] ?? '';
                                       setTempReturnAirline(prev => ({ ...prev, [week.weekNumber]: val }));
-                                      // Preencher localizador com sigla IATA se estiver vazio
-                                      const iata = airlineIataCodes[val] ?? val.toUpperCase().slice(0, 2);
-                                      if (!(tempReturnLocator[week.weekNumber] ?? '').trim()) {
-                                        setTempReturnLocator(prev => ({ ...prev, [week.weekNumber]: iata }));
+                                      // Atualizar localizador com a nova sigla IATA se:
+                                      //   (a) estiver vazio, OU
+                                      //   (b) contiver exatamente a sigla da companhia anterior (2 chars)
+                                      const newIata = airlineIataCodes[val] ?? val.toUpperCase().slice(0, 2);
+                                      const prevIata = airlineIataCodes[prevAirline] ?? prevAirline.toUpperCase().slice(0, 2);
+                                      const currentLocator = (tempReturnLocator[week.weekNumber] ?? '').trim();
+                                      if (!currentLocator || currentLocator === prevIata) {
+                                        setTempReturnLocator(prev => ({ ...prev, [week.weekNumber]: newIata }));
                                       }
                                       // Sugerir número do voo baseado no histórico
                                       const suggestion = suggestFlightNumber(val, tempReturnDatetime[week.weekNumber] ?? '', 'return', weeksData);
@@ -1563,7 +1581,15 @@ export default function Home() {
                                   />
                                   {tempReturnDatetime[week.weekNumber] && (
                                     <span className="text-[11px] font-semibold text-orange-700 bg-orange-100 px-2 py-0.5 rounded-md w-fit">
-                                      {new Date(tempReturnDatetime[week.weekNumber] + ':00').toLocaleDateString('pt-BR', { weekday: 'long' }).replace(/^w/, c => c.toUpperCase())}
+                                      {(() => {
+                                        // Suporta tanto 'YYYY-MM-DD' (só data) quanto 'YYYY-MM-DDTHH:mm' (data+hora)
+                                        const raw = tempReturnDatetime[week.weekNumber];
+                                        const iso = raw.includes('T') ? raw : raw + 'T12:00';
+                                        const d = new Date(iso);
+                                        if (isNaN(d.getTime())) return 'Data inválida';
+                                        const label = d.toLocaleDateString('pt-BR', { weekday: 'long' });
+                                        return label.charAt(0).toUpperCase() + label.slice(1);
+                                      })()}
                                     </span>
                                   )}
                                 </div>
