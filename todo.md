@@ -31,3 +31,5 @@
 - [x] Corrigir safe-area-inset no cabeçalho para iPhone (barra de status/relógio)
 - [x] Substituir botões OK individuais dos cards Ida/Volta por um único botão "Salvar" unificado
 - [x] Corrigir bug: campos dos cards Ida/Volta apagam sozinhos enquanto usuário digita (useEffect de sincronização sobrescreve estado local)
+- [x] Adicionar ícones reais das companhias aéreas (LATAM, Gol, Azul) nos combos
+- [x] Exibir dia da semana ao lado das datas de ida e volta

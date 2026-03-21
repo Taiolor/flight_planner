@@ -1102,12 +1102,17 @@ export default function Home() {
                                     onValueChange={(val) => setTempDepartureAirline(prev => ({ ...prev, [week.weekNumber]: val }))}
                                   >
                                     <SelectTrigger className="h-8 text-xs bg-white border-blue-200 w-full">
-                                      <SelectValue placeholder="Selecionar companhia" />
+                                      <SelectValue placeholder="Selecionar companhia">
+                                        {tempDepartureAirline[week.weekNumber] === 'latam' && <span className="flex items-center gap-1.5"><img src="https://d2xsxph8kpxj0f.cloudfront.net/310419663028456038/HQ655wm9a6bck22hJAwYRc/logo-latam_a13bb510.png" className="h-4 w-auto object-contain" alt="LATAM" />LATAM</span>}
+                                        {tempDepartureAirline[week.weekNumber] === 'gol' && <span className="flex items-center gap-1.5"><img src="https://d2xsxph8kpxj0f.cloudfront.net/310419663028456038/HQ655wm9a6bck22hJAwYRc/logo-gol_c86ba55a.png" className="h-4 w-auto object-contain" alt="Gol" />Gol</span>}
+                                        {tempDepartureAirline[week.weekNumber] === 'azul' && <span className="flex items-center gap-1.5"><img src="https://d2xsxph8kpxj0f.cloudfront.net/310419663028456038/HQ655wm9a6bck22hJAwYRc/logo-azul_e89c8b63.png" className="h-4 w-auto object-contain" alt="Azul" />Azul</span>}
+                                        {!tempDepartureAirline[week.weekNumber] && <span className="text-slate-400">Selecionar companhia</span>}
+                                      </SelectValue>
                                     </SelectTrigger>
                                     <SelectContent>
-                                      <SelectItem value="latam">🟥 LATAM</SelectItem>
-                                      <SelectItem value="gol">🟧 Gol</SelectItem>
-                                      <SelectItem value="azul">🟦 Azul</SelectItem>
+                                      <SelectItem value="latam"><span className="flex items-center gap-2"><img src="https://d2xsxph8kpxj0f.cloudfront.net/310419663028456038/HQ655wm9a6bck22hJAwYRc/logo-latam_a13bb510.png" className="h-5 w-auto object-contain" alt="LATAM" />LATAM</span></SelectItem>
+                                      <SelectItem value="gol"><span className="flex items-center gap-2"><img src="https://d2xsxph8kpxj0f.cloudfront.net/310419663028456038/HQ655wm9a6bck22hJAwYRc/logo-gol_c86ba55a.png" className="h-5 w-auto object-contain" alt="Gol" />Gol</span></SelectItem>
+                                      <SelectItem value="azul"><span className="flex items-center gap-2"><img src="https://d2xsxph8kpxj0f.cloudfront.net/310419663028456038/HQ655wm9a6bck22hJAwYRc/logo-azul_e89c8b63.png" className="h-5 w-auto object-contain" alt="Azul" />Azul</span></SelectItem>
                                     </SelectContent>
                                   </Select>
                                 </div>
@@ -1128,6 +1133,11 @@ export default function Home() {
                                     value={tempDepartureDatetime[week.weekNumber] ?? ''}
                                     onChange={(e) => setTempDepartureDatetime(prev => ({ ...prev, [week.weekNumber]: e.target.value }))}
                                   />
+                                  {tempDepartureDatetime[week.weekNumber] && (
+                                    <span className="text-[11px] font-semibold text-blue-700 bg-blue-100 px-2 py-0.5 rounded-md w-fit">
+                                      {new Date(tempDepartureDatetime[week.weekNumber] + ':00').toLocaleDateString('pt-BR', { weekday: 'long' }).replace(/^w/, c => c.toUpperCase())}
+                                    </span>
+                                  )}
                                 </div>
                                 <div className="flex flex-col gap-1">
                                   <label className="text-[10px] font-semibold text-blue-600 uppercase tracking-wide">Localizador (PNR)</label>
@@ -1173,12 +1183,17 @@ export default function Home() {
                                     onValueChange={(val) => setTempReturnAirline(prev => ({ ...prev, [week.weekNumber]: val }))}
                                   >
                                     <SelectTrigger className="h-8 text-xs bg-white border-orange-200 w-full">
-                                      <SelectValue placeholder="Selecionar companhia" />
+                                      <SelectValue placeholder="Selecionar companhia">
+                                        {tempReturnAirline[week.weekNumber] === 'latam' && <span className="flex items-center gap-1.5"><img src="https://d2xsxph8kpxj0f.cloudfront.net/310419663028456038/HQ655wm9a6bck22hJAwYRc/logo-latam_a13bb510.png" className="h-4 w-auto object-contain" alt="LATAM" />LATAM</span>}
+                                        {tempReturnAirline[week.weekNumber] === 'gol' && <span className="flex items-center gap-1.5"><img src="https://d2xsxph8kpxj0f.cloudfront.net/310419663028456038/HQ655wm9a6bck22hJAwYRc/logo-gol_c86ba55a.png" className="h-4 w-auto object-contain" alt="Gol" />Gol</span>}
+                                        {tempReturnAirline[week.weekNumber] === 'azul' && <span className="flex items-center gap-1.5"><img src="https://d2xsxph8kpxj0f.cloudfront.net/310419663028456038/HQ655wm9a6bck22hJAwYRc/logo-azul_e89c8b63.png" className="h-4 w-auto object-contain" alt="Azul" />Azul</span>}
+                                        {!tempReturnAirline[week.weekNumber] && <span className="text-slate-400">Selecionar companhia</span>}
+                                      </SelectValue>
                                     </SelectTrigger>
                                     <SelectContent>
-                                      <SelectItem value="latam">🟥 LATAM</SelectItem>
-                                      <SelectItem value="gol">🟧 Gol</SelectItem>
-                                      <SelectItem value="azul">🟦 Azul</SelectItem>
+                                      <SelectItem value="latam"><span className="flex items-center gap-2"><img src="https://d2xsxph8kpxj0f.cloudfront.net/310419663028456038/HQ655wm9a6bck22hJAwYRc/logo-latam_a13bb510.png" className="h-5 w-auto object-contain" alt="LATAM" />LATAM</span></SelectItem>
+                                      <SelectItem value="gol"><span className="flex items-center gap-2"><img src="https://d2xsxph8kpxj0f.cloudfront.net/310419663028456038/HQ655wm9a6bck22hJAwYRc/logo-gol_c86ba55a.png" className="h-5 w-auto object-contain" alt="Gol" />Gol</span></SelectItem>
+                                      <SelectItem value="azul"><span className="flex items-center gap-2"><img src="https://d2xsxph8kpxj0f.cloudfront.net/310419663028456038/HQ655wm9a6bck22hJAwYRc/logo-azul_e89c8b63.png" className="h-5 w-auto object-contain" alt="Azul" />Azul</span></SelectItem>
                                     </SelectContent>
                                   </Select>
                                 </div>
@@ -1199,6 +1214,11 @@ export default function Home() {
                                     value={tempReturnDatetime[week.weekNumber] ?? ''}
                                     onChange={(e) => setTempReturnDatetime(prev => ({ ...prev, [week.weekNumber]: e.target.value }))}
                                   />
+                                  {tempReturnDatetime[week.weekNumber] && (
+                                    <span className="text-[11px] font-semibold text-orange-700 bg-orange-100 px-2 py-0.5 rounded-md w-fit">
+                                      {new Date(tempReturnDatetime[week.weekNumber] + ':00').toLocaleDateString('pt-BR', { weekday: 'long' }).replace(/^w/, c => c.toUpperCase())}
+                                    </span>
+                                  )}
                                 </div>
                                 <div className="flex flex-col gap-1">
                                   <label className="text-[10px] font-semibold text-orange-600 uppercase tracking-wide">Localizador (PNR)</label>
