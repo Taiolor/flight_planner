@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { createRoot } from 'react-dom/client';
+import { renderToStaticMarkup } from 'react-dom/server';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import { Button } from '@/components/ui/button';
@@ -59,11 +59,12 @@ function getMonthLabel(dateStr: string): string {
   return d.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
 }
 
-// ─── Capa (primeira página) ──────────────────────────────────────────────────
+// ─── Componentes de página (sem hooks — apenas JSX puro para renderToStaticMarkup) ─
+
 function CoverPage({ issued, totalInvested }: { issued: WeekData[]; totalInvested: number }) {
   return (
     <div style={{
-      fontFamily: 'Roboto, Arial, sans-serif',
+      fontFamily: 'Arial, sans-serif',
       width: '794px',
       background: 'linear-gradient(135deg, #1e3a8a 0%, #1d4ed8 50%, #0ea5e9 100%)',
       padding: '60px 48px 48px',
@@ -111,7 +112,6 @@ function CoverPage({ issued, totalInvested }: { issued: WeekData[]; totalInveste
   );
 }
 
-// ─── Página de um mês ────────────────────────────────────────────────────────
 function MonthPage({ monthLabel, weeks, priceMap }: {
   monthLabel: string;
   weeks: WeekData[];
@@ -127,13 +127,12 @@ function MonthPage({ monthLabel, weeks, priceMap }: {
 
   return (
     <div style={{
-      fontFamily: 'Roboto, Arial, sans-serif',
+      fontFamily: 'Arial, sans-serif',
       width: '794px',
       background: '#f8fafc',
       padding: '32px 48px 40px',
       boxSizing: 'border-box',
     }}>
-      {/* Cabeçalho do mês */}
       <div style={{
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         borderBottom: '3px solid #1d4ed8', paddingBottom: '12px', marginBottom: '24px',
@@ -151,7 +150,6 @@ function MonthPage({ monthLabel, weeks, priceMap }: {
         )}
       </div>
 
-      {/* Cards das semanas */}
       {weeks.map((week, wi) => {
         const prices = priceMap[week.weekNumber] || {};
         const depAirlineKey = week.departureAirline?.toLowerCase() ?? '';
@@ -161,17 +159,13 @@ function MonthPage({ monthLabel, weeks, priceMap }: {
         const retAirlineInfo = AIRLINE_COLORS[retAirlineKey];
 
         return (
-          <div
-            key={week.weekNumber}
-            style={{
-              background: '#fff',
-              borderRadius: '12px',
-              border: '1px solid #e2e8f0',
-              marginBottom: wi < weeks.length - 1 ? '16px' : '0',
-              overflow: 'hidden',
-            }}
-          >
-            {/* Cabeçalho do card */}
+          <div key={week.weekNumber} style={{
+            background: '#fff',
+            borderRadius: '12px',
+            border: '1px solid #e2e8f0',
+            marginBottom: wi < weeks.length - 1 ? '16px' : '0',
+            overflow: 'hidden',
+          }}>
             <div style={{
               background: 'linear-gradient(90deg, #1e3a8a 0%, #1d4ed8 100%)',
               color: '#fff',
@@ -185,28 +179,21 @@ function MonthPage({ monthLabel, weeks, priceMap }: {
               </div>
               {depPrice !== null && !isNaN(depPrice) && (
                 <div style={{
-                  background: 'rgba(255,255,255,0.2)',
-                  borderRadius: '6px',
-                  padding: '3px 12px',
-                  fontSize: '13px',
-                  fontWeight: 700,
+                  background: 'rgba(255,255,255,0.2)', borderRadius: '6px',
+                  padding: '3px 12px', fontSize: '13px', fontWeight: 700,
                 }}>
                   R$ {depPrice.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                 </div>
               )}
             </div>
 
-            {/* Corpo: IDA e VOLTA */}
-            <div style={{ display: 'flex', gap: '0' }}>
+            <div style={{ display: 'flex' }}>
               {/* IDA */}
               <div style={{ flex: 1, padding: '16px 20px', borderRight: '1px solid #e2e8f0' }}>
                 <div style={{
                   fontSize: '10px', fontWeight: 800, textTransform: 'uppercase',
                   letterSpacing: '1px', color: '#1d4ed8', marginBottom: '10px',
-                  display: 'flex', alignItems: 'center', gap: '6px',
-                }}>
-                  <span>→</span> IDA
-                </div>
+                }}>→ IDA</div>
                 <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px' }}>
                   <tbody>
                     {week.departureAirline && (
@@ -215,9 +202,7 @@ function MonthPage({ monthLabel, weeks, priceMap }: {
                         <td style={{ paddingBottom: '6px', verticalAlign: 'middle' }}>
                           {depAirlineInfo ? (
                             <span style={{
-                              display: 'inline-flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
+                              display: 'inline-block',
                               background: depAirlineInfo.bg,
                               color: depAirlineInfo.text,
                               borderRadius: '4px',
@@ -234,25 +219,19 @@ function MonthPage({ monthLabel, weeks, priceMap }: {
                     {week.departureFlightNumber && (
                       <tr>
                         <td style={{ color: '#64748b', paddingBottom: '6px', verticalAlign: 'middle' }}>Voo</td>
-                        <td style={{ paddingBottom: '6px', fontWeight: 700, color: '#1e293b', verticalAlign: 'middle' }}>
-                          {week.departureFlightNumber}
-                        </td>
+                        <td style={{ paddingBottom: '6px', fontWeight: 700, color: '#1e293b', verticalAlign: 'middle' }}>{week.departureFlightNumber}</td>
                       </tr>
                     )}
                     {week.departureLocator && (
                       <tr>
                         <td style={{ color: '#64748b', paddingBottom: '6px', verticalAlign: 'middle' }}>Localizador</td>
-                        <td style={{ paddingBottom: '6px', fontWeight: 700, color: '#1e293b', fontFamily: 'monospace', letterSpacing: '1px', verticalAlign: 'middle' }}>
-                          {week.departureLocator}
-                        </td>
+                        <td style={{ paddingBottom: '6px', fontWeight: 700, color: '#1e293b', fontFamily: 'monospace', letterSpacing: '1px', verticalAlign: 'middle' }}>{week.departureLocator}</td>
                       </tr>
                     )}
                     {week.departureFlightDatetime && (
                       <tr>
                         <td style={{ color: '#64748b', paddingBottom: '6px', verticalAlign: 'middle' }}>Data/Hora</td>
-                        <td style={{ paddingBottom: '6px', color: '#1e293b', verticalAlign: 'middle' }}>
-                          {formatDatetime(week.departureFlightDatetime)}
-                        </td>
+                        <td style={{ paddingBottom: '6px', color: '#1e293b', verticalAlign: 'middle' }}>{formatDatetime(week.departureFlightDatetime)}</td>
                       </tr>
                     )}
                     {week.departureAirport && (
@@ -270,10 +249,7 @@ function MonthPage({ monthLabel, weeks, priceMap }: {
                 <div style={{
                   fontSize: '10px', fontWeight: 800, textTransform: 'uppercase',
                   letterSpacing: '1px', color: '#ea580c', marginBottom: '10px',
-                  display: 'flex', alignItems: 'center', gap: '6px',
-                }}>
-                  <span>↩</span> VOLTA
-                </div>
+                }}>↩ VOLTA</div>
                 <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px' }}>
                   <tbody>
                     {week.returnAirline && (
@@ -282,9 +258,7 @@ function MonthPage({ monthLabel, weeks, priceMap }: {
                         <td style={{ paddingBottom: '6px', verticalAlign: 'middle' }}>
                           {retAirlineInfo ? (
                             <span style={{
-                              display: 'inline-flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
+                              display: 'inline-block',
                               background: retAirlineInfo.bg,
                               color: retAirlineInfo.text,
                               borderRadius: '4px',
@@ -301,25 +275,19 @@ function MonthPage({ monthLabel, weeks, priceMap }: {
                     {week.returnFlightNumber && (
                       <tr>
                         <td style={{ color: '#64748b', paddingBottom: '6px', verticalAlign: 'middle' }}>Voo</td>
-                        <td style={{ paddingBottom: '6px', fontWeight: 700, color: '#1e293b', verticalAlign: 'middle' }}>
-                          {week.returnFlightNumber}
-                        </td>
+                        <td style={{ paddingBottom: '6px', fontWeight: 700, color: '#1e293b', verticalAlign: 'middle' }}>{week.returnFlightNumber}</td>
                       </tr>
                     )}
                     {week.returnLocator && (
                       <tr>
                         <td style={{ color: '#64748b', paddingBottom: '6px', verticalAlign: 'middle' }}>Localizador</td>
-                        <td style={{ paddingBottom: '6px', fontWeight: 700, color: '#1e293b', fontFamily: 'monospace', letterSpacing: '1px', verticalAlign: 'middle' }}>
-                          {week.returnLocator}
-                        </td>
+                        <td style={{ paddingBottom: '6px', fontWeight: 700, color: '#1e293b', fontFamily: 'monospace', letterSpacing: '1px', verticalAlign: 'middle' }}>{week.returnLocator}</td>
                       </tr>
                     )}
                     {week.returnFlightDatetime && (
                       <tr>
                         <td style={{ color: '#64748b', paddingBottom: '6px', verticalAlign: 'middle' }}>Data/Hora</td>
-                        <td style={{ paddingBottom: '6px', color: '#1e293b', verticalAlign: 'middle' }}>
-                          {formatDatetime(week.returnFlightDatetime)}
-                        </td>
+                        <td style={{ paddingBottom: '6px', color: '#1e293b', verticalAlign: 'middle' }}>{formatDatetime(week.returnFlightDatetime)}</td>
                       </tr>
                     )}
                     {week.returnAirport && (
@@ -336,7 +304,6 @@ function MonthPage({ monthLabel, weeks, priceMap }: {
         );
       })}
 
-      {/* Rodapé */}
       <div style={{
         marginTop: '24px', paddingTop: '12px',
         borderTop: '1px solid #e2e8f0',
@@ -348,47 +315,55 @@ function MonthPage({ monthLabel, weeks, priceMap }: {
   );
 }
 
-// ─── Função auxiliar: renderiza JSX em container temporário e captura como canvas ─
-async function renderToCanvas(jsx: React.ReactElement): Promise<HTMLCanvasElement> {
+// ─── Renderiza JSX como HTML estático em iframe e captura com html2canvas ────
+async function renderPageToCanvas(jsx: React.ReactElement): Promise<HTMLCanvasElement> {
   return new Promise((resolve, reject) => {
-    // Criar container temporário visível mas fora da tela
-    const container = document.createElement('div');
-    container.style.cssText = [
-      'position:absolute',
-      'top:0',
-      'left:0',
-      'width:794px',
-      'opacity:0',
-      'pointer-events:none',
-      'z-index:-9999',
-      'overflow:visible',
-    ].join(';');
-    document.body.appendChild(container);
+    // Gerar HTML puro (sem React runtime — apenas string HTML)
+    const htmlContent = renderToStaticMarkup(jsx);
 
-    const root = createRoot(container);
-    root.render(jsx);
+    // Criar iframe isolado
+    const iframe = document.createElement('iframe');
+    iframe.style.cssText = 'position:fixed;top:0;left:0;width:794px;height:1200px;opacity:0;pointer-events:none;border:none;z-index:-9999;';
+    document.body.appendChild(iframe);
 
-    // Aguardar o React renderizar (dois frames para garantir layout completo)
-    requestAnimationFrame(() => {
-      requestAnimationFrame(async () => {
-        try {
-          const canvas = await html2canvas(container.firstElementChild as HTMLElement, {
-            scale: 2,
-            useCORS: true,
-            backgroundColor: '#ffffff',
-            width: 794,
-            windowWidth: 794,
-            logging: false,
-          });
-          resolve(canvas);
-        } catch (err) {
-          reject(err);
-        } finally {
-          root.unmount();
-          document.body.removeChild(container);
-        }
-      });
-    });
+    const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
+    if (!iframeDoc) {
+      document.body.removeChild(iframe);
+      reject(new Error('Não foi possível acessar o documento do iframe'));
+      return;
+    }
+
+    iframeDoc.open();
+    iframeDoc.write(`<!DOCTYPE html><html><head>
+      <meta charset="utf-8">
+      <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { margin: 0; padding: 0; background: #fff; }
+      </style>
+    </head><body>${htmlContent}</body></html>`);
+    iframeDoc.close();
+
+    // Aguardar o iframe renderizar
+    setTimeout(async () => {
+      try {
+        const el = iframeDoc.body.firstElementChild as HTMLElement;
+        if (!el) throw new Error('Elemento não encontrado no iframe');
+
+        const canvas = await html2canvas(el, {
+          scale: 2,
+          useCORS: true,
+          backgroundColor: '#ffffff',
+          width: 794,
+          windowWidth: 794,
+          logging: false,
+        });
+        resolve(canvas);
+      } catch (err) {
+        reject(err);
+      } finally {
+        document.body.removeChild(iframe);
+      }
+    }, 150);
   });
 }
 
@@ -413,26 +388,21 @@ export function ExportPdfButton({ weeksData, priceMap, totalInvested }: FlightPd
 
     try {
       const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
-      const pdfW = pdf.internal.pageSize.getWidth();   // 210mm
-      const pdfH = pdf.internal.pageSize.getHeight();  // 297mm
+      const pdfW = pdf.internal.pageSize.getWidth();
+      const pdfH = pdf.internal.pageSize.getHeight();
 
-      // Função auxiliar: adiciona canvas ao PDF (com fatiamento se necessário)
       const addCanvasToPdf = (canvas: HTMLCanvasElement, isFirst: boolean) => {
         if (!isFirst) pdf.addPage();
 
         const imgData = canvas.toDataURL('image/jpeg', 0.92);
         const canvasW = canvas.width;
         const canvasH = canvas.height;
-
-        // Escala: 794px (largura do elemento) → 210mm (largura A4)
-        const scale = pdfW / (canvasW / 2); // canvasW/2 porque scale=2 no html2canvas
+        const scale = pdfW / (canvasW / 2);
         const imgH = (canvasH / 2) * scale;
 
         if (imgH <= pdfH) {
-          // Cabe em uma página
           pdf.addImage(imgData, 'JPEG', 0, 0, pdfW, imgH);
         } else {
-          // Conteúdo maior que A4: fatiar verticalmente sem cortar cards
           let yOffset = 0;
           let firstSlice = true;
           while (yOffset < imgH) {
@@ -460,7 +430,7 @@ export function ExportPdfButton({ weeksData, priceMap, totalInvested }: FlightPd
       };
 
       // 1. Capa
-      const coverCanvas = await renderToCanvas(
+      const coverCanvas = await renderPageToCanvas(
         <CoverPage issued={issued} totalInvested={totalInvested} />
       );
       addCanvasToPdf(coverCanvas, true);
@@ -468,7 +438,7 @@ export function ExportPdfButton({ weeksData, priceMap, totalInvested }: FlightPd
       // 2. Uma página por mês
       for (let i = 0; i < months.length; i++) {
         const [monthLabel, weeks] = months[i];
-        const monthCanvas = await renderToCanvas(
+        const monthCanvas = await renderPageToCanvas(
           <MonthPage monthLabel={monthLabel} weeks={weeks} priceMap={priceMap} />
         );
         addCanvasToPdf(monthCanvas, false);
