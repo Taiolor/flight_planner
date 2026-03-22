@@ -771,9 +771,11 @@ export default function Home() {
         <div className="container py-3 sm:py-6">
           <div className="flex items-center justify-between gap-2 flex-wrap">
             <div className="flex items-center gap-2 sm:gap-3">
-              <div className="bg-white bg-opacity-20 p-2 sm:p-3 rounded-lg">
-                <Plane className="w-5 h-5 sm:w-6 sm:h-6" />
-              </div>
+              <img
+                src="https://d2xsxph8kpxj0f.cloudfront.net/310419663028456038/HQ655wm9a6bck22hJAwYRc/smartfly-icon-512-fy4eDuGdVJBtxeYLKc2qAk.png"
+                alt="Smart Fly"
+                className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl object-contain"
+              />
               <div>
                 <h1 className="text-lg sm:text-3xl font-bold leading-tight">Smart Fly</h1>
                 <p className="text-blue-100 text-xs sm:text-sm">{departureAirport} → NVT • 2026</p>
