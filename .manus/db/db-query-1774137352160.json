@@ -1,0 +1,16 @@
+{
+  "query": "SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'flight_weeks' AND COLUMN_NAME IN ('departureFlightNumber', 'returnFlightNumber');",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3hTCxLMFFnvwjKu.root --database HQ655wm9a6bck22hJAwYRc --execute SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'flight_weeks' AND COLUMN_NAME IN ('departureFlightNumber', 'returnFlightNumber');",
+  "rows": [
+    {
+      "COLUMN_NAME": "departureFlightNumber"
+    },
+    {
+      "COLUMN_NAME": "returnFlightNumber"
+    }
+  ],
+  "messages": [],
+  "stdout": "COLUMN_NAME\ndepartureFlightNumber\nreturnFlightNumber\n",
+  "stderr": "",
+  "execution_time_ms": 343
+}

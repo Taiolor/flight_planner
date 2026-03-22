@@ -1,0 +1,35 @@
+{
+  "query": "SELECT weekNumber, departureFlightNumber, returnFlightNumber FROM flight_weeks WHERE departureFlightNumber IS NOT NULL AND departureFlightNumber != '' ORDER BY weekNumber;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3hTCxLMFFnvwjKu.root --database HQ655wm9a6bck22hJAwYRc --execute SELECT weekNumber, departureFlightNumber, returnFlightNumber FROM flight_weeks WHERE departureFlightNumber IS NOT NULL AND departureFlightNumber != '' ORDER BY weekNumber;",
+  "rows": [
+    {
+      "weekNumber": "2",
+      "departureFlightNumber": "LA3408",
+      "returnFlightNumber": "LA3411"
+    },
+    {
+      "weekNumber": "4",
+      "departureFlightNumber": "LA3304",
+      "returnFlightNumber": "LA3411"
+    },
+    {
+      "weekNumber": "5",
+      "departureFlightNumber": "G31224",
+      "returnFlightNumber": "G31229"
+    },
+    {
+      "weekNumber": "16",
+      "departureFlightNumber": "LA3408",
+      "returnFlightNumber": "LA3411"
+    },
+    {
+      "weekNumber": "18",
+      "departureFlightNumber": "LA 4608",
+      "returnFlightNumber": "LA 3411"
+    }
+  ],
+  "messages": [],
+  "stdout": "weekNumber\tdepartureFlightNumber\treturnFlightNumber\n2\tLA3408\tLA3411\n4\tLA3304\tLA3411\n5\tG31224\tG31229\n16\tLA3408\tLA3411\n18\tLA 4608\tLA 3411\n",
+  "stderr": "",
+  "execution_time_ms": 526
+}

@@ -1,0 +1,114 @@
+{
+  "query": "SELECT weekNumber, isTicketIssued, departureFlightNumber, returnFlightNumber, departureAirline, returnAirline FROM flight_weeks WHERE isTicketIssued = 1 ORDER BY weekNumber;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3hTCxLMFFnvwjKu.root --database HQ655wm9a6bck22hJAwYRc --execute SELECT weekNumber, isTicketIssued, departureFlightNumber, returnFlightNumber, departureAirline, returnAirline FROM flight_weeks WHERE isTicketIssued = 1 ORDER BY weekNumber;",
+  "rows": [
+    {
+      "weekNumber": "1",
+      "isTicketIssued": "1",
+      "departureFlightNumber": "NULL",
+      "returnFlightNumber": "NULL",
+      "departureAirline": "latam",
+      "returnAirline": "latam"
+    },
+    {
+      "weekNumber": "2",
+      "isTicketIssued": "1",
+      "departureFlightNumber": "LA3408",
+      "returnFlightNumber": "LA3411",
+      "departureAirline": "latam",
+      "returnAirline": "latam"
+    },
+    {
+      "weekNumber": "3",
+      "isTicketIssued": "1",
+      "departureFlightNumber": "NULL",
+      "returnFlightNumber": "NULL",
+      "departureAirline": "gol",
+      "returnAirline": "gol"
+    },
+    {
+      "weekNumber": "4",
+      "isTicketIssued": "1",
+      "departureFlightNumber": "LA3304",
+      "returnFlightNumber": "LA3411",
+      "departureAirline": "latam",
+      "returnAirline": "latam"
+    },
+    {
+      "weekNumber": "5",
+      "isTicketIssued": "1",
+      "departureFlightNumber": "G31224",
+      "returnFlightNumber": "G31229",
+      "departureAirline": "gol",
+      "returnAirline": "gol"
+    },
+    {
+      "weekNumber": "6",
+      "isTicketIssued": "1",
+      "departureFlightNumber": "NULL",
+      "returnFlightNumber": "NULL",
+      "departureAirline": "latam",
+      "returnAirline": "latam"
+    },
+    {
+      "weekNumber": "7",
+      "isTicketIssued": "1",
+      "departureFlightNumber": "NULL",
+      "returnFlightNumber": "NULL",
+      "departureAirline": "gol",
+      "returnAirline": "gol"
+    },
+    {
+      "weekNumber": "8",
+      "isTicketIssued": "1",
+      "departureFlightNumber": "NULL",
+      "returnFlightNumber": "NULL",
+      "departureAirline": "latam",
+      "returnAirline": "latam"
+    },
+    {
+      "weekNumber": "11",
+      "isTicketIssued": "1",
+      "departureFlightNumber": "NULL",
+      "returnFlightNumber": "NULL",
+      "departureAirline": "gol",
+      "returnAirline": "gol"
+    },
+    {
+      "weekNumber": "14",
+      "isTicketIssued": "1",
+      "departureFlightNumber": "NULL",
+      "returnFlightNumber": "NULL",
+      "departureAirline": "gol",
+      "returnAirline": "gol"
+    },
+    {
+      "weekNumber": "16",
+      "isTicketIssued": "1",
+      "departureFlightNumber": "LA3408",
+      "returnFlightNumber": "LA3411",
+      "departureAirline": "latam",
+      "returnAirline": "latam"
+    },
+    {
+      "weekNumber": "17",
+      "isTicketIssued": "1",
+      "departureFlightNumber": "NULL",
+      "returnFlightNumber": "NULL",
+      "departureAirline": "NULL",
+      "returnAirline": "NULL"
+    },
+    {
+      "weekNumber": "18",
+      "isTicketIssued": "1",
+      "departureFlightNumber": "LA 4608",
+      "returnFlightNumber": "LA 3411",
+      "departureAirline": "latam",
+      "returnAirline": "latam"
+    }
+  ],
+  "messages": [],
+  "stdout": "weekNumber\tisTicketIssued\tdepartureFlightNumber\treturnFlightNumber\tdepartureAirline\treturnAirline\n1\t1\tNULL\tNULL\tlatam\tlatam\n2\t1\tLA3408\tLA3411\tlatam\tlatam\n3\t1\tNULL\tNULL\tgol\tgol\n4\t1\tLA3304\tLA3411\tlatam\tlatam\n5\t1\tG31224\tG31229\tgol\tgol\n6\t1\tNULL\tNULL\tlatam\tlatam\n7\t1\tNULL\tNULL\tgol\tgol\n8\t1\tNULL\tNULL\tlatam\tlatam\n11\t1\tNULL\tNULL\tgol\tgol\n14\t1\tNULL\tNULL\tgol\tgol\n16\t1\tLA3408\tLA3411\tlatam\tlatam\n17\t1\tNULL\tNULL\tNULL\tNULL\n18\t1\tLA 4608\tLA 3411\tlatam\tlatam\n",
+  "stderr": "",
+  "execution_time_ms": 346
+}

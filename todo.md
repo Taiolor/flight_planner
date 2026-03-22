@@ -93,3 +93,4 @@
 - [x] Bug UX: popup de avisos push não centralizado no mobile — corrigir para fixed+transform centrado em telas pequenas
 - [x] Limpar base de push subscriptions duplicadas do banco (alertas repetidos)
 - [x] Bug: overlay do popup de push notifications captura cliques e impede interação com selects e botões internos
+- [x] Bug: números de voo de ida e volta não aparecem nos cards das semanas (campo preenchido mas não exibido) — causa: Service Worker com cache antigo do app quebrado; solução: desregistrar SW e recarregar

@@ -1,0 +1,45 @@
+{
+  "query": "SELECT weekNumber, departureFlightNumber, returnFlightNumber, departureAirline, returnAirline FROM flight_weeks WHERE departureFlightNumber IS NOT NULL OR returnFlightNumber IS NOT NULL LIMIT 10;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3hTCxLMFFnvwjKu.root --database HQ655wm9a6bck22hJAwYRc --execute SELECT weekNumber, departureFlightNumber, returnFlightNumber, departureAirline, returnAirline FROM flight_weeks WHERE departureFlightNumber IS NOT NULL OR returnFlightNumber IS NOT NULL LIMIT 10;",
+  "rows": [
+    {
+      "weekNumber": "2",
+      "departureFlightNumber": "LA3408",
+      "returnFlightNumber": "LA3411",
+      "departureAirline": "latam",
+      "returnAirline": "latam"
+    },
+    {
+      "weekNumber": "4",
+      "departureFlightNumber": "LA3304",
+      "returnFlightNumber": "LA3411",
+      "departureAirline": "latam",
+      "returnAirline": "latam"
+    },
+    {
+      "weekNumber": "5",
+      "departureFlightNumber": "G31224",
+      "returnFlightNumber": "G31229",
+      "departureAirline": "gol",
+      "returnAirline": "gol"
+    },
+    {
+      "weekNumber": "16",
+      "departureFlightNumber": "LA3408",
+      "returnFlightNumber": "LA3411",
+      "departureAirline": "latam",
+      "returnAirline": "latam"
+    },
+    {
+      "weekNumber": "18",
+      "departureFlightNumber": "LA 4608",
+      "returnFlightNumber": "LA 3411",
+      "departureAirline": "latam",
+      "returnAirline": "latam"
+    }
+  ],
+  "messages": [],
+  "stdout": "weekNumber\tdepartureFlightNumber\treturnFlightNumber\tdepartureAirline\treturnAirline\n2\tLA3408\tLA3411\tlatam\tlatam\n4\tLA3304\tLA3411\tlatam\tlatam\n5\tG31224\tG31229\tgol\tgol\n16\tLA3408\tLA3411\tlatam\tlatam\n18\tLA 4608\tLA 3411\tlatam\tlatam\n",
+  "stderr": "",
+  "execution_time_ms": 366
+}
