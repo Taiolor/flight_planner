@@ -1342,7 +1342,7 @@ export default function Home() {
                         <div className="rounded-xl border border-slate-200 bg-slate-50 overflow-hidden">
                           <div className="bg-slate-700 px-3 py-2 flex items-center gap-2">
                             <Plane className="w-3.5 h-3.5 text-white" />
-                            <span className="text-xs font-bold text-white uppercase tracking-wider">{departureAirport} → NVT • Preços</span>
+                            <span className="text-xs font-bold text-white uppercase tracking-wider">Consulta de Preços</span>
                           </div>
                           <div className="p-3 space-y-2">
                             {airlines.map(airline => {
