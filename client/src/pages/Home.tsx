@@ -1439,20 +1439,22 @@ export default function Home() {
                                     onValueChange={(val) => {
                                       const prevAirline = tempDepartureAirline[week.weekNumber] ?? '';
                                       setTempDepartureAirline(prev => ({ ...prev, [week.weekNumber]: val }));
-                                      // Atualizar localizador com a nova sigla IATA se:
+                                      // Preencher Número do Voo com a sigla IATA se:
                                       //   (a) estiver vazio, OU
                                       //   (b) contiver exatamente a sigla da companhia anterior (2 chars)
                                       const newIata = airlineIataCodes[val] ?? val.toUpperCase().slice(0, 2);
                                       const prevIata = airlineIataCodes[prevAirline] ?? prevAirline.toUpperCase().slice(0, 2);
-                                      const currentLocator = (tempDepartureLocator[week.weekNumber] ?? '').trim();
-                                      if (!currentLocator || currentLocator === prevIata) {
-                                        setTempDepartureLocator(prev => ({ ...prev, [week.weekNumber]: newIata }));
-                                      }
-                                      // Sugerir número do voo baseado no histórico
-                                      const suggestion = suggestFlightNumber(val, tempDepartureDatetime[week.weekNumber] ?? '', 'departure', weeksData);
-                                      if (suggestion && !(tempDepartureFlightNumber[week.weekNumber] ?? '').trim()) {
-                                        setTempDepartureFlightNumber(prev => ({ ...prev, [week.weekNumber]: suggestion }));
-                                        setSuggestedDepartureFlightNumber(prev => ({ ...prev, [week.weekNumber]: true }));
+                                      const currentFlightNum = (tempDepartureFlightNumber[week.weekNumber] ?? '').trim();
+                                      if (!currentFlightNum || currentFlightNum === prevIata) {
+                                        setTempDepartureFlightNumber(prev => ({ ...prev, [week.weekNumber]: newIata }));
+                                        setSuggestedDepartureFlightNumber(prev => ({ ...prev, [week.weekNumber]: false }));
+                                      } else {
+                                        // Sugerir número do voo baseado no histórico apenas se o campo não foi preenchido com IATA
+                                        const suggestion = suggestFlightNumber(val, tempDepartureDatetime[week.weekNumber] ?? '', 'departure', weeksData);
+                                        if (suggestion && !currentFlightNum) {
+                                          setTempDepartureFlightNumber(prev => ({ ...prev, [week.weekNumber]: suggestion }));
+                                          setSuggestedDepartureFlightNumber(prev => ({ ...prev, [week.weekNumber]: true }));
+                                        }
                                       }
                                     }}
                                   >
@@ -1590,20 +1592,22 @@ export default function Home() {
                                     onValueChange={(val) => {
                                       const prevAirline = tempReturnAirline[week.weekNumber] ?? '';
                                       setTempReturnAirline(prev => ({ ...prev, [week.weekNumber]: val }));
-                                      // Atualizar localizador com a nova sigla IATA se:
+                                      // Preencher Número do Voo com a sigla IATA se:
                                       //   (a) estiver vazio, OU
                                       //   (b) contiver exatamente a sigla da companhia anterior (2 chars)
                                       const newIata = airlineIataCodes[val] ?? val.toUpperCase().slice(0, 2);
                                       const prevIata = airlineIataCodes[prevAirline] ?? prevAirline.toUpperCase().slice(0, 2);
-                                      const currentLocator = (tempReturnLocator[week.weekNumber] ?? '').trim();
-                                      if (!currentLocator || currentLocator === prevIata) {
-                                        setTempReturnLocator(prev => ({ ...prev, [week.weekNumber]: newIata }));
-                                      }
-                                      // Sugerir número do voo baseado no histórico
-                                      const suggestion = suggestFlightNumber(val, tempReturnDatetime[week.weekNumber] ?? '', 'return', weeksData);
-                                      if (suggestion && !(tempReturnFlightNumber[week.weekNumber] ?? '').trim()) {
-                                        setTempReturnFlightNumber(prev => ({ ...prev, [week.weekNumber]: suggestion }));
-                                        setSuggestedReturnFlightNumber(prev => ({ ...prev, [week.weekNumber]: true }));
+                                      const currentFlightNum = (tempReturnFlightNumber[week.weekNumber] ?? '').trim();
+                                      if (!currentFlightNum || currentFlightNum === prevIata) {
+                                        setTempReturnFlightNumber(prev => ({ ...prev, [week.weekNumber]: newIata }));
+                                        setSuggestedReturnFlightNumber(prev => ({ ...prev, [week.weekNumber]: false }));
+                                      } else {
+                                        // Sugerir número do voo baseado no histórico apenas se o campo não foi preenchido com IATA
+                                        const suggestion = suggestFlightNumber(val, tempReturnDatetime[week.weekNumber] ?? '', 'return', weeksData);
+                                        if (suggestion && !currentFlightNum) {
+                                          setTempReturnFlightNumber(prev => ({ ...prev, [week.weekNumber]: suggestion }));
+                                          setSuggestedReturnFlightNumber(prev => ({ ...prev, [week.weekNumber]: true }));
+                                        }
                                       }
                                     }}
                                   >
