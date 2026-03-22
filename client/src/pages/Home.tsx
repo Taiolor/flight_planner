@@ -681,12 +681,12 @@ export default function Home() {
           const retDate = toInputDate(week.returnDate);
 
           // Para o campo de IDA: usar data+hora do banco se existir e tiver horário,
-          // caso contrário usar a data da semana (sobrescreve qualquer valor anterior sem horário)
+          // caso contrário usar a data da semana com horário fixo 00:00
           const savedDep = week.departureFlightDatetime ?? '';
           const hasSavedDepTime = savedDep.includes('T') && savedDep.length > 10;
           setTempDepartureDatetime(prev => ({
             ...prev,
-            [weekNumber]: hasSavedDepTime ? savedDep : depDate,
+            [weekNumber]: hasSavedDepTime ? savedDep : (depDate ? `${depDate}T00:00` : ''),
           }));
 
           // Para o campo de VOLTA: mesma lógica
@@ -694,7 +694,7 @@ export default function Home() {
           const hasSavedRetTime = savedRet.includes('T') && savedRet.length > 10;
           setTempReturnDatetime(prev => ({
             ...prev,
-            [weekNumber]: hasSavedRetTime ? savedRet : retDate,
+            [weekNumber]: hasSavedRetTime ? savedRet : (retDate ? `${retDate}T00:00` : ''),
           }));
         }
       }
@@ -1505,17 +1505,23 @@ export default function Home() {
                                     type="datetime-local"
                                     className="h-8 text-xs border border-blue-200 rounded-md px-2 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-400 w-full"
                                     value={tempDepartureDatetime[week.weekNumber] || (() => {
-                                      // Fallback: usar valor do banco ou data da semana
+                                      // Fallback: usar valor do banco ou data da semana com 00:00
                                       const saved = week.departureFlightDatetime ?? '';
                                       if (saved) return saved;
                                       const parts = week.departureDate.split('/');
-                                      return parts.length === 3 ? `${parts[2]}-${parts[1]}-${parts[0]}` : '';
+                                      return parts.length === 3 ? `${parts[2]}-${parts[1]}-${parts[0]}T00:00` : '';
                                     })()}
                                     onChange={(e) => setTempDepartureDatetime(prev => ({ ...prev, [week.weekNumber]: e.target.value }))}
                                   />
-                                  {tempDepartureDatetime[week.weekNumber] && (() => {
+                                  {(() => {
                                     // Suporta tanto 'YYYY-MM-DD' (só data) quanto 'YYYY-MM-DDTHH:mm' (data+hora)
-                                    const raw = tempDepartureDatetime[week.weekNumber];
+                                    const raw = tempDepartureDatetime[week.weekNumber] || (() => {
+                                      const saved = week.departureFlightDatetime ?? '';
+                                      if (saved) return saved;
+                                      const parts = week.departureDate.split('/');
+                                      return parts.length === 3 ? `${parts[2]}-${parts[1]}-${parts[0]}T00:00` : '';
+                                    })();
+                                    if (!raw) return null;
                                     const iso = raw.includes('T') ? raw : raw + 'T12:00';
                                     const d = new Date(iso);
                                     if (isNaN(d.getTime())) return null;
@@ -1650,19 +1656,27 @@ export default function Home() {
                                     type="datetime-local"
                                     className="h-8 text-xs border border-orange-200 rounded-md px-2 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-orange-400 w-full"
                                     value={tempReturnDatetime[week.weekNumber] || (() => {
-                                      // Fallback: usar valor do banco ou data da semana
+                                      // Fallback: usar valor do banco ou data da semana com 00:00
                                       const saved = week.returnFlightDatetime ?? '';
                                       if (saved) return saved;
                                       const parts = week.returnDate.split('/');
-                                      return parts.length === 3 ? `${parts[2]}-${parts[1]}-${parts[0]}` : '';
+                                      return parts.length === 3 ? `${parts[2]}-${parts[1]}-${parts[0]}T00:00` : '';
                                     })()}
                                     onChange={(e) => setTempReturnDatetime(prev => ({ ...prev, [week.weekNumber]: e.target.value }))}
                                   />
-                                  {tempReturnDatetime[week.weekNumber] && (
+                                  {(() => {
+                                    const rawRet = tempReturnDatetime[week.weekNumber] || (() => {
+                                      const saved = week.returnFlightDatetime ?? '';
+                                      if (saved) return saved;
+                                      const parts = week.returnDate.split('/');
+                                      return parts.length === 3 ? `${parts[2]}-${parts[1]}-${parts[0]}T00:00` : '';
+                                    })();
+                                    if (!rawRet) return null;
+                                    return (
                                     <span className="text-[11px] font-semibold text-orange-700 bg-orange-100 px-2 py-0.5 rounded-md w-fit">
                                       {(() => {
                                         // Suporta tanto 'YYYY-MM-DD' (só data) quanto 'YYYY-MM-DDTHH:mm' (data+hora)
-                                        const raw = tempReturnDatetime[week.weekNumber];
+                                        const raw = rawRet;
                                         const iso = raw.includes('T') ? raw : raw + 'T12:00';
                                         const d = new Date(iso);
                                         if (isNaN(d.getTime())) return 'Data inválida';
@@ -1670,7 +1684,8 @@ export default function Home() {
                                         return label.charAt(0).toUpperCase() + label.slice(1);
                                       })()}
                                     </span>
-                                  )}
+                                    );
+                                  })()}
                                 </div>
                                 <div className="flex flex-col gap-1">
                                   <label className="text-[10px] font-semibold text-orange-600 uppercase tracking-wide">Localizador (PNR)</label>

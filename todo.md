@@ -100,3 +100,4 @@
 - [x] Alterar título do frame de preços de "GRU → NVT • Preços" para "Consulta de Preços"
 - [ ] Bug: ícone do site (favicon) aparece em branco
 - [x] Bug: logotipo no cabeçalho do site aparece em branco
+- [x] Corrigir herança de datas no datetime-local do bilhete: ao clicar em "Não Emitido", preencher data/hora ida com data da semana + 00:00 e data/hora volta com data da semana + 00:00
