@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Checkbox } from '@/components/ui/checkbox';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
-import { ChevronDown, Plane, Calendar, ExternalLink, AlertCircle, Trash2, CheckCircle2, Circle, Pencil, RotateCcw, Loader2, TrendingUp, Lock, LogOut, Eye, EyeOff, CalendarPlus, Download, Radar, RotateCw, Bell, BellOff, BellRing, Sparkles, Wand2 } from 'lucide-react';
+import { ChevronDown, Plane, Calendar, ExternalLink, AlertCircle, Trash2, CheckCircle2, Circle, RotateCcw, Loader2, TrendingUp, Lock, LogOut, Eye, EyeOff, CalendarPlus, Download, Radar, RotateCw, Bell, BellOff, BellRing, Sparkles, Wand2 } from 'lucide-react';
 import { getGoogleCalendarLink, getOutlookLink, downloadICS, airportNames, airportAddresses, airlineNames, airlineIataCodes, buildFlightTrackUrl, buildWhatsAppShareUrl, CalendarEventParams, LEAD_OPTIONS, DURATION_OPTIONS } from '@/lib/calendarHelper';
 import { usePullToRefresh } from '@/hooks/usePullToRefresh';
 import { usePushNotifications } from '@/hooks/usePushNotifications';
@@ -204,9 +204,7 @@ export default function Home() {
   const [departureAirport, setDepartureAirport] = useState<DepartureAirport>('GRU');
   const [showCheapestOnly, setShowCheapestOnly] = useState<boolean>(false);
   const [pricePercentile, setPricePercentile] = useState<number>(25);
-  const [editingWeek, setEditingWeek] = useState<WeekData | null>(null);
-  const [editDepartureDate, setEditDepartureDate] = useState('');
-  const [editReturnDate, setEditReturnDate] = useState('');
+
   const [savingPrice, setSavingPrice] = useState<{ week: number; airline: string } | null>(null);
 
   // Estado para ocultar valores monetários (privacidade)
@@ -734,51 +732,7 @@ export default function Home() {
     );
   };
 
-  const openEditModal = (week: WeekData) => {
-    requireAuth(() => {
-      setEditingWeek(week);
-      // Convert DD/MM/YYYY to YYYY-MM-DD for date input
-      const toInputDate = (d: string) => {
-        const [day, month, year] = d.split('/');
-        return `${year}-${month}-${day}`;
-      };
-      setEditDepartureDate(toInputDate(week.departureDate));
-      setEditReturnDate(toInputDate(week.returnDate));
-    });
-  };
 
-  const handleSaveDates = () => {
-    if (!editingWeek) return;
-    // Convert YYYY-MM-DD back to DD/MM/YYYY
-    const toDisplayDate = (d: string) => {
-      const [year, month, day] = d.split('-');
-      return `${day}/${month}/${year}`;
-    };
-    const getDayOfWeek = (d: string) => {
-      const [year, month, day] = d.split('-').map(Number);
-      const date = new Date(year, month - 1, day);
-      const days = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
-      return days[date.getDay()];
-    };
-
-    updateDatesMutation.mutate(
-      {
-        weekNumber: editingWeek.weekNumber,
-        departureDate: toDisplayDate(editDepartureDate),
-        returnDate: toDisplayDate(editReturnDate),
-        departureDayOfWeek: getDayOfWeek(editDepartureDate),
-        returnDayOfWeek: getDayOfWeek(editReturnDate),
-      },
-      {
-        onSuccess: () => {
-          utils.flights.getWeeks.invalidate();
-          setEditingWeek(null);
-          toast.success('Datas atualizadas com sucesso!');
-        },
-        onError: () => toast.error('Erro ao salvar datas'),
-      }
-    );
-  };
 
   const isLoading = weeksQuery.isLoading || pricesQuery.isLoading;
 
@@ -1224,18 +1178,89 @@ export default function Home() {
                               </span>
                             ) : null}
                           </div>
-                          {/* Datas com indicadores de feriado */}
+                          {/* Datas editáveis inline com dia da semana */}
                           {(() => {
                             const feriados = getFeriadosPorIntervalo(week.weekNumber, week.departureDate, week.returnDate);
                             const feriadoIda = feriados.filter(f => f.tipo === 'ida');
                             const feriadoRetorno = feriados.filter(f => f.tipo === 'retorno');
                             const feriadosIntervalo = feriados.filter(f => f.tipo === 'intervalo');
+
+                            // Converte DD/MM/YYYY → YYYY-MM-DD para o input type=date
+                            const toInputDate = (d: string) => {
+                              const parts = d.split('/');
+                              if (parts.length !== 3) return '';
+                              return `${parts[2]}-${parts[1]}-${parts[0]}`;
+                            };
+                            // Converte YYYY-MM-DD → DD/MM/YYYY para exibição e persistência
+                            const toDisplayDate = (d: string) => {
+                              const parts = d.split('-');
+                              if (parts.length !== 3) return d;
+                              return `${parts[2]}/${parts[1]}/${parts[0]}`;
+                            };
+                            // Calcula dia da semana a partir de YYYY-MM-DD
+                            const getDayLabel = (isoDate: string) => {
+                              if (!isoDate || isoDate.length < 10) return '';
+                              const [y, m, d] = isoDate.split('-').map(Number);
+                              if (!y || !m || !d) return '';
+                              const date = new Date(y, m - 1, d);
+                              const days = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+                              return days[date.getDay()];
+                            };
+
+                            const handleDateBlur = (field: 'departure' | 'return', isoValue: string) => {
+                              if (!isoValue || isoValue.length < 10) return;
+                              const displayDate = toDisplayDate(isoValue);
+                              const [y, m, d] = isoValue.split('-').map(Number);
+                              const date = new Date(y, m - 1, d);
+                              const days = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
+                              const dayOfWeek = days[date.getDay()];
+                              const currentDep = toInputDate(week.departureDate);
+                              const currentRet = toInputDate(week.returnDate);
+                              const newDep = field === 'departure' ? isoValue : currentDep;
+                              const newRet = field === 'return' ? isoValue : currentRet;
+                              const newDepDisplay = field === 'departure' ? displayDate : week.departureDate;
+                              const newRetDisplay = field === 'return' ? displayDate : week.returnDate;
+                              const newDepDay = field === 'departure' ? dayOfWeek : week.departureDayOfWeek;
+                              const newRetDay = field === 'return' ? dayOfWeek : week.returnDayOfWeek;
+                              updateDatesMutation.mutate(
+                                {
+                                  weekNumber: week.weekNumber,
+                                  departureDate: newDepDisplay,
+                                  returnDate: newRetDisplay,
+                                  departureDayOfWeek: newDepDay,
+                                  returnDayOfWeek: newRetDay,
+                                },
+                                {
+                                  onSuccess: () => {
+                                    utils.flights.getWeeks.invalidate();
+                                    toast.success('Data atualizada!');
+                                  },
+                                  onError: () => toast.error('Erro ao salvar data'),
+                                }
+                              );
+                            };
+
+                            const depIso = toInputDate(week.departureDate);
+                            const retIso = toInputDate(week.returnDate);
+
                             return (
-                              <div className="space-y-1">
-                                <p className="text-sm text-slate-600 flex items-center gap-1 flex-wrap">
-                                  <Calendar className="w-4 h-4 flex-shrink-0" />
-                                  <span className="font-medium">Ida:</span>
-                                  <span>{week.departureDate} ({week.departureDayOfWeek})</span>
+                              <div className="space-y-1.5">
+                                {/* Ida */}
+                                <div className="flex items-center gap-2 flex-wrap">
+                                  <Calendar className="w-4 h-4 text-slate-400 flex-shrink-0" />
+                                  <span className="text-sm font-medium text-slate-600">Ida:</span>
+                                  <input
+                                    type="date"
+                                    defaultValue={depIso}
+                                    key={`dep-${week.weekNumber}-${depIso}`}
+                                    onBlur={(e) => handleDateBlur('departure', e.target.value)}
+                                    className="h-7 text-sm border border-slate-200 rounded-md px-2 bg-white text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400"
+                                  />
+                                  {depIso && (
+                                    <span className="text-xs font-semibold text-blue-700 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded-full">
+                                      {getDayLabel(depIso)}
+                                    </span>
+                                  )}
                                   {feriadoIda.map(f => (
                                     <span key={f.feriado.data} className={`text-xs px-2 py-0.5 rounded-full font-semibold ${
                                       f.feriado.tipo === 'nacional' ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700'
@@ -1243,11 +1268,23 @@ export default function Home() {
                                       🎉 {f.feriado.nome}
                                     </span>
                                   ))}
-                                </p>
-                                <p className="text-sm text-slate-600 flex items-center gap-1 flex-wrap">
-                                  <Calendar className="w-4 h-4 flex-shrink-0" />
-                                  <span className="font-medium">Retorno:</span>
-                                  <span>{week.returnDate} ({week.returnDayOfWeek})</span>
+                                </div>
+                                {/* Retorno */}
+                                <div className="flex items-center gap-2 flex-wrap">
+                                  <Calendar className="w-4 h-4 text-slate-400 flex-shrink-0" />
+                                  <span className="text-sm font-medium text-slate-600">Retorno:</span>
+                                  <input
+                                    type="date"
+                                    defaultValue={retIso}
+                                    key={`ret-${week.weekNumber}-${retIso}`}
+                                    onBlur={(e) => handleDateBlur('return', e.target.value)}
+                                    className="h-7 text-sm border border-slate-200 rounded-md px-2 bg-white text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400"
+                                  />
+                                  {retIso && (
+                                    <span className="text-xs font-semibold text-green-700 bg-green-50 border border-green-200 px-2 py-0.5 rounded-full">
+                                      {getDayLabel(retIso)}
+                                    </span>
+                                  )}
                                   {feriadoRetorno.map(f => (
                                     <span key={f.feriado.data} className={`text-xs px-2 py-0.5 rounded-full font-semibold ${
                                       f.feriado.tipo === 'nacional' ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700'
@@ -1255,7 +1292,7 @@ export default function Home() {
                                       🎉 {f.feriado.nome}
                                     </span>
                                   ))}
-                                </p>
+                                </div>
                                 {feriadosIntervalo.length > 0 && (
                                   <p className="text-xs text-slate-500 flex items-center gap-1 flex-wrap pl-5">
                                     <span className="text-orange-600 font-semibold">⚠️ Feriados no período:</span>
@@ -1275,11 +1312,6 @@ export default function Home() {
                       </div>
 
                       <div className="flex items-center gap-2 flex-shrink-0">
-                        {/* Editar datas */}
-                        <Button variant="outline" size="sm" onClick={() => openEditModal(week)}
-                          title="Editar datas">
-                          <Pencil className="w-4 h-4" />
-                        </Button>
                         {/* Status bilhete + companhias */}
                         <div className="flex items-center gap-2 flex-wrap">
                           <Button
@@ -2078,43 +2110,7 @@ export default function Home() {
         )}
       </main>
 
-      {/* Modal de Edição de Datas */}
-      <Dialog open={!!editingWeek} onOpenChange={(open) => !open && setEditingWeek(null)}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Editar Datas — Semana {editingWeek?.weekNumber}</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div>
-              <Label htmlFor="dep-date">Data de Ida (Domingo)</Label>
-              <Input
-                id="dep-date"
-                type="date"
-                value={editDepartureDate}
-                onChange={(e) => setEditDepartureDate(e.target.value)}
-                className="mt-1"
-              />
-            </div>
-            <div>
-              <Label htmlFor="ret-date">Data de Retorno (Quinta ou Sexta)</Label>
-              <Input
-                id="ret-date"
-                type="date"
-                value={editReturnDate}
-                onChange={(e) => setEditReturnDate(e.target.value)}
-                className="mt-1"
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setEditingWeek(null)}>Cancelar</Button>
-            <Button onClick={handleSaveDates} disabled={updateDatesMutation.isPending}>
-              {updateDatesMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
-              Salvar
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+
 
       {/* Modal de Login */}
       <Dialog open={showLoginModal} onOpenChange={setShowLoginModal}>

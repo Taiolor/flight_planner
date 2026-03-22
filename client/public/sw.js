@@ -1,6 +1,5 @@
-const CACHE_NAME = 'smartfly-v3';
+const CACHE_NAME = 'smartfly-v4';
 const STATIC_ASSETS = [
-  '/',
   '/manifest.json'
 ];
 
@@ -36,26 +35,46 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Network-first para navegação, cache-first para assets estáticos
+  // Não cachear arquivos JS/CSS do Vite (têm hash no nome ou são módulos)
+  // Usar network-first para garantir que sempre carregue a versão mais recente
+  const isViteAsset = url.pathname.includes('/@') ||
+    url.pathname.includes('/src/') ||
+    url.pathname.includes('/node_modules/') ||
+    url.pathname.includes('/.vite/') ||
+    url.pathname.endsWith('.js') ||
+    url.pathname.endsWith('.mjs') ||
+    url.pathname.endsWith('.ts') ||
+    url.pathname.endsWith('.tsx') ||
+    url.pathname.endsWith('.css');
+
+  if (isViteAsset) {
+    // Network-first: sempre tenta a rede, sem cache
+    event.respondWith(fetch(event.request));
+    return;
+  }
+
+  // Network-first para navegação
   if (event.request.mode === 'navigate') {
     event.respondWith(
       fetch(event.request).catch(() =>
         caches.match('/').then((cached) => cached || fetch(event.request))
       )
     );
-  } else {
-    event.respondWith(
-      caches.match(event.request).then((cached) => {
-        return cached || fetch(event.request).then((response) => {
-          if (response && response.status === 200 && response.type === 'basic') {
-            const clone = response.clone();
-            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
-          }
-          return response;
-        });
-      })
-    );
+    return;
   }
+
+  // Cache-first apenas para assets estáticos (imagens, ícones, manifest)
+  event.respondWith(
+    caches.match(event.request).then((cached) => {
+      return cached || fetch(event.request).then((response) => {
+        if (response && response.status === 200 && response.type === 'basic') {
+          const clone = response.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
+        }
+        return response;
+      });
+    })
+  );
 });
 
 // =====================

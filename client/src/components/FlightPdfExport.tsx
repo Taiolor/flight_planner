@@ -321,49 +321,54 @@ async function renderPageToCanvas(jsx: React.ReactElement): Promise<HTMLCanvasEl
     // Gerar HTML puro (sem React runtime — apenas string HTML)
     const htmlContent = renderToStaticMarkup(jsx);
 
-    // Criar iframe isolado
-    const iframe = document.createElement('iframe');
-    iframe.style.cssText = 'position:fixed;top:0;left:0;width:794px;height:1200px;opacity:0;pointer-events:none;border:none;z-index:-9999;';
-    document.body.appendChild(iframe);
+    // Criar div oculto diretamente no DOM principal (html2canvas não consegue capturar iframes)
+    const container = document.createElement('div');
+    container.style.cssText = [
+      'position:fixed',
+      'top:0',
+      'left:0',
+      'width:794px',
+      'min-height:1123px',
+      'background:#fff',
+      'z-index:-9999',
+      'pointer-events:none',
+      'overflow:visible',
+      'font-family:Arial,sans-serif',
+    ].join(';');
+    container.innerHTML = htmlContent;
+    document.body.appendChild(container);
 
-    const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
-    if (!iframeDoc) {
-      document.body.removeChild(iframe);
-      reject(new Error('Não foi possível acessar o documento do iframe'));
-      return;
-    }
+    // Aguardar o browser renderizar o conteúdo
+    requestAnimationFrame(() => {
+      setTimeout(async () => {
+        try {
+          const el = container.firstElementChild as HTMLElement;
+          if (!el) throw new Error('Elemento não encontrado no container');
 
-    iframeDoc.open();
-    iframeDoc.write(`<!DOCTYPE html><html><head>
-      <meta charset="utf-8">
-      <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { margin: 0; padding: 0; background: #fff; }
-      </style>
-    </head><body>${htmlContent}</body></html>`);
-    iframeDoc.close();
+          const canvas = await html2canvas(el, {
+            scale: 2,
+            useCORS: true,
+            backgroundColor: '#ffffff',
+            width: 794,
+            windowWidth: 794,
+            logging: false,
+            allowTaint: true,
+          });
 
-    // Aguardar o iframe renderizar
-    setTimeout(async () => {
-      try {
-        const el = iframeDoc.body.firstElementChild as HTMLElement;
-        if (!el) throw new Error('Elemento não encontrado no iframe');
+          if (!canvas || canvas.width === 0 || canvas.height === 0) {
+            throw new Error('Canvas gerado com dimensões inválidas');
+          }
 
-        const canvas = await html2canvas(el, {
-          scale: 2,
-          useCORS: true,
-          backgroundColor: '#ffffff',
-          width: 794,
-          windowWidth: 794,
-          logging: false,
-        });
-        resolve(canvas);
-      } catch (err) {
-        reject(err);
-      } finally {
-        document.body.removeChild(iframe);
-      }
-    }, 150);
+          resolve(canvas);
+        } catch (err) {
+          reject(err);
+        } finally {
+          if (document.body.contains(container)) {
+            document.body.removeChild(container);
+          }
+        }
+      }, 200);
+    });
   });
 }
 
@@ -397,11 +402,29 @@ export function ExportPdfButton({ weeksData, priceMap, totalInvested }: FlightPd
         const imgData = canvas.toDataURL('image/jpeg', 0.92);
         const canvasW = canvas.width;
         const canvasH = canvas.height;
+
+        console.log('[PDF Debug] canvas dimensions:', canvasW, 'x', canvasH);
+
+        // Validar dimensões do canvas
+        if (!canvasW || !canvasH || canvasW === 0 || canvasH === 0) {
+          console.error('[PDF Debug] Canvas inválido, pulando página');
+          return;
+        }
+
+        // O canvas é gerado com scale:2 (dobro da resolução)
+        // canvasW/2 = largura real em pixels CSS (794px)
+        // pdfW = largura do PDF em mm (210mm para A4)
         const scale = pdfW / (canvasW / 2);
         const imgH = (canvasH / 2) * scale;
 
-        if (imgH <= pdfH) {
-          pdf.addImage(imgData, 'JPEG', 0, 0, pdfW, imgH);
+        console.log('[PDF Debug] scale:', scale, 'imgH:', imgH, 'pdfH:', pdfH);
+
+        // Tolerância de 1mm para evitar entrar no branch de múltiplas páginas por diferença de arredondamento
+        const TOLERANCE_MM = 1.0;
+        if (imgH <= pdfH + TOLERANCE_MM) {
+          // Cabe em uma única página — clipa a altura para o tamanho exato da página
+          const finalH = Math.min(imgH, pdfH);
+          pdf.addImage(imgData, 'JPEG', 0, 0, pdfW, finalH);
         } else {
           let yOffset = 0;
           let firstSlice = true;
@@ -413,6 +436,9 @@ export function ExportPdfButton({ weeksData, priceMap, totalInvested }: FlightPd
             const sliceYPx = Math.round((yOffset / scale) * 2);
             const actualSliceH = Math.min(sliceHeightPx, canvasH - sliceYPx);
 
+            // Ignorar fatias com altura zero (fim do canvas)
+            if (actualSliceH <= 0) break;
+
             const sliceCanvas = document.createElement('canvas');
             sliceCanvas.width = canvasW;
             sliceCanvas.height = actualSliceH;
@@ -423,7 +449,9 @@ export function ExportPdfButton({ weeksData, priceMap, totalInvested }: FlightPd
 
             const sliceData = sliceCanvas.toDataURL('image/jpeg', 0.92);
             const sliceHMm = (actualSliceH / 2) * scale;
-            pdf.addImage(sliceData, 'JPEG', 0, 0, pdfW, sliceHMm);
+            if (sliceHMm > 0) {
+              pdf.addImage(sliceData, 'JPEG', 0, 0, pdfW, sliceHMm);
+            }
             yOffset += pdfH;
           }
         }
