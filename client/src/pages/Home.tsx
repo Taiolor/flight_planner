@@ -208,15 +208,14 @@ export default function Home() {
   const [savingPrice, setSavingPrice] = useState<{ week: number; airline: string } | null>(null);
 
   // Estado para ocultar valores monetários (privacidade)
-  const [hideValues, setHideValues] = useState<boolean>(() => {
-    try { return localStorage.getItem('hideValues') === 'true'; } catch { return false; }
-  });
+  // Sempre inicia oculto (true); só pode ser alternado quando autenticado
+  const [hideValues, setHideValues] = useState<boolean>(true);
   const toggleHideValues = () => {
-    setHideValues(prev => {
-      const next = !prev;
-      try { localStorage.setItem('hideValues', String(next)); } catch {}
-      return next;
-    });
+    if (!isAuthenticated) {
+      setShowLoginModal(true);
+      return;
+    }
+    setHideValues(prev => !prev);
   };
   // Função helper para mascarar valores monetários
   const maskValue = (value: string | number) => hideValues ? '••••' : String(value);

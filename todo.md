@@ -102,3 +102,5 @@
 - [x] Bug: logotipo no cabeçalho do site aparece em branco
 - [x] Corrigir herança de datas no datetime-local do bilhete: ao clicar em "Não Emitido", preencher data/hora ida com data da semana + 00:00 e data/hora volta com data da semana + 00:00
 - [x] Bug: ao selecionar companhia aérea no bilhete, o código da companhia preenche o Localizador incorretamente; deve preencher o campo Número de Voo correspondente (ida ou volta) apenas quando vazio ou com somente os 2 caracteres iniciais
+- [x] Valores monetários devem ser ocultados por padrão ao abrir o site/app (estado inicial hideValues = true)
+- [x] Botão de ocultar/exibir valores só deve funcionar quando o usuário estiver logado (sessão ativa); sem login, valores permanecem sempre ocultos
