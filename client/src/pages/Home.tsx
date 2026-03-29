@@ -120,6 +120,7 @@ interface WeekData {
   returnLocator?: string | null;
   departureFlightNumber?: string | null;
   returnFlightNumber?: string | null;
+  ticketType?: string | null;
 }
 
 interface PriceMap {
@@ -231,6 +232,7 @@ export default function Home() {
   const [tempReturnAirport, setTempReturnAirport] = useState<{ [weekNumber: number]: string }>({});
   const [tempDepartureAirline, setTempDepartureAirline] = useState<{ [weekNumber: number]: string }>({});
   const [tempReturnAirline, setTempReturnAirline] = useState<{ [weekNumber: number]: string }>({});
+  const [tempTicketType, setTempTicketType] = useState<{ [weekNumber: number]: string }>({});
   // Controle de salvamento em andamento por semana
   const [savingTicket, setSavingTicket] = useState<{ [weekNumber: number]: boolean }>({});
   // Rastreia quais campos de número do voo foram preenchidos por sugestão automática
@@ -335,6 +337,11 @@ export default function Home() {
       setTempReturnAirline((prev) => {
         const next = { ...prev };
         newWeeks.forEach((w) => { next[w.weekNumber] = (w as any).returnAirline ?? ''; });
+        return next;
+      });
+      setTempTicketType((prev) => {
+        const next = { ...prev };
+        newWeeks.forEach((w) => { next[w.weekNumber] = (w as any).ticketType ?? 'roundtrip'; });
         return next;
       });
       // Marcar estas semanas como inicializadas
@@ -443,6 +450,7 @@ export default function Home() {
         returnLocator: (w as any).returnLocator ?? null,
         departureFlightNumber: (w as any).departureFlightNumber ?? null,
         returnFlightNumber: (w as any).returnFlightNumber ?? null,
+        ticketType: (w as any).ticketType ?? 'roundtrip',
       }));
     }
     // Fallback to static data
@@ -1391,7 +1399,41 @@ export default function Home() {
                       {/* Coluna direita: Cards Ida/Volta (só quando bilhete emitido) */}
                       {!!week.isTicketIssued && (
                         <div className="flex-1 flex flex-col gap-3">
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+
+                          {/* Seletor tipo de bilhete */}
+                          <div className="flex items-center gap-2">
+                            <span className="text-[10px] font-semibold text-slate-500 uppercase tracking-wide">Tipo de Bilhete</span>
+                            <div className="flex rounded-lg overflow-hidden border border-slate-200 shadow-sm">
+                              <button
+                                type="button"
+                                onClick={() => setTempTicketType(prev => ({ ...prev, [week.weekNumber]: 'roundtrip' }))}
+                                className={`px-3 py-1 text-xs font-semibold transition-colors ${
+                                  (tempTicketType[week.weekNumber] ?? 'roundtrip') === 'roundtrip'
+                                    ? 'bg-blue-600 text-white'
+                                    : 'bg-white text-slate-500 hover:bg-slate-50'
+                                }`}
+                              >
+                                ✈ Ida e Volta
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => setTempTicketType(prev => ({ ...prev, [week.weekNumber]: 'oneway' }))}
+                                className={`px-3 py-1 text-xs font-semibold transition-colors border-l border-slate-200 ${
+                                  (tempTicketType[week.weekNumber] ?? 'roundtrip') === 'oneway'
+                                    ? 'bg-orange-500 text-white'
+                                    : 'bg-white text-slate-500 hover:bg-slate-50'
+                                }`}
+                              >
+                                → Somente Ida
+                              </button>
+                            </div>
+                          </div>
+
+                          <div className={`grid gap-3 ${
+                            (tempTicketType[week.weekNumber] ?? 'roundtrip') === 'oneway'
+                              ? 'grid-cols-1'
+                              : 'grid-cols-1 sm:grid-cols-2'
+                          }`}>
 
                             {/* Card IDA */}
                             <div className="rounded-xl border border-blue-200 bg-gradient-to-br from-blue-50 to-indigo-50 overflow-hidden shadow-sm">
@@ -1559,7 +1601,8 @@ export default function Home() {
                               </div>
                             </div>
 
-                            {/* Card VOLTA */}
+                            {/* Card VOLTA — só exibido quando tipo é Ida e Volta */}
+                            {(tempTicketType[week.weekNumber] ?? 'roundtrip') === 'roundtrip' && (
                             <div className="rounded-xl border border-orange-200 bg-gradient-to-br from-orange-50 to-amber-50 overflow-hidden shadow-sm">
                               <div className="bg-orange-500 px-3 py-2 flex items-center gap-2">
                                 <Plane className="w-3.5 h-3.5 text-white rotate-180" />
@@ -1701,6 +1744,7 @@ export default function Home() {
                                 </div>
                               </div>
                             </div>
+                            )}
                           </div>
 
                           {/* Botão único Salvar — persiste todos os campos de uma vez */}
@@ -1722,6 +1766,7 @@ export default function Home() {
                                 returnFlightDatetime: tempReturnDatetime[week.weekNumber] || null,
                                 departureLocator: (tempDepartureLocator[week.weekNumber] ?? '').trim() || null,
                                 returnLocator: (tempReturnLocator[week.weekNumber] ?? '').trim() || null,
+                                ticketType: tempTicketType[week.weekNumber] ?? 'roundtrip',
                               }, {
                                 onSuccess: () => {
                                   utils.flights.getWeeks.invalidate();

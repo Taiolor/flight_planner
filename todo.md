@@ -104,3 +104,6 @@
 - [x] Bug: ao selecionar companhia aérea no bilhete, o código da companhia preenche o Localizador incorretamente; deve preencher o campo Número de Voo correspondente (ida ou volta) apenas quando vazio ou com somente os 2 caracteres iniciais
 - [x] Valores monetários devem ser ocultados por padrão ao abrir o site/app (estado inicial hideValues = true)
 - [x] Botão de ocultar/exibir valores só deve funcionar quando o usuário estiver logado (sessão ativa); sem login, valores permanecem sempre ocultos
+- [x] Adicionar campo ticketType (roundtrip / oneway) no schema do banco de dados
+- [x] Atualizar rotas tRPC para aceitar e persistir ticketType
+- [x] Adicionar seletor "Ida e Volta" / "Somente Ida" no card de bilhete; campos de volta só aparecem quando "Ida e Volta" estiver selecionado

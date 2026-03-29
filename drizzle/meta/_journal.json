@@ -71,6 +71,13 @@
       "when": 1774129457472,
       "tag": "0009_talented_lifeguard",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "5",
+      "when": 1774628560852,
+      "tag": "0010_shallow_hairball",
+      "breakpoints": true
     }
   ]
 }

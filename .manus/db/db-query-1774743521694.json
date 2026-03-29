@@ -1,0 +1,34 @@
+{
+  "query": "SHOW COLUMNS FROM flight_weeks WHERE Field IN ('departureFlightNumber', 'returnFlightNumber', 'ticketType');",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3hTCxLMFFnvwjKu.root --database HQ655wm9a6bck22hJAwYRc --execute SHOW COLUMNS FROM flight_weeks WHERE Field IN ('departureFlightNumber', 'returnFlightNumber', 'ticketType');",
+  "rows": [
+    {
+      "Field": "departureFlightNumber",
+      "Type": "varchar(20)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "returnFlightNumber",
+      "Type": "varchar(20)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "ticketType",
+      "Type": "varchar(20)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "roundtrip",
+      "Extra": ""
+    }
+  ],
+  "messages": [],
+  "stdout": "Field\tType\tNull\tKey\tDefault\tExtra\ndepartureFlightNumber\tvarchar(20)\tYES\t\tNULL\t\nreturnFlightNumber\tvarchar(20)\tYES\t\tNULL\t\nticketType\tvarchar(20)\tYES\t\troundtrip\t\n",
+  "stderr": "",
+  "execution_time_ms": 365
+}

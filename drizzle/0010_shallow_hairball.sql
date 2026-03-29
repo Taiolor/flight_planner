@@ -1,0 +1,1 @@
+ALTER TABLE `flight_weeks` ADD `ticketType` varchar(20) DEFAULT 'roundtrip';

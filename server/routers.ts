@@ -230,6 +230,7 @@ export const appRouter = router({
         returnLocator: z.string().nullable().optional(),
         departureFlightNumber: z.string().nullable().optional(),
         returnFlightNumber: z.string().nullable().optional(),
+        ticketType: z.string().nullable().optional(),
       }))
       .mutation(async ({ input, ctx }) => {
         const session = await getSessionFromCookie(ctx.req);
@@ -250,6 +251,7 @@ export const appRouter = router({
           returnLocator: input.returnLocator,
           departureFlightNumber: input.departureFlightNumber,
           returnFlightNumber: input.returnFlightNumber,
+          ticketType: input.ticketType,
         });
         return { success: true };
       }),
