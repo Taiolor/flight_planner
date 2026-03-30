@@ -110,3 +110,5 @@
 - [x] Criar página CalendarView com grade anual (12 meses em página única)
 - [x] Marcar dias de voo emitidos futuros/presentes em verde e passados em cinza escuro
 - [x] Adicionar rota /calendar no App.tsx e botão de acesso no cabeçalho
+- [x] Popup flutuante no CalendarView: ao clicar em dia com voo, exibir dados do bilhete (companhia, horário, aeroporto, localizador)
+- [x] Incluir no popup as opções de compartilhamento via WhatsApp e envio para agenda (Google/Outlook/ICS), reutilizando funções existentes
