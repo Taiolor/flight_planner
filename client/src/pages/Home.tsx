@@ -11,7 +11,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Checkbox } from '@/components/ui/checkbox';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
-import { ChevronDown, Plane, Calendar, ExternalLink, AlertCircle, Trash2, CheckCircle2, Circle, RotateCcw, Loader2, TrendingUp, Lock, LogOut, Eye, EyeOff, CalendarPlus, Download, Radar, RotateCw, Bell, BellOff, BellRing, Sparkles, Wand2 } from 'lucide-react';
+import { ChevronDown, Plane, Calendar, ExternalLink, AlertCircle, Trash2, CheckCircle2, Circle, RotateCcw, Loader2, TrendingUp, Lock, LogOut, Eye, EyeOff, CalendarPlus, Download, Radar, RotateCw, Bell, BellOff, BellRing, Sparkles, Wand2, CalendarDays } from 'lucide-react';
+import { Link } from 'wouter';
 import { getGoogleCalendarLink, getOutlookLink, downloadICS, airportNames, airportAddresses, airlineNames, airlineIataCodes, buildFlightTrackUrl, buildWhatsAppShareUrl, CalendarEventParams, LEAD_OPTIONS, DURATION_OPTIONS } from '@/lib/calendarHelper';
 import { usePullToRefresh } from '@/hooks/usePullToRefresh';
 import { usePushNotifications } from '@/hooks/usePushNotifications';
@@ -884,6 +885,15 @@ export default function Home() {
               >
                 <TrendingUp className="w-4 h-4 mr-1" /> Ver Gráfico
               </Button>
+              <Link href="/calendar">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="bg-white bg-opacity-10 border-white text-white hover:bg-white hover:text-blue-700"
+                >
+                  <CalendarDays className="w-4 h-4 mr-1" /> Calendário
+                </Button>
+              </Link>
               {isAuthenticated ? (
                 <div className="flex items-center gap-2">
                   <span className="text-xs text-green-300 flex items-center gap-1">

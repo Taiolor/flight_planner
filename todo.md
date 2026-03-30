@@ -107,3 +107,6 @@
 - [x] Adicionar campo ticketType (roundtrip / oneway) no schema do banco de dados
 - [x] Atualizar rotas tRPC para aceitar e persistir ticketType
 - [x] Adicionar seletor "Ida e Volta" / "Somente Ida" no card de bilhete; campos de volta só aparecem quando "Ida e Volta" estiver selecionado
+- [x] Criar página CalendarView com grade anual (12 meses em página única)
+- [x] Marcar dias de voo emitidos futuros/presentes em verde e passados em cinza escuro
+- [x] Adicionar rota /calendar no App.tsx e botão de acesso no cabeçalho
