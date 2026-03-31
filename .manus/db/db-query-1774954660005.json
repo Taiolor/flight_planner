@@ -1,0 +1,90 @@
+{
+  "query": "SELECT weekNumber, departureDate, returnDate, isTicketIssued, departureFlightDatetime, returnFlightDatetime FROM flight_weeks WHERE isTicketIssued = 1 ORDER BY weekNumber LIMIT 10;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3hTCxLMFFnvwjKu.root --database HQ655wm9a6bck22hJAwYRc --execute SELECT weekNumber, departureDate, returnDate, isTicketIssued, departureFlightDatetime, returnFlightDatetime FROM flight_weeks WHERE isTicketIssued = 1 ORDER BY weekNumber LIMIT 10;",
+  "rows": [
+    {
+      "weekNumber": "1",
+      "departureDate": "22/02/2026",
+      "returnDate": "06/03/2026",
+      "isTicketIssued": "1",
+      "departureFlightDatetime": "2026-02-22T17:55",
+      "returnFlightDatetime": "2026-03-06T19:50"
+    },
+    {
+      "weekNumber": "2",
+      "departureDate": "08/03/2026",
+      "returnDate": "13/03/2026",
+      "isTicketIssued": "1",
+      "departureFlightDatetime": "2026-03-08T17:55",
+      "returnFlightDatetime": "2026-03-13T19:50"
+    },
+    {
+      "weekNumber": "3",
+      "departureDate": "15/03/2026",
+      "returnDate": "19/03/2026",
+      "isTicketIssued": "1",
+      "departureFlightDatetime": "2026-03-15T17:15",
+      "returnFlightDatetime": "2026-03-19T06:20"
+    },
+    {
+      "weekNumber": "4",
+      "departureDate": "22/03/2026",
+      "returnDate": "27/03/2026",
+      "isTicketIssued": "1",
+      "departureFlightDatetime": "2026-03-22T22:15",
+      "returnFlightDatetime": "2026-03-27T19:50"
+    },
+    {
+      "weekNumber": "5",
+      "departureDate": "29/03/2026",
+      "returnDate": "02/04/2026",
+      "isTicketIssued": "1",
+      "departureFlightDatetime": "2026-03-29T10:20",
+      "returnFlightDatetime": "2026-04-02T20:00"
+    },
+    {
+      "weekNumber": "6",
+      "departureDate": "05/04/2026",
+      "returnDate": "09/04/2026",
+      "isTicketIssued": "1",
+      "departureFlightDatetime": "2026-04-05T22:10",
+      "returnFlightDatetime": "2026-04-09T19:45"
+    },
+    {
+      "weekNumber": "7",
+      "departureDate": "12/04/2026",
+      "returnDate": "17/04/2026",
+      "isTicketIssued": "1",
+      "departureFlightDatetime": "2026-04-12T21:55",
+      "returnFlightDatetime": "2026-04-17T20:00"
+    },
+    {
+      "weekNumber": "8",
+      "departureDate": "21/04/2026",
+      "returnDate": "28/04/2026",
+      "isTicketIssued": "1",
+      "departureFlightDatetime": "2026-04-21T22:10",
+      "returnFlightDatetime": "2026-04-28T19:45"
+    },
+    {
+      "weekNumber": "11",
+      "departureDate": "10/05/2026",
+      "returnDate": "29/05/2026",
+      "isTicketIssued": "1",
+      "departureFlightDatetime": "2026-05-10T22:05",
+      "returnFlightDatetime": "2026-05-29T19:10"
+    },
+    {
+      "weekNumber": "12",
+      "departureDate": "15/05/2026",
+      "returnDate": "24/05/2026",
+      "isTicketIssued": "1",
+      "departureFlightDatetime": "2026-05-15T19:10",
+      "returnFlightDatetime": "2026-05-24T17:55"
+    }
+  ],
+  "messages": [],
+  "stdout": "weekNumber\tdepartureDate\treturnDate\tisTicketIssued\tdepartureFlightDatetime\treturnFlightDatetime\n1\t22/02/2026\t06/03/2026\t1\t2026-02-22T17:55\t2026-03-06T19:50\n2\t08/03/2026\t13/03/2026\t1\t2026-03-08T17:55\t2026-03-13T19:50\n3\t15/03/2026\t19/03/2026\t1\t2026-03-15T17:15\t2026-03-19T06:20\n4\t22/03/2026\t27/03/2026\t1\t2026-03-22T22:15\t2026-03-27T19:50\n5\t29/03/2026\t02/04/2026\t1\t2026-03-29T10:20\t2026-04-02T20:00\n6\t05/04/2026\t09/04/2026\t1\t2026-04-05T22:10\t2026-04-09T19:45\n7\t12/04/2026\t17/04/2026\t1\t2026-04-12T21:55\t2026-04-17T20:00\n8\t21/04/2026\t28/04/2026\t1\t2026-04-21T22:10\t2026-04-28T19:45\n11\t10/05/2026\t29/05/2026\t1\t2026-05-10T22:05\t2026-05-29T19:10\n12\t15/05/2026\t24/05/2026\t1\t2026-05-15T19:10\t2026-05-24T17:55\n",
+  "stderr": "",
+  "execution_time_ms": 364
+}

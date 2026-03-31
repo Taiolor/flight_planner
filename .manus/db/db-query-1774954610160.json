@@ -1,0 +1,18 @@
+{
+  "query": "SHOW COLUMNS FROM flight_weeks LIKE 'ticket%';",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3hTCxLMFFnvwjKu.root --database HQ655wm9a6bck22hJAwYRc --execute SHOW COLUMNS FROM flight_weeks LIKE 'ticket%';",
+  "rows": [
+    {
+      "Field": "ticketType",
+      "Type": "varchar(20)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "roundtrip",
+      "Extra": ""
+    }
+  ],
+  "messages": [],
+  "stdout": "Field\tType\tNull\tKey\tDefault\tExtra\nticketType\tvarchar(20)\tYES\t\troundtrip\t\n",
+  "stderr": "",
+  "execution_time_ms": 580
+}

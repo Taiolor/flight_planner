@@ -112,3 +112,4 @@
 - [x] Adicionar rota /calendar no App.tsx e botão de acesso no cabeçalho
 - [x] Popup flutuante no CalendarView: ao clicar em dia com voo, exibir dados do bilhete (companhia, horário, aeroporto, localizador)
 - [x] Incluir no popup as opções de compartilhamento via WhatsApp e envio para agenda (Google/Outlook/ICS), reutilizando funções existentes
+- [x] Bug: push notifications não estão sendo enviadas conforme os parâmetros configurados (Aviso 1 e Aviso 2)

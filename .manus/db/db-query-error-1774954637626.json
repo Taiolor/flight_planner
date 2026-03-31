@@ -1,0 +1,12 @@
+{
+  "query": "SELECT * FROM notification_settings LIMIT 1;\nSELECT COUNT(*) as total_subscriptions FROM push_subscriptions;\nSELECT endpoint, user_agent, created_at FROM push_subscriptions ORDER BY created_at DESC LIMIT 5;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3hTCxLMFFnvwjKu.root --database HQ655wm9a6bck22hJAwYRc --execute SELECT * FROM notification_settings LIMIT 1;\nSELECT COUNT(*) as total_subscriptions FROM push_subscriptions;\nSELECT endpoint, user_agent, created_at FROM push_subscriptions ORDER BY created_at DESC LIMIT 5;",
+  "returncode": 1,
+  "logs": [
+    "id\taviso1Minutes\taviso2Minutes\tupdatedAt",
+    "1\t1440\t360\t2026-03-21 23:48:08",
+    "total_subscriptions",
+    "2",
+    "ERROR 1054 (42S22) at line 3: Unknown column 'user_agent' in 'field list'"
+  ]
+}

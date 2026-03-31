@@ -1,0 +1,26 @@
+{
+  "query": "SELECT * FROM notification_settings LIMIT 1;\nSELECT COUNT(*) as total_subscriptions FROM push_subscriptions;\nSHOW COLUMNS FROM push_subscriptions;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3hTCxLMFFnvwjKu.root --database HQ655wm9a6bck22hJAwYRc --execute SELECT * FROM notification_settings LIMIT 1;\nSELECT COUNT(*) as total_subscriptions FROM push_subscriptions;\nSHOW COLUMNS FROM push_subscriptions;",
+  "rows": [
+    {
+      "id": "1",
+      "aviso1Minutes": "1440",
+      "aviso2Minutes": "360",
+      "updatedAt": "2026-03-21 23:48:08"
+    }
+  ],
+  "messages": [
+    "total_subscriptions",
+    "2",
+    "Field\tType\tNull\tKey\tDefault\tExtra",
+    "id\tint\tNO\tPRI\tNULL\tauto_increment",
+    "endpoint\ttext\tNO\t\tNULL\t",
+    "p256dh\ttext\tNO\t\tNULL\t",
+    "auth\ttext\tNO\t\tNULL\t",
+    "userAgent\tvarchar(255)\tYES\t\tNULL\t",
+    "createdAt\ttimestamp\tNO\t\tCURRENT_TIMESTAMP\t"
+  ],
+  "stdout": "id\taviso1Minutes\taviso2Minutes\tupdatedAt\n1\t1440\t360\t2026-03-21 23:48:08\ntotal_subscriptions\n2\nField\tType\tNull\tKey\tDefault\tExtra\nid\tint\tNO\tPRI\tNULL\tauto_increment\nendpoint\ttext\tNO\t\tNULL\t\np256dh\ttext\tNO\t\tNULL\t\nauth\ttext\tNO\t\tNULL\t\nuserAgent\tvarchar(255)\tYES\t\tNULL\t\ncreatedAt\ttimestamp\tNO\t\tCURRENT_TIMESTAMP\t\n",
+  "stderr": "",
+  "execution_time_ms": 453
+}

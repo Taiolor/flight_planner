@@ -104,6 +104,22 @@ function formatMinutes(minutes: number): string {
 }
 
 /**
+ * Converte datetime salvo no banco ("YYYY-MM-DDTHH:mm" sem timezone) para Date local de Brasília.
+ * Evita que o JS interprete como UTC e gere diferença de 3h.
+ */
+function parseBrasiliaDatetime(dt: string): Date {
+  // Formato esperado: "YYYY-MM-DDTHH:mm" ou "YYYY-MM-DDTHH:mm:ss"
+  // Adicionar offset de Brasília (-03:00) para forçar interpretação correta
+  if (!dt) return new Date(NaN);
+  // Se já tem timezone, usar direto
+  if (dt.includes('+') || dt.endsWith('Z') || /[+-]\d{2}:\d{2}$/.test(dt)) {
+    return new Date(dt);
+  }
+  // Adicionar -03:00 (Brasília)
+  return new Date(dt + '-03:00');
+}
+
+/**
  * Verifica os voos dentro das janelas configuradas (aviso1 e aviso2) e envia notificações push.
  * Deve ser chamado periodicamente (ex: a cada hora).
  */
@@ -117,8 +133,11 @@ export async function checkAndNotifyUpcomingFlights(): Promise<void> {
 
   const airlineNames: Record<string, string> = {
     LATAM: "LATAM",
+    latam: "LATAM",
     GOL: "Gol",
+    gol: "Gol",
     AZUL: "Azul",
+    azul: "Azul",
   };
 
   // Processar cada aviso configurado (ignora avisos com 0 minutos = desativado)
@@ -127,19 +146,24 @@ export async function checkAndNotifyUpcomingFlights(): Promise<void> {
     { minutes: settings.aviso2Minutes, label: "Aviso 2" },
   ].filter(a => a.minutes > 0);
 
+  console.log(`[Push] Verificando ${weeks.filter(w => w.isTicketIssued).length} voos emitidos. Avisos ativos: ${avisos.map(a => formatMinutes(a.minutes)).join(', ') || 'nenhum'}. Hora atual (UTC): ${now.toISOString()}`);
+
   for (const aviso of avisos) {
-    // Janela de ±30 min ao redor do horário configurado
+    // Janela de ±50 min ao redor do horário configurado
+    // (job roda a cada hora; ±50min garante que reinicializacoes do servidor nao percam a janela)
     const targetMs = aviso.minutes * 60 * 1000;
-    const windowStart = new Date(now.getTime() + targetMs - 30 * 60 * 1000);
-    const windowEnd = new Date(now.getTime() + targetMs + 30 * 60 * 1000);
+    const windowStart = new Date(now.getTime() + targetMs - 50 * 60 * 1000);
+    const windowEnd = new Date(now.getTime() + targetMs + 50 * 60 * 1000);
     const antecedenciaLabel = formatMinutes(aviso.minutes);
+    console.log(`[Push] ${aviso.label} (${antecedenciaLabel}): janela ${windowStart.toISOString()} → ${windowEnd.toISOString()}`);
 
     for (const week of weeks) {
       if (!week.isTicketIssued) continue;
 
       // Verificar voo de ida
       if (week.departureFlightDatetime) {
-        const departureTime = new Date(week.departureFlightDatetime);
+        const departureTime = parseBrasiliaDatetime(week.departureFlightDatetime);
+        if (isNaN(departureTime.getTime())) continue;
         if (departureTime >= windowStart && departureTime <= windowEnd) {
           const airline = week.departureAirline
             ? (airlineNames[week.departureAirline.toUpperCase()] ?? week.departureAirline)
@@ -170,7 +194,8 @@ export async function checkAndNotifyUpcomingFlights(): Promise<void> {
 
       // Verificar voo de volta
       if (week.returnFlightDatetime) {
-        const returnTime = new Date(week.returnFlightDatetime);
+        const returnTime = parseBrasiliaDatetime(week.returnFlightDatetime);
+        if (isNaN(returnTime.getTime())) continue;
         if (returnTime >= windowStart && returnTime <= windowEnd) {
           const airline = week.returnAirline
             ? (airlineNames[week.returnAirline.toUpperCase()] ?? week.returnAirline)
