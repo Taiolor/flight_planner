@@ -113,3 +113,7 @@
 - [x] Popup flutuante no CalendarView: ao clicar em dia com voo, exibir dados do bilhete (companhia, horário, aeroporto, localizador)
 - [x] Incluir no popup as opções de compartilhamento via WhatsApp e envio para agenda (Google/Outlook/ICS), reutilizando funções existentes
 - [x] Bug: push notifications não estão sendo enviadas conforme os parâmetros configurados (Aviso 1 e Aviso 2)
+- [x] Criar painel admin de notificações: próximos alertas agendados, histórico de envios e dispositivos registrados
+- [x] Criar endpoint tRPC getNotificationStatus com dados de voos, janelas de alerta e subscriptions
+- [x] Criar página AdminNotifications.tsx com painel visual
+- [x] Registrar rota /admin/notifications e acesso no cabeçalho

@@ -18,6 +18,7 @@ import {
   savePushSubscription,
   deletePushSubscription,
   getPushSubscriptionByEndpoint,
+  getAllPushSubscriptions,
   getNotificationSettings,
   updateNotificationSettings,
 } from "./db";
@@ -298,6 +299,131 @@ export const appRouter = router({
         }
         return { success: true };
       }),
+  }),
+
+  // =====================
+  // Admin: Painel de Notificações
+  // =====================
+  adminNotifications: router({
+    // Retorna status completo do sistema de notificações para o painel admin
+    getStatus: publicProcedure.query(async ({ ctx }) => {
+      const session = await getSessionFromCookie(ctx.req);
+      if (!session) throw new TRPCError({ code: "UNAUTHORIZED", message: "Faça login para acessar." });
+
+      const [weeks, settings, subscriptions] = await Promise.all([
+        getAllFlightWeeks(),
+        getNotificationSettings(),
+        getAllPushSubscriptions(),
+      ]);
+
+      const now = new Date();
+
+      // Função para parsear datetime no fuso de Brasília
+      function parseBrasiliaDatetime(dt: string): Date {
+        if (!dt) return new Date(NaN);
+        if (dt.includes('+') || dt.endsWith('Z') || /[+-]\d{2}:\d{2}$/.test(dt)) return new Date(dt);
+        return new Date(dt + '-03:00');
+      }
+
+      function formatMinutes(minutes: number): string {
+        if (minutes >= 60 && minutes % 60 === 0) return `${minutes / 60}h antes`;
+        return `${minutes}min antes`;
+      }
+
+      // Calcular próximas notificações agendadas
+      const avisos = [
+        { minutes: settings.aviso1Minutes, label: "Aviso 1" },
+        { minutes: settings.aviso2Minutes, label: "Aviso 2" },
+      ].filter(a => a.minutes > 0);
+
+      const scheduledAlerts: Array<{
+        weekNumber: number;
+        direction: "ida" | "volta";
+        avisoLabel: string;
+        avisoMinutes: number;
+        flightDatetime: string;
+        alertDatetime: string;
+        airline: string;
+        flightNumber: string;
+        status: "pending" | "sent" | "past";
+        minutesUntilAlert: number;
+      }> = [];
+
+      const issuedWeeks = weeks.filter(w => w.isTicketIssued);
+
+      for (const week of issuedWeeks) {
+        for (const aviso of avisos) {
+          const targetMs = aviso.minutes * 60 * 1000;
+          const windowStart = new Date(now.getTime() + targetMs - 50 * 60 * 1000);
+          const windowEnd = new Date(now.getTime() + targetMs + 50 * 60 * 1000);
+
+          // Voo de ida
+          if (week.departureFlightDatetime) {
+            const flightTime = parseBrasiliaDatetime(week.departureFlightDatetime);
+            if (!isNaN(flightTime.getTime())) {
+              const alertTime = new Date(flightTime.getTime() - targetMs);
+              const minutesUntilAlert = Math.round((alertTime.getTime() - now.getTime()) / 60000);
+              let status: "pending" | "sent" | "past" = "pending";
+              if (flightTime < now) status = "past";
+              else if (flightTime >= windowStart && flightTime <= windowEnd) status = "sent";
+              scheduledAlerts.push({
+                weekNumber: Number(week.weekNumber),
+                direction: "ida",
+                avisoLabel: aviso.label,
+                avisoMinutes: aviso.minutes,
+                flightDatetime: week.departureFlightDatetime,
+                alertDatetime: alertTime.toISOString(),
+                airline: week.departureAirline ?? "",
+                flightNumber: week.departureFlightNumber ?? "",
+                status,
+                minutesUntilAlert,
+              });
+            }
+          }
+
+          // Voo de volta
+          if (week.returnFlightDatetime) {
+            const flightTime = parseBrasiliaDatetime(week.returnFlightDatetime);
+            if (!isNaN(flightTime.getTime())) {
+              const alertTime = new Date(flightTime.getTime() - targetMs);
+              const minutesUntilAlert = Math.round((alertTime.getTime() - now.getTime()) / 60000);
+              let status: "pending" | "sent" | "past" = "pending";
+              if (flightTime < now) status = "past";
+              else if (flightTime >= windowStart && flightTime <= windowEnd) status = "sent";
+              scheduledAlerts.push({
+                weekNumber: Number(week.weekNumber),
+                direction: "volta",
+                avisoLabel: aviso.label,
+                avisoMinutes: aviso.minutes,
+                flightDatetime: week.returnFlightDatetime,
+                alertDatetime: alertTime.toISOString(),
+                airline: week.returnAirline ?? "",
+                flightNumber: week.returnFlightNumber ?? "",
+                status,
+                minutesUntilAlert,
+              });
+            }
+          }
+        }
+      }
+
+      // Ordenar por data do alerta
+      scheduledAlerts.sort((a, b) => new Date(a.alertDatetime).getTime() - new Date(b.alertDatetime).getTime());
+
+      return {
+        settings,
+        subscriptions: subscriptions.map(s => ({
+          endpoint: s.endpoint.slice(0, 60) + "...",
+          userAgent: s.userAgent ?? "Desconhecido",
+          createdAt: s.createdAt,
+        })),
+        totalSubscriptions: subscriptions.length,
+        totalIssuedFlights: issuedWeeks.length,
+        scheduledAlerts,
+        serverTime: now.toISOString(),
+        avisos: avisos.map(a => ({ ...a, label: formatMinutes(a.minutes) })),
+      };
+    }),
   }),
 
   // =====================
