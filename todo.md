@@ -117,3 +117,7 @@
 - [x] Criar endpoint tRPC getNotificationStatus com dados de voos, janelas de alerta e subscriptions
 - [x] Criar página AdminNotifications.tsx com painel visual
 - [x] Registrar rota /admin/notifications e acesso no cabeçalho
+- [x] Criar tabela notification_log no schema do banco (weekNumber, direction, avisoLabel, avisoMinutes, sentAt, status, devicesReached, errorMessage)
+- [x] Adicionar helpers insertNotificationLog e getNotificationLogs no db.ts
+- [x] Integrar registro de log no job de push notifications (sucesso e falha)
+- [x] Adicionar endpoint tRPC adminNotifications.getLogs e exibir histórico no painel admin

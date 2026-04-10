@@ -7,7 +7,7 @@
 
 import webpush from "web-push";
 import { ENV } from "./_core/env";
-import { getAllPushSubscriptions, getAllFlightWeeks, deletePushSubscription, getNotificationSettings } from "./db";
+import { getAllPushSubscriptions, getAllFlightWeeks, deletePushSubscription, getNotificationSettings, insertNotificationLog } from "./db";
 
 // Configurar VAPID uma única vez ao carregar o módulo
 let vapidConfigured = false;
@@ -180,13 +180,27 @@ export async function checkAndNotifyUpcomingFlights(): Promise<void> {
             month: "2-digit",
             timeZone: "America/Sao_Paulo",
           });
-          await sendPushToAll({
+          const sentDepCount = await sendPushToAll({
             title: `✈️ ${antecedenciaLabel} — ${airline} ${flightNum}`,
             body: `Voo de ida GRU → NVT: ${dateStr} às ${timeStr}. Prepare-se! 🧳`,
             icon: "/icons/icon-192.png",
             badge: "/icons/icon-192.png",
             tag: `departure-week-${week.weekNumber}-aviso${aviso.minutes}`,
             data: { weekNumber: week.weekNumber, direction: "departure" },
+          });
+          const totalDepDevices = (await getAllPushSubscriptions()).length;
+          await insertNotificationLog({
+            weekNumber: Number(week.weekNumber),
+            direction: "ida",
+            avisoLabel: aviso.label,
+            avisoMinutes: aviso.minutes,
+            airline: week.departureAirline ?? null,
+            flightNumber: week.departureFlightNumber ?? null,
+            flightDatetime: week.departureFlightDatetime ?? null,
+            status: sentDepCount === totalDepDevices ? "success" : sentDepCount > 0 ? "partial" : "failed",
+            devicesReached: sentDepCount,
+            totalDevices: totalDepDevices,
+            isTest: 0,
           });
           console.log(`[Push] ${aviso.label} (${antecedenciaLabel}) de ida enviado para semana ${week.weekNumber}`);
         }
@@ -212,13 +226,27 @@ export async function checkAndNotifyUpcomingFlights(): Promise<void> {
             month: "2-digit",
             timeZone: "America/Sao_Paulo",
           });
-          await sendPushToAll({
+          const sentRetCount = await sendPushToAll({
             title: `🏠 ${antecedenciaLabel} — ${airline} ${flightNum}`,
             body: `Voo de volta NVT → GRU: ${dateStr} às ${timeStr}. Boa viagem! ✈️`,
             icon: "/icons/icon-192.png",
             badge: "/icons/icon-192.png",
             tag: `return-week-${week.weekNumber}-aviso${aviso.minutes}`,
             data: { weekNumber: week.weekNumber, direction: "return" },
+          });
+          const totalRetDevices = (await getAllPushSubscriptions()).length;
+          await insertNotificationLog({
+            weekNumber: Number(week.weekNumber),
+            direction: "volta",
+            avisoLabel: aviso.label,
+            avisoMinutes: aviso.minutes,
+            airline: week.returnAirline ?? null,
+            flightNumber: week.returnFlightNumber ?? null,
+            flightDatetime: week.returnFlightDatetime ?? null,
+            status: sentRetCount === totalRetDevices ? "success" : sentRetCount > 0 ? "partial" : "failed",
+            devicesReached: sentRetCount,
+            totalDevices: totalRetDevices,
+            isTest: 0,
           });
           console.log(`[Push] ${aviso.label} (${antecedenciaLabel}) de volta enviado para semana ${week.weekNumber}`);
         }

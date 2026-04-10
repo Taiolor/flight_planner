@@ -130,3 +130,27 @@ export const notificationSettings = mysqlTable("notification_settings", {
 });
 export type NotificationSettings = typeof notificationSettings.$inferSelect;
 export type InsertNotificationSettings = typeof notificationSettings.$inferInsert;
+
+/**
+ * Tabela para registrar histórico persistente de envios de push notifications.
+ * Cada linha representa um evento de envio (ou tentativa) para um voo específico.
+ */
+export const notificationLogs = mysqlTable("notification_logs", {
+  id: int("id").autoincrement().primaryKey(),
+  weekNumber: int("weekNumber").notNull(),
+  direction: varchar("direction", { length: 10 }).notNull(), // 'ida' | 'volta'
+  avisoLabel: varchar("avisoLabel", { length: 30 }).notNull(), // 'Aviso 1' | 'Aviso 2'
+  avisoMinutes: int("avisoMinutes").notNull(),
+  airline: varchar("airline", { length: 50 }),
+  flightNumber: varchar("flightNumber", { length: 20 }),
+  flightDatetime: varchar("flightDatetime", { length: 30 }),
+  status: varchar("status", { length: 20 }).notNull().default("success"), // 'success' | 'partial' | 'failed'
+  devicesReached: int("devicesReached").notNull().default(0),
+  totalDevices: int("totalDevices").notNull().default(0),
+  errorMessage: text("errorMessage"),
+  isTest: int("isTest").notNull().default(0), // 1 = envio de teste manual
+  sentAt: timestamp("sentAt").defaultNow().notNull(),
+});
+
+export type NotificationLog = typeof notificationLogs.$inferSelect;
+export type InsertNotificationLog = typeof notificationLogs.$inferInsert;

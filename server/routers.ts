@@ -21,6 +21,8 @@ import {
   getAllPushSubscriptions,
   getNotificationSettings,
   updateNotificationSettings,
+  insertNotificationLog,
+  getNotificationLogs,
 } from "./db";
 import { ENV } from "./_core/env";
 
@@ -170,6 +172,20 @@ export const appRouter = router({
           icon: "/icons/icon-192.png",
           badge: "/icons/icon-192.png",
           tag: "test",
+        });
+        const totalDevices = (await getAllPushSubscriptions()).length;
+        await insertNotificationLog({
+          weekNumber: 0,
+          direction: "ida",
+          avisoLabel: "Teste Manual",
+          avisoMinutes: 0,
+          airline: null,
+          flightNumber: null,
+          flightDatetime: null,
+          status: sent > 0 ? "success" : "failed",
+          devicesReached: sent,
+          totalDevices,
+          isTest: 1,
         });
         return { success: true, sent };
       }),
@@ -424,6 +440,16 @@ export const appRouter = router({
         avisos: avisos.map(a => ({ ...a, label: formatMinutes(a.minutes) })),
       };
     }),
+
+    // Retorna histórico persistente de envios
+    getLogs: publicProcedure
+      .input(z.object({ limit: z.number().min(1).max(500).optional() }))
+      .query(async ({ input, ctx }) => {
+        const session = await getSessionFromCookie(ctx.req);
+        if (!session) throw new TRPCError({ code: "UNAUTHORIZED", message: "Faça login para acessar." });
+        const logs = await getNotificationLogs(input?.limit ?? 100);
+        return logs;
+      }),
   }),
 
   // =====================

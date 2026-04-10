@@ -1,6 +1,6 @@
-import { and, eq, gt } from "drizzle-orm";
+import { and, desc, eq, gt } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, users, flightWeeks, flightPrices, InsertFlightWeek, InsertFlightPrice, authSessions, InsertAuthSession, pushSubscriptions, InsertPushSubscription, notificationSettings } from "../drizzle/schema";
+import { InsertUser, users, flightWeeks, flightPrices, InsertFlightWeek, InsertFlightPrice, authSessions, InsertAuthSession, pushSubscriptions, InsertPushSubscription, notificationSettings, notificationLogs, InsertNotificationLog } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -351,4 +351,23 @@ export async function updateNotificationSettings(aviso1Minutes: number, aviso2Mi
       .set({ aviso1Minutes, aviso2Minutes })
       .where(eq(notificationSettings.id, rows[0].id));
   }
+}
+
+// =====================
+// Notification Logs
+// =====================
+
+export async function insertNotificationLog(data: InsertNotificationLog): Promise<void> {
+  const db = await getDb();
+  if (!db) return;
+  await db.insert(notificationLogs).values(data);
+}
+
+export async function getNotificationLogs(limit = 100) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select()
+    .from(notificationLogs)
+    .orderBy(desc(notificationLogs.sentAt))
+    .limit(limit);
 }

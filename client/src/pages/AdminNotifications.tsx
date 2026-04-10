@@ -16,6 +16,7 @@ import {
   Clock,
   Smartphone,
   CheckCircle2,
+  XCircle,
   AlertCircle,
   History,
   RefreshCw,
@@ -24,6 +25,7 @@ import {
   Timer,
   Wifi,
   WifiOff,
+  FlaskConical,
 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -111,6 +113,12 @@ export default function AdminNotifications() {
     trpc.adminNotifications.getStatus.useQuery(undefined, {
       refetchInterval: autoRefresh ? 60_000 : false,
     });
+
+  const { data: logs, refetch: refetchLogs } =
+    trpc.adminNotifications.getLogs.useQuery(
+      { limit: 100 },
+      { refetchInterval: autoRefresh ? 60_000 : false }
+    );
 
   const sendTestMutation = trpc.push.sendTest.useMutation({
     onSuccess: (result) => {
@@ -355,6 +363,86 @@ export default function AdminNotifications() {
                       <p className="text-xs text-gray-400 font-mono truncate">{sub.endpoint}</p>
                     </div>
                     <Badge className="bg-green-100 text-green-700 border-green-200 flex-shrink-0">Ativo</Badge>
+                  </div>
+                ))}
+              </div>
+            )}
+          </Card>
+        </div>
+
+        {/* Histórico Persistente de Envios */}
+        <div>
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide">
+              Histórico de Envios ({logs?.length ?? 0})
+            </h2>
+            <button
+              onClick={() => refetchLogs()}
+              className="text-xs text-gray-400 hover:text-gray-600 flex items-center gap-1"
+            >
+              <RefreshCw className="w-3 h-3" /> Atualizar
+            </button>
+          </div>
+          <Card className="overflow-hidden">
+            {(!logs || logs.length === 0) ? (
+              <div className="p-8 text-center">
+                <History className="w-10 h-10 text-gray-300 mx-auto mb-3" />
+                <p className="text-gray-500 text-sm">Nenhum envio registrado ainda.</p>
+                <p className="text-gray-400 text-xs mt-1">Os próximos envios automáticos e testes aparecerão aqui.</p>
+              </div>
+            ) : (
+              <div className="divide-y divide-gray-100">
+                <div className="grid grid-cols-[auto_1fr_auto_auto] gap-x-3 px-4 py-2 bg-gray-50 text-xs font-semibold text-gray-400 uppercase tracking-wide">
+                  <span>Status</span>
+                  <span>Voo</span>
+                  <span className="text-right">Dispositivos</span>
+                  <span className="text-right">Enviado em</span>
+                </div>
+                {logs.map((log) => (
+                  <div key={log.id} className="grid grid-cols-[auto_1fr_auto_auto] gap-x-3 items-center px-4 py-3">
+                    {/* Status */}
+                    <div className="flex-shrink-0">
+                      {log.status === "success" ? (
+                        <CheckCircle2 className="w-4 h-4 text-green-500" />
+                      ) : log.status === "partial" ? (
+                        <AlertCircle className="w-4 h-4 text-amber-500" />
+                      ) : (
+                        <XCircle className="w-4 h-4 text-red-400" />
+                      )}
+                    </div>
+                    {/* Descrição */}
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        {log.isTest ? (
+                          <span className="flex items-center gap-1 text-sm font-medium text-purple-700">
+                            <FlaskConical className="w-3 h-3" /> Teste Manual
+                          </span>
+                        ) : (
+                          <span className="text-sm font-medium text-gray-800">
+                            Semana {log.weekNumber} — {log.direction === "ida" ? "✈️ Ida" : "🏠 Volta"}
+                          </span>
+                        )}
+                        <Badge className="text-xs bg-indigo-50 text-indigo-600 border-indigo-100">{log.avisoLabel}</Badge>
+                      </div>
+                      {!log.isTest && (
+                        <p className="text-xs text-gray-400 mt-0.5">
+                          {log.airline ? formatAirline(log.airline) : ""}
+                          {log.flightNumber ? ` ${log.flightNumber}` : ""}
+                          {log.errorMessage ? ` · Erro: ${log.errorMessage}` : ""}
+                        </p>
+                      )}
+                    </div>
+                    {/* Dispositivos */}
+                    <div className="text-right text-sm text-gray-600 flex-shrink-0">
+                      <span className={log.devicesReached === 0 ? "text-red-400" : "text-green-600"}>
+                        {log.devicesReached}
+                      </span>
+                      <span className="text-gray-400">/{log.totalDevices}</span>
+                    </div>
+                    {/* Timestamp */}
+                    <div className="text-right text-xs text-gray-400 flex-shrink-0">
+                      {formatDatetimeBRT(log.sentAt instanceof Date ? log.sentAt.toISOString() : String(log.sentAt))}
+                    </div>
                   </div>
                 ))}
               </div>
