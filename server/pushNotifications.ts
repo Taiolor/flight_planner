@@ -7,7 +7,7 @@
 
 import webpush from "web-push";
 import { ENV } from "./_core/env";
-import { getAllPushSubscriptions, getAllFlightWeeks, deletePushSubscription, getNotificationSettings, insertNotificationLog } from "./db";
+import { getAllPushSubscriptions, getAllFlightWeeks, deletePushSubscription, getNotificationSettings, insertNotificationLog, deleteOldNotificationLogs } from "./db";
 
 // Configurar VAPID uma única vez ao carregar o módulo
 let vapidConfigured = false;
@@ -261,6 +261,7 @@ export async function checkAndNotifyUpcomingFlights(): Promise<void> {
  */
 export function startFlightNotificationJob(): void {
   const INTERVAL_MS = 60 * 60 * 1000; // 1 hora
+  const CLEANUP_INTERVAL_MS = 24 * 60 * 60 * 1000; // 1 dia
 
   console.log("[Push] Job de notificações iniciado (verificação a cada hora).");
 
@@ -277,4 +278,38 @@ export function startFlightNotificationJob(): void {
       console.error("[Push] Erro no job de notificações:", err)
     );
   }, INTERVAL_MS);
+
+  // Executar limpeza de logs uma vez por dia (às 03:00 UTC)
+  const now = new Date();
+  const nextCleanup = new Date();
+  nextCleanup.setUTCHours(3, 0, 0, 0);
+  if (nextCleanup <= now) {
+    nextCleanup.setUTCDate(nextCleanup.getUTCDate() + 1);
+  }
+  const delayToFirstCleanup = nextCleanup.getTime() - now.getTime();
+
+  setTimeout(() => {
+    cleanupOldLogs().catch(err =>
+      console.error("[Push] Erro na limpeza de logs:", err)
+    );
+    // Executar a cada dia após o primeiro agendamento
+    setInterval(() => {
+      cleanupOldLogs().catch(err =>
+        console.error("[Push] Erro na limpeza de logs:", err)
+      );
+    }, CLEANUP_INTERVAL_MS);
+  }, delayToFirstCleanup);
+}
+
+/**
+ * Limpa logs de notificações com mais de 90 dias.
+ */
+async function cleanupOldLogs(): Promise<void> {
+  console.log("[Cleanup] Iniciando limpeza de logs com mais de 90 dias...");
+  const deleted = await deleteOldNotificationLogs(90);
+  if (deleted > 0) {
+    console.log("[Cleanup] Limpeza concluída com sucesso.");
+  } else {
+    console.log("[Cleanup] Nenhum log antigo encontrado para deletar.");
+  }
 }

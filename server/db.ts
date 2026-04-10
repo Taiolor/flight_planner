@@ -1,4 +1,4 @@
-import { and, desc, eq, gt } from "drizzle-orm";
+import { and, desc, eq, gt, lt } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import { InsertUser, users, flightWeeks, flightPrices, InsertFlightWeek, InsertFlightPrice, authSessions, InsertAuthSession, pushSubscriptions, InsertPushSubscription, notificationSettings, notificationLogs, InsertNotificationLog } from "../drizzle/schema";
 import { ENV } from './_core/env';
@@ -370,4 +370,21 @@ export async function getNotificationLogs(limit = 100) {
     .from(notificationLogs)
     .orderBy(desc(notificationLogs.sentAt))
     .limit(limit);
+}
+
+export async function deleteOldNotificationLogs(daysOld = 90): Promise<number> {
+  const db = await getDb();
+  if (!db) return 0;
+
+  const cutoffDate = new Date();
+  cutoffDate.setDate(cutoffDate.getDate() - daysOld);
+
+  try {
+    await db.delete(notificationLogs)
+      .where(lt(notificationLogs.sentAt, cutoffDate));
+    return 1; // Sucesso
+  } catch (error) {
+    console.error("[Cleanup] Erro ao deletar logs antigos:", error);
+    return 0;
+  }
 }

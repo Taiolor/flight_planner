@@ -121,3 +121,4 @@
 - [x] Adicionar helpers insertNotificationLog e getNotificationLogs no db.ts
 - [x] Integrar registro de log no job de push notifications (sucesso e falha)
 - [x] Adicionar endpoint tRPC adminNotifications.getLogs e exibir histórico no painel admin
+- [x] Implementar rotina automática para limpar logs de notificações com mais de 90 dias
