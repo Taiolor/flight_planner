@@ -122,3 +122,8 @@
 - [x] Integrar registro de log no job de push notifications (sucesso e falha)
 - [x] Adicionar endpoint tRPC adminNotifications.getLogs e exibir histórico no painel admin
 - [x] Implementar rotina automática para limpar logs de notificações com mais de 90 dias
+- [x] Bug: push notifications não estão sendo recebidas pelo usuário (corrigida lógica de status e adicionados logs de diagnóstico)
+- [ ] Adicionar campo year no schema flightWeeks e executar migração (padrão 2026)
+- [ ] Atualizar rotas tRPC para aceitar filtro de ano (getWeeks, updateWeek, etc.)
+- [ ] Adicionar botão de seleção de ano no cabeçalho (2026 / 2027)
+- [ ] Atualizar Home.tsx, CalendarView.tsx e AdminNotifications.tsx para usar ano selecionado

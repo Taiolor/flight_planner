@@ -59,8 +59,15 @@ export function usePushNotifications() {
         if (existingSub) {
           setSubscription(existingSub);
           setStatus("subscribed");
+          console.log("[Push] Subscription existente encontrada:", existingSub.endpoint);
         } else {
-          setStatus(permission === "granted" ? "unsubscribed" : "unsubscribed");
+          if (permission === "granted") {
+            setStatus("unsubscribed");
+            console.log("[Push] Permissão concedida, mas sem subscription ativa");
+          } else {
+            setStatus("denied");
+            console.log("[Push] Permissão não concedida");
+          }
         }
       } catch (err) {
         console.error("[Push] Erro ao verificar subscription:", err);
@@ -109,6 +116,7 @@ export function usePushNotifications() {
       setStatus("subscribed");
     } catch (err: any) {
       console.error("[Push] Erro ao ativar notificações:", err);
+      console.error("[Push] Stack:", err?.stack);
       setErrorMessage(err?.message ?? "Erro ao ativar notificações.");
       setStatus("error");
     }

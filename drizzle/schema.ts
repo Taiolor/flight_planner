@@ -32,6 +32,7 @@ export type InsertUser = typeof users.$inferInsert;
  */
 export const flightWeeks = mysqlTable("flight_weeks", {
   id: int("id").autoincrement().primaryKey(),
+  year: int("year").default(2026).notNull(),
   weekNumber: int("weekNumber").notNull(),
   departureDate: varchar("departureDate", { length: 20 }).notNull(),
   returnDate: varchar("returnDate", { length: 20 }).notNull(),

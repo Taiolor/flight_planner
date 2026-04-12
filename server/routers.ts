@@ -196,9 +196,12 @@ export const appRouter = router({
   // =====================
   flights: router({
     // Buscar todas as semanas (público)
-    getWeeks: publicProcedure.query(async () => {
-      return getAllFlightWeeks();
-    }),
+    getWeeks: publicProcedure
+      .input(z.object({ year: z.number().default(2026).optional() }))
+      .query(async ({ input }) => {
+        const weeks = await getAllFlightWeeks();
+        return weeks.filter(w => w.year === (input.year ?? 2026));
+      }),
 
     // Buscar todos os preços (público)
     getPrices: publicProcedure.query(async () => {
@@ -233,6 +236,7 @@ export const appRouter = router({
     // Atualizar status de uma semana (requer autenticação)
     updateWeekStatus: publicProcedure
       .input(z.object({
+        year: z.number().default(2026).optional(),
         weekNumber: z.number(),
         isDeleted: z.number().optional(),
         isTicketIssued: z.number().optional(),

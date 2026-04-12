@@ -1,0 +1,1 @@
+ALTER TABLE `flight_weeks` ADD `year` int DEFAULT 2026 NOT NULL;
