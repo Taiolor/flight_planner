@@ -525,11 +525,25 @@ export const appRouter = router({
           throw new TRPCError({ code: "NOT_FOUND", message: "Nenhum próximo alerta encontrado." });
         }
 
-        // Enviar notificação
+        // Formatar a mensagem oficial do voo
+        const flightTime = parseBrasiliaDatetime(nextAlert.flightDatetime);
+        const timeStr = flightTime.toLocaleString('pt-BR', {
+          timeZone: 'America/Sao_Paulo',
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: false
+        });
+        const dateStr = flightTime.toLocaleString('pt-BR', {
+          timeZone: 'America/Sao_Paulo',
+          day: '2-digit',
+          month: '2-digit'
+        });
+
+        // Enviar notificação com dados oficiais
         const { sendPushToAll } = await import("./pushNotifications");
         const sent = await sendPushToAll({
-          title: `✈️ ${nextAlert.airline} ${nextAlert.flightNumber}`,
-          body: `${nextAlert.direction === "ida" ? "Partida" : "Retorno"} em ${nextAlert.avisoLabel.toLowerCase()}`,
+          title: `✈️ ${nextAlert.airline} ${nextAlert.flightNumber} - ${nextAlert.avisoLabel}`,
+          body: `${nextAlert.direction === "ida" ? "Partida" : "Retorno"} em ${dateStr} às ${timeStr}\n${nextAlert.departureAirport} → ${nextAlert.arrivalAirport}`,
           icon: "/icons/icon-192.png",
           badge: "/icons/icon-192.png",
           tag: `test-${nextAlert.weekNumber}`,

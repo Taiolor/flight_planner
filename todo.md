@@ -126,3 +126,4 @@
 - [x] Bug: erro de validação tRPC - procedimento recebendo undefined quando espera objeto
 - [x] Remover coluna year do schema, do código e do banco de dados (DROP COLUMN)
 - [x] Adicionar botão de teste no painel AdminNotifications para forçar envio da notificação do próximo alerta
+- [x] Melhorar botão de teste: enviar a mesma mensagem formatada que seria enviada no alerta agendado, com dados oficiais do voo
