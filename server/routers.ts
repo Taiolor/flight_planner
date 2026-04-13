@@ -197,10 +197,10 @@ export const appRouter = router({
   flights: router({
     // Buscar todas as semanas (público)
     getWeeks: publicProcedure
-      .input(z.object({ year: z.number().default(2026).optional() }))
+      .input(z.object({ year: z.number().default(2026).optional() }).optional())
       .query(async ({ input }) => {
         const weeks = await getAllFlightWeeks();
-        return weeks.filter(w => w.year === (input.year ?? 2026));
+        return weeks.filter(w => w.year === (input?.year ?? 2026));
       }),
 
     // Buscar todos os preços (público)
