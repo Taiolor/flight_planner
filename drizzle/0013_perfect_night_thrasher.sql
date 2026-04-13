@@ -1,0 +1,1 @@
+ALTER TABLE `flight_weeks` DROP COLUMN `year`;

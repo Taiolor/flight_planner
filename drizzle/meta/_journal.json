@@ -92,6 +92,13 @@
       "when": 1775993379278,
       "tag": "0012_slippery_silver_sable",
       "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "5",
+      "when": 1776076457294,
+      "tag": "0013_perfect_night_thrasher",
+      "breakpoints": true
     }
   ]
 }
