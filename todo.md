@@ -125,3 +125,4 @@
 - [x] Bug: push notifications não estão sendo recebidas pelo usuário (corrigida lógica de status e adicionados logs de diagnóstico)
 - [x] Bug: erro de validação tRPC - procedimento recebendo undefined quando espera objeto
 - [x] Remover coluna year do schema, do código e do banco de dados (DROP COLUMN)
+- [x] Adicionar botão de teste no painel AdminNotifications para forçar envio da notificação do próximo alerta

@@ -30,6 +30,39 @@ import {
 import { useState } from "react";
 import { toast } from "sonner";
 
+// Componente para botão de teste do próximo alerta
+function TestNextAlertButton() {
+  const [isLoading, setIsLoading] = useState(false);
+  const sendNextAlertMutation = trpc.adminNotifications.sendNextAlert.useMutation({
+    onSuccess: (result) => {
+      toast.success(`Notificação enviada para ${result.sent} dispositivo(s)!`);
+      setIsLoading(false);
+    },
+    onError: (err) => {
+      toast.error(err.message || "Erro ao enviar notificação.");
+      setIsLoading(false);
+    },
+  });
+
+  const handleTest = async () => {
+    setIsLoading(true);
+    await sendNextAlertMutation.mutateAsync();
+  };
+
+  return (
+    <Button
+      size="sm"
+      variant="outline"
+      className="gap-2 text-blue-600 border-blue-200 hover:bg-blue-50"
+      onClick={handleTest}
+      disabled={isLoading}
+    >
+      <FlaskConical className="w-4 h-4" />
+      {isLoading ? "Enviando..." : "Testar"}
+    </Button>
+  );
+}
+
 const AIRLINE_NAMES: Record<string, string> = {
   LA: "LATAM", la: "LATAM", latam: "LATAM", LATAM: "LATAM",
   G3: "Gol", g3: "Gol", gol: "Gol", GOL: "Gol",
@@ -244,9 +277,12 @@ export default function AdminNotifications() {
                   </p>
                 </div>
               </div>
-              <div className="text-right flex-shrink-0">
-                <p className="text-lg font-bold text-blue-700">{formatRelativeTime(nextAlert.alertDatetime)}</p>
-                <p className="text-xs text-gray-500">{formatDatetimeBRT(nextAlert.alertDatetime)}</p>
+              <div className="flex flex-col items-end gap-3 flex-shrink-0">
+                <div className="text-right">
+                  <p className="text-lg font-bold text-blue-700">{formatRelativeTime(nextAlert.alertDatetime)}</p>
+                  <p className="text-xs text-gray-500">{formatDatetimeBRT(nextAlert.alertDatetime)}</p>
+                </div>
+                <TestNextAlertButton />
               </div>
             </div>
           </Card>

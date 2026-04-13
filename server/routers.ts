@@ -443,6 +443,115 @@ export const appRouter = router({
       };
     }),
 
+    // Enviar notificação de teste do próximo alerta agendado
+    sendNextAlert: publicProcedure
+      .mutation(async ({ ctx }) => {
+        const session = await getSessionFromCookie(ctx.req);
+        if (!session) throw new TRPCError({ code: "UNAUTHORIZED", message: "Faça login para testar." });
+
+        const weeks = await getAllFlightWeeks();
+        const settings = await getNotificationSettings();
+        const now = new Date();
+
+        // Função para parsear datetime no fuso de Brasília
+        function parseBrasiliaDatetime(dt: string): Date {
+          if (!dt) return new Date(NaN);
+          if (dt.includes('+') || dt.endsWith('Z') || /[+-]\d{2}:\d{2}$/.test(dt)) return new Date(dt);
+          return new Date(dt + '-03:00');
+        }
+
+        const avisos = [
+          { minutes: settings.aviso1Minutes, label: "Aviso 1" },
+          { minutes: settings.aviso2Minutes, label: "Aviso 2" },
+        ].filter(a => a.minutes > 0);
+
+        // Encontrar o próximo alerta
+        let nextAlert: any = null;
+        let minTimeUntilAlert = Infinity;
+
+        for (const week of weeks.filter(w => w.isTicketIssued)) {
+          for (const aviso of avisos) {
+            const targetMs = aviso.minutes * 60 * 1000;
+
+            // Voo de ida
+            if (week.departureFlightDatetime) {
+              const flightTime = parseBrasiliaDatetime(week.departureFlightDatetime);
+              if (!isNaN(flightTime.getTime()) && flightTime > now) {
+                const alertTime = new Date(flightTime.getTime() - targetMs);
+                const minutesUntilAlert = Math.round((alertTime.getTime() - now.getTime()) / 60000);
+                if (minutesUntilAlert > 0 && minutesUntilAlert < minTimeUntilAlert) {
+                  minTimeUntilAlert = minutesUntilAlert;
+                  nextAlert = {
+                    weekNumber: week.weekNumber,
+                    direction: "ida",
+                    avisoLabel: aviso.label,
+                    avisoMinutes: aviso.minutes,
+                    airline: week.departureAirline,
+                    flightNumber: week.departureFlightNumber,
+                    departureAirport: week.departureAirport,
+                    arrivalAirport: week.returnAirport,
+                    flightDatetime: week.departureFlightDatetime,
+                  };
+                }
+              }
+            }
+
+            // Voo de volta
+            if (week.returnFlightDatetime) {
+              const flightTime = parseBrasiliaDatetime(week.returnFlightDatetime);
+              if (!isNaN(flightTime.getTime()) && flightTime > now) {
+                const alertTime = new Date(flightTime.getTime() - targetMs);
+                const minutesUntilAlert = Math.round((alertTime.getTime() - now.getTime()) / 60000);
+                if (minutesUntilAlert > 0 && minutesUntilAlert < minTimeUntilAlert) {
+                  minTimeUntilAlert = minutesUntilAlert;
+                  nextAlert = {
+                    weekNumber: week.weekNumber,
+                    direction: "volta",
+                    avisoLabel: aviso.label,
+                    avisoMinutes: aviso.minutes,
+                    airline: week.returnAirline,
+                    flightNumber: week.returnFlightNumber,
+                    departureAirport: week.returnAirport,
+                    arrivalAirport: week.departureAirport,
+                    flightDatetime: week.returnFlightDatetime,
+                  };
+                }
+              }
+            }
+          }
+        }
+
+        if (!nextAlert) {
+          throw new TRPCError({ code: "NOT_FOUND", message: "Nenhum próximo alerta encontrado." });
+        }
+
+        // Enviar notificação
+        const { sendPushToAll } = await import("./pushNotifications");
+        const sent = await sendPushToAll({
+          title: `✈️ ${nextAlert.airline} ${nextAlert.flightNumber}`,
+          body: `${nextAlert.direction === "ida" ? "Partida" : "Retorno"} em ${nextAlert.avisoLabel.toLowerCase()}`,
+          icon: "/icons/icon-192.png",
+          badge: "/icons/icon-192.png",
+          tag: `test-${nextAlert.weekNumber}`,
+        });
+
+        await insertNotificationLog({
+          weekNumber: nextAlert.weekNumber,
+          direction: nextAlert.direction,
+          avisoLabel: nextAlert.avisoLabel,
+          avisoMinutes: nextAlert.avisoMinutes,
+          airline: nextAlert.airline,
+          flightNumber: nextAlert.flightNumber,
+          flightDatetime: nextAlert.flightDatetime,
+          status: sent > 0 ? "success" : "failed",
+          devicesReached: sent,
+          totalDevices: (await getAllPushSubscriptions()).length,
+          isTest: 1,
+        });
+
+        return { success: true, sent, nextAlert };
+      }),
+
     // Retorna histórico persistente de envios
     getLogs: publicProcedure
       .input(z.object({ limit: z.number().min(1).max(500).optional() }))
