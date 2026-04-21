@@ -98,7 +98,7 @@
 - [x] Substituir botão lápis + popup de edição de datas por date pickers inline no card (data ida + data volta com label do dia da semana ao lado)
 - [ ] Ao clicar em "Não Emitido" para expandir o card, copiar automaticamente as datas dos date-pickers (Ida e Retorno) para os campos de data/hora do bilhete (datetime-local Ida e Volta)
 - [x] Alterar título do frame de preços de "GRU → NVT • Preços" para "Consulta de Preços"
-- [ ] Bug: ícone do site (favicon) aparece em branco
+- [x] Bug: ícone do site (favicon) aparece em branco
 - [x] Bug: logotipo no cabeçalho do site aparece em branco
 - [x] Corrigir herança de datas no datetime-local do bilhete: ao clicar em "Não Emitido", preencher data/hora ida com data da semana + 00:00 e data/hora volta com data da semana + 00:00
 - [x] Bug: ao selecionar companhia aérea no bilhete, o código da companhia preenche o Localizador incorretamente; deve preencher o campo Número de Voo correspondente (ida ou volta) apenas quando vazio ou com somente os 2 caracteres iniciais

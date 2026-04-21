@@ -16,8 +16,14 @@
       "purpose": "any maskable"
     },
     {
-      "src": "https://d2xsxph8kpxj0f.cloudfront.net/310419663028456038/HQ655wm9a6bck22hJAwYRc/smartfly-icon-512-fy4eDuGdVJBtxeYLKc2qAk.png",
-      "sizes": "192x192",
+      "src": "https://d2xsxph8kpxj0f.cloudfront.net/310419663028456038/HQ655wm9a6bck22hJAwYRc/apple-touch-icon_406505a4.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "https://d2xsxph8kpxj0f.cloudfront.net/310419663028456038/HQ655wm9a6bck22hJAwYRc/favicon-32x32_9f7e40ea.png",
+      "sizes": "32x32",
       "type": "image/png",
       "purpose": "any"
     }
