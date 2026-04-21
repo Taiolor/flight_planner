@@ -559,6 +559,52 @@ export default function Home() {
       return next;
     });
   };
+
+  // Semana vigente: encontrar a semana cujo intervalo de datas contém a data atual
+  const currentWeekNumber = useMemo(() => {
+    const now = new Date();
+    for (const w of weeksData) {
+      const depParts = w.departureDate.split('/');
+      const retParts = w.returnDate.split('/');
+      if (depParts.length === 3 && retParts.length === 3) {
+        const dep = new Date(+depParts[2], +depParts[1] - 1, +depParts[0]);
+        const ret = new Date(+retParts[2], +retParts[1] - 1, +retParts[0]);
+        // Expandir janela: 3 dias antes da ida até 1 dia depois da volta
+        dep.setDate(dep.getDate() - 3);
+        ret.setDate(ret.getDate() + 1);
+        if (now >= dep && now <= ret) return w.weekNumber;
+      }
+    }
+    // Fallback: próxima semana futura
+    for (const w of weeksData) {
+      const depParts = w.departureDate.split('/');
+      if (depParts.length === 3) {
+        const dep = new Date(+depParts[2], +depParts[1] - 1, +depParts[0]);
+        if (dep >= now) return w.weekNumber;
+      }
+    }
+    return null;
+  }, [weeksData]);
+
+  const [expandedWeekCards, setExpandedWeekCards] = useState<Set<number>>(() => {
+    return currentWeekNumber ? new Set([currentWeekNumber]) : new Set();
+  });
+
+  // Atualizar semana expandida quando currentWeekNumber mudar (dados carregados)
+  useEffect(() => {
+    if (currentWeekNumber && expandedWeekCards.size === 0) {
+      setExpandedWeekCards(new Set([currentWeekNumber]));
+    }
+  }, [currentWeekNumber]);
+
+  const toggleWeekCard = (weekNumber: number) => {
+    setExpandedWeekCards(prev => {
+      const next = new Set(prev);
+      if (next.has(weekNumber)) next.delete(weekNumber);
+      else next.add(weekNumber);
+      return next;
+    });
+  };
   const selectedWeeks = useMemo(() => weeksData.filter(w => w.isSelected === 1), [weeksData]);
   const issuedCount = useMemo(() => weeksData.filter(w => w.isSelected && w.isTicketIssued).length, [weeksData]);
   const totalCost = useMemo(() => {
@@ -1183,7 +1229,16 @@ export default function Home() {
                       week.isTicketIssued ? 'bg-blue-50' : ''
                     } ${isCheap ? 'border-l-4 border-l-orange-400' : ''}`}
                   >
-                    <div className="flex items-start justify-between gap-2 sm:gap-4 mb-3 sm:mb-4">
+                    {/* Cabeçalho da semana - sempre visível, clicável para expandir/recolher */}
+                    <div
+                      className="flex items-start justify-between gap-2 sm:gap-4 cursor-pointer select-none"
+                      onClick={(e) => {
+                        // Não toggle se clicou em botão, checkbox ou input
+                        const target = e.target as HTMLElement;
+                        if (target.closest('button') || target.closest('input') || target.closest('[role="checkbox"]') || target.closest('label')) return;
+                        toggleWeekCard(week.weekNumber);
+                      }}
+                    >
                       <div className="flex items-start gap-2 sm:gap-4 flex-1">
                         <Checkbox
                           checked={!!week.isSelected}
@@ -1363,9 +1418,14 @@ export default function Home() {
                           className="text-red-600 hover:text-red-700 hover:bg-red-50">
                           <Trash2 className="w-4 h-4" />
                         </Button>
+                        {/* Expandir/Recolher */}
+                        <ChevronDown className={`w-5 h-5 text-slate-400 transition-transform duration-200 ${expandedWeekCards.has(week.weekNumber) ? 'rotate-180' : ''}`} />
                       </div>
                     </div>
 
+                    {/* Conteúdo expansível da semana */}
+                    {expandedWeekCards.has(week.weekNumber) && (
+                    <div className="mt-3 sm:mt-4">
                     {/* Buscadores de preços + Cards Ida/Volta lado a lado */}
                     <div className="flex flex-col lg:flex-row gap-3 sm:gap-4 mt-2">
                       {/* Coluna esquerda: Buscadores de preços */}
@@ -2025,6 +2085,8 @@ export default function Home() {
                         </div>
                       )}
                     </div>
+                    </div>
+                    )}
                   </Card>
                 );
               })}

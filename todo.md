@@ -127,3 +127,8 @@
 - [x] Remover coluna year do schema, do código e do banco de dados (DROP COLUMN)
 - [x] Adicionar botão de teste no painel AdminNotifications para forçar envio da notificação do próximo alerta
 - [x] Melhorar botão de teste: enviar a mesma mensagem formatada que seria enviada no alerta agendado, com dados oficiais do voo
+- [x] Fase 1: Criar estado expandedWeeks e função toggleWeek no Home.tsx
+- [x] Fase 1: Accordion de semana implementado inline no Home.tsx (mais seguro que extrair componente)
+- [x] Fase 1: Integrado accordion de semana com ChevronDown e click handler
+- [x] Fase 2: Accordion de semana implementado (cabeçalho sempre visível, conteúdo expande/recolhe)
+- [x] Fase 3: Lógica de abertura automática implementada (mês + semana vigentes abertos por padrão)
