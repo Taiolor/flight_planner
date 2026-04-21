@@ -132,3 +132,10 @@
 - [x] Fase 1: Integrado accordion de semana com ChevronDown e click handler
 - [x] Fase 2: Accordion de semana implementado (cabeçalho sempre visível, conteúdo expande/recolhe)
 - [x] Fase 3: Lógica de abertura automática implementada (mês + semana vigentes abertos por padrão)
+
+## Melhorias de Performance e Segurança
+
+- [x] Performance: Implementar Code Splitting com React.lazy e Suspense no App.tsx
+- [x] Segurança: Instalar e configurar express-rate-limit nas rotas de API
+- [x] Segurança: Instalar e configurar helmet para Security Headers no Express
+- [x] Performance: Reduzir limite do body-parser de 50MB para 2MB globalmente

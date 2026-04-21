@@ -8,6 +8,8 @@ import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
 import { startFlightNotificationJob } from "../pushNotifications";
+import rateLimit from "express-rate-limit";
+import helmet from "helmet";
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise(resolve => {
@@ -28,14 +30,53 @@ async function findAvailablePort(startPort: number = 3000): Promise<number> {
   throw new Error(`No available port found starting from ${startPort}`);
 }
 
+// Rate limiter geral: 200 requisições por IP a cada 15 minutos
+const generalLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutos
+  max: 200,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: "Muitas requisições. Tente novamente em alguns minutos." },
+});
+
+// Rate limiter para rotas de autenticação: 20 requisições por IP a cada 15 minutos
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutos
+  max: 20,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: "Muitas tentativas de autenticação. Tente novamente em alguns minutos." },
+});
+
 async function startServer() {
   const app = express();
   const server = createServer(app);
-  // Configure body parser with larger size limit for file uploads
-  app.use(express.json({ limit: "50mb" }));
-  app.use(express.urlencoded({ limit: "50mb", extended: true }));
+
+  // Confiar no proxy reverso (necessário para rate limiting correto com X-Forwarded-For)
+  app.set("trust proxy", 1);
+
+  // Security headers via Helmet
+  // Nota: contentSecurityPolicy desativado para não quebrar o Manus OAuth e o Vite HMR
+  app.use(
+    helmet({
+      contentSecurityPolicy: false, // Gerenciado pelo Vite/Manus OAuth
+      crossOriginEmbedderPolicy: false, // Necessário para recursos externos (fontes, etc.)
+    })
+  );
+
+  // Configure body parser com limite reduzido (2MB é suficiente para esta aplicação)
+  app.use(express.json({ limit: "2mb" }));
+  app.use(express.urlencoded({ limit: "2mb", extended: true }));
+
+  // Aplicar rate limiting geral em todas as rotas /api
+  app.use("/api", generalLimiter);
+
+  // Rate limiting mais restrito para rotas de autenticação OAuth
+  app.use("/api/oauth", authLimiter);
+
   // OAuth callback under /api/oauth/callback
   registerOAuthRoutes(app);
+
   // tRPC API
   app.use(
     "/api/trpc",
@@ -44,6 +85,7 @@ async function startServer() {
       createContext,
     })
   );
+
   // development mode uses Vite, production mode uses static files
   if (process.env.NODE_ENV === "development") {
     await setupVite(app, server);
