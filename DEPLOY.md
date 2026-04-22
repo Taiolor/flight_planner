@@ -8,12 +8,12 @@
 
 ## Pré-requisitos
 
-| Ferramenta | Versão mínima | Instalação |
-|---|---|---|
-| Node.js | 20.x | https://nodejs.org |
-| pnpm | 9.x | `npm install -g pnpm` |
-| Git | qualquer | https://git-scm.com |
-| MySQL / TiDB | 8.x | ou use um serviço gerenciado |
+| Ferramenta   | Versão mínima | Instalação                   |
+| ------------ | ------------- | ---------------------------- |
+| Node.js      | 20.x          | https://nodejs.org           |
+| pnpm         | 9.x           | `npm install -g pnpm`        |
+| Git          | qualquer      | https://git-scm.com          |
+| MySQL / TiDB | 8.x           | ou use um serviço gerenciado |
 
 ---
 
@@ -50,6 +50,7 @@ VITE_ANALYTICS_WEBSITE_ID=
 ```
 
 > **Como gerar chaves VAPID:**
+>
 > ```bash
 > pnpm exec web-push generate-vapid-keys
 > ```
@@ -80,10 +81,10 @@ bash deploy.sh
 
 ### Opções disponíveis
 
-| Flag | Descrição |
-|---|---|
-| `--skip-db` | Pula as migrations do banco (útil quando o schema já está atualizado) |
-| `--skip-test` | Pula a execução dos testes automatizados |
+| Flag          | Descrição                                                             |
+| ------------- | --------------------------------------------------------------------- |
+| `--skip-db`   | Pula as migrations do banco (útil quando o schema já está atualizado) |
+| `--skip-test` | Pula a execução dos testes automatizados                              |
 
 ```bash
 # Exemplo: deploy rápido sem testes
@@ -154,13 +155,13 @@ curl -s -o /dev/null -w "%{http_code}" http://localhost:3000/
 
 ## Solução de Problemas
 
-| Problema | Causa provável | Solução |
-|---|---|---|
-| `DATABASE_URL is required` | Variável não exportada | `export $(cat .env \| grep -v '^#' \| xargs)` |
-| `ECONNREFUSED` no banco | Banco não acessível | Verificar host, porta e credenciais no `DATABASE_URL` |
-| Página em branco após deploy | Build desatualizado | Rodar `pnpm build` novamente |
+| Problema                      | Causa provável         | Solução                                                |
+| ----------------------------- | ---------------------- | ------------------------------------------------------ |
+| `DATABASE_URL is required`    | Variável não exportada | `export $(cat .env \| grep -v '^#' \| xargs)`          |
+| `ECONNREFUSED` no banco       | Banco não acessível    | Verificar host, porta e credenciais no `DATABASE_URL`  |
+| Página em branco após deploy  | Build desatualizado    | Rodar `pnpm build` novamente                           |
 | Push notifications não chegam | Chaves VAPID inválidas | Regenerar com `pnpm exec web-push generate-vapid-keys` |
-| Erro de CORS no OAuth | URL de callback errada | Verificar `VITE_OAUTH_PORTAL_URL` e `OAUTH_SERVER_URL` |
+| Erro de CORS no OAuth         | URL de callback errada | Verificar `VITE_OAUTH_PORTAL_URL` e `OAUTH_SERVER_URL` |
 
 ---
 
