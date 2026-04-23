@@ -601,6 +601,7 @@ export default function Home() {
     }));
   }, [weeksQuery.data]);
 
+<<<<<<< Updated upstream
   // Precalculate lowest prices for all weeks to avoid redundant object iteration and float parsing during renders
   const lowestPriceMap = useMemo(() => {
     const map: Record<number, number> = {};
@@ -611,16 +612,43 @@ export default function Home() {
       if (values.length > 0) {
         map[Number(weekNumStr)] = Math.min(...values);
       }
+=======
+  // ⚡ Otimização: pré-computa o menor preço de cada semana em um mapa
+  // Reduz operações de O(n) array allocations por chamada para O(1) lookup
+  const lowestPriceMap = useMemo(() => {
+    const map: Record<number, number> = {};
+    for (const weekStr in priceMap) {
+      const weekNumber = parseInt(weekStr);
+      const weekPrices = priceMap[weekNumber];
+      if (!weekPrices) continue;
+      let min = Infinity;
+      let found = false;
+      for (const key in weekPrices) {
+        const val = parseFloat(weekPrices[key] as string);
+        if (!isNaN(val)) {
+          if (val < min) min = val;
+          found = true;
+        }
+      }
+      if (found) map[weekNumber] = min;
+>>>>>>> Stashed changes
     }
     return map;
   }, [priceMap]);
 
+<<<<<<< Updated upstream
   const getLowestPrice = useCallback(
     (weekNumber: number): number | null => {
       return lowestPriceMap[weekNumber] ?? null;
     },
     [lowestPriceMap]
   );
+=======
+  const getLowestPrice = useCallback((weekNumber: number): number | null => {
+    const min = lowestPriceMap[weekNumber];
+    return min !== undefined ? min : null;
+  }, [lowestPriceMap]);
+>>>>>>> Stashed changes
 
   // Calculate price percentile
   const priceThreshold = useMemo(() => {

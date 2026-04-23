@@ -1,4 +1,5 @@
 import { COOKIE_NAME } from "@shared/const";
+import crypto from "crypto";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import { publicProcedure, router } from "./_core/trpc";
@@ -63,10 +64,20 @@ export const appRouter = router({
         const allowedEmail = process.env.AUTH_EMAIL ?? "";
         const allowedPassword = process.env.AUTH_PASSWORD ?? "";
 
-        if (
-          input.email.toLowerCase().trim() !== allowedEmail.toLowerCase().trim() ||
-          input.password !== allowedPassword
-        ) {
+        // Comparação timing-safe para prevenir timing side-channel attacks
+        const givenEmail = Buffer.from(input.email.toLowerCase().trim());
+        const expectedEmail = Buffer.from(allowedEmail.toLowerCase().trim());
+        const emailMatch =
+          givenEmail.length === expectedEmail.length &&
+          crypto.timingSafeEqual(givenEmail, expectedEmail);
+
+        const givenPassword = Buffer.from(input.password);
+        const expectedPassword = Buffer.from(allowedPassword);
+        const passwordMatch =
+          givenPassword.length === expectedPassword.length &&
+          crypto.timingSafeEqual(givenPassword, expectedPassword);
+
+        if (!emailMatch || !passwordMatch) {
           throw new TRPCError({
             code: "UNAUTHORIZED",
             message: "E-mail ou senha incorretos.",
@@ -216,7 +227,15 @@ export const appRouter = router({
         returnDayOfWeek: z.string(),
         holiday: z.string().nullable().optional(),
       })))
-      .mutation(async ({ input }) => {
+      .mutation(async ({ input, ctx }) => {
+        // Requer autenticação para evitar reinicialização não autorizada das semanas
+        const session = await getSessionFromCookie(ctx.req);
+        if (!session) {
+          throw new TRPCError({
+            code: "UNAUTHORIZED",
+            message: "Faça login para inicializar semanas.",
+          });
+        }
         await initFlightWeeks(input.map(w => ({
           weekNumber: w.weekNumber,
           departureDate: w.departureDate,

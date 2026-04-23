@@ -139,3 +139,9 @@
 - [x] Segurança: Instalar e configurar express-rate-limit nas rotas de API
 - [x] Segurança: Instalar e configurar helmet para Security Headers no Express
 - [x] Performance: Reduzir limite do body-parser de 50MB para 2MB globalmente
+
+## Correções dos PRs #2 e #3
+
+- [x] Segurança: Adicionar autenticação no endpoint initWeeks (PR #3)
+- [x] Segurança: Substituir comparação de string por crypto.timingSafeEqual no login (PR #3)
+- [x] Performance: Otimizar getLowestPrice com useMemo/lowestPriceMap O(1) (PR #2)
