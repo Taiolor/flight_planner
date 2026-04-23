@@ -623,17 +623,22 @@ export default function Home() {
     return map;
   }, [priceMap]);
 
-  const getLowestPrice = useCallback((weekNumber: number): number | null => {
-    const min = lowestPriceMap[weekNumber];
-    return min !== undefined ? min : null;
-  }, [lowestPriceMap]);
+  const getLowestPrice = useCallback(
+    (weekNumber: number): number | null => {
+      const min = lowestPriceMap[weekNumber];
+      return min !== undefined ? min : null;
+    },
+    [lowestPriceMap]
+  );
 
   // Calculate price percentile
   const priceThreshold = useMemo(() => {
     const allPrices: number[] = [];
-    for (const weekPrices of Object.values(priceMap)) {
-      for (const price of Object.values(weekPrices)) {
-        const num = parseFloat(price as string);
+    for (const weekStr in priceMap) {
+      const weekPrices = priceMap[parseInt(weekStr)];
+      if (!weekPrices) continue;
+      for (const airline in weekPrices) {
+        const num = parseFloat(weekPrices[airline] as string);
         if (!isNaN(num)) allPrices.push(num);
       }
     }
