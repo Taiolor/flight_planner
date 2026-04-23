@@ -320,7 +320,6 @@ export function AIChatBox({
         <Button
           type="submit"
           size="icon"
-          aria-label="Send message"
           disabled={!input.trim() || isLoading}
           className="shrink-0 h-[38px] w-[38px]"
         >
