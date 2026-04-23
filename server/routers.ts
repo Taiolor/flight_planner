@@ -1,4 +1,5 @@
 import { COOKIE_NAME } from "@shared/const";
+import type { Request } from "express";
 import crypto from "crypto";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
@@ -29,8 +30,22 @@ import { ENV } from "./_core/env";
 
 const SESSION_COOKIE = "flight_session";
 
+interface NextAlert {
+  weekNumber: number;
+  direction: "ida" | "volta";
+  avisoLabel: string;
+  avisoMinutes: number;
+  airline: string | null;
+  flightNumber: string | null;
+  departureAirport: string | null;
+  arrivalAirport: string | null;
+  flightDatetime: string;
+}
+
 // Helper para verificar se a sessão é válida
-async function getSessionFromCookie(req: any): Promise<{ email: string } | null> {
+async function getSessionFromCookie(
+  req: Request
+): Promise<{ email: string } | null> {
   const cookieHeader = req.headers?.cookie ?? "";
   const match = cookieHeader.match(new RegExp(`${SESSION_COOKIE}=([^;]+)`));
   if (!match) return null;
@@ -56,10 +71,12 @@ export const appRouter = router({
   flightAuth: router({
     // Login com e-mail e senha
     login: publicProcedure
-      .input(z.object({
-        email: z.string().email(),
-        password: z.string().min(1),
-      }))
+      .input(
+        z.object({
+          email: z.string().email(),
+          password: z.string().min(1),
+        })
+      )
       .mutation(async ({ input, ctx }) => {
         const allowedEmail = process.env.AUTH_EMAIL ?? "";
         const allowedPassword = process.env.AUTH_PASSWORD ?? "";
@@ -128,21 +145,29 @@ export const appRouter = router({
   push: router({
     // Retorna a chave pública VAPID para o frontend criar a subscription
     getVapidPublicKey: publicProcedure.query(() => {
-      return { publicKey: ENV.vapidPublicKey || process.env.VITE_VAPID_PUBLIC_KEY || "" };
+      return {
+        publicKey:
+          ENV.vapidPublicKey || process.env.VITE_VAPID_PUBLIC_KEY || "",
+      };
     }),
 
     // Salvar subscription do dispositivo
     subscribe: publicProcedure
-      .input(z.object({
-        endpoint: z.string(),
-        p256dh: z.string(),
-        auth: z.string(),
-        userAgent: z.string().optional(),
-      }))
+      .input(
+        z.object({
+          endpoint: z.string(),
+          p256dh: z.string(),
+          auth: z.string(),
+          userAgent: z.string().optional(),
+        })
+      )
       .mutation(async ({ input, ctx }) => {
         const session = await getSessionFromCookie(ctx.req);
         if (!session) {
-          throw new TRPCError({ code: "UNAUTHORIZED", message: "Faça login para ativar notificações." });
+          throw new TRPCError({
+            code: "UNAUTHORIZED",
+            message: "Faça login para ativar notificações.",
+          });
         }
         await savePushSubscription({
           endpoint: input.endpoint,
@@ -170,36 +195,38 @@ export const appRouter = router({
       }),
 
     // Enviar notificação de teste
-    sendTest: publicProcedure
-      .mutation(async ({ ctx }) => {
-        const session = await getSessionFromCookie(ctx.req);
-        if (!session) {
-          throw new TRPCError({ code: "UNAUTHORIZED", message: "Faça login para testar notificações." });
-        }
-        const { sendPushToAll } = await import("./pushNotifications");
-        const sent = await sendPushToAll({
-          title: "✈️ Smart Fly — Teste",
-          body: "Notificações push estão funcionando!",
-          icon: "/icons/icon-192.png",
-          badge: "/icons/icon-192.png",
-          tag: "test",
+    sendTest: publicProcedure.mutation(async ({ ctx }) => {
+      const session = await getSessionFromCookie(ctx.req);
+      if (!session) {
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+          message: "Faça login para testar notificações.",
         });
-        const totalDevices = (await getAllPushSubscriptions()).length;
-        await insertNotificationLog({
-          weekNumber: 0,
-          direction: "ida",
-          avisoLabel: "Teste Manual",
-          avisoMinutes: 0,
-          airline: null,
-          flightNumber: null,
-          flightDatetime: null,
-          status: sent > 0 ? "success" : "failed",
-          devicesReached: sent,
-          totalDevices,
-          isTest: 1,
-        });
-        return { success: true, sent };
-      }),
+      }
+      const { sendPushToAll } = await import("./pushNotifications");
+      const sent = await sendPushToAll({
+        title: "✈️ Smart Fly — Teste",
+        body: "Notificações push estão funcionando!",
+        icon: "/icons/icon-192.png",
+        badge: "/icons/icon-192.png",
+        tag: "test",
+      });
+      const totalDevices = (await getAllPushSubscriptions()).length;
+      await insertNotificationLog({
+        weekNumber: 0,
+        direction: "ida",
+        avisoLabel: "Teste Manual",
+        avisoMinutes: 0,
+        airline: null,
+        flightNumber: null,
+        flightDatetime: null,
+        status: sent > 0 ? "success" : "failed",
+        devicesReached: sent,
+        totalDevices,
+        isTest: 1,
+      });
+      return { success: true, sent };
+    }),
   }),
 
   // =====================
@@ -207,10 +234,9 @@ export const appRouter = router({
   // =====================
   flights: router({
     // Buscar todas as semanas (público)
-    getWeeks: publicProcedure
-      .query(async () => {
-        return getAllFlightWeeks();
-      }),
+    getWeeks: publicProcedure.query(async () => {
+      return getAllFlightWeeks();
+    }),
 
     // Buscar todos os preços (público)
     getPrices: publicProcedure.query(async () => {
@@ -219,14 +245,18 @@ export const appRouter = router({
 
     // Inicializar semanas com dados padrão (só roda se não houver dados)
     initWeeks: publicProcedure
-      .input(z.array(z.object({
-        weekNumber: z.number(),
-        departureDate: z.string(),
-        returnDate: z.string(),
-        departureDayOfWeek: z.string(),
-        returnDayOfWeek: z.string(),
-        holiday: z.string().nullable().optional(),
-      })))
+      .input(
+        z.array(
+          z.object({
+            weekNumber: z.number(),
+            departureDate: z.string(),
+            returnDate: z.string(),
+            departureDayOfWeek: z.string(),
+            returnDayOfWeek: z.string(),
+            holiday: z.string().nullable().optional(),
+          })
+        )
+      )
       .mutation(async ({ input, ctx }) => {
         // Requer autenticação para evitar reinicialização não autorizada das semanas
         const session = await getSessionFromCookie(ctx.req);
@@ -236,44 +266,51 @@ export const appRouter = router({
             message: "Faça login para inicializar semanas.",
           });
         }
-        await initFlightWeeks(input.map(w => ({
-          weekNumber: w.weekNumber,
-          departureDate: w.departureDate,
-          returnDate: w.returnDate,
-          departureDayOfWeek: w.departureDayOfWeek,
-          returnDayOfWeek: w.returnDayOfWeek,
-          holiday: w.holiday ?? null,
-          isDeleted: 0,
-          isTicketIssued: 0,
-          isSelected: 0,
-        })));
+        await initFlightWeeks(
+          input.map(w => ({
+            weekNumber: w.weekNumber,
+            departureDate: w.departureDate,
+            returnDate: w.returnDate,
+            departureDayOfWeek: w.departureDayOfWeek,
+            returnDayOfWeek: w.returnDayOfWeek,
+            holiday: w.holiday ?? null,
+            isDeleted: 0,
+            isTicketIssued: 0,
+            isSelected: 0,
+          }))
+        );
         return { success: true };
       }),
 
     // Atualizar status de uma semana (requer autenticação)
     updateWeekStatus: publicProcedure
-      .input(z.object({
-        year: z.number().default(2026).optional(),
-        weekNumber: z.number(),
-        isDeleted: z.number().optional(),
-        isTicketIssued: z.number().optional(),
-        isSelected: z.number().optional(),
-        departureAirline: z.string().nullable().optional(),
-        returnAirline: z.string().nullable().optional(),
-        departureFlightDatetime: z.string().nullable().optional(),
-        returnFlightDatetime: z.string().nullable().optional(),
-        departureAirport: z.string().nullable().optional(),
-        returnAirport: z.string().nullable().optional(),
-        departureLocator: z.string().nullable().optional(),
-        returnLocator: z.string().nullable().optional(),
-        departureFlightNumber: z.string().nullable().optional(),
-        returnFlightNumber: z.string().nullable().optional(),
-        ticketType: z.string().nullable().optional(),
-      }))
+      .input(
+        z.object({
+          year: z.number().default(2026).optional(),
+          weekNumber: z.number(),
+          isDeleted: z.number().optional(),
+          isTicketIssued: z.number().optional(),
+          isSelected: z.number().optional(),
+          departureAirline: z.string().nullable().optional(),
+          returnAirline: z.string().nullable().optional(),
+          departureFlightDatetime: z.string().nullable().optional(),
+          returnFlightDatetime: z.string().nullable().optional(),
+          departureAirport: z.string().nullable().optional(),
+          returnAirport: z.string().nullable().optional(),
+          departureLocator: z.string().nullable().optional(),
+          returnLocator: z.string().nullable().optional(),
+          departureFlightNumber: z.string().nullable().optional(),
+          returnFlightNumber: z.string().nullable().optional(),
+          ticketType: z.string().nullable().optional(),
+        })
+      )
       .mutation(async ({ input, ctx }) => {
         const session = await getSessionFromCookie(ctx.req);
         if (!session) {
-          throw new TRPCError({ code: "UNAUTHORIZED", message: "Faça login para editar." });
+          throw new TRPCError({
+            code: "UNAUTHORIZED",
+            message: "Faça login para editar.",
+          });
         }
         await updateFlightWeekStatus(input.weekNumber, {
           isDeleted: input.isDeleted,
@@ -296,17 +333,22 @@ export const appRouter = router({
 
     // Editar datas de uma semana (requer autenticação)
     updateWeekDates: publicProcedure
-      .input(z.object({
-        weekNumber: z.number(),
-        departureDate: z.string(),
-        returnDate: z.string(),
-        departureDayOfWeek: z.string(),
-        returnDayOfWeek: z.string(),
-      }))
+      .input(
+        z.object({
+          weekNumber: z.number(),
+          departureDate: z.string(),
+          returnDate: z.string(),
+          departureDayOfWeek: z.string(),
+          returnDayOfWeek: z.string(),
+        })
+      )
       .mutation(async ({ input, ctx }) => {
         const session = await getSessionFromCookie(ctx.req);
         if (!session) {
-          throw new TRPCError({ code: "UNAUTHORIZED", message: "Faça login para editar." });
+          throw new TRPCError({
+            code: "UNAUTHORIZED",
+            message: "Faça login para editar.",
+          });
         }
         await updateFlightWeekStatus(input.weekNumber, {
           departureDate: input.departureDate,
@@ -319,17 +361,22 @@ export const appRouter = router({
 
     // Salvar preço de uma companhia para uma semana (requer autenticação)
     savePrice: publicProcedure
-      .input(z.object({
-        weekNumber: z.number(),
-        airline: z.string(),
-        price: z.string(),
-      }))
+      .input(
+        z.object({
+          weekNumber: z.number(),
+          airline: z.string(),
+          price: z.string(),
+        })
+      )
       .mutation(async ({ input, ctx }) => {
         const session = await getSessionFromCookie(ctx.req);
         if (!session) {
-          throw new TRPCError({ code: "UNAUTHORIZED", message: "Faça login para editar." });
+          throw new TRPCError({
+            code: "UNAUTHORIZED",
+            message: "Faça login para editar.",
+          });
         }
-        if (input.price === '') {
+        if (input.price === "") {
           await deleteFlightPrice(input.weekNumber, input.airline);
         } else {
           await upsertFlightPrice(input.weekNumber, input.airline, input.price);
@@ -345,7 +392,11 @@ export const appRouter = router({
     // Retorna status completo do sistema de notificações para o painel admin
     getStatus: publicProcedure.query(async ({ ctx }) => {
       const session = await getSessionFromCookie(ctx.req);
-      if (!session) throw new TRPCError({ code: "UNAUTHORIZED", message: "Faça login para acessar." });
+      if (!session)
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+          message: "Faça login para acessar.",
+        });
 
       const [weeks, settings, subscriptions] = await Promise.all([
         getAllFlightWeeks(),
@@ -358,12 +409,14 @@ export const appRouter = router({
       // Função para parsear datetime no fuso de Brasília
       function parseBrasiliaDatetime(dt: string): Date {
         if (!dt) return new Date(NaN);
-        if (dt.includes('+') || dt.endsWith('Z') || /[+-]\d{2}:\d{2}$/.test(dt)) return new Date(dt);
-        return new Date(dt + '-03:00');
+        if (dt.includes("+") || dt.endsWith("Z") || /[+-]\d{2}:\d{2}$/.test(dt))
+          return new Date(dt);
+        return new Date(dt + "-03:00");
       }
 
       function formatMinutes(minutes: number): string {
-        if (minutes >= 60 && minutes % 60 === 0) return `${minutes / 60}h antes`;
+        if (minutes >= 60 && minutes % 60 === 0)
+          return `${minutes / 60}h antes`;
         return `${minutes}min antes`;
       }
 
@@ -391,18 +444,25 @@ export const appRouter = router({
       for (const week of issuedWeeks) {
         for (const aviso of avisos) {
           const targetMs = aviso.minutes * 60 * 1000;
-          const windowStart = new Date(now.getTime() + targetMs - 50 * 60 * 1000);
+          const windowStart = new Date(
+            now.getTime() + targetMs - 50 * 60 * 1000
+          );
           const windowEnd = new Date(now.getTime() + targetMs + 50 * 60 * 1000);
 
           // Voo de ida
           if (week.departureFlightDatetime) {
-            const flightTime = parseBrasiliaDatetime(week.departureFlightDatetime);
+            const flightTime = parseBrasiliaDatetime(
+              week.departureFlightDatetime
+            );
             if (!isNaN(flightTime.getTime())) {
               const alertTime = new Date(flightTime.getTime() - targetMs);
-              const minutesUntilAlert = Math.round((alertTime.getTime() - now.getTime()) / 60000);
+              const minutesUntilAlert = Math.round(
+                (alertTime.getTime() - now.getTime()) / 60000
+              );
               let status: "pending" | "sent" | "past" = "pending";
               if (flightTime < now) status = "past";
-              else if (flightTime >= windowStart && flightTime <= windowEnd) status = "sent";
+              else if (flightTime >= windowStart && flightTime <= windowEnd)
+                status = "sent";
               scheduledAlerts.push({
                 weekNumber: Number(week.weekNumber),
                 direction: "ida",
@@ -423,10 +483,13 @@ export const appRouter = router({
             const flightTime = parseBrasiliaDatetime(week.returnFlightDatetime);
             if (!isNaN(flightTime.getTime())) {
               const alertTime = new Date(flightTime.getTime() - targetMs);
-              const minutesUntilAlert = Math.round((alertTime.getTime() - now.getTime()) / 60000);
+              const minutesUntilAlert = Math.round(
+                (alertTime.getTime() - now.getTime()) / 60000
+              );
               let status: "pending" | "sent" | "past" = "pending";
               if (flightTime < now) status = "past";
-              else if (flightTime >= windowStart && flightTime <= windowEnd) status = "sent";
+              else if (flightTime >= windowStart && flightTime <= windowEnd)
+                status = "sent";
               scheduledAlerts.push({
                 weekNumber: Number(week.weekNumber),
                 direction: "volta",
@@ -445,7 +508,11 @@ export const appRouter = router({
       }
 
       // Ordenar por data do alerta
-      scheduledAlerts.sort((a, b) => new Date(a.alertDatetime).getTime() - new Date(b.alertDatetime).getTime());
+      scheduledAlerts.sort(
+        (a, b) =>
+          new Date(a.alertDatetime).getTime() -
+          new Date(b.alertDatetime).getTime()
+      );
 
       return {
         settings,
@@ -463,134 +530,157 @@ export const appRouter = router({
     }),
 
     // Enviar notificação de teste do próximo alerta agendado
-    sendNextAlert: publicProcedure
-      .mutation(async ({ ctx }) => {
-        const session = await getSessionFromCookie(ctx.req);
-        if (!session) throw new TRPCError({ code: "UNAUTHORIZED", message: "Faça login para testar." });
+    sendNextAlert: publicProcedure.mutation(async ({ ctx }) => {
+      const session = await getSessionFromCookie(ctx.req);
+      if (!session)
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+          message: "Faça login para testar.",
+        });
 
-        const weeks = await getAllFlightWeeks();
-        const settings = await getNotificationSettings();
-        const now = new Date();
+      const weeks = await getAllFlightWeeks();
+      const settings = await getNotificationSettings();
+      const now = new Date();
 
-        // Função para parsear datetime no fuso de Brasília
-        function parseBrasiliaDatetime(dt: string): Date {
-          if (!dt) return new Date(NaN);
-          if (dt.includes('+') || dt.endsWith('Z') || /[+-]\d{2}:\d{2}$/.test(dt)) return new Date(dt);
-          return new Date(dt + '-03:00');
-        }
+      // Função para parsear datetime no fuso de Brasília
+      function parseBrasiliaDatetime(dt: string): Date {
+        if (!dt) return new Date(NaN);
+        if (dt.includes("+") || dt.endsWith("Z") || /[+-]\d{2}:\d{2}$/.test(dt))
+          return new Date(dt);
+        return new Date(dt + "-03:00");
+      }
 
-        const avisos = [
-          { minutes: settings.aviso1Minutes, label: "Aviso 1" },
-          { minutes: settings.aviso2Minutes, label: "Aviso 2" },
-        ].filter(a => a.minutes > 0);
+      const avisos = [
+        { minutes: settings.aviso1Minutes, label: "Aviso 1" },
+        { minutes: settings.aviso2Minutes, label: "Aviso 2" },
+      ].filter(a => a.minutes > 0);
 
-        // Encontrar o próximo alerta
-        let nextAlert: any = null;
-        let minTimeUntilAlert = Infinity;
+      // Encontrar o próximo alerta
+      let nextAlert: NextAlert | null = null;
+      let minTimeUntilAlert = Infinity;
 
-        for (const week of weeks.filter(w => w.isTicketIssued)) {
-          for (const aviso of avisos) {
-            const targetMs = aviso.minutes * 60 * 1000;
+      for (const week of weeks.filter(w => w.isTicketIssued)) {
+        for (const aviso of avisos) {
+          const targetMs = aviso.minutes * 60 * 1000;
 
-            // Voo de ida
-            if (week.departureFlightDatetime) {
-              const flightTime = parseBrasiliaDatetime(week.departureFlightDatetime);
-              if (!isNaN(flightTime.getTime()) && flightTime > now) {
-                const alertTime = new Date(flightTime.getTime() - targetMs);
-                const minutesUntilAlert = Math.round((alertTime.getTime() - now.getTime()) / 60000);
-                if (minutesUntilAlert > 0 && minutesUntilAlert < minTimeUntilAlert) {
-                  minTimeUntilAlert = minutesUntilAlert;
-                  nextAlert = {
-                    weekNumber: week.weekNumber,
-                    direction: "ida",
-                    avisoLabel: aviso.label,
-                    avisoMinutes: aviso.minutes,
-                    airline: week.departureAirline,
-                    flightNumber: week.departureFlightNumber,
-                    departureAirport: week.departureAirport,
-                    arrivalAirport: week.returnAirport,
-                    flightDatetime: week.departureFlightDatetime,
-                  };
-                }
+          // Voo de ida
+          if (week.departureFlightDatetime) {
+            const flightTime = parseBrasiliaDatetime(
+              week.departureFlightDatetime
+            );
+            if (!isNaN(flightTime.getTime()) && flightTime > now) {
+              const alertTime = new Date(flightTime.getTime() - targetMs);
+              const minutesUntilAlert = Math.round(
+                (alertTime.getTime() - now.getTime()) / 60000
+              );
+              if (
+                minutesUntilAlert > 0 &&
+                minutesUntilAlert < minTimeUntilAlert
+              ) {
+                minTimeUntilAlert = minutesUntilAlert;
+                nextAlert = {
+                  weekNumber: week.weekNumber,
+                  direction: "ida",
+                  avisoLabel: aviso.label,
+                  avisoMinutes: aviso.minutes,
+                  airline: week.departureAirline,
+                  flightNumber: week.departureFlightNumber,
+                  departureAirport: week.departureAirport,
+                  arrivalAirport: week.returnAirport,
+                  flightDatetime: week.departureFlightDatetime,
+                };
               }
             }
+          }
 
-            // Voo de volta
-            if (week.returnFlightDatetime) {
-              const flightTime = parseBrasiliaDatetime(week.returnFlightDatetime);
-              if (!isNaN(flightTime.getTime()) && flightTime > now) {
-                const alertTime = new Date(flightTime.getTime() - targetMs);
-                const minutesUntilAlert = Math.round((alertTime.getTime() - now.getTime()) / 60000);
-                if (minutesUntilAlert > 0 && minutesUntilAlert < minTimeUntilAlert) {
-                  minTimeUntilAlert = minutesUntilAlert;
-                  nextAlert = {
-                    weekNumber: week.weekNumber,
-                    direction: "volta",
-                    avisoLabel: aviso.label,
-                    avisoMinutes: aviso.minutes,
-                    airline: week.returnAirline,
-                    flightNumber: week.returnFlightNumber,
-                    departureAirport: week.returnAirport,
-                    arrivalAirport: week.departureAirport,
-                    flightDatetime: week.returnFlightDatetime,
-                  };
-                }
+          // Voo de volta
+          if (week.returnFlightDatetime) {
+            const flightTime = parseBrasiliaDatetime(week.returnFlightDatetime);
+            if (!isNaN(flightTime.getTime()) && flightTime > now) {
+              const alertTime = new Date(flightTime.getTime() - targetMs);
+              const minutesUntilAlert = Math.round(
+                (alertTime.getTime() - now.getTime()) / 60000
+              );
+              if (
+                minutesUntilAlert > 0 &&
+                minutesUntilAlert < minTimeUntilAlert
+              ) {
+                minTimeUntilAlert = minutesUntilAlert;
+                nextAlert = {
+                  weekNumber: week.weekNumber,
+                  direction: "volta",
+                  avisoLabel: aviso.label,
+                  avisoMinutes: aviso.minutes,
+                  airline: week.returnAirline,
+                  flightNumber: week.returnFlightNumber,
+                  departureAirport: week.returnAirport,
+                  arrivalAirport: week.departureAirport,
+                  flightDatetime: week.returnFlightDatetime,
+                };
               }
             }
           }
         }
+      }
 
-        if (!nextAlert) {
-          throw new TRPCError({ code: "NOT_FOUND", message: "Nenhum próximo alerta encontrado." });
-        }
-
-        // Formatar a mensagem oficial do voo
-        const flightTime = parseBrasiliaDatetime(nextAlert.flightDatetime);
-        const timeStr = flightTime.toLocaleString('pt-BR', {
-          timeZone: 'America/Sao_Paulo',
-          hour: '2-digit',
-          minute: '2-digit',
-          hour12: false
+      if (!nextAlert) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Nenhum próximo alerta encontrado.",
         });
-        const dateStr = flightTime.toLocaleString('pt-BR', {
-          timeZone: 'America/Sao_Paulo',
-          day: '2-digit',
-          month: '2-digit'
-        });
+      }
 
-        // Enviar notificação com dados oficiais
-        const { sendPushToAll } = await import("./pushNotifications");
-        const sent = await sendPushToAll({
-          title: `✈️ ${nextAlert.airline} ${nextAlert.flightNumber} - ${nextAlert.avisoLabel}`,
-          body: `${nextAlert.direction === "ida" ? "Partida" : "Retorno"} em ${dateStr} às ${timeStr}\n${nextAlert.departureAirport} → ${nextAlert.arrivalAirport}`,
-          icon: "/icons/icon-192.png",
-          badge: "/icons/icon-192.png",
-          tag: `test-${nextAlert.weekNumber}`,
-        });
+      // Formatar a mensagem oficial do voo
+      const flightTime = parseBrasiliaDatetime(nextAlert.flightDatetime);
+      const timeStr = flightTime.toLocaleString("pt-BR", {
+        timeZone: "America/Sao_Paulo",
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false,
+      });
+      const dateStr = flightTime.toLocaleString("pt-BR", {
+        timeZone: "America/Sao_Paulo",
+        day: "2-digit",
+        month: "2-digit",
+      });
 
-        await insertNotificationLog({
-          weekNumber: nextAlert.weekNumber,
-          direction: nextAlert.direction,
-          avisoLabel: nextAlert.avisoLabel,
-          avisoMinutes: nextAlert.avisoMinutes,
-          airline: nextAlert.airline,
-          flightNumber: nextAlert.flightNumber,
-          flightDatetime: nextAlert.flightDatetime,
-          status: sent > 0 ? "success" : "failed",
-          devicesReached: sent,
-          totalDevices: (await getAllPushSubscriptions()).length,
-          isTest: 1,
-        });
+      // Enviar notificação com dados oficiais
+      const { sendPushToAll } = await import("./pushNotifications");
+      const sent = await sendPushToAll({
+        title: `✈️ ${nextAlert.airline} ${nextAlert.flightNumber} - ${nextAlert.avisoLabel}`,
+        body: `${nextAlert.direction === "ida" ? "Partida" : "Retorno"} em ${dateStr} às ${timeStr}\n${nextAlert.departureAirport} → ${nextAlert.arrivalAirport}`,
+        icon: "/icons/icon-192.png",
+        badge: "/icons/icon-192.png",
+        tag: `test-${nextAlert.weekNumber}`,
+      });
 
-        return { success: true, sent, nextAlert };
-      }),
+      await insertNotificationLog({
+        weekNumber: nextAlert.weekNumber,
+        direction: nextAlert.direction,
+        avisoLabel: nextAlert.avisoLabel,
+        avisoMinutes: nextAlert.avisoMinutes,
+        airline: nextAlert.airline,
+        flightNumber: nextAlert.flightNumber,
+        flightDatetime: nextAlert.flightDatetime,
+        status: sent > 0 ? "success" : "failed",
+        devicesReached: sent,
+        totalDevices: (await getAllPushSubscriptions()).length,
+        isTest: 1,
+      });
+
+      return { success: true, sent, nextAlert };
+    }),
 
     // Retorna histórico persistente de envios
     getLogs: publicProcedure
       .input(z.object({ limit: z.number().min(1).max(500).optional() }))
       .query(async ({ input, ctx }) => {
         const session = await getSessionFromCookie(ctx.req);
-        if (!session) throw new TRPCError({ code: "UNAUTHORIZED", message: "Faça login para acessar." });
+        if (!session)
+          throw new TRPCError({
+            code: "UNAUTHORIZED",
+            message: "Faça login para acessar.",
+          });
         const logs = await getNotificationLogs(input?.limit ?? 100);
         return logs;
       }),
@@ -603,19 +693,32 @@ export const appRouter = router({
     // Buscar configurações atuais de agendamento
     get: publicProcedure.query(async ({ ctx }) => {
       const session = await getSessionFromCookie(ctx.req);
-      if (!session) throw new TRPCError({ code: "UNAUTHORIZED", message: "Faça login para acessar." });
+      if (!session)
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+          message: "Faça login para acessar.",
+        });
       return getNotificationSettings();
     }),
     // Salvar configurações de agendamento
     update: publicProcedure
-      .input(z.object({
-        aviso1Minutes: z.number().min(0).max(2880),
-        aviso2Minutes: z.number().min(0).max(2880),
-      }))
+      .input(
+        z.object({
+          aviso1Minutes: z.number().min(0).max(2880),
+          aviso2Minutes: z.number().min(0).max(2880),
+        })
+      )
       .mutation(async ({ input, ctx }) => {
         const session = await getSessionFromCookie(ctx.req);
-        if (!session) throw new TRPCError({ code: "UNAUTHORIZED", message: "Faça login para editar." });
-        await updateNotificationSettings(input.aviso1Minutes, input.aviso2Minutes);
+        if (!session)
+          throw new TRPCError({
+            code: "UNAUTHORIZED",
+            message: "Faça login para editar.",
+          });
+        await updateNotificationSettings(
+          input.aviso1Minutes,
+          input.aviso2Minutes
+        );
         return { success: true };
       }),
   }),
