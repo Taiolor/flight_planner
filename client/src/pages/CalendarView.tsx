@@ -213,7 +213,12 @@ function FlightPopup({
               <span className="text-[10px] bg-orange-400 text-white px-2 py-0.5 rounded-full font-semibold">Somente Ida</span>
             )}
           </div>
-          <button onClick={onClose} className="text-white/70 hover:text-white transition-colors">
+          <button
+            onClick={onClose}
+            className="text-white/70 hover:text-white transition-colors"
+            title="Fechar"
+            aria-label="Fechar calendário"
+          >
             <X className="w-4 h-4" />
           </button>
         </div>

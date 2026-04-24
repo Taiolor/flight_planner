@@ -2024,13 +2024,24 @@ export default function Home() {
                                         handleDelete(week.weekNumber)
                                       }
                                       className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                                      title="Excluir semana"
+                                      aria-label="Excluir semana"
                                     >
                                       <Trash2 className="w-4 h-4" />
                                     </Button>
                                     {/* Expandir/Recolher */}
-                                    <ChevronDown
-                                      className={`w-5 h-5 text-slate-400 transition-transform duration-200 ${expandedWeekCards.has(week.weekNumber) ? "rotate-180" : ""}`}
-                                    />
+                                    <button
+                                      type="button"
+                                      onClick={() => toggleWeekCard(week.weekNumber)}
+                                      className="focus:outline-none rounded-full p-1 hover:bg-slate-100 transition-colors"
+                                      title={expandedWeekCards.has(week.weekNumber) ? "Recolher" : "Expandir"}
+                                      aria-label={expandedWeekCards.has(week.weekNumber) ? "Recolher" : "Expandir"}
+                                      aria-expanded={expandedWeekCards.has(week.weekNumber)}
+                                    >
+                                      <ChevronDown
+                                        className={`w-5 h-5 text-slate-400 transition-transform duration-200 ${expandedWeekCards.has(week.weekNumber) ? "rotate-180" : ""}`}
+                                      />
+                                    </button>
                                   </div>
                                 </div>
 
