@@ -706,12 +706,20 @@ export default function Home() {
     "12": "Dezembro",
   };
 
+  // ⚡ Bolt Optimization:
+  // Pre-calculate monthly derived values (issued, selected, holidays, total) during the `weeksByMonth`
+  // memoization to prevent expensive O(N) filtering/reductions inside the render loop for each month group.
   const weeksByMonth = useMemo(() => {
     const groups: {
       monthKey: string;
       monthLabel: string;
       weeks: WeekData[];
+      monthIssued: number;
+      monthSelected: number;
+      monthHasHoliday: boolean;
+      monthIssuedTotal: number;
     }[] = [];
+
     const seen = new Set<string>();
     for (const week of sortedWeeks) {
       const monthKey = week.departureDate.split("/")[1];
@@ -721,12 +729,31 @@ export default function Home() {
           monthKey,
           monthLabel: MONTH_NAMES[monthKey] || monthKey,
           weeks: [],
+          monthIssued: 0,
+          monthSelected: 0,
+          monthHasHoliday: false,
+          monthIssuedTotal: 0,
         });
       }
       groups.find(g => g.monthKey === monthKey)!.weeks.push(week);
     }
+
+    // After grouping, compute the aggregates per month once
+    for (const group of groups) {
+      group.monthIssued = group.weeks.filter(w => w.isTicketIssued).length;
+      group.monthSelected = group.weeks.filter(w => w.isSelected).length;
+      group.monthHasHoliday = group.weeks.some(
+        w =>
+          getFeriadosPorIntervalo(w.weekNumber, w.departureDate, w.returnDate)
+            .length > 0
+      );
+      group.monthIssuedTotal = group.weeks
+        .filter(w => w.isTicketIssued)
+        .reduce((sum, w) => sum + (getLowestPrice(w.weekNumber) ?? 0), 0);
+    }
+
     return groups;
-  }, [sortedWeeks]);
+  }, [sortedWeeks, getLowestPrice]);
 
   // Mês corrente para iniciar expandido
   const currentMonthKey = useMemo(() => {
@@ -1550,28 +1577,16 @@ export default function Home() {
               </Card>
             ) : (
               weeksByMonth.map(
-                ({ monthKey, monthLabel, weeks: monthWeeks }) => {
+                ({
+                  monthKey,
+                  monthLabel,
+                  weeks: monthWeeks,
+                  monthIssued,
+                  monthSelected,
+                  monthHasHoliday,
+                  monthIssuedTotal,
+                }) => {
                   const isOpen = expandedMonths.has(monthKey);
-                  const monthIssued = monthWeeks.filter(
-                    w => w.isTicketIssued
-                  ).length;
-                  const monthSelected = monthWeeks.filter(
-                    w => w.isSelected
-                  ).length;
-                  const monthHasHoliday = monthWeeks.some(
-                    w =>
-                      getFeriadosPorIntervalo(
-                        w.weekNumber,
-                        w.departureDate,
-                        w.returnDate
-                      ).length > 0
-                  );
-                  const monthIssuedTotal = monthWeeks
-                    .filter(w => w.isTicketIssued)
-                    .reduce(
-                      (sum, w) => sum + (getLowestPrice(w.weekNumber) ?? 0),
-                      0
-                    );
                   return (
                     <div
                       key={monthKey}
