@@ -83,7 +83,7 @@ export function NotificationSettingsPopup({
         setOpen(false);
       }, 1200);
     },
-    onError: (err) => {
+    onError: err => {
       toast.error("Erro ao salvar: " + err.message);
     },
   });
@@ -101,7 +101,7 @@ export function NotificationSettingsPopup({
   };
 
   const getAvisoLabel = (minutes: number) => {
-    const opt = ANTECEDENCIA_OPTIONS.find((o) => o.value === minutes);
+    const opt = ANTECEDENCIA_OPTIONS.find(o => o.value === minutes);
     return opt ? opt.label : `${minutes}min`;
   };
 
@@ -131,13 +131,13 @@ export function NotificationSettingsPopup({
         </div>
         <Select
           value={String(aviso1)}
-          onValueChange={(v) => setAviso1(Number(v))}
+          onValueChange={v => setAviso1(Number(v))}
         >
           <SelectTrigger className="bg-slate-800 border-slate-600 text-white h-10 text-sm w-full">
             <SelectValue />
           </SelectTrigger>
           <SelectContent className="bg-slate-800 border-slate-600 text-white">
-            {ANTECEDENCIA_OPTIONS.map((opt) => (
+            {ANTECEDENCIA_OPTIONS.map(opt => (
               <SelectItem
                 key={opt.value}
                 value={String(opt.value)}
@@ -166,13 +166,13 @@ export function NotificationSettingsPopup({
         </div>
         <Select
           value={String(aviso2)}
-          onValueChange={(v) => setAviso2(Number(v))}
+          onValueChange={v => setAviso2(Number(v))}
         >
           <SelectTrigger className="bg-slate-800 border-slate-600 text-white h-10 text-sm w-full">
             <SelectValue />
           </SelectTrigger>
           <SelectContent className="bg-slate-800 border-slate-600 text-white">
-            {ANTECEDENCIA_OPTIONS.map((opt) => (
+            {ANTECEDENCIA_OPTIONS.map(opt => (
               <SelectItem
                 key={opt.value}
                 value={String(opt.value)}
@@ -271,10 +271,16 @@ export function NotificationSettingsPopup({
 
   // Desktop: usa Popover (gerencia foco e portais corretamente)
   return (
-    <Popover open={open} onOpenChange={(v) => {
-      if (!v) { setOpen(false); return; }
-      handleOpen();
-    }}>
+    <Popover
+      open={open}
+      onOpenChange={v => {
+        if (!v) {
+          setOpen(false);
+          return;
+        }
+        handleOpen();
+      }}
+    >
       <PopoverTrigger asChild>
         <Button
           variant="ghost"
