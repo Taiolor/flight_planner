@@ -855,26 +855,50 @@ export default function Home() {
         return parts[1] === num && !w.isDeleted;
       });
       const entry: Record<string, string | number> = { mes: label };
-      // Todas as empresas incluindo kayak e onhappy
-      for (const airline of airlines) {
-        const prices = monthWeeks
-          .map(w => parseFloat(priceMap[w.weekNumber]?.[airline.id] || ""))
-          .filter(p => !isNaN(p) && p > 0);
-        if (prices.length > 0) {
-          entry[airline.id] = Math.round(
-            prices.reduce((a, b) => a + b, 0) / prices.length
-          );
+      // ⚡ Bolt Optimization: Single pass over monthWeeks to compute airline averages and overall min/avg
+      // avoiding multiple array allocations (map, filter) per airline and for all prices.
+      const airlineSums: Record<string, number> = {};
+      const airlineCounts: Record<string, number> = {};
+      let totalSum = 0;
+      let totalCount = 0;
+      let minPrice = Infinity;
+
+      for (let i = 0; i < monthWeeks.length; i++) {
+        const w = monthWeeks[i];
+
+        // Calculate per-airline sums and counts
+        for (let j = 0; j < airlines.length; j++) {
+          const airlineId = airlines[j].id;
+          const pStr = priceMap[w.weekNumber]?.[airlineId];
+          if (pStr) {
+            const p = parseFloat(pStr as string);
+            if (!isNaN(p) && p > 0) {
+              airlineSums[airlineId] = (airlineSums[airlineId] || 0) + p;
+              airlineCounts[airlineId] = (airlineCounts[airlineId] || 0) + 1;
+            }
+          }
+        }
+
+        // Calculate overall min and sum for media
+        const lowest = getLowestPrice(w.weekNumber);
+        if (lowest !== null && lowest > 0) {
+          if (lowest < minPrice) minPrice = lowest;
+          totalSum += lowest;
+          totalCount++;
         }
       }
-      // Menor preço geral do mês (considerando todas as empresas)
-      const allPrices = monthWeeks
-        .map(w => getLowestPrice(w.weekNumber))
-        .filter((p): p is number => p !== null && p > 0);
-      if (allPrices.length > 0) {
-        entry["menor"] = Math.round(Math.min(...allPrices));
-        entry["media"] = Math.round(
-          allPrices.reduce((a, b) => a + b, 0) / allPrices.length
-        );
+
+      for (let j = 0; j < airlines.length; j++) {
+        const airlineId = airlines[j].id;
+        const count = airlineCounts[airlineId];
+        if (count && count > 0) {
+          entry[airlineId] = Math.round(airlineSums[airlineId] / count);
+        }
+      }
+
+      if (totalCount > 0) {
+        entry["menor"] = Math.round(minPrice);
+        entry["media"] = Math.round(totalSum / totalCount);
       }
       return entry;
     });
@@ -2032,11 +2056,23 @@ export default function Home() {
                                     {/* Expandir/Recolher */}
                                     <button
                                       type="button"
-                                      onClick={() => toggleWeekCard(week.weekNumber)}
+                                      onClick={() =>
+                                        toggleWeekCard(week.weekNumber)
+                                      }
                                       className="focus:outline-none rounded-full p-1 hover:bg-slate-100 transition-colors"
-                                      title={expandedWeekCards.has(week.weekNumber) ? "Recolher" : "Expandir"}
-                                      aria-label={expandedWeekCards.has(week.weekNumber) ? "Recolher" : "Expandir"}
-                                      aria-expanded={expandedWeekCards.has(week.weekNumber)}
+                                      title={
+                                        expandedWeekCards.has(week.weekNumber)
+                                          ? "Recolher"
+                                          : "Expandir"
+                                      }
+                                      aria-label={
+                                        expandedWeekCards.has(week.weekNumber)
+                                          ? "Recolher"
+                                          : "Expandir"
+                                      }
+                                      aria-expanded={expandedWeekCards.has(
+                                        week.weekNumber
+                                      )}
                                     >
                                       <ChevronDown
                                         className={`w-5 h-5 text-slate-400 transition-transform duration-200 ${expandedWeekCards.has(week.weekNumber) ? "rotate-180" : ""}`}

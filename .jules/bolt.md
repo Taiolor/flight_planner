@@ -12,3 +12,7 @@
 
 **Learning:** Running `filter`, `some`, and `reduce` operations on nested array structures (like `monthWeeks.filter(...)`) directly within the render loop creates significant performance bottlenecks, especially in complex components that re-render frequently (e.g. tracking sliders or expanding panels).
 **Action:** Lift array computations into `useMemo` hooks, pre-calculating necessary aggregates and flags per group, so the render loop just reads pre-computed primitive values.
+## 2026-05-19 - Render Loop O(N) Chained Array Methods
+
+**Learning:** Nested `.map().filter().reduce()` chains inside `useMemo` hooks or render cycles create unnecessary garbage collection overhead by repeatedly allocating intermediate arrays.
+**Action:** Replace functional array method chains with single-pass standard `for` or `for...of` loops to compute aggregates in hot paths, significantly reducing memory churn and CPU cycles per render.
