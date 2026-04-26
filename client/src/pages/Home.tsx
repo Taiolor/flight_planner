@@ -855,26 +855,42 @@ export default function Home() {
         return parts[1] === num && !w.isDeleted;
       });
       const entry: Record<string, string | number> = { mes: label };
+      // ⚡ Otimização: Evitar map().filter().reduce()
+      // Usar um único loop nas monthWeeks para cada empresa economiza alocações
       // Todas as empresas incluindo kayak e onhappy
       for (const airline of airlines) {
-        const prices = monthWeeks
-          .map(w => parseFloat(priceMap[w.weekNumber]?.[airline.id] || ""))
-          .filter(p => !isNaN(p) && p > 0);
-        if (prices.length > 0) {
-          entry[airline.id] = Math.round(
-            prices.reduce((a, b) => a + b, 0) / prices.length
-          );
+        let sum = 0;
+        let count = 0;
+        for (let i = 0; i < monthWeeks.length; i++) {
+          const w = monthWeeks[i];
+          const p = parseFloat(priceMap[w.weekNumber]?.[airline.id] || "");
+          if (!isNaN(p) && p > 0) {
+            sum += p;
+            count++;
+          }
+        }
+        if (count > 0) {
+          entry[airline.id] = Math.round(sum / count);
         }
       }
+
       // Menor preço geral do mês (considerando todas as empresas)
-      const allPrices = monthWeeks
-        .map(w => getLowestPrice(w.weekNumber))
-        .filter((p): p is number => p !== null && p > 0);
-      if (allPrices.length > 0) {
-        entry["menor"] = Math.round(Math.min(...allPrices));
-        entry["media"] = Math.round(
-          allPrices.reduce((a, b) => a + b, 0) / allPrices.length
-        );
+      let minPrice = Infinity;
+      let totalAll = 0;
+      let countAll = 0;
+      for (let i = 0; i < monthWeeks.length; i++) {
+        const w = monthWeeks[i];
+        const p = getLowestPrice(w.weekNumber);
+        if (p !== null && p > 0) {
+          if (p < minPrice) minPrice = p;
+          totalAll += p;
+          countAll++;
+        }
+      }
+
+      if (countAll > 0) {
+        entry["menor"] = Math.round(minPrice);
+        entry["media"] = Math.round(totalAll / countAll);
       }
       return entry;
     });
@@ -2032,11 +2048,23 @@ export default function Home() {
                                     {/* Expandir/Recolher */}
                                     <button
                                       type="button"
-                                      onClick={() => toggleWeekCard(week.weekNumber)}
+                                      onClick={() =>
+                                        toggleWeekCard(week.weekNumber)
+                                      }
                                       className="focus:outline-none rounded-full p-1 hover:bg-slate-100 transition-colors"
-                                      title={expandedWeekCards.has(week.weekNumber) ? "Recolher" : "Expandir"}
-                                      aria-label={expandedWeekCards.has(week.weekNumber) ? "Recolher" : "Expandir"}
-                                      aria-expanded={expandedWeekCards.has(week.weekNumber)}
+                                      title={
+                                        expandedWeekCards.has(week.weekNumber)
+                                          ? "Recolher"
+                                          : "Expandir"
+                                      }
+                                      aria-label={
+                                        expandedWeekCards.has(week.weekNumber)
+                                          ? "Recolher"
+                                          : "Expandir"
+                                      }
+                                      aria-expanded={expandedWeekCards.has(
+                                        week.weekNumber
+                                      )}
                                     >
                                       <ChevronDown
                                         className={`w-5 h-5 text-slate-400 transition-transform duration-200 ${expandedWeekCards.has(week.weekNumber) ? "rotate-180" : ""}`}
