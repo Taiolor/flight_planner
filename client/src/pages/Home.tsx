@@ -1595,11 +1595,17 @@ export default function Home() {
                       {/* Cabeçalho do Mês */}
                       <button
                         onClick={() => toggleMonth(monthKey)}
-                        className={`w-full flex items-center justify-between px-3 sm:px-6 py-3 sm:py-4 transition-colors ${
+                        className={`w-full flex items-center justify-between px-3 sm:px-6 py-3 sm:py-4 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-inset ${
                           isOpen
                             ? "bg-blue-600 text-white"
                             : "bg-white hover:bg-slate-50 text-slate-900"
                         }`}
+                        aria-expanded={isOpen}
+                        aria-label={
+                          isOpen
+                            ? `Recolher mês ${monthLabel} 2026`
+                            : `Expandir mês ${monthLabel} 2026`
+                        }
                       >
                         <div className="flex items-center gap-3">
                           <ChevronDown
@@ -2032,11 +2038,23 @@ export default function Home() {
                                     {/* Expandir/Recolher */}
                                     <button
                                       type="button"
-                                      onClick={() => toggleWeekCard(week.weekNumber)}
+                                      onClick={() =>
+                                        toggleWeekCard(week.weekNumber)
+                                      }
                                       className="focus:outline-none rounded-full p-1 hover:bg-slate-100 transition-colors"
-                                      title={expandedWeekCards.has(week.weekNumber) ? "Recolher" : "Expandir"}
-                                      aria-label={expandedWeekCards.has(week.weekNumber) ? "Recolher" : "Expandir"}
-                                      aria-expanded={expandedWeekCards.has(week.weekNumber)}
+                                      title={
+                                        expandedWeekCards.has(week.weekNumber)
+                                          ? "Recolher"
+                                          : "Expandir"
+                                      }
+                                      aria-label={
+                                        expandedWeekCards.has(week.weekNumber)
+                                          ? "Recolher"
+                                          : "Expandir"
+                                      }
+                                      aria-expanded={expandedWeekCards.has(
+                                        week.weekNumber
+                                      )}
                                     >
                                       <ChevronDown
                                         className={`w-5 h-5 text-slate-400 transition-transform duration-200 ${expandedWeekCards.has(week.weekNumber) ? "rotate-180" : ""}`}
@@ -4034,8 +4052,11 @@ export default function Home() {
                 />
                 <button
                   type="button"
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded-sm p-0.5"
                   onClick={() => setShowPassword(!showPassword)}
+                  aria-pressed={showPassword}
+                  title={showPassword ? "Ocultar senha" : "Mostrar senha"}
+                  aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
                 >
                   {showPassword ? (
                     <EyeOff className="w-4 h-4" />
