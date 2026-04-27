@@ -64,13 +64,12 @@ class OAuthService {
 
   async getUserInfoByToken(
     token: ExchangeTokenResponse
-  ): Promise<GetUserInfoResponse> {
-    const { data } = await this.client.post<GetUserInfoResponse>(
-      GET_USER_INFO_PATH,
-      {
-        accessToken: token.accessToken,
-      }
-    );
+  ): Promise<GetUserInfoResponse & { platforms?: string[] }> {
+    const { data } = await this.client.post<
+      GetUserInfoResponse & { platforms?: string[] }
+    >(GET_USER_INFO_PATH, {
+      accessToken: token.accessToken,
+    });
 
     return data;
   }
@@ -135,14 +134,14 @@ class SDKServer {
       accessToken,
     } as ExchangeTokenResponse);
     const loginMethod = this.deriveLoginMethod(
-      (data as any)?.platforms,
-      (data as any)?.platform ?? data.platform ?? null
+      data?.platforms,
+      data?.platform ?? null
     );
     return {
-      ...(data as any),
+      ...data,
       platform: loginMethod,
       loginMethod,
-    } as GetUserInfoResponse;
+    };
   }
 
   private parseCookies(cookieHeader: string | undefined) {
@@ -240,20 +239,19 @@ class SDKServer {
       projectId: ENV.appId,
     };
 
-    const { data } = await this.client.post<GetUserInfoWithJwtResponse>(
-      GET_USER_INFO_WITH_JWT_PATH,
-      payload
-    );
+    const { data } = await this.client.post<
+      GetUserInfoWithJwtResponse & { platforms?: string[] }
+    >(GET_USER_INFO_WITH_JWT_PATH, payload);
 
     const loginMethod = this.deriveLoginMethod(
-      (data as any)?.platforms,
-      (data as any)?.platform ?? data.platform ?? null
+      data?.platforms,
+      data?.platform ?? null
     );
     return {
-      ...(data as any),
+      ...data,
       platform: loginMethod,
       loginMethod,
-    } as GetUserInfoWithJwtResponse;
+    };
   }
 
   async authenticateRequest(req: Request): Promise<User> {
