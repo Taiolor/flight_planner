@@ -1612,14 +1612,18 @@ export default function Home() {
                       {/* Cabeçalho do Mês */}
                       <button
                         onClick={() => toggleMonth(monthKey)}
-                        className={`w-full flex items-center justify-between px-3 sm:px-6 py-3 sm:py-4 transition-colors ${
+                        className={`w-full flex items-center justify-between px-3 sm:px-6 py-3 sm:py-4 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-inset ${
                           isOpen
                             ? "bg-blue-600 text-white"
                             : "bg-white hover:bg-slate-50 text-slate-900"
                         }`}
                         aria-expanded={isOpen}
                         aria-controls={`month-content-${monthKey}`}
-                        aria-label={`${isOpen ? "Recolher" : "Expandir"} ${monthLabel} 2026`}
+                        aria-label={
+                          isOpen
+                            ? `Recolher mês ${monthLabel} 2026`
+                            : `Expandir mês ${monthLabel} 2026`
+                        }
                       >
                         <div className="flex items-center gap-3">
                           <ChevronDown
@@ -4068,9 +4072,11 @@ export default function Home() {
                 />
                 <button
                   type="button"
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded-sm p-0.5"
                   onClick={() => setShowPassword(!showPassword)}
-                  aria-label={showPassword ? "Ocultar senha" : "Exibir senha"}
+                  aria-pressed={showPassword}
+                  title={showPassword ? "Ocultar senha" : "Mostrar senha"}
+                  aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
                 >
                   {showPassword ? (
                     <EyeOff className="w-4 h-4" />

@@ -88,22 +88,26 @@ export async function sendPushToOne(
 
 /**
  * Envia uma notificação push para todos os dispositivos registrados.
+ * Aceita opcionalmente um array pré-carregado de subscriptions para evitar N+1 queries.
  * Retorna o número de envios bem-sucedidos.
  */
-export async function sendPushToAll(payload: PushPayload): Promise<number> {
-  const subscriptions = await getAllPushSubscriptions();
-  if (subscriptions.length === 0) {
+export async function sendPushToAll(
+  payload: PushPayload,
+  subscriptions?: Awaited<ReturnType<typeof getAllPushSubscriptions>>
+): Promise<number> {
+  const subs = subscriptions ?? (await getAllPushSubscriptions());
+  if (subs.length === 0) {
     console.log("[Push] Nenhuma subscription registrada.");
     return 0;
   }
 
   let sent = 0;
-  for (const sub of subscriptions) {
+  for (const sub of subs) {
     const ok = await sendPushToOne(sub.endpoint, sub.p256dh, sub.auth, payload);
     if (ok) sent++;
   }
   console.log(
-    `[Push] Enviado para ${sent}/${subscriptions.length} dispositivos.`
+    `[Push] Enviado para ${sent}/${subs.length} dispositivos.`
   );
   return sent;
 }
@@ -145,6 +149,8 @@ export async function checkAndNotifyUpcomingFlights(): Promise<void> {
 
   const weeks = await getAllFlightWeeks();
   const settings = await getNotificationSettings();
+  // Buscar subscriptions uma única vez antes do loop para evitar N+1 queries ao banco
+  const pushSubscriptions = await getAllPushSubscriptions();
   const now = new Date();
 
   const airlineNames: Record<string, string> = {
@@ -203,15 +209,18 @@ export async function checkAndNotifyUpcomingFlights(): Promise<void> {
             month: "2-digit",
             timeZone: "America/Sao_Paulo",
           });
-          const sentDepCount = await sendPushToAll({
-            title: `✈️ ${antecedenciaLabel} — ${airline} ${flightNum}`,
-            body: `Voo de ida GRU → NVT: ${dateStr} às ${timeStr}. Prepare-se! 🧳`,
-            icon: "/icons/icon-192.png",
-            badge: "/icons/icon-192.png",
-            tag: `departure-week-${week.weekNumber}-aviso${aviso.minutes}`,
-            data: { weekNumber: week.weekNumber, direction: "departure" },
-          });
-          const totalDepDevices = (await getAllPushSubscriptions()).length;
+          const sentDepCount = await sendPushToAll(
+            {
+              title: `✈️ ${antecedenciaLabel} — ${airline} ${flightNum}`,
+              body: `Voo de ida GRU → NVT: ${dateStr} às ${timeStr}. Prepare-se! 🧳`,
+              icon: "/icons/icon-192.png",
+              badge: "/icons/icon-192.png",
+              tag: `departure-week-${week.weekNumber}-aviso${aviso.minutes}`,
+              data: { weekNumber: week.weekNumber, direction: "departure" },
+            },
+            pushSubscriptions
+          );
+          const totalDepDevices = pushSubscriptions.length;
           await insertNotificationLog({
             weekNumber: Number(week.weekNumber),
             direction: "ida",
@@ -257,15 +266,18 @@ export async function checkAndNotifyUpcomingFlights(): Promise<void> {
             month: "2-digit",
             timeZone: "America/Sao_Paulo",
           });
-          const sentRetCount = await sendPushToAll({
-            title: `🏠 ${antecedenciaLabel} — ${airline} ${flightNum}`,
-            body: `Voo de volta NVT → GRU: ${dateStr} às ${timeStr}. Boa viagem! ✈️`,
-            icon: "/icons/icon-192.png",
-            badge: "/icons/icon-192.png",
-            tag: `return-week-${week.weekNumber}-aviso${aviso.minutes}`,
-            data: { weekNumber: week.weekNumber, direction: "return" },
-          });
-          const totalRetDevices = (await getAllPushSubscriptions()).length;
+          const sentRetCount = await sendPushToAll(
+            {
+              title: `🏠 ${antecedenciaLabel} — ${airline} ${flightNum}`,
+              body: `Voo de volta NVT → GRU: ${dateStr} às ${timeStr}. Boa viagem! ✈️`,
+              icon: "/icons/icon-192.png",
+              badge: "/icons/icon-192.png",
+              tag: `return-week-${week.weekNumber}-aviso${aviso.minutes}`,
+              data: { weekNumber: week.weekNumber, direction: "return" },
+            },
+            pushSubscriptions
+          );
+          const totalRetDevices = pushSubscriptions.length;
           await insertNotificationLog({
             weekNumber: Number(week.weekNumber),
             direction: "volta",
