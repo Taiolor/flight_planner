@@ -145,3 +145,11 @@
 - [x] Segurança: Adicionar autenticação no endpoint initWeeks (PR #3)
 - [x] Segurança: Substituir comparação de string por crypto.timingSafeEqual no login (PR #3)
 - [x] Performance: Otimizar getLowestPrice com useMemo/lowestPriceMap O(1) (PR #2)
+
+## Merges e Correções dos PRs (27/04/2026)
+- [ ] Sincronizar main local com GitHub (PRs #19, #21, #22, #23, #26, #28)
+- [ ] Merge PR #14 (ARIA accordion toggle)
+- [ ] Merge PR #18 (single-pass loops chartData)
+- [ ] Aplicar PR #25 manualmente (SHA-256 timing fix) e fechar #15
+- [ ] Aplicar PR #20 manualmente (sameSite lax CSRF fix) e fechar #27
+- [ ] Fechar PRs redundantes #16 e #24
