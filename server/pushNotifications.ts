@@ -7,26 +7,32 @@
 
 import webpush from "web-push";
 import { ENV } from "./_core/env";
-import { getAllPushSubscriptions, getAllFlightWeeks, deletePushSubscription, getNotificationSettings, insertNotificationLog, deleteOldNotificationLogs } from "./db";
+import {
+  getAllPushSubscriptions,
+  getAllFlightWeeks,
+  deletePushSubscription,
+  getNotificationSettings,
+  insertNotificationLog,
+  deleteOldNotificationLogs,
+} from "./db";
 
 // Configurar VAPID uma única vez ao carregar o módulo
 let vapidConfigured = false;
 
 function ensureVapidConfigured() {
   if (vapidConfigured) return;
-  const publicKey = ENV.vapidPublicKey || process.env.VITE_VAPID_PUBLIC_KEY || "";
+  const publicKey =
+    ENV.vapidPublicKey || process.env.VITE_VAPID_PUBLIC_KEY || "";
   const privateKey = ENV.vapidPrivateKey || "";
 
   if (!publicKey || !privateKey) {
-    console.warn("[Push] Chaves VAPID não configuradas. Notificações push desativadas.");
+    console.warn(
+      "[Push] Chaves VAPID não configuradas. Notificações push desativadas."
+    );
     return;
   }
 
-  webpush.setVapidDetails(
-    "mailto:smartfly@example.com",
-    publicKey,
-    privateKey
-  );
+  webpush.setVapidDetails("mailto:smartfly@example.com", publicKey, privateKey);
   vapidConfigured = true;
 }
 
@@ -60,13 +66,21 @@ export async function sendPushToOne(
       { TTL: 86400 } // 24h de TTL
     );
     return true;
-  } catch (err: any) {
-    if (err?.statusCode === 410 || err?.statusCode === 404) {
-      // Subscription expirada ou inválida — remover do banco
-      console.log(`[Push] Subscription inválida (${err.statusCode}), removendo: ${endpoint.slice(0, 60)}...`);
-      await deletePushSubscription(endpoint);
+  } catch (err: unknown) {
+    if (err instanceof webpush.WebPushError) {
+      if (err.statusCode === 410 || err.statusCode === 404) {
+        // Subscription expirada ou inválida — remover do banco
+        console.log(
+          `[Push] Subscription inválida (${err.statusCode}), removendo: ${endpoint.slice(0, 60)}...`
+        );
+        await deletePushSubscription(endpoint);
+      } else {
+        console.error("[Push] Erro ao enviar notificação:", err.message);
+      }
+    } else if (err instanceof Error) {
+      console.error("[Push] Erro ao enviar notificação:", err.message);
     } else {
-      console.error("[Push] Erro ao enviar notificação:", err?.message ?? err);
+      console.error("[Push] Erro ao enviar notificação:", err);
     }
     return false;
   }
@@ -88,7 +102,9 @@ export async function sendPushToAll(payload: PushPayload): Promise<number> {
     const ok = await sendPushToOne(sub.endpoint, sub.p256dh, sub.auth, payload);
     if (ok) sent++;
   }
-  console.log(`[Push] Enviado para ${sent}/${subscriptions.length} dispositivos.`);
+  console.log(
+    `[Push] Enviado para ${sent}/${subscriptions.length} dispositivos.`
+  );
   return sent;
 }
 
@@ -112,11 +128,11 @@ function parseBrasiliaDatetime(dt: string): Date {
   // Adicionar offset de Brasília (-03:00) para forçar interpretação correta
   if (!dt) return new Date(NaN);
   // Se já tem timezone, usar direto
-  if (dt.includes('+') || dt.endsWith('Z') || /[+-]\d{2}:\d{2}$/.test(dt)) {
+  if (dt.includes("+") || dt.endsWith("Z") || /[+-]\d{2}:\d{2}$/.test(dt)) {
     return new Date(dt);
   }
   // Adicionar -03:00 (Brasília)
-  return new Date(dt + '-03:00');
+  return new Date(dt + "-03:00");
 }
 
 /**
@@ -146,7 +162,9 @@ export async function checkAndNotifyUpcomingFlights(): Promise<void> {
     { minutes: settings.aviso2Minutes, label: "Aviso 2" },
   ].filter(a => a.minutes > 0);
 
-  console.log(`[Push] Verificando ${weeks.filter(w => w.isTicketIssued).length} voos emitidos. Avisos ativos: ${avisos.map(a => formatMinutes(a.minutes)).join(', ') || 'nenhum'}. Hora atual (UTC): ${now.toISOString()}`);
+  console.log(
+    `[Push] Verificando ${weeks.filter(w => w.isTicketIssued).length} voos emitidos. Avisos ativos: ${avisos.map(a => formatMinutes(a.minutes)).join(", ") || "nenhum"}. Hora atual (UTC): ${now.toISOString()}`
+  );
 
   for (const aviso of avisos) {
     // Janela de ±50 min ao redor do horário configurado
@@ -155,18 +173,23 @@ export async function checkAndNotifyUpcomingFlights(): Promise<void> {
     const windowStart = new Date(now.getTime() + targetMs - 50 * 60 * 1000);
     const windowEnd = new Date(now.getTime() + targetMs + 50 * 60 * 1000);
     const antecedenciaLabel = formatMinutes(aviso.minutes);
-    console.log(`[Push] ${aviso.label} (${antecedenciaLabel}): janela ${windowStart.toISOString()} → ${windowEnd.toISOString()}`);
+    console.log(
+      `[Push] ${aviso.label} (${antecedenciaLabel}): janela ${windowStart.toISOString()} → ${windowEnd.toISOString()}`
+    );
 
     for (const week of weeks) {
       if (!week.isTicketIssued) continue;
 
       // Verificar voo de ida
       if (week.departureFlightDatetime) {
-        const departureTime = parseBrasiliaDatetime(week.departureFlightDatetime);
+        const departureTime = parseBrasiliaDatetime(
+          week.departureFlightDatetime
+        );
         if (isNaN(departureTime.getTime())) continue;
         if (departureTime >= windowStart && departureTime <= windowEnd) {
           const airline = week.departureAirline
-            ? (airlineNames[week.departureAirline.toUpperCase()] ?? week.departureAirline)
+            ? (airlineNames[week.departureAirline.toUpperCase()] ??
+              week.departureAirline)
             : "Companhia";
           const flightNum = week.departureFlightNumber ?? "";
           const timeStr = departureTime.toLocaleTimeString("pt-BR", {
@@ -197,12 +220,19 @@ export async function checkAndNotifyUpcomingFlights(): Promise<void> {
             airline: week.departureAirline ?? null,
             flightNumber: week.departureFlightNumber ?? null,
             flightDatetime: week.departureFlightDatetime ?? null,
-            status: sentDepCount === totalDepDevices ? "success" : sentDepCount > 0 ? "partial" : "failed",
+            status:
+              sentDepCount === totalDepDevices
+                ? "success"
+                : sentDepCount > 0
+                  ? "partial"
+                  : "failed",
             devicesReached: sentDepCount,
             totalDevices: totalDepDevices,
             isTest: 0,
           });
-          console.log(`[Push] ${aviso.label} (${antecedenciaLabel}) de ida enviado para semana ${week.weekNumber}`);
+          console.log(
+            `[Push] ${aviso.label} (${antecedenciaLabel}) de ida enviado para semana ${week.weekNumber}`
+          );
         }
       }
 
@@ -212,7 +242,8 @@ export async function checkAndNotifyUpcomingFlights(): Promise<void> {
         if (isNaN(returnTime.getTime())) continue;
         if (returnTime >= windowStart && returnTime <= windowEnd) {
           const airline = week.returnAirline
-            ? (airlineNames[week.returnAirline.toUpperCase()] ?? week.returnAirline)
+            ? (airlineNames[week.returnAirline.toUpperCase()] ??
+              week.returnAirline)
             : "Companhia";
           const flightNum = week.returnFlightNumber ?? "";
           const timeStr = returnTime.toLocaleTimeString("pt-BR", {
@@ -243,12 +274,19 @@ export async function checkAndNotifyUpcomingFlights(): Promise<void> {
             airline: week.returnAirline ?? null,
             flightNumber: week.returnFlightNumber ?? null,
             flightDatetime: week.returnFlightDatetime ?? null,
-            status: sentRetCount === totalRetDevices ? "success" : sentRetCount > 0 ? "partial" : "failed",
+            status:
+              sentRetCount === totalRetDevices
+                ? "success"
+                : sentRetCount > 0
+                  ? "partial"
+                  : "failed",
             devicesReached: sentRetCount,
             totalDevices: totalRetDevices,
             isTest: 0,
           });
-          console.log(`[Push] ${aviso.label} (${antecedenciaLabel}) de volta enviado para semana ${week.weekNumber}`);
+          console.log(
+            `[Push] ${aviso.label} (${antecedenciaLabel}) de volta enviado para semana ${week.weekNumber}`
+          );
         }
       }
     }
