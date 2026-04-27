@@ -11,12 +11,12 @@ import { useState, useEffect, useCallback } from "react";
 import { trpc } from "@/lib/trpc";
 
 export type NotificationStatus =
-  | "unsupported"   // Navegador não suporta push
-  | "denied"        // Usuário negou permissão
-  | "subscribed"    // Notificações ativas
-  | "unsubscribed"  // Notificações inativas (permissão concedida mas não inscrito)
-  | "loading"       // Operação em andamento
-  | "error";        // Erro inesperado
+  | "unsupported" // Navegador não suporta push
+  | "denied" // Usuário negou permissão
+  | "subscribed" // Notificações ativas
+  | "unsubscribed" // Notificações inativas (permissão concedida mas não inscrito)
+  | "loading" // Operação em andamento
+  | "error"; // Erro inesperado
 
 function urlBase64ToUint8Array(base64String: string): Uint8Array<ArrayBuffer> {
   const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
@@ -31,7 +31,9 @@ function urlBase64ToUint8Array(base64String: string): Uint8Array<ArrayBuffer> {
 
 export function usePushNotifications() {
   const [status, setStatus] = useState<NotificationStatus>("loading");
-  const [subscription, setSubscription] = useState<PushSubscription | null>(null);
+  const [subscription, setSubscription] = useState<PushSubscription | null>(
+    null
+  );
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const { data: vapidData } = trpc.push.getVapidPublicKey.useQuery();
@@ -59,11 +61,16 @@ export function usePushNotifications() {
         if (existingSub) {
           setSubscription(existingSub);
           setStatus("subscribed");
-          console.log("[Push] Subscription existente encontrada:", existingSub.endpoint);
+          console.log(
+            "[Push] Subscription existente encontrada:",
+            existingSub.endpoint
+          );
         } else {
           if (permission === "granted") {
             setStatus("unsubscribed");
-            console.log("[Push] Permissão concedida, mas sem subscription ativa");
+            console.log(
+              "[Push] Permissão concedida, mas sem subscription ativa"
+            );
           } else {
             setStatus("denied");
             console.log("[Push] Permissão não concedida");
@@ -130,7 +137,9 @@ export function usePushNotifications() {
 
     try {
       await subscription.unsubscribe();
-      await unsubscribeMutation.mutateAsync({ endpoint: subscription.endpoint });
+      await unsubscribeMutation.mutateAsync({
+        endpoint: subscription.endpoint,
+      });
       setSubscription(null);
       setStatus("unsubscribed");
     } catch (err: any) {

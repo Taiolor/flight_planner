@@ -1,4 +1,11 @@
-import { int, mysqlEnum, mysqlTable, text, timestamp, varchar } from "drizzle-orm/mysql-core";
+import {
+  int,
+  mysqlEnum,
+  mysqlTable,
+  text,
+  timestamp,
+  varchar,
+} from "drizzle-orm/mysql-core";
 
 /**
  * Core user table backing auth flow.
@@ -125,11 +132,12 @@ export type InsertPushSubscription = typeof pushSubscriptions.$inferInsert;
 export const notificationSettings = mysqlTable("notification_settings", {
   id: int("id").autoincrement().primaryKey(),
   aviso1Minutes: int("aviso1Minutes").notNull().default(1440), // 24h por padrão
-  aviso2Minutes: int("aviso2Minutes").notNull().default(0),    // desativado por padrão
+  aviso2Minutes: int("aviso2Minutes").notNull().default(0), // desativado por padrão
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });
 export type NotificationSettings = typeof notificationSettings.$inferSelect;
-export type InsertNotificationSettings = typeof notificationSettings.$inferInsert;
+export type InsertNotificationSettings =
+  typeof notificationSettings.$inferInsert;
 
 /**
  * Tabela para registrar histórico persistente de envios de push notifications.

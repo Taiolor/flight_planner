@@ -12,3 +12,6 @@
 
 **Learning:** Running `filter`, `some`, and `reduce` operations on nested array structures (like `monthWeeks.filter(...)`) directly within the render loop creates significant performance bottlenecks, especially in complex components that re-render frequently (e.g. tracking sliders or expanding panels).
 **Action:** Lift array computations into `useMemo` hooks, pre-calculating necessary aggregates and flags per group, so the render loop just reads pre-computed primitive values.
+## 2026-04-27 - Hoist Database Queries Outside Loops (N+1 Query Resolution)
+**Learning:** Calling database functions like `getAllPushSubscriptions()` inside nested loops leads to an N+1 query problem, drastically reducing performance.
+**Action:** Prefetch bulk data once before loops and pass the result as an argument to functions inside the loop to drastically reduce execution time and DB load.
