@@ -82,17 +82,31 @@ export const appRouter = router({
         const allowedPassword = process.env.AUTH_PASSWORD ?? "";
 
         // Comparação timing-safe para prevenir timing side-channel attacks
-        const givenEmail = Buffer.from(input.email.toLowerCase().trim());
-        const expectedEmail = Buffer.from(allowedEmail.toLowerCase().trim());
-        const emailMatch =
-          givenEmail.length === expectedEmail.length &&
-          crypto.timingSafeEqual(givenEmail, expectedEmail);
+        const givenEmailHash = crypto
+          .createHash("sha256")
+          .update(input.email.toLowerCase().trim())
+          .digest();
+        const expectedEmailHash = crypto
+          .createHash("sha256")
+          .update(allowedEmail.toLowerCase().trim())
+          .digest();
+        const emailMatch = crypto.timingSafeEqual(
+          givenEmailHash,
+          expectedEmailHash
+        );
 
-        const givenPassword = Buffer.from(input.password);
-        const expectedPassword = Buffer.from(allowedPassword);
-        const passwordMatch =
-          givenPassword.length === expectedPassword.length &&
-          crypto.timingSafeEqual(givenPassword, expectedPassword);
+        const givenPasswordHash = crypto
+          .createHash("sha256")
+          .update(input.password)
+          .digest();
+        const expectedPasswordHash = crypto
+          .createHash("sha256")
+          .update(allowedPassword)
+          .digest();
+        const passwordMatch = crypto.timingSafeEqual(
+          givenPasswordHash,
+          expectedPasswordHash
+        );
 
         if (!emailMatch || !passwordMatch) {
           throw new TRPCError({
