@@ -83,18 +83,27 @@ export const appRouter = router({
         const allowedEmail = process.env.AUTH_EMAIL ?? "";
         const allowedPassword = process.env.AUTH_PASSWORD ?? "";
 
-        // Comparação timing-safe para prevenir timing side-channel attacks
-        const givenEmail = Buffer.from(input.email.toLowerCase().trim());
-        const expectedEmail = Buffer.from(allowedEmail.toLowerCase().trim());
-        const emailMatch =
-          givenEmail.length === expectedEmail.length &&
-          crypto.timingSafeEqual(givenEmail, expectedEmail);
+        // Comparação timing-safe com SHA-256 para prevenir timing side-channel attacks
+        // Hash SHA-256 garante buffers de tamanho fixo (32 bytes), eliminando length leakage
+        const givenEmailHash = crypto
+          .createHash("sha256")
+          .update(input.email.toLowerCase().trim())
+          .digest();
+        const expectedEmailHash = crypto
+          .createHash("sha256")
+          .update(allowedEmail.toLowerCase().trim())
+          .digest();
+        const emailMatch = crypto.timingSafeEqual(givenEmailHash, expectedEmailHash);
 
-        const givenPassword = Buffer.from(input.password);
-        const expectedPassword = Buffer.from(allowedPassword);
-        const passwordMatch =
-          givenPassword.length === expectedPassword.length &&
-          crypto.timingSafeEqual(givenPassword, expectedPassword);
+        const givenPasswordHash = crypto
+          .createHash("sha256")
+          .update(input.password)
+          .digest();
+        const expectedPasswordHash = crypto
+          .createHash("sha256")
+          .update(allowedPassword)
+          .digest();
+        const passwordMatch = crypto.timingSafeEqual(givenPasswordHash, expectedPasswordHash);
 
         if (!emailMatch || !passwordMatch) {
           throw new TRPCError({
@@ -109,7 +118,8 @@ export const appRouter = router({
         ctx.res.cookie(SESSION_COOKIE, token, {
           httpOnly: true,
           secure: process.env.NODE_ENV === "production",
-          sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+          // Security: Use lax to mitigate CSRF attacks
+          sameSite: "lax",
           maxAge: 8 * 60 * 60 * 1000,
           path: "/",
         });
@@ -135,7 +145,8 @@ export const appRouter = router({
       ctx.res.clearCookie(SESSION_COOKIE, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
-        sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+          // Security: Use lax to mitigate CSRF attacks
+          sameSite: "lax",
         path: "/",
       });
       return { success: true };
