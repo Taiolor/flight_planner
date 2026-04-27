@@ -27,6 +27,7 @@ import {
   getNotificationLogs,
 } from "./db";
 import { ENV } from "./_core/env";
+import { parse as parseCookie } from "cookie";
 
 const SESSION_COOKIE = "flight_session";
 
@@ -44,12 +45,13 @@ interface NextAlert {
 
 // Helper para verificar se a sessão é válida
 async function getSessionFromCookie(
-  req: Request
+  req: any
 ): Promise<{ email: string } | null> {
   const cookieHeader = req.headers?.cookie ?? "";
-  const match = cookieHeader.match(new RegExp(`${SESSION_COOKIE}=([^;]+)`));
-  if (!match) return null;
-  return validateAuthSession(match[1]);
+  const cookies = parseCookie(cookieHeader);
+  const sessionToken = cookies[SESSION_COOKIE];
+  if (!sessionToken) return null;
+  return validateAuthSession(sessionToken);
 }
 
 export const appRouter = router({
@@ -125,9 +127,10 @@ export const appRouter = router({
     // Logout da sessão de passagens
     logout: publicProcedure.mutation(async ({ ctx }) => {
       const cookieHeader = ctx.req.headers?.cookie ?? "";
-      const match = cookieHeader.match(new RegExp(`${SESSION_COOKIE}=([^;]+)`));
-      if (match) {
-        await deleteAuthSession(match[1]);
+      const cookies = parseCookie(cookieHeader);
+      const sessionToken = cookies[SESSION_COOKIE];
+      if (sessionToken) {
+        await deleteAuthSession(sessionToken);
       }
       ctx.res.clearCookie(SESSION_COOKIE, {
         httpOnly: true,
