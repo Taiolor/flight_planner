@@ -1116,6 +1116,7 @@ export default function Home() {
                 size="sm"
                 variant="outline"
                 title={hideValues ? "Exibir valores" : "Ocultar valores"}
+                aria-label={hideValues ? "Exibir valores" : "Ocultar valores"}
                 className={`border-white text-white hover:bg-white hover:text-blue-700 ${
                   hideValues ? "bg-white/30 border-white/80" : "bg-white/10"
                 }`}
@@ -2032,11 +2033,23 @@ export default function Home() {
                                     {/* Expandir/Recolher */}
                                     <button
                                       type="button"
-                                      onClick={() => toggleWeekCard(week.weekNumber)}
+                                      onClick={() =>
+                                        toggleWeekCard(week.weekNumber)
+                                      }
                                       className="focus:outline-none rounded-full p-1 hover:bg-slate-100 transition-colors"
-                                      title={expandedWeekCards.has(week.weekNumber) ? "Recolher" : "Expandir"}
-                                      aria-label={expandedWeekCards.has(week.weekNumber) ? "Recolher" : "Expandir"}
-                                      aria-expanded={expandedWeekCards.has(week.weekNumber)}
+                                      title={
+                                        expandedWeekCards.has(week.weekNumber)
+                                          ? "Recolher"
+                                          : "Expandir"
+                                      }
+                                      aria-label={
+                                        expandedWeekCards.has(week.weekNumber)
+                                          ? "Recolher"
+                                          : "Expandir"
+                                      }
+                                      aria-expanded={expandedWeekCards.has(
+                                        week.weekNumber
+                                      )}
                                     >
                                       <ChevronDown
                                         className={`w-5 h-5 text-slate-400 transition-transform duration-200 ${expandedWeekCards.has(week.weekNumber) ? "rotate-180" : ""}`}
@@ -2259,6 +2272,7 @@ export default function Home() {
                                                       <button
                                                         type="button"
                                                         title="Copiar companhia para Volta"
+                                                        aria-label="Copiar companhia para Volta"
                                                         onClick={() =>
                                                           setTempReturnAirline(
                                                             prev => ({
@@ -2604,6 +2618,7 @@ export default function Home() {
                                                       <button
                                                         type="button"
                                                         title="Copiar localizador para Volta"
+                                                        aria-label="Copiar localizador para Volta"
                                                         onClick={() =>
                                                           setTempReturnLocator(
                                                             prev => ({
@@ -4036,6 +4051,7 @@ export default function Home() {
                   type="button"
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
                   onClick={() => setShowPassword(!showPassword)}
+                  aria-label={showPassword ? "Ocultar senha" : "Exibir senha"}
                 >
                   {showPassword ? (
                     <EyeOff className="w-4 h-4" />
