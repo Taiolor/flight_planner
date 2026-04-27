@@ -1601,6 +1601,9 @@ export default function Home() {
                             ? "bg-blue-600 text-white"
                             : "bg-white hover:bg-slate-50 text-slate-900"
                         }`}
+                        aria-expanded={isOpen}
+                        aria-controls={`month-content-${monthKey}`}
+                        aria-label={`${isOpen ? "Recolher" : "Expandir"} ${monthLabel} 2026`}
                       >
                         <div className="flex items-center gap-3">
                           <ChevronDown
@@ -1676,7 +1679,7 @@ export default function Home() {
 
                       {/* Semanas do Mês */}
                       {isOpen && (
-                        <div className="divide-y divide-slate-100">
+                        <div id={`month-content-${monthKey}`} className="divide-y divide-slate-100">
                           {monthWeeks.map(week => {
                             const lowestPrice = getLowestPrice(week.weekNumber);
                             const isCheap =
