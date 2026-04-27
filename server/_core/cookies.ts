@@ -42,7 +42,8 @@ export function getSessionCookieOptions(
   return {
     httpOnly: true,
     path: "/",
-    sameSite: "none",
+    // Security: Use lax instead of none to mitigate CSRF attacks since API and Web share domains
+    sameSite: "lax",
     secure: isSecureRequest(req),
   };
 }

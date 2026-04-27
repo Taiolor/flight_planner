@@ -107,7 +107,8 @@ export const appRouter = router({
         ctx.res.cookie(SESSION_COOKIE, token, {
           httpOnly: true,
           secure: process.env.NODE_ENV === "production",
-          sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+          // Security: Use lax to mitigate CSRF attacks
+          sameSite: "lax",
           maxAge: 8 * 60 * 60 * 1000,
           path: "/",
         });
@@ -132,7 +133,8 @@ export const appRouter = router({
       ctx.res.clearCookie(SESSION_COOKIE, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
-        sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+        // Security: Use lax to mitigate CSRF attacks
+        sameSite: "lax",
         path: "/",
       });
       return { success: true };
