@@ -2032,11 +2032,23 @@ export default function Home() {
                                     {/* Expandir/Recolher */}
                                     <button
                                       type="button"
-                                      onClick={() => toggleWeekCard(week.weekNumber)}
+                                      onClick={() =>
+                                        toggleWeekCard(week.weekNumber)
+                                      }
                                       className="focus:outline-none rounded-full p-1 hover:bg-slate-100 transition-colors"
-                                      title={expandedWeekCards.has(week.weekNumber) ? "Recolher" : "Expandir"}
-                                      aria-label={expandedWeekCards.has(week.weekNumber) ? "Recolher" : "Expandir"}
-                                      aria-expanded={expandedWeekCards.has(week.weekNumber)}
+                                      title={
+                                        expandedWeekCards.has(week.weekNumber)
+                                          ? "Recolher"
+                                          : "Expandir"
+                                      }
+                                      aria-label={
+                                        expandedWeekCards.has(week.weekNumber)
+                                          ? "Recolher"
+                                          : "Expandir"
+                                      }
+                                      aria-expanded={expandedWeekCards.has(
+                                        week.weekNumber
+                                      )}
                                     >
                                       <ChevronDown
                                         className={`w-5 h-5 text-slate-400 transition-transform duration-200 ${expandedWeekCards.has(week.weekNumber) ? "rotate-180" : ""}`}
