@@ -153,3 +153,4 @@
 - [x] Aplicar PR #25 manualmente (SHA-256 timing fix) e fechar #15
 - [x] Aplicar PR #20 manualmente (sameSite lax CSRF fix) e fechar #27
 - [x] Fechar PRs redundantes #16 e #24
+- [x] Performance: Adicionar índices no banco para weekNumber, isTicketIssued e isDeleted

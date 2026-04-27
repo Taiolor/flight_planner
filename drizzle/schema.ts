@@ -1,4 +1,4 @@
-import { int, mysqlEnum, mysqlTable, text, timestamp, varchar } from "drizzle-orm/mysql-core";
+import { index, int, mysqlEnum, mysqlTable, text, timestamp, varchar } from "drizzle-orm/mysql-core";
 
 /**
  * Core user table backing auth flow.
@@ -30,31 +30,44 @@ export type InsertUser = typeof users.$inferInsert;
 /**
  * Tabela para persistir dados das semanas de voo
  */
-export const flightWeeks = mysqlTable("flight_weeks", {
-  id: int("id").autoincrement().primaryKey(),
-  weekNumber: int("weekNumber").notNull(),
-  departureDate: varchar("departureDate", { length: 20 }).notNull(),
-  returnDate: varchar("returnDate", { length: 20 }).notNull(),
-  departureDayOfWeek: varchar("departureDayOfWeek", { length: 20 }).notNull(),
-  returnDayOfWeek: varchar("returnDayOfWeek", { length: 20 }).notNull(),
-  holiday: varchar("holiday", { length: 100 }),
-  isDeleted: int("isDeleted").default(0).notNull(),
-  isTicketIssued: int("isTicketIssued").default(0).notNull(),
-  isSelected: int("isSelected").default(0).notNull(),
-  departureAirline: varchar("departureAirline", { length: 50 }),
-  returnAirline: varchar("returnAirline", { length: 50 }),
-  departureFlightDatetime: varchar("departureFlightDatetime", { length: 30 }),
-  returnFlightDatetime: varchar("returnFlightDatetime", { length: 30 }),
-  departureAirport: varchar("departureAirport", { length: 10 }),
-  returnAirport: varchar("returnAirport", { length: 10 }),
-  departureLocator: varchar("departureLocator", { length: 20 }),
-  returnLocator: varchar("returnLocator", { length: 20 }),
-  departureFlightNumber: varchar("departureFlightNumber", { length: 20 }),
-  returnFlightNumber: varchar("returnFlightNumber", { length: 20 }),
-  ticketType: varchar("ticketType", { length: 20 }).default("roundtrip"),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
-});
+export const flightWeeks = mysqlTable(
+  "flight_weeks",
+  {
+    id: int("id").autoincrement().primaryKey(),
+    weekNumber: int("weekNumber").notNull(),
+    departureDate: varchar("departureDate", { length: 20 }).notNull(),
+    returnDate: varchar("returnDate", { length: 20 }).notNull(),
+    departureDayOfWeek: varchar("departureDayOfWeek", { length: 20 }).notNull(),
+    returnDayOfWeek: varchar("returnDayOfWeek", { length: 20 }).notNull(),
+    holiday: varchar("holiday", { length: 100 }),
+    isDeleted: int("isDeleted").default(0).notNull(),
+    isTicketIssued: int("isTicketIssued").default(0).notNull(),
+    isSelected: int("isSelected").default(0).notNull(),
+    departureAirline: varchar("departureAirline", { length: 50 }),
+    returnAirline: varchar("returnAirline", { length: 50 }),
+    departureFlightDatetime: varchar("departureFlightDatetime", { length: 30 }),
+    returnFlightDatetime: varchar("returnFlightDatetime", { length: 30 }),
+    departureAirport: varchar("departureAirport", { length: 10 }),
+    returnAirport: varchar("returnAirport", { length: 10 }),
+    departureLocator: varchar("departureLocator", { length: 20 }),
+    returnLocator: varchar("returnLocator", { length: 20 }),
+    departureFlightNumber: varchar("departureFlightNumber", { length: 20 }),
+    returnFlightNumber: varchar("returnFlightNumber", { length: 20 }),
+    ticketType: varchar("ticketType", { length: 20 }).default("roundtrip"),
+    createdAt: timestamp("createdAt").defaultNow().notNull(),
+    updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+  },
+  table => ([
+    // Índice para consultas por número de semana (filtros, lookups)
+    index("idx_flight_weeks_weekNumber").on(table.weekNumber),
+    // Índice para filtros por status de emissão de bilhete
+    index("idx_flight_weeks_isTicketIssued").on(table.isTicketIssued),
+    // Índice para filtros que excluem semanas deletadas
+    index("idx_flight_weeks_isDeleted").on(table.isDeleted),
+    // Índice composto para a query principal: semanas ativas com bilhete emitido
+    index("idx_flight_weeks_active_issued").on(table.isDeleted, table.isTicketIssued),
+  ])
+);
 
 export type FlightWeek = typeof flightWeeks.$inferSelect;
 export type InsertFlightWeek = typeof flightWeeks.$inferInsert;
