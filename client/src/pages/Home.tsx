@@ -1699,7 +1699,10 @@ export default function Home() {
 
                       {/* Semanas do Mês */}
                       {isOpen && (
-                        <div id={`month-content-${monthKey}`} className="divide-y divide-slate-100">
+                        <div
+                          id={`month-content-${monthKey}`}
+                          className="divide-y divide-slate-100"
+                        >
                           {monthWeeks.map(week => {
                             const lowestPrice = getLowestPrice(week.weekNumber);
                             const isCheap =
@@ -3795,6 +3798,8 @@ export default function Home() {
                 <button
                   onClick={selectAllChartAirlines}
                   className="text-xs text-blue-600 hover:text-blue-800 font-medium px-2 py-1 rounded hover:bg-blue-50 transition-colors"
+                  title="Selecionar todas as empresas"
+                  aria-label="Selecionar todas as empresas"
                 >
                   Selecionar todas
                 </button>
@@ -3802,6 +3807,8 @@ export default function Home() {
                 <button
                   onClick={clearChartAirlines}
                   className="text-xs text-slate-500 hover:text-slate-700 font-medium px-2 py-1 rounded hover:bg-slate-100 transition-colors"
+                  title="Limpar seleção de empresas"
+                  aria-label="Limpar seleção de empresas"
                 >
                   Limpar
                 </button>
@@ -3822,6 +3829,7 @@ export default function Home() {
                   <button
                     key={airline.id}
                     onClick={() => toggleChartAirline(airline.id)}
+                    aria-pressed={isSelected}
                     className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium border-2 transition-all ${
                       isSelected
                         ? "border-transparent text-white shadow-sm"
@@ -4017,6 +4025,8 @@ export default function Home() {
                     size="sm"
                     onClick={() => handleRestore(week.weekNumber)}
                     className="text-red-600 hover:text-red-700 h-auto p-0 ml-1"
+                    title={`Restaurar semana ${week.weekNumber}`}
+                    aria-label={`Restaurar semana ${week.weekNumber}`}
                   >
                     <RotateCcw className="w-4 h-4 mr-1" /> Restaurar
                   </Button>
