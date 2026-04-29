@@ -900,6 +900,7 @@ export default function Home() {
 
   // Dados do resumo anual: total emitido por mês
   const annualSummaryData = useMemo(() => {
+    // ⚡ Bolt: Single-pass iteration to avoid .map().filter().reduce() overhead
     const MONTHS = [
       { num: "03", label: "Mar" },
       { num: "04", label: "Abr" },
@@ -912,34 +913,62 @@ export default function Home() {
       { num: "11", label: "Nov" },
       { num: "12", label: "Dez" },
     ];
-    return MONTHS.map(({ num, label }) => {
-      const monthWeeks = weeksData.filter(w => {
+
+    const summaryMap: Record<
+      string,
+      { mes: string; total: number; count: number }
+    > = {};
+    for (let i = 0; i < MONTHS.length; i++) {
+      summaryMap[MONTHS[i].num] = { mes: MONTHS[i].label, total: 0, count: 0 };
+    }
+
+    for (let i = 0; i < weeksData.length; i++) {
+      const w = weeksData[i];
+      if (!w.isDeleted && w.isTicketIssued) {
         const parts = w.departureDate.split("/");
-        return parts[1] === num && !w.isDeleted && w.isTicketIssued;
+        const monthNum = parts[1];
+        if (summaryMap[monthNum]) {
+          summaryMap[monthNum].total += getLowestPrice(w.weekNumber) ?? 0;
+          summaryMap[monthNum].count += 1;
+        }
+      }
+    }
+
+    const result = [];
+    for (let i = 0; i < MONTHS.length; i++) {
+      const s = summaryMap[MONTHS[i].num];
+      result.push({
+        mes: s.mes,
+        total: s.total > 0 ? Math.round(s.total * 100) / 100 : 0,
+        count: s.count,
       });
-      const total = monthWeeks.reduce(
-        (sum, w) => sum + (getLowestPrice(w.weekNumber) ?? 0),
-        0
-      );
-      return {
-        mes: label,
-        total: total > 0 ? Math.round(total * 100) / 100 : 0,
-        count: monthWeeks.length,
-      };
-    });
+    }
+    return result;
   }, [weeksData, getLowestPrice]);
 
-  const annualTotalIssued = useMemo(
-    () =>
-      weeksData
-        .filter(w => w.isTicketIssued && !w.isDeleted)
-        .reduce((sum, w) => sum + (getLowestPrice(w.weekNumber) ?? 0), 0),
-    [weeksData, getLowestPrice]
-  );
-  const annualIssuedCount = useMemo(
-    () => weeksData.filter(w => w.isTicketIssued && !w.isDeleted).length,
-    [weeksData]
-  );
+  const annualTotalIssued = useMemo(() => {
+    // ⚡ Bolt: Single-pass loop to avoid intermediate array allocations
+    let sum = 0;
+    for (let i = 0; i < weeksData.length; i++) {
+      const w = weeksData[i];
+      if (w.isTicketIssued && !w.isDeleted) {
+        sum += getLowestPrice(w.weekNumber) ?? 0;
+      }
+    }
+    return sum;
+  }, [weeksData, getLowestPrice]);
+
+  const annualIssuedCount = useMemo(() => {
+    // ⚡ Bolt: Single-pass loop to avoid intermediate array allocations
+    let count = 0;
+    for (let i = 0; i < weeksData.length; i++) {
+      const w = weeksData[i];
+      if (w.isTicketIssued && !w.isDeleted) {
+        count++;
+      }
+    }
+    return count;
+  }, [weeksData]);
   const annualHasData = annualSummaryData.some(d => d.total > 0);
 
   // Handlers
