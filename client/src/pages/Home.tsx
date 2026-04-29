@@ -1620,6 +1620,23 @@ export default function Home() {
                 <p className="text-slate-500 text-lg">
                   Nenhuma semana encontrada com os filtros selecionados
                 </p>
+                {(filterMonth !== "all" ||
+                  filterAirline !== "all" ||
+                  filterTicketStatus !== "all" ||
+                  showCheapestOnly) && (
+                  <Button
+                    variant="outline"
+                    className="mt-6 border-blue-200 text-blue-600 hover:bg-blue-50 hover:text-blue-700"
+                    onClick={() => {
+                      setFilterMonth("all");
+                      setFilterAirline("all");
+                      setFilterTicketStatus("all");
+                      setShowCheapestOnly(false);
+                    }}
+                  >
+                    Limpar Filtros
+                  </Button>
+                )}
               </Card>
             ) : (
               weeksByMonth.map(
