@@ -1,4 +1,12 @@
-import { index, int, mysqlEnum, mysqlTable, text, timestamp, varchar } from "drizzle-orm/mysql-core";
+import {
+  index,
+  int,
+  mysqlEnum,
+  mysqlTable,
+  text,
+  timestamp,
+  varchar,
+} from "drizzle-orm/mysql-core";
 
 /**
  * Core user table backing auth flow.
@@ -24,8 +32,6 @@ export const users = mysqlTable("users", {
 
 export type User = typeof users.$inferSelect;
 export type InsertUser = typeof users.$inferInsert;
-
-// TODO: Add your tables here
 
 /**
  * Tabela para persistir dados das semanas de voo
@@ -57,7 +63,7 @@ export const flightWeeks = mysqlTable(
     createdAt: timestamp("createdAt").defaultNow().notNull(),
     updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
   },
-  table => ([
+  table => [
     // Índice para consultas por número de semana (filtros, lookups)
     index("idx_flight_weeks_weekNumber").on(table.weekNumber),
     // Índice para filtros por status de emissão de bilhete
@@ -65,8 +71,11 @@ export const flightWeeks = mysqlTable(
     // Índice para filtros que excluem semanas deletadas
     index("idx_flight_weeks_isDeleted").on(table.isDeleted),
     // Índice composto para a query principal: semanas ativas com bilhete emitido
-    index("idx_flight_weeks_active_issued").on(table.isDeleted, table.isTicketIssued),
-  ])
+    index("idx_flight_weeks_active_issued").on(
+      table.isDeleted,
+      table.isTicketIssued
+    ),
+  ]
 );
 
 export type FlightWeek = typeof flightWeeks.$inferSelect;
@@ -138,11 +147,12 @@ export type InsertPushSubscription = typeof pushSubscriptions.$inferInsert;
 export const notificationSettings = mysqlTable("notification_settings", {
   id: int("id").autoincrement().primaryKey(),
   aviso1Minutes: int("aviso1Minutes").notNull().default(1440), // 24h por padrão
-  aviso2Minutes: int("aviso2Minutes").notNull().default(0),    // desativado por padrão
+  aviso2Minutes: int("aviso2Minutes").notNull().default(0), // desativado por padrão
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });
 export type NotificationSettings = typeof notificationSettings.$inferSelect;
-export type InsertNotificationSettings = typeof notificationSettings.$inferInsert;
+export type InsertNotificationSettings =
+  typeof notificationSettings.$inferInsert;
 
 /**
  * Tabela para registrar histórico persistente de envios de push notifications.
