@@ -1775,7 +1775,7 @@ export default function Home() {
                       {isOpen && (
                         <div
                           id={`month-content-${monthKey}`}
-                          className="divide-y divide-slate-100"
+                          className="divide-y divide-slate-100 dark:divide-slate-700"
                         >
                           {monthWeeks.map(week => {
                             const lowestPrice = getLowestPrice(week.weekNumber);
@@ -1787,12 +1787,12 @@ export default function Home() {
                             return (
                               <Card
                                 key={week.weekNumber}
-                                className={`p-3 sm:p-6 border-0 shadow-md transition-all hover:shadow-lg ${
+                                className={`p-3 sm:p-6 border-0 shadow-md transition-all hover:shadow-lg dark:bg-slate-800 dark:shadow-slate-900/40 ${
                                   week.isSelected
-                                    ? "ring-2 ring-green-500 bg-green-50"
+                                    ? "ring-2 ring-green-500 bg-green-50 dark:bg-green-900/30"
                                     : week.isTicketIssued
-                                      ? "bg-blue-50"
-                                      : ""
+                                      ? "bg-blue-50 dark:bg-blue-900/30"
+                                      : "dark:bg-slate-800"
                                 } ${isCheap ? "border-l-4 border-l-orange-400" : ""}`}
                               >
                                 {/* Cabeçalho da semana - sempre visível, clicável para expandir/recolher */}
@@ -1824,16 +1824,16 @@ export default function Home() {
                                     />
                                     <div className="flex-1">
                                       <div className="flex flex-wrap items-center gap-2 mb-2">
-                                        <h3 className="text-lg font-bold text-slate-900">
+                                        <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">
                                           Semana {week.weekNumber}
                                         </h3>
                                         {week.holiday && (
-                                          <span className="text-xs bg-orange-100 text-orange-800 px-2 py-1 rounded">
+                                          <span className="text-xs bg-orange-100 text-orange-800 dark:bg-orange-900/40 dark:text-orange-200 px-2 py-1 rounded">
                                             🎉 {week.holiday}
                                           </span>
                                         )}
                                         {lowestPrice && (
-                                          <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded font-semibold">
+                                          <span className="text-xs bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-200 px-2 py-1 rounded font-semibold">
                                             💰{" "}
                                             {hideValues
                                               ? "••••"
@@ -1841,7 +1841,7 @@ export default function Home() {
                                           </span>
                                         )}
                                         {week.isTicketIssued ? (
-                                          <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded flex items-center gap-1">
+                                          <span className="text-xs bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-200 px-2 py-1 rounded flex items-center gap-1">
                                             <CheckCircle2 className="w-3 h-3" />{" "}
                                             Bilhete Emitido
                                           </span>
@@ -1988,8 +1988,8 @@ export default function Home() {
                                             {/* Ida */}
                                             <div className="flex items-center gap-2 flex-wrap">
                                               <Calendar className="w-4 h-4 text-slate-400 flex-shrink-0" />
-                                              <span className="text-sm font-medium text-slate-600">
-                                                Ida:
+                                             <span className="text-sm font-medium text-slate-600 dark:text-slate-300">
+                                                 Ida:
                                               </span>
                                               <input
                                                 type="date"
@@ -2025,8 +2025,8 @@ export default function Home() {
                                             {/* Retorno */}
                                             <div className="flex items-center gap-2 flex-wrap">
                                               <Calendar className="w-4 h-4 text-slate-400 flex-shrink-0" />
-                                              <span className="text-sm font-medium text-slate-600">
-                                                Retorno:
+                                             <span className="text-sm font-medium text-slate-600 dark:text-slate-300">
+                                                 Retorno:
                                               </span>
                                               <input
                                                 type="date"
@@ -2256,8 +2256,8 @@ export default function Home() {
                                         <div className="flex-1 flex flex-col gap-3">
                                           {/* Seletor tipo de bilhete */}
                                           <div className="flex items-center gap-2">
-                                            <span className="text-[10px] font-semibold text-slate-500 uppercase tracking-wide">
-                                              Tipo de Bilhete
+                                               <span className="text-[10px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">
+                                                 Tipo de Bilhete
                                             </span>
                                             <div className="flex rounded-lg overflow-hidden border border-slate-200 shadow-sm">
                                               <button
@@ -2311,12 +2311,12 @@ export default function Home() {
                                             }`}
                                           >
                                             {/* Card IDA */}
-                                            <div className="rounded-2xl border border-slate-200 bg-slate-50/50 overflow-hidden shadow-sm">
-                                              <div className="bg-slate-100/50 border-b border-slate-200 px-4 py-2 flex items-center gap-2">
+                                            <div className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-700/50 overflow-hidden shadow-sm dark:shadow-slate-900/40">
+                                              <div className="bg-slate-100/50 dark:bg-slate-700 border-b border-slate-200 dark:border-slate-600 px-4 py-2 flex items-center gap-2">
                                                 <Plane className="w-4 h-4 text-slate-400" />
-                                                <span className="text-[11px] font-bold text-slate-500 uppercase tracking-widest">
-                                                  Ida
-                                                </span>
+                                                 <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest">
+                                                   Ida
+                                                 </span>
                                               </div>
                                               <div className="p-3 flex flex-col gap-2.5">
                                                 <div className="flex flex-col gap-1">
@@ -2780,8 +2780,8 @@ export default function Home() {
                                               <div className="rounded-2xl border border-slate-200 bg-slate-50/50 overflow-hidden shadow-sm">
                                                 <div className="bg-slate-100/50 border-b border-slate-200 px-4 py-2 flex items-center gap-2">
                                                   <Plane className="w-4 h-4 text-slate-400 rotate-180" />
-                                                  <span className="text-[11px] font-bold text-slate-500 uppercase tracking-widest">
-                                                    Volta
+                                                 <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest">
+                                                     Volta
                                                   </span>
                                                 </div>
                                                 <div className="p-3 flex flex-col gap-2.5">
