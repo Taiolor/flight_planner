@@ -1686,7 +1686,7 @@ export default function Home() {
                       {/* Cabeçalho do Mês */}
                       <button
                         onClick={() => toggleMonth(monthKey)}
-                        className={`w-full flex items-center justify-between px-3 sm:px-6 py-3 sm:py-4 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-inset ${
+                        className={`w-full flex items-center justify-between px-3 sm:px-6 py-3 sm:py-4 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-inset rounded-t-xl ${
                           isOpen
                             ? "bg-blue-600 text-white dark:bg-blue-700"
                             : "bg-white hover:bg-slate-50 text-slate-900 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-100"
