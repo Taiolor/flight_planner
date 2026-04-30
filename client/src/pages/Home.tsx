@@ -1124,13 +1124,14 @@ export default function Home() {
       >
         {/* Background Image with Overlay */}
         <div
-          className="absolute inset-0 z-0 bg-cover bg-center"
+          className="absolute inset-0 z-0 bg-cover bg-center transition-all duration-300 dark:bg-slate-900"
           style={{
-            backgroundImage:
-              "url('https://images.unsplash.com/photo-1436491865332-7a61a109cc05?q=80&w=2074&auto=format&fit=crop')",
+            backgroundImage: theme === 'dark' ? 'none' : "url('https://images.unsplash.com/photo-1436491865332-7a61a109cc05?q=80&w=2074&auto=format&fit=crop')",
           }}
         >
-          <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px]"></div>
+          <div className={`absolute inset-0 backdrop-blur-[2px] transition-all duration-300 ${
+            theme === 'dark' ? 'bg-slate-900/80' : 'bg-black/40'
+          }`}></div>
         </div>
 
         <div className="container relative z-10 py-4 sm:py-8">

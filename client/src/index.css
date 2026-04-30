@@ -116,10 +116,10 @@
 
 @layer base {
   * {
-    @apply border-border outline-ring/50;
+    @apply border-border outline-ring/50 transition-colors duration-300;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground transition-colors duration-300;
   }
   button:not(:disabled),
   [role="button"]:not([aria-disabled="true"]),
@@ -165,11 +165,11 @@
 
   /* Custom styles for Modern Travel Dashboard */
   .flight-card {
-    @apply bg-card text-card-foreground rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 p-4 border border-border;
+    @apply bg-card text-card-foreground rounded-lg shadow-sm hover:shadow-md transition-all duration-300 p-4 border border-border dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100;
   }
 
   .flight-card:hover {
-    @apply shadow-md;
+    @apply shadow-md dark:shadow-lg dark:shadow-blue-500/20;
   }
 
   .price-badge {
