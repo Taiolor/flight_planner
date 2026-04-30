@@ -22,6 +22,8 @@ import {
   RefreshCw,
   Wifi,
   WifiOff,
+  FlaskConical,
+  Plane,
 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
