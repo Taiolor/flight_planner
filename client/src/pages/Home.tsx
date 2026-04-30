@@ -1681,7 +1681,7 @@ export default function Home() {
                   return (
                     <div
                       key={monthKey}
-                      className="rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden dark:shadow-slate-900/40"
+                      className="rounded-xl border border-slate-200 dark:border-0 shadow-sm overflow-hidden dark:shadow-slate-900/40"
                     >
                       {/* Cabeçalho do Mês */}
                       <button
