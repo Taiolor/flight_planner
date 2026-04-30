@@ -1377,16 +1377,16 @@ export default function Home() {
                 >
                   <CartesianGrid
                     strokeDasharray="3 3"
-                    stroke="rgba(255,255,255,0.1)"
+                    stroke={theme === 'dark' ? "rgba(100,116,139,0.2)" : "rgba(255,255,255,0.1)"}
                   />
                   <XAxis
                     dataKey="mes"
-                    tick={{ fill: "#e0f2fe", fontSize: 12 }}
+                    tick={{ fill: theme === 'dark' ? "#94a3b8" : "#e0f2fe", fontSize: 12 }}
                     axisLine={false}
                     tickLine={false}
                   />
                   <YAxis
-                    tick={{ fill: "#e0f2fe", fontSize: 11 }}
+                    tick={{ fill: theme === 'dark' ? "#94a3b8" : "#e0f2fe", fontSize: 11 }}
                     axisLine={false}
                     tickLine={false}
                     tickFormatter={v =>
@@ -1395,8 +1395,8 @@ export default function Home() {
                   />
                   <Tooltip
                     contentStyle={{
-                      background: "#1e3a5f",
-                      border: "none",
+                      background: theme === 'dark' ? "#1e293b" : "#1e3a5f",
+                      border: theme === 'dark' ? "1px solid #475569" : "none",
                       borderRadius: 8,
                       color: "#fff",
                     }}
@@ -1406,15 +1406,15 @@ export default function Home() {
                         : `R$ ${value.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`,
                       "Total Emitido",
                     ]}
-                    labelStyle={{ color: "#e0f2fe", fontWeight: 600 }}
+                    labelStyle={{ color: theme === 'dark' ? "#cbd5e1" : "#e0f2fe", fontWeight: 600 }}
                   />
                   <Bar
                     dataKey="total"
-                    fill="#34d399"
+                    fill={theme === 'dark' ? "#10b981" : "#34d399"}
                     radius={[4, 4, 0, 0]}
                     label={{
                       position: "top",
-                      fill: "#06b6d4",
+                      fill: theme === 'dark' ? "#22d3ee" : "#06b6d4",
                       fontSize: 10,
                       formatter: (v: number) =>
                         v > 0
@@ -3939,22 +3939,29 @@ export default function Home() {
                     data={chartData}
                     margin={{ top: 5, right: 20, left: 10, bottom: 5 }}
                   >
-                    <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+                    <CartesianGrid strokeDasharray="3 3" stroke={theme === 'dark' ? "#334155" : "#f1f5f9"} />
                     <XAxis
                       dataKey="mes"
-                      tick={{ fontSize: 12, fill: "#64748b" }}
+                      tick={{ fontSize: 12, fill: theme === 'dark' ? "#94a3b8" : "#64748b" }}
                     />
                     <YAxis
-                      tick={{ fontSize: 12, fill: "#64748b" }}
+                      tick={{ fontSize: 12, fill: theme === 'dark' ? "#94a3b8" : "#64748b" }}
                       tickFormatter={v => (hideValues ? "•••" : `R$${v}`)}
                     />
                     <Tooltip
+                      contentStyle={{
+                        background: theme === 'dark' ? "#1e293b" : "#ffffff",
+                        border: theme === 'dark' ? "1px solid #475569" : "1px solid #e2e8f0",
+                        borderRadius: 8,
+                        color: theme === 'dark' ? "#f1f5f9" : "#1e293b",
+                      }}
                       formatter={(value: number) => [
                         hideValues ? "••••" : `R$ ${value.toFixed(2)}`,
                         "",
                       ]}
+                      labelStyle={{ color: theme === 'dark' ? "#cbd5e1" : "#64748b", fontWeight: 600 }}
                     />
-                    <Legend />
+                    <Legend wrapperStyle={{ color: theme === 'dark' ? "#cbd5e1" : "#64748b" }} />
                     {chartSelectedAirlines.has("kayak") && (
                       <Bar
                         dataKey="kayak"
@@ -4017,22 +4024,29 @@ export default function Home() {
                     data={chartData}
                     margin={{ top: 5, right: 20, left: 10, bottom: 5 }}
                   >
-                    <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+                    <CartesianGrid strokeDasharray="3 3" stroke={theme === 'dark' ? "#334155" : "#f1f5f9"} />
                     <XAxis
                       dataKey="mes"
-                      tick={{ fontSize: 12, fill: "#64748b" }}
+                      tick={{ fontSize: 12, fill: theme === 'dark' ? "#94a3b8" : "#64748b" }}
                     />
                     <YAxis
-                      tick={{ fontSize: 12, fill: "#64748b" }}
+                      tick={{ fontSize: 12, fill: theme === 'dark' ? "#94a3b8" : "#64748b" }}
                       tickFormatter={v => (hideValues ? "•••" : `R$${v}`)}
                     />
                     <Tooltip
+                      contentStyle={{
+                        background: theme === 'dark' ? "#1e293b" : "#ffffff",
+                        border: theme === 'dark' ? "1px solid #475569" : "1px solid #e2e8f0",
+                        borderRadius: 8,
+                        color: theme === 'dark' ? "#f1f5f9" : "#1e293b",
+                      }}
                       formatter={(value: number) => [
                         hideValues ? "••••" : `R$ ${value.toFixed(2)}`,
                         "",
                       ]}
+                      labelStyle={{ color: theme === 'dark' ? "#cbd5e1" : "#64748b", fontWeight: 600 }}
                     />
-                    <Legend />
+                    <Legend wrapperStyle={{ color: theme === 'dark' ? "#cbd5e1" : "#64748b" }} />
                     <Line
                       type="monotone"
                       dataKey="menor"
