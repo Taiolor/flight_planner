@@ -1,6 +1,5 @@
 import {
   index,
-  uniqueIndex,
   int,
   mysqlEnum,
   mysqlTable,
@@ -33,8 +32,6 @@ export const users = mysqlTable("users", {
 
 export type User = typeof users.$inferSelect;
 export type InsertUser = typeof users.$inferInsert;
-
-// TODO: Add your tables here
 
 /**
  * Tabela para persistir dados das semanas de voo
@@ -87,24 +84,14 @@ export type InsertFlightWeek = typeof flightWeeks.$inferInsert;
 /**
  * Tabela para persistir preços por semana e companhia aérea
  */
-export const flightPrices = mysqlTable(
-  "flight_prices",
-  {
-    id: int("id").autoincrement().primaryKey(),
-    weekNumber: int("weekNumber").notNull(),
-    airline: varchar("airline", { length: 50 }).notNull(),
-    price: varchar("price", { length: 20 }).notNull(),
-    createdAt: timestamp("createdAt").defaultNow().notNull(),
-    updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
-  },
-  table => [
-    // ⚡ Bolt: unique index para lookup O(log N) e integridade de dados
-    uniqueIndex("uidx_flight_prices_week_airline").on(
-      table.weekNumber,
-      table.airline
-    ),
-  ]
-);
+export const flightPrices = mysqlTable("flight_prices", {
+  id: int("id").autoincrement().primaryKey(),
+  weekNumber: int("weekNumber").notNull(),
+  airline: varchar("airline", { length: 50 }).notNull(),
+  price: varchar("price", { length: 20 }).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
 
 export type FlightPrice = typeof flightPrices.$inferSelect;
 export type InsertFlightPrice = typeof flightPrices.$inferInsert;
