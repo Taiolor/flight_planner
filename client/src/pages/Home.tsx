@@ -67,6 +67,8 @@ import {
   Wand2,
   CalendarDays,
   ShieldCheck,
+  Sun,
+  Moon,
 } from "lucide-react";
 import { Link } from "wouter";
 import {
@@ -90,6 +92,7 @@ import { NotificationSettingsPopup } from "@/components/NotificationSettingsPopu
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import { LoginModal } from "@/components/auth/LoginModal";
+import { useTheme } from "@/contexts/ThemeContext";
 
 /**
  * Memória histórica de números de voo.
@@ -211,6 +214,9 @@ interface PriceMap {
 }
 
 export default function Home() {
+  // Theme state
+  const { theme, toggleTheme } = useTheme();
+
   // Auth state
   const [showLoginModal, setShowLoginModal] = useState(false);
 
@@ -1145,6 +1151,22 @@ export default function Home() {
               </div>
             </div>
             <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
+              {/* Botão alternar tema */}
+              <Button
+                size="sm"
+                variant="outline"
+                title={theme === 'dark' ? 'Modo claro' : 'Modo escuro'}
+                aria-label={theme === 'dark' ? 'Modo claro' : 'Modo escuro'}
+                className="border-white/40 text-white hover:bg-white/20 backdrop-blur-sm bg-white/10"
+                onClick={toggleTheme}
+              >
+                {theme === 'dark' ? (
+                  <Sun className="w-4 h-4" />
+                ) : (
+                  <Moon className="w-4 h-4" />
+                )}
+              </Button>
+
               {/* Botão ocultar valores */}
               <Button
                 size="sm"
