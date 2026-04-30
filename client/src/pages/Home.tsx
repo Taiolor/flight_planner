@@ -1305,13 +1305,13 @@ export default function Home() {
               <h2 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
                 Resumo Anual 2026
               </h2>
-              <p className="text-blue-200 text-xs sm:text-sm mt-1">
+              <p className="text-blue-600 text-xs sm:text-sm mt-1">
                 Passagens emitidas — GRU / CGH → NVT
               </p>
             </div>
             <div className="flex flex-wrap gap-3 sm:gap-6">
               <div className="text-center">
-                <p className="text-blue-200 text-[10px] sm:text-xs uppercase tracking-wider mb-1">
+                <p className="text-blue-700 text-[10px] sm:text-xs uppercase tracking-wider mb-1">
                   Bilhetes Emitidos
                 </p>
                 <p className="text-3xl sm:text-4xl font-black text-white">
@@ -1319,7 +1319,7 @@ export default function Home() {
                 </p>
               </div>
               <div className="text-center">
-                <p className="text-blue-200 text-[10px] sm:text-xs uppercase tracking-wider mb-1">
+                <p className="text-blue-700 text-[10px] sm:text-xs uppercase tracking-wider mb-1">
                   Total Investido
                 </p>
                 <p className="text-2xl sm:text-4xl font-black text-emerald-300">
@@ -1329,7 +1329,7 @@ export default function Home() {
                 </p>
               </div>
               <div className="text-center">
-                <p className="text-blue-200 text-[10px] sm:text-xs uppercase tracking-wider mb-1">
+                <p className="text-blue-700 text-[10px] sm:text-xs uppercase tracking-wider mb-1">
                   Média por Viagem
                 </p>
                 <p className="text-2xl sm:text-4xl font-black text-amber-300">
@@ -1344,7 +1344,7 @@ export default function Home() {
           </div>
           {annualHasData ? (
             <div>
-              <p className="text-blue-200 text-xs uppercase tracking-wider mb-3">
+              <p className="text-blue-700 text-xs uppercase tracking-wider mb-3">
                 Gasto por Mês (R$)
               </p>
               <ResponsiveContainer width="100%" height={160}>
@@ -1358,12 +1358,12 @@ export default function Home() {
                   />
                   <XAxis
                     dataKey="mes"
-                    tick={{ fill: "#bfdbfe", fontSize: 12 }}
+                    tick={{ fill: "#1e40af", fontSize: 12 }}
                     axisLine={false}
                     tickLine={false}
                   />
                   <YAxis
-                    tick={{ fill: "#bfdbfe", fontSize: 11 }}
+                    tick={{ fill: "#1e40af", fontSize: 11 }}
                     axisLine={false}
                     tickLine={false}
                     tickFormatter={v =>
@@ -1383,7 +1383,7 @@ export default function Home() {
                         : `R$ ${value.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`,
                       "Total Emitido",
                     ]}
-                    labelStyle={{ color: "#93c5fd", fontWeight: 600 }}
+                    labelStyle={{ color: "#1e40af", fontWeight: 600 }}
                   />
                   <Bar
                     dataKey="total"
@@ -1391,7 +1391,7 @@ export default function Home() {
                     radius={[4, 4, 0, 0]}
                     label={{
                       position: "top",
-                      fill: "#a7f3d0",
+                      fill: "#047857",
                       fontSize: 10,
                       formatter: (v: number) =>
                         v > 0
