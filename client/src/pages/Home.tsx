@@ -1299,40 +1299,40 @@ export default function Home() {
 
       <main className="container py-4 sm:py-8">
         {/* Resumo Anual */}
-        <Card className="p-4 sm:p-6 mb-4 sm:mb-8 border border-slate-200/60 shadow-xl shadow-slate-200/40 bg-white text-slate-800 rounded-3xl relative overflow-hidden">
+        <Card className="p-4 sm:p-6 mb-4 sm:mb-8 border border-slate-200/60 shadow-xl shadow-slate-200/40 bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 text-white rounded-3xl relative overflow-hidden">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-4 sm:mb-6">
             <div>
-              <h2 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
+              <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
                 Resumo Anual 2026
               </h2>
-              <p className="text-blue-600 text-xs sm:text-sm mt-1">
+              <p className="text-blue-200 text-xs sm:text-sm mt-1">
                 Passagens emitidas — GRU / CGH → NVT
               </p>
             </div>
             <div className="flex flex-wrap gap-3 sm:gap-6">
               <div className="text-center">
-                <p className="text-blue-700 text-[10px] sm:text-xs uppercase tracking-wider mb-1">
+                <p className="text-blue-100 text-[10px] sm:text-xs uppercase tracking-wider mb-1">
                   Bilhetes Emitidos
                 </p>
-                <p className="text-3xl sm:text-4xl font-black text-white">
+                <p className="text-3xl sm:text-4xl font-black text-cyan-300">
                   {annualIssuedCount}
                 </p>
               </div>
               <div className="text-center">
-                <p className="text-blue-700 text-[10px] sm:text-xs uppercase tracking-wider mb-1">
+                <p className="text-blue-100 text-[10px] sm:text-xs uppercase tracking-wider mb-1">
                   Total Investido
                 </p>
-                <p className="text-2xl sm:text-4xl font-black text-emerald-300">
+                <p className="text-2xl sm:text-4xl font-black text-emerald-200">
                   {hideValues
                     ? "••••"
                     : `R$ ${annualTotalIssued.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
                 </p>
               </div>
               <div className="text-center">
-                <p className="text-blue-700 text-[10px] sm:text-xs uppercase tracking-wider mb-1">
+                <p className="text-blue-100 text-[10px] sm:text-xs uppercase tracking-wider mb-1">
                   Média por Viagem
                 </p>
-                <p className="text-2xl sm:text-4xl font-black text-amber-300">
+                <p className="text-2xl sm:text-4xl font-black text-amber-200">
                   {hideValues
                     ? "••••"
                     : annualIssuedCount > 0
@@ -1344,7 +1344,7 @@ export default function Home() {
           </div>
           {annualHasData ? (
             <div>
-              <p className="text-blue-700 text-xs uppercase tracking-wider mb-3">
+              <p className="text-blue-100 text-xs uppercase tracking-wider mb-3">
                 Gasto por Mês (R$)
               </p>
               <ResponsiveContainer width="100%" height={160}>
@@ -1358,12 +1358,12 @@ export default function Home() {
                   />
                   <XAxis
                     dataKey="mes"
-                    tick={{ fill: "#1e40af", fontSize: 12 }}
+                    tick={{ fill: "#e0f2fe", fontSize: 12 }}
                     axisLine={false}
                     tickLine={false}
                   />
                   <YAxis
-                    tick={{ fill: "#1e40af", fontSize: 11 }}
+                    tick={{ fill: "#e0f2fe", fontSize: 11 }}
                     axisLine={false}
                     tickLine={false}
                     tickFormatter={v =>
@@ -1383,7 +1383,7 @@ export default function Home() {
                         : `R$ ${value.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`,
                       "Total Emitido",
                     ]}
-                    labelStyle={{ color: "#1e40af", fontWeight: 600 }}
+                    labelStyle={{ color: "#e0f2fe", fontWeight: 600 }}
                   />
                   <Bar
                     dataKey="total"
@@ -1391,7 +1391,7 @@ export default function Home() {
                     radius={[4, 4, 0, 0]}
                     label={{
                       position: "top",
-                      fill: "#047857",
+                      fill: "#06b6d4",
                       fontSize: 10,
                       formatter: (v: number) =>
                         v > 0
