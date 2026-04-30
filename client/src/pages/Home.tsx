@@ -1681,15 +1681,15 @@ export default function Home() {
                   return (
                     <div
                       key={monthKey}
-                      className="rounded-xl border border-slate-200 shadow-sm overflow-hidden"
+                      className="rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden dark:shadow-slate-900/40"
                     >
                       {/* Cabeçalho do Mês */}
                       <button
                         onClick={() => toggleMonth(monthKey)}
                         className={`w-full flex items-center justify-between px-3 sm:px-6 py-3 sm:py-4 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-inset ${
                           isOpen
-                            ? "bg-blue-600 text-white"
-                            : "bg-white hover:bg-slate-50 text-slate-900"
+                            ? "bg-blue-600 text-white dark:bg-blue-700"
+                            : "bg-white hover:bg-slate-50 text-slate-900 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-100"
                         }`}
                         aria-expanded={isOpen}
                         aria-controls={`month-content-${monthKey}`}
@@ -1704,7 +1704,7 @@ export default function Home() {
                             className={`w-5 h-5 transition-transform ${
                               isOpen
                                 ? "rotate-180 text-white"
-                                : "text-slate-500"
+                                : "text-slate-500 dark:text-slate-400"
                             }`}
                           />
                           <span className="text-sm sm:text-lg font-bold">
@@ -1725,7 +1725,7 @@ export default function Home() {
                         <div className="flex items-center gap-1 sm:gap-4 text-xs sm:text-sm flex-wrap justify-end">
                           <span
                             className={
-                              isOpen ? "text-blue-100" : "text-slate-500"
+                              isOpen ? "text-blue-100" : "text-slate-500 dark:text-slate-400"
                             }
                           >
                             {monthWeeks.length} semana
