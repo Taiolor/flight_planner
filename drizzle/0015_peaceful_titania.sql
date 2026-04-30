@@ -1,0 +1,1 @@
+ALTER TABLE `flight_prices` ADD CONSTRAINT `uidx_flight_prices_week_airline` UNIQUE(`weekNumber`,`airline`);
