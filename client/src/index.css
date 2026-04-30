@@ -172,6 +172,15 @@
     @apply shadow-md dark:shadow-lg dark:shadow-blue-500/20;
   }
 
+  /* Animação suave para transição de cores em gráficos */
+  .chart-container {
+    @apply transition-colors duration-300;
+  }
+
+  .chart-container svg {
+    @apply transition-colors duration-300;
+  }
+
   .price-badge {
     @apply inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold;
   }

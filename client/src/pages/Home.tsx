@@ -92,7 +92,8 @@ import { NotificationSettingsPopup } from "@/components/NotificationSettingsPopu
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import { LoginModal } from "@/components/auth/LoginModal";
-import { useTheme } from "@/contexts/ThemeContext";
+import { useTheme, COLOR_PRESETS } from "@/contexts/ThemeContext";
+import type { ColorPreset } from "@/contexts/ThemeContext";
 
 /**
  * Memória histórica de números de voo.
@@ -215,7 +216,7 @@ interface PriceMap {
 
 export default function Home() {
   // Theme state
-  const { theme, toggleTheme } = useTheme();
+  const { theme, toggleTheme, colorPreset, setColorPreset } = useTheme();
 
   // Auth state
   const [showLoginModal, setShowLoginModal] = useState(false);
@@ -1168,6 +1169,21 @@ export default function Home() {
                 )}
               </Button>
 
+              {/* Seletor de Presets de Cores */}
+              <Select value={colorPreset} onValueChange={(value) => setColorPreset(value as ColorPreset)}>
+                <SelectTrigger className="w-auto border-white/40 text-white hover:bg-white/20 backdrop-blur-sm bg-white/10">
+                  <Sparkles className="w-4 h-4 mr-2" />
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {Object.entries(COLOR_PRESETS).map(([key, preset]) => (
+                    <SelectItem key={key} value={key}>
+                      {preset.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
               {/* Botão ocultar valores */}
               <Button
                 size="sm"
@@ -1370,7 +1386,7 @@ export default function Home() {
               <p className="text-blue-100 text-xs uppercase tracking-wider mb-3">
                 Gasto por Mês (R$)
               </p>
-              <ResponsiveContainer width="100%" height={160}>
+              <ResponsiveContainer width="100%" height={160} className="chart-container">
                 <BarChart
                   data={annualSummaryData}
                   margin={{ top: 0, right: 8, left: 0, bottom: 0 }}
@@ -1438,13 +1454,13 @@ export default function Home() {
         </Card>
 
         {/* Filtros */}
-        <Card className="p-4 sm:p-6 mb-4 sm:mb-8 border border-slate-200/60 shadow-xl shadow-slate-200/40 bg-white rounded-3xl">
-          <h2 className="text-base sm:text-xl font-bold text-slate-900 mb-3 sm:mb-6">
+        <Card className="p-4 sm:p-6 mb-4 sm:mb-8 border border-slate-200/60 shadow-xl shadow-slate-200/40 bg-white rounded-3xl dark:bg-slate-800 dark:border-slate-700 dark:shadow-slate-900/40">
+          <h2 className="text-base sm:text-xl font-bold text-slate-900 dark:text-slate-100 mb-3 sm:mb-6">
             Filtros e Controles
           </h2>
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
             <div>
-              <label className="text-sm font-semibold text-slate-700 mb-2 block">
+              <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2 block">
                 Mês
               </label>
               <Select value={filterMonth} onValueChange={setFilterMonth}>
@@ -1491,7 +1507,7 @@ export default function Home() {
             </div>
 
             <div>
-              <label className="text-sm font-semibold text-slate-700 mb-2 block">
+              <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2 block">
                 Companhia
               </label>
               <Select value={filterAirline} onValueChange={setFilterAirline}>
@@ -1510,7 +1526,7 @@ export default function Home() {
             </div>
 
             <div>
-              <label className="text-sm font-semibold text-slate-700 mb-2 block">
+              <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2 block">
                 Ordenar por
               </label>
               <Select value={sortBy} onValueChange={setSortBy}>
@@ -1525,7 +1541,7 @@ export default function Home() {
             </div>
 
             <div>
-              <label className="text-sm font-semibold text-slate-700 mb-2 block">
+              <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2 block">
                 Filtro de Preço
               </label>
               <div className="flex items-center gap-2 mt-1">
@@ -1540,7 +1556,7 @@ export default function Home() {
             </div>
 
             <div>
-              <label className="text-sm font-semibold text-slate-700 mb-2 block">
+              <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2 block">
                 Status do Bilhete
               </label>
               <Select
@@ -3934,7 +3950,7 @@ export default function Home() {
                 <h3 className="text-sm font-semibold text-slate-600 mb-4 uppercase tracking-wide">
                   Preço Médio por Companhia (R$)
                 </h3>
-                <ResponsiveContainer width="100%" height={320}>
+                <ResponsiveContainer width="100%" height={320} className="chart-container">
                   <BarChart
                     data={chartData}
                     margin={{ top: 5, right: 20, left: 10, bottom: 5 }}
@@ -4019,7 +4035,7 @@ export default function Home() {
                 <h3 className="text-sm font-semibold text-slate-600 mb-4 uppercase tracking-wide">
                   Menor Preço vs. Preço Médio por Mês (R$)
                 </h3>
-                <ResponsiveContainer width="100%" height={260}>
+                <ResponsiveContainer width="100%" height={260} className="chart-container">
                   <LineChart
                     data={chartData}
                     margin={{ top: 5, right: 20, left: 10, bottom: 5 }}
