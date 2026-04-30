@@ -2314,13 +2314,13 @@ export default function Home() {
                                             <div className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-700/50 overflow-hidden shadow-sm dark:shadow-slate-900/40">
                                               <div className="bg-slate-100/50 dark:bg-slate-700 border-b border-slate-200 dark:border-slate-600 px-4 py-2 flex items-center gap-2">
                                                 <Plane className="w-4 h-4 text-slate-400" />
-                                                 <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest">
+                                                 <span className="text-[11px] font-bold text-slate-600 dark:text-slate-200 uppercase tracking-widest">
                                                    Ida
                                                  </span>
                                               </div>
                                               <div className="p-3 flex flex-col gap-2.5">
                                                 <div className="flex flex-col gap-1">
-                                                  <label className="text-[10px] font-semibold text-slate-500 uppercase tracking-wide">
+                                                  <label className="text-[10px] font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wide">
                                                     Aeroporto
                                                   </label>
                                                   <Select
@@ -2363,7 +2363,7 @@ export default function Home() {
                                                 </div>
                                                 <div className="flex flex-col gap-1">
                                                   <div className="flex items-center justify-between">
-                                                    <label className="text-[10px] font-semibold text-slate-500 uppercase tracking-wide">
+                                                    <label className="text-[10px] font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wide">
                                                       Companhia Aérea
                                                     </label>
                                                     {tempDepartureAirline[
@@ -2575,7 +2575,7 @@ export default function Home() {
                                                 </div>
                                                 <div className="flex flex-col gap-1">
                                                   <div className="flex items-center justify-between">
-                                                    <label className="text-[10px] font-semibold text-slate-500 uppercase tracking-wide">
+                                                    <label className="text-[10px] font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wide">
                                                       Número do Voo
                                                     </label>
                                                     {suggestedDepartureFlightNumber[
@@ -2625,7 +2625,7 @@ export default function Home() {
                                                   />
                                                 </div>
                                                 <div className="flex flex-col gap-1">
-                                                  <label className="text-[10px] font-semibold text-slate-500 uppercase tracking-wide">
+                                                  <label className="text-[10px] font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wide">
                                                     Data e Hora do Voo
                                                   </label>
                                                   <input
@@ -2707,7 +2707,7 @@ export default function Home() {
                                                 </div>
                                                 <div className="flex flex-col gap-1">
                                                   <div className="flex items-center justify-between">
-                                                    <label className="text-[10px] font-semibold text-slate-500 uppercase tracking-wide">
+                                                    <label className="text-[10px] font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wide">
                                                       Localizador (PNR)
                                                     </label>
                                                     {(
@@ -2777,16 +2777,16 @@ export default function Home() {
                                             {/* Card VOLTA — só exibido quando tipo é Ida e Volta */}
                                             {(tempTicketType[week.weekNumber] ??
                                               "roundtrip") === "roundtrip" && (
-                                              <div className="rounded-2xl border border-slate-200 bg-slate-50/50 overflow-hidden shadow-sm">
-                                                <div className="bg-slate-100/50 border-b border-slate-200 px-4 py-2 flex items-center gap-2">
+                                              <div className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-700/50 overflow-hidden shadow-sm dark:shadow-slate-900/40">
+                                                <div className="bg-slate-100/50 dark:bg-slate-700 border-b border-slate-200 dark:border-slate-600 px-4 py-2 flex items-center gap-2">
                                                   <Plane className="w-4 h-4 text-slate-400 rotate-180" />
-                                                 <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest">
-                                                     Volta
-                                                  </span>
+                                                  <span className="text-[11px] font-bold text-slate-600 dark:text-slate-200 uppercase tracking-widest">
+                                                      Volta
+                                                   </span>
                                                 </div>
                                                 <div className="p-3 flex flex-col gap-2.5">
                                                   <div className="flex flex-col gap-1">
-                                                    <label className="text-[10px] font-semibold text-slate-500 uppercase tracking-wide">
+                                                    <label className="text-[10px] font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wide">
                                                       Aeroporto
                                                     </label>
                                                     <Select
@@ -2828,7 +2828,7 @@ export default function Home() {
                                                     </Select>
                                                   </div>
                                                   <div className="flex flex-col gap-1">
-                                                    <label className="text-[10px] font-semibold text-slate-500 uppercase tracking-wide">
+                                                    <label className="text-[10px] font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wide">
                                                       Companhia Aérea
                                                     </label>
                                                     <Select
@@ -3006,7 +3006,7 @@ export default function Home() {
                                                   </div>
                                                   <div className="flex flex-col gap-1">
                                                     <div className="flex items-center justify-between">
-                                                      <label className="text-[10px] font-semibold text-slate-500 uppercase tracking-wide">
+                                                      <label className="text-[10px] font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wide">
                                                         Número do Voo
                                                       </label>
                                                       {suggestedReturnFlightNumber[
@@ -3056,7 +3056,7 @@ export default function Home() {
                                                     />
                                                   </div>
                                                   <div className="flex flex-col gap-1">
-                                                    <label className="text-[10px] font-semibold text-slate-500 uppercase tracking-wide">
+                                                    <label className="text-[10px] font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wide">
                                                       Data e Hora do Voo
                                                     </label>
                                                     <input
@@ -3151,7 +3151,7 @@ export default function Home() {
                                                     })()}
                                                   </div>
                                                   <div className="flex flex-col gap-1">
-                                                    <label className="text-[10px] font-semibold text-slate-500 uppercase tracking-wide">
+                                                    <label className="text-[10px] font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wide">
                                                       Localizador (PNR)
                                                     </label>
                                                     <input
