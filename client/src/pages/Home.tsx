@@ -1099,7 +1099,7 @@ export default function Home() {
   const isLoading = weeksQuery.isLoading || pricesQuery.isLoading;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
+    <div className="min-h-screen bg-slate-50 text-slate-800 font-sans tracking-tight">
       {/* Pull-to-refresh indicator */}
       {(isPulling || isRefreshing) && (
         <div
@@ -1133,12 +1133,23 @@ export default function Home() {
           </div>
         </div>
       )}
-      {/* Header */}
+      {/* Hero Header */}
       <header
-        className="bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg sticky top-0 z-50"
+        className="relative shadow-xl sticky top-0 z-50 overflow-hidden"
         style={{ paddingTop: "env(safe-area-inset-top)" }}
       >
-        <div className="container py-3 sm:py-6">
+        {/* Background Image with Overlay */}
+        <div
+          className="absolute inset-0 z-0 bg-cover bg-center"
+          style={{
+            backgroundImage:
+              "url('https://images.unsplash.com/photo-1436491865332-7a61a109cc05?q=80&w=2074&auto=format&fit=crop')",
+          }}
+        >
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px]"></div>
+        </div>
+
+        <div className="container relative z-10 py-4 sm:py-8">
           <div className="flex items-center justify-between gap-2 flex-wrap">
             <div className="flex items-center gap-2 sm:gap-3">
               <img
@@ -1147,10 +1158,10 @@ export default function Home() {
                 className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl object-contain"
               />
               <div>
-                <h1 className="text-lg sm:text-3xl font-bold leading-tight">
+                <h1 className="text-xl sm:text-4xl font-bold leading-tight tracking-tight text-white drop-shadow-md">
                   Smart Fly
                 </h1>
-                <p className="text-blue-100 text-xs sm:text-sm">
+                <p className="text-slate-200 text-xs sm:text-sm font-medium tracking-wide">
                   {departureAirport} → NVT • 2026
                 </p>
               </div>
@@ -1162,7 +1173,7 @@ export default function Home() {
                 variant="outline"
                 title={hideValues ? "Exibir valores" : "Ocultar valores"}
                 aria-label={hideValues ? "Exibir valores" : "Ocultar valores"}
-                className={`border-white text-white hover:bg-white hover:text-blue-700 ${
+                className={`border-white/40 text-white hover:bg-white/20 backdrop-blur-sm ${
                   hideValues ? "bg-white/30 border-white/80" : "bg-white/10"
                 }`}
                 onClick={toggleHideValues}
@@ -1195,7 +1206,7 @@ export default function Home() {
                         : "Ativar notificações de voo"
                   }
                   disabled={pushLoading || pushStatus === "denied"}
-                  className={`border-white text-white hover:bg-white hover:text-blue-700 transition-all ${
+                  className={`border-white/40 text-white hover:bg-white/20 backdrop-blur-sm transition-all ${
                     pushSubscribed
                       ? "bg-green-500/30 border-green-300"
                       : pushStatus === "denied"
@@ -1310,10 +1321,10 @@ export default function Home() {
 
       <main className="container py-4 sm:py-8">
         {/* Resumo Anual */}
-        <Card className="p-4 sm:p-6 mb-4 sm:mb-8 border-0 shadow-md bg-gradient-to-br from-blue-700 to-blue-900 text-white">
+        <Card className="p-4 sm:p-6 mb-4 sm:mb-8 border border-slate-200/60 shadow-xl shadow-slate-200/40 bg-white text-slate-800 rounded-3xl relative overflow-hidden">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-4 sm:mb-6">
             <div>
-              <h2 className="text-xl sm:text-2xl font-bold text-white">
+              <h2 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
                 Resumo Anual 2026
               </h2>
               <p className="text-blue-200 text-xs sm:text-sm mt-1">
@@ -1426,7 +1437,7 @@ export default function Home() {
         </Card>
 
         {/* Filtros */}
-        <Card className="p-4 sm:p-6 mb-4 sm:mb-8 border-0 shadow-md">
+        <Card className="p-4 sm:p-6 mb-4 sm:mb-8 border border-slate-200/60 shadow-xl shadow-slate-200/40 bg-white rounded-3xl">
           <h2 className="text-base sm:text-xl font-bold text-slate-900 mb-3 sm:mb-6">
             Filtros e Controles
           </h2>
@@ -2266,16 +2277,16 @@ export default function Home() {
                                             }`}
                                           >
                                             {/* Card IDA */}
-                                            <div className="rounded-xl border border-blue-200 bg-gradient-to-br from-blue-50 to-indigo-50 overflow-hidden shadow-sm">
-                                              <div className="bg-blue-600 px-3 py-2 flex items-center gap-2">
-                                                <Plane className="w-3.5 h-3.5 text-white" />
-                                                <span className="text-xs font-bold text-white uppercase tracking-wider">
+                                            <div className="rounded-2xl border border-slate-200 bg-slate-50/50 overflow-hidden shadow-sm">
+                                              <div className="bg-slate-100/50 border-b border-slate-200 px-4 py-2 flex items-center gap-2">
+                                                <Plane className="w-4 h-4 text-slate-400" />
+                                                <span className="text-[11px] font-bold text-slate-500 uppercase tracking-widest">
                                                   Ida
                                                 </span>
                                               </div>
                                               <div className="p-3 flex flex-col gap-2.5">
                                                 <div className="flex flex-col gap-1">
-                                                  <label className="text-[10px] font-semibold text-blue-600 uppercase tracking-wide">
+                                                  <label className="text-[10px] font-semibold text-slate-500 uppercase tracking-wide">
                                                     Aeroporto
                                                   </label>
                                                   <Select
@@ -2318,7 +2329,7 @@ export default function Home() {
                                                 </div>
                                                 <div className="flex flex-col gap-1">
                                                   <div className="flex items-center justify-between">
-                                                    <label className="text-[10px] font-semibold text-blue-600 uppercase tracking-wide">
+                                                    <label className="text-[10px] font-semibold text-slate-500 uppercase tracking-wide">
                                                       Companhia Aérea
                                                     </label>
                                                     {tempDepartureAirline[
@@ -2530,7 +2541,7 @@ export default function Home() {
                                                 </div>
                                                 <div className="flex flex-col gap-1">
                                                   <div className="flex items-center justify-between">
-                                                    <label className="text-[10px] font-semibold text-blue-600 uppercase tracking-wide">
+                                                    <label className="text-[10px] font-semibold text-slate-500 uppercase tracking-wide">
                                                       Número do Voo
                                                     </label>
                                                     {suggestedDepartureFlightNumber[
@@ -2580,7 +2591,7 @@ export default function Home() {
                                                   />
                                                 </div>
                                                 <div className="flex flex-col gap-1">
-                                                  <label className="text-[10px] font-semibold text-blue-600 uppercase tracking-wide">
+                                                  <label className="text-[10px] font-semibold text-slate-500 uppercase tracking-wide">
                                                     Data e Hora do Voo
                                                   </label>
                                                   <input
@@ -2662,7 +2673,7 @@ export default function Home() {
                                                 </div>
                                                 <div className="flex flex-col gap-1">
                                                   <div className="flex items-center justify-between">
-                                                    <label className="text-[10px] font-semibold text-blue-600 uppercase tracking-wide">
+                                                    <label className="text-[10px] font-semibold text-slate-500 uppercase tracking-wide">
                                                       Localizador (PNR)
                                                     </label>
                                                     {(
@@ -2732,16 +2743,16 @@ export default function Home() {
                                             {/* Card VOLTA — só exibido quando tipo é Ida e Volta */}
                                             {(tempTicketType[week.weekNumber] ??
                                               "roundtrip") === "roundtrip" && (
-                                              <div className="rounded-xl border border-orange-200 bg-gradient-to-br from-orange-50 to-amber-50 overflow-hidden shadow-sm">
-                                                <div className="bg-orange-500 px-3 py-2 flex items-center gap-2">
-                                                  <Plane className="w-3.5 h-3.5 text-white rotate-180" />
-                                                  <span className="text-xs font-bold text-white uppercase tracking-wider">
+                                              <div className="rounded-2xl border border-slate-200 bg-slate-50/50 overflow-hidden shadow-sm">
+                                                <div className="bg-slate-100/50 border-b border-slate-200 px-4 py-2 flex items-center gap-2">
+                                                  <Plane className="w-4 h-4 text-slate-400 rotate-180" />
+                                                  <span className="text-[11px] font-bold text-slate-500 uppercase tracking-widest">
                                                     Volta
                                                   </span>
                                                 </div>
                                                 <div className="p-3 flex flex-col gap-2.5">
                                                   <div className="flex flex-col gap-1">
-                                                    <label className="text-[10px] font-semibold text-orange-600 uppercase tracking-wide">
+                                                    <label className="text-[10px] font-semibold text-slate-500 uppercase tracking-wide">
                                                       Aeroporto
                                                     </label>
                                                     <Select
@@ -2783,7 +2794,7 @@ export default function Home() {
                                                     </Select>
                                                   </div>
                                                   <div className="flex flex-col gap-1">
-                                                    <label className="text-[10px] font-semibold text-orange-600 uppercase tracking-wide">
+                                                    <label className="text-[10px] font-semibold text-slate-500 uppercase tracking-wide">
                                                       Companhia Aérea
                                                     </label>
                                                     <Select
@@ -2961,7 +2972,7 @@ export default function Home() {
                                                   </div>
                                                   <div className="flex flex-col gap-1">
                                                     <div className="flex items-center justify-between">
-                                                      <label className="text-[10px] font-semibold text-orange-600 uppercase tracking-wide">
+                                                      <label className="text-[10px] font-semibold text-slate-500 uppercase tracking-wide">
                                                         Número do Voo
                                                       </label>
                                                       {suggestedReturnFlightNumber[
@@ -3011,7 +3022,7 @@ export default function Home() {
                                                     />
                                                   </div>
                                                   <div className="flex flex-col gap-1">
-                                                    <label className="text-[10px] font-semibold text-orange-600 uppercase tracking-wide">
+                                                    <label className="text-[10px] font-semibold text-slate-500 uppercase tracking-wide">
                                                       Data e Hora do Voo
                                                     </label>
                                                     <input
@@ -3106,7 +3117,7 @@ export default function Home() {
                                                     })()}
                                                   </div>
                                                   <div className="flex flex-col gap-1">
-                                                    <label className="text-[10px] font-semibold text-orange-600 uppercase tracking-wide">
+                                                    <label className="text-[10px] font-semibold text-slate-500 uppercase tracking-wide">
                                                       Localizador (PNR)
                                                     </label>
                                                     <input
@@ -3140,7 +3151,7 @@ export default function Home() {
                                             disabled={
                                               savingTicket[week.weekNumber]
                                             }
-                                            className="w-full py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-orange-500 text-white text-sm font-bold shadow hover:opacity-90 active:scale-95 transition-all flex items-center justify-center gap-2 disabled:opacity-60"
+                                            className="w-full py-3 rounded-2xl bg-slate-900 text-white text-sm font-semibold shadow-lg hover:bg-slate-800 active:scale-[0.98] transition-all flex items-center justify-center gap-2 disabled:opacity-60"
                                             onClick={() => {
                                               if (!isAuthenticated) {
                                                 setShowLoginModal(true);
@@ -3769,7 +3780,7 @@ export default function Home() {
 
         {/* Resumo */}
         {selectedWeeks.length > 0 && (
-          <Card className="mt-8 p-6 border-0 shadow-md bg-gradient-to-r from-green-50 to-emerald-50">
+          <Card className="mt-8 p-6 border border-slate-200/60 shadow-xl shadow-slate-200/40 bg-white rounded-3xl">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div>
                 <p className="text-sm text-slate-600 mb-1">
@@ -3800,7 +3811,7 @@ export default function Home() {
         {/* Gráfico de Variação de Preços */}
         <Card
           id="price-chart-section"
-          className="mt-8 p-6 border-0 shadow-md scroll-mt-4"
+          className="mt-8 p-6 border border-slate-200/60 shadow-xl shadow-slate-200/40 bg-white rounded-3xl scroll-mt-4"
         >
           <div className="flex items-center gap-3 mb-6">
             <div className="bg-blue-100 p-2 rounded-lg">
@@ -4032,7 +4043,7 @@ export default function Home() {
 
         {/* Semanas Excluídas */}
         {deletedWeeks.length > 0 && (
-          <Card className="mt-8 p-6 border-0 shadow-md bg-red-50">
+          <Card className="mt-8 p-6 border border-red-100 shadow-sm bg-red-50/50 rounded-3xl">
             <h3 className="text-lg font-bold text-red-900 mb-4 flex items-center gap-2">
               <Trash2 className="w-5 h-5" /> Semanas Excluídas (
               {deletedWeeks.length})
