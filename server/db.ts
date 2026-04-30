@@ -269,7 +269,7 @@ export async function cleanExpiredSessions(): Promise<void> {
 
   const now = new Date();
   await db.delete(authSessions)
-    .where(eq(authSessions.expiresAt, now)); // drizzle doesn't have lt for timestamp easily, skip for now
+    .where(lt(authSessions.expiresAt, now));
 }
 
 // =====================
