@@ -1,0 +1,1 @@
+ALTER TABLE `flight_prices` DROP INDEX `uidx_flight_prices_week_airline`;
