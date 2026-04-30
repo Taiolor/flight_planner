@@ -1787,12 +1787,12 @@ export default function Home() {
                             return (
                               <Card
                                 key={week.weekNumber}
-                                className={`p-3 sm:p-6 border-0 shadow-md transition-all hover:shadow-lg dark:bg-slate-800 dark:shadow-slate-900/40 ${
+                                className={`p-3 sm:p-6 border-0 shadow-md transition-all hover:shadow-lg dark:bg-slate-800 dark:shadow-slate-900/40 rounded-lg ${
                                   week.isSelected
                                     ? "ring-2 ring-green-500 bg-green-50 dark:bg-green-900/30"
                                     : week.isTicketIssued
                                       ? "bg-blue-50 dark:bg-blue-900/30"
-                                      : "dark:bg-slate-800"
+                                      : "bg-white dark:bg-slate-800"
                                 } ${isCheap ? "border-l-4 border-l-orange-400" : ""}`}
                               >
                                 {/* Cabeçalho da semana - sempre visível, clicável para expandir/recolher */}
