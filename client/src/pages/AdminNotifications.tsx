@@ -20,124 +20,18 @@ import {
   AlertCircle,
   History,
   RefreshCw,
-  Plane,
-  ChevronRight,
-  Timer,
   Wifi,
   WifiOff,
-  FlaskConical,
 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
-
-// Componente para botão de teste do próximo alerta
-function TestNextAlertButton() {
-  const [isLoading, setIsLoading] = useState(false);
-  const sendNextAlertMutation = trpc.adminNotifications.sendNextAlert.useMutation({
-    onSuccess: (result) => {
-      toast.success(`Notificação enviada para ${result.sent} dispositivo(s)!`);
-      setIsLoading(false);
-    },
-    onError: (err) => {
-      toast.error(err.message || "Erro ao enviar notificação.");
-      setIsLoading(false);
-    },
-  });
-
-  const handleTest = async () => {
-    setIsLoading(true);
-    await sendNextAlertMutation.mutateAsync();
-  };
-
-  return (
-    <Button
-      size="sm"
-      variant="outline"
-      className="gap-2 text-blue-600 border-blue-200 hover:bg-blue-50"
-      onClick={handleTest}
-      disabled={isLoading}
-    >
-      <FlaskConical className="w-4 h-4" />
-      {isLoading ? "Enviando..." : "Testar"}
-    </Button>
-  );
-}
-
-const AIRLINE_NAMES: Record<string, string> = {
-  LA: "LATAM", la: "LATAM", latam: "LATAM", LATAM: "LATAM",
-  G3: "Gol", g3: "Gol", gol: "Gol", GOL: "Gol",
-  AD: "Azul", ad: "Azul", azul: "Azul", AZUL: "Azul",
-};
-
-function formatAirline(code: string): string {
-  return AIRLINE_NAMES[code] ?? code;
-}
-
-function formatRelativeTime(isoString: string): string {
-  const target = new Date(isoString);
-  const now = new Date();
-  const diffMs = target.getTime() - now.getTime();
-  const diffMin = Math.round(diffMs / 60000);
-
-  if (diffMin < -60 * 24) {
-    const days = Math.round(Math.abs(diffMin) / (60 * 24));
-    return `há ${days} dia${days !== 1 ? "s" : ""}`;
-  }
-  if (diffMin < -60) {
-    const hours = Math.round(Math.abs(diffMin) / 60);
-    return `há ${hours}h`;
-  }
-  if (diffMin < 0) return `há ${Math.abs(diffMin)}min`;
-  if (diffMin === 0) return "agora";
-  if (diffMin < 60) return `em ${diffMin}min`;
-  if (diffMin < 60 * 24) {
-    const hours = Math.floor(diffMin / 60);
-    const mins = diffMin % 60;
-    return mins > 0 ? `em ${hours}h ${mins}min` : `em ${hours}h`;
-  }
-  const days = Math.floor(diffMin / (60 * 24));
-  const hours = Math.floor((diffMin % (60 * 24)) / 60);
-  return hours > 0 ? `em ${days}d ${hours}h` : `em ${days}d`;
-}
-
-function formatDatetimeBRT(isoString: string): string {
-  try {
-    return new Date(isoString).toLocaleString("pt-BR", {
-      timeZone: "America/Sao_Paulo",
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  } catch {
-    return isoString;
-  }
-}
-
-type AlertStatus = "pending" | "sent" | "past";
-
-function StatusBadge({ status }: { status: AlertStatus }) {
-  if (status === "sent") {
-    return (
-      <Badge className="bg-green-100 text-green-700 border-green-200 gap-1">
-        <CheckCircle2 className="w-3 h-3" /> Enviando
-      </Badge>
-    );
-  }
-  if (status === "past") {
-    return (
-      <Badge className="bg-gray-100 text-gray-500 border-gray-200 gap-1">
-        <History className="w-3 h-3" /> Passado
-      </Badge>
-    );
-  }
-  return (
-    <Badge className="bg-blue-100 text-blue-700 border-blue-200 gap-1">
-      <Timer className="w-3 h-3" /> Aguardando
-    </Badge>
-  );
-}
+import { TestNextAlertButton } from "@/components/admin-notifications/TestNextAlertButton";
+import {
+  formatAirline,
+  formatDatetimeBRT,
+  formatRelativeTime,
+} from "@/components/admin-notifications/utils";
+import { AlertRow } from "@/components/admin-notifications/AlertRow";
 
 export default function AdminNotifications() {
   const [autoRefresh, setAutoRefresh] = useState(false);
@@ -154,10 +48,12 @@ export default function AdminNotifications() {
     );
 
   const sendTestMutation = trpc.push.sendTest.useMutation({
-    onSuccess: (result) => {
-      toast.success(`Notificação de teste enviada para ${result.sent} dispositivo(s).`);
+    onSuccess: result => {
+      toast.success(
+        `Notificação de teste enviada para ${result.sent} dispositivo(s).`
+      );
     },
-    onError: (err) => {
+    onError: err => {
       toast.error(err.message || "Erro ao enviar notificação de teste.");
     },
   });
@@ -190,9 +86,12 @@ export default function AdminNotifications() {
     );
   }
 
-  const pendingAlerts = data?.scheduledAlerts.filter(a => a.status === "pending") ?? [];
-  const sentAlerts = data?.scheduledAlerts.filter(a => a.status === "sent") ?? [];
-  const pastAlerts = data?.scheduledAlerts.filter(a => a.status === "past") ?? [];
+  const pendingAlerts =
+    data?.scheduledAlerts.filter(a => a.status === "pending") ?? [];
+  const sentAlerts =
+    data?.scheduledAlerts.filter(a => a.status === "sent") ?? [];
+  const pastAlerts =
+    data?.scheduledAlerts.filter(a => a.status === "past") ?? [];
   const nextAlert = pendingAlerts[0];
 
   return (
@@ -210,7 +109,9 @@ export default function AdminNotifications() {
             <div className="h-5 w-px bg-gray-200" />
             <div className="flex items-center gap-2">
               <Bell className="w-5 h-5 text-blue-600" />
-              <h1 className="font-semibold text-gray-800">Painel de Notificações</h1>
+              <h1 className="font-semibold text-gray-800">
+                Painel de Notificações
+              </h1>
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -220,8 +121,14 @@ export default function AdminNotifications() {
               onClick={() => setAutoRefresh(v => !v)}
               className={`gap-2 text-sm ${autoRefresh ? "text-green-600" : "text-gray-500"}`}
             >
-              {autoRefresh ? <Wifi className="w-4 h-4" /> : <WifiOff className="w-4 h-4" />}
-              <span className="hidden sm:inline">{autoRefresh ? "Auto" : "Manual"}</span>
+              {autoRefresh ? (
+                <Wifi className="w-4 h-4" />
+              ) : (
+                <WifiOff className="w-4 h-4" />
+              )}
+              <span className="hidden sm:inline">
+                {autoRefresh ? "Auto" : "Manual"}
+              </span>
             </Button>
             <Button
               variant="outline"
@@ -230,7 +137,9 @@ export default function AdminNotifications() {
               disabled={isFetching}
               className="gap-2"
             >
-              <RefreshCw className={`w-4 h-4 ${isFetching ? "animate-spin" : ""}`} />
+              <RefreshCw
+                className={`w-4 h-4 ${isFetching ? "animate-spin" : ""}`}
+              />
               <span className="hidden sm:inline">Atualizar</span>
             </Button>
           </div>
@@ -238,24 +147,39 @@ export default function AdminNotifications() {
       </div>
 
       <div className="max-w-5xl mx-auto px-4 py-6 space-y-6">
-
         {/* Cards de resumo */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           <Card className="p-4 border-l-4 border-l-blue-500">
-            <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">Voos Emitidos</p>
-            <p className="text-2xl font-bold text-gray-800">{data?.totalIssuedFlights ?? 0}</p>
+            <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">
+              Voos Emitidos
+            </p>
+            <p className="text-2xl font-bold text-gray-800">
+              {data?.totalIssuedFlights ?? 0}
+            </p>
           </Card>
           <Card className="p-4 border-l-4 border-l-amber-500">
-            <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">Alertas Pendentes</p>
-            <p className="text-2xl font-bold text-gray-800">{pendingAlerts.length}</p>
+            <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">
+              Alertas Pendentes
+            </p>
+            <p className="text-2xl font-bold text-gray-800">
+              {pendingAlerts.length}
+            </p>
           </Card>
           <Card className="p-4 border-l-4 border-l-green-500">
-            <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">Dispositivos</p>
-            <p className="text-2xl font-bold text-gray-800">{data?.totalSubscriptions ?? 0}</p>
+            <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">
+              Dispositivos
+            </p>
+            <p className="text-2xl font-bold text-gray-800">
+              {data?.totalSubscriptions ?? 0}
+            </p>
           </Card>
           <Card className="p-4 border-l-4 border-l-gray-400">
-            <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">Avisos Ativos</p>
-            <p className="text-2xl font-bold text-gray-800">{data?.avisos.length ?? 0}</p>
+            <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">
+              Avisos Ativos
+            </p>
+            <p className="text-2xl font-bold text-gray-800">
+              {data?.avisos.length ?? 0}
+            </p>
           </Card>
         </div>
 
@@ -268,19 +192,31 @@ export default function AdminNotifications() {
                   <Bell className="w-5 h-5 text-white" />
                 </div>
                 <div>
-                  <p className="text-xs text-blue-600 font-medium uppercase tracking-wide mb-0.5">Próximo Alerta</p>
+                  <p className="text-xs text-blue-600 font-medium uppercase tracking-wide mb-0.5">
+                    Próximo Alerta
+                  </p>
                   <p className="font-semibold text-gray-800">
-                    Semana {nextAlert.weekNumber} — {nextAlert.direction === "ida" ? "✈️ Ida" : "🏠 Volta"}
+                    Semana {nextAlert.weekNumber} —{" "}
+                    {nextAlert.direction === "ida" ? "✈️ Ida" : "🏠 Volta"}
                   </p>
                   <p className="text-sm text-gray-600">
-                    {formatAirline(nextAlert.airline)} {nextAlert.flightNumber} · {nextAlert.avisoLabel} ({nextAlert.avisoMinutes >= 60 ? `${nextAlert.avisoMinutes / 60}h` : `${nextAlert.avisoMinutes}min`} antes)
+                    {formatAirline(nextAlert.airline)} {nextAlert.flightNumber}{" "}
+                    · {nextAlert.avisoLabel} (
+                    {nextAlert.avisoMinutes >= 60
+                      ? `${nextAlert.avisoMinutes / 60}h`
+                      : `${nextAlert.avisoMinutes}min`}{" "}
+                    antes)
                   </p>
                 </div>
               </div>
               <div className="flex flex-col items-end gap-3 flex-shrink-0">
                 <div className="text-right">
-                  <p className="text-lg font-bold text-blue-700">{formatRelativeTime(nextAlert.alertDatetime)}</p>
-                  <p className="text-xs text-gray-500">{formatDatetimeBRT(nextAlert.alertDatetime)}</p>
+                  <p className="text-lg font-bold text-blue-700">
+                    {formatRelativeTime(nextAlert.alertDatetime)}
+                  </p>
+                  <p className="text-xs text-gray-500">
+                    {formatDatetimeBRT(nextAlert.alertDatetime)}
+                  </p>
                 </div>
                 <TestNextAlertButton />
               </div>
@@ -290,7 +226,9 @@ export default function AdminNotifications() {
 
         {/* Configurações ativas */}
         <div>
-          <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">Configurações de Aviso</h2>
+          <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">
+            Configurações de Aviso
+          </h2>
           <div className="grid sm:grid-cols-2 gap-3">
             {data?.avisos.map((aviso, i) => (
               <Card key={i} className="p-4 flex items-center gap-3">
@@ -299,15 +237,21 @@ export default function AdminNotifications() {
                 </div>
                 <div>
                   <p className="font-medium text-gray-800">Aviso {i + 1}</p>
-                  <p className="text-sm text-gray-500">{aviso.label} antes do voo</p>
+                  <p className="text-sm text-gray-500">
+                    {aviso.label} antes do voo
+                  </p>
                 </div>
-                <Badge className="ml-auto bg-indigo-100 text-indigo-700 border-indigo-200">Ativo</Badge>
+                <Badge className="ml-auto bg-indigo-100 text-indigo-700 border-indigo-200">
+                  Ativo
+                </Badge>
               </Card>
             ))}
             {(!data?.avisos || data.avisos.length === 0) && (
               <Card className="p-4 flex items-center gap-3 col-span-2">
                 <BellOff className="w-5 h-5 text-gray-400" />
-                <p className="text-gray-500 text-sm">Nenhum aviso configurado. Configure em Notificações.</p>
+                <p className="text-gray-500 text-sm">
+                  Nenhum aviso configurado. Configure em Notificações.
+                </p>
               </Card>
             )}
           </div>
@@ -320,9 +264,18 @@ export default function AdminNotifications() {
               Alertas Agendados ({data?.scheduledAlerts.length ?? 0})
             </h2>
             <div className="flex gap-2 text-xs text-gray-400">
-              <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-blue-400 inline-block" /> Pendente</span>
-              <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-green-400 inline-block" /> Enviando</span>
-              <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-gray-300 inline-block" /> Passado</span>
+              <span className="flex items-center gap-1">
+                <span className="w-2 h-2 rounded-full bg-blue-400 inline-block" />{" "}
+                Pendente
+              </span>
+              <span className="flex items-center gap-1">
+                <span className="w-2 h-2 rounded-full bg-green-400 inline-block" />{" "}
+                Enviando
+              </span>
+              <span className="flex items-center gap-1">
+                <span className="w-2 h-2 rounded-full bg-gray-300 inline-block" />{" "}
+                Passado
+              </span>
             </div>
           </div>
 
@@ -331,7 +284,9 @@ export default function AdminNotifications() {
               <div className="p-8 text-center">
                 <Bell className="w-10 h-10 text-gray-300 mx-auto mb-3" />
                 <p className="text-gray-500 text-sm">Nenhum alerta agendado.</p>
-                <p className="text-gray-400 text-xs mt-1">Configure os avisos no popup de Notificações.</p>
+                <p className="text-gray-400 text-xs mt-1">
+                  Configure os avisos no popup de Notificações.
+                </p>
               </div>
             ) : (
               <div className="divide-y divide-gray-100">
@@ -339,7 +294,9 @@ export default function AdminNotifications() {
                 {pendingAlerts.length > 0 && (
                   <>
                     <div className="px-4 py-2 bg-blue-50">
-                      <p className="text-xs font-semibold text-blue-600 uppercase tracking-wide">Aguardando envio ({pendingAlerts.length})</p>
+                      <p className="text-xs font-semibold text-blue-600 uppercase tracking-wide">
+                        Aguardando envio ({pendingAlerts.length})
+                      </p>
                     </div>
                     {pendingAlerts.map((alert, i) => (
                       <AlertRow key={`pending-${i}`} alert={alert} />
@@ -351,7 +308,9 @@ export default function AdminNotifications() {
                 {sentAlerts.length > 0 && (
                   <>
                     <div className="px-4 py-2 bg-green-50">
-                      <p className="text-xs font-semibold text-green-600 uppercase tracking-wide">Enviando agora ({sentAlerts.length})</p>
+                      <p className="text-xs font-semibold text-green-600 uppercase tracking-wide">
+                        Enviando agora ({sentAlerts.length})
+                      </p>
                     </div>
                     {sentAlerts.map((alert, i) => (
                       <AlertRow key={`sent-${i}`} alert={alert} />
@@ -363,7 +322,9 @@ export default function AdminNotifications() {
                 {pastAlerts.length > 0 && (
                   <>
                     <div className="px-4 py-2 bg-gray-50">
-                      <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide">Voos passados ({pastAlerts.length})</p>
+                      <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide">
+                        Voos passados ({pastAlerts.length})
+                      </p>
                     </div>
                     {pastAlerts.map((alert, i) => (
                       <AlertRow key={`past-${i}`} alert={alert} />
@@ -381,11 +342,15 @@ export default function AdminNotifications() {
             Dispositivos Registrados ({data?.totalSubscriptions ?? 0})
           </h2>
           <Card className="overflow-hidden">
-            {(!data?.subscriptions || data.subscriptions.length === 0) ? (
+            {!data?.subscriptions || data.subscriptions.length === 0 ? (
               <div className="p-8 text-center">
                 <Smartphone className="w-10 h-10 text-gray-300 mx-auto mb-3" />
-                <p className="text-gray-500 text-sm">Nenhum dispositivo registrado.</p>
-                <p className="text-gray-400 text-xs mt-1">Ative as notificações no botão "Notificações" do cabeçalho.</p>
+                <p className="text-gray-500 text-sm">
+                  Nenhum dispositivo registrado.
+                </p>
+                <p className="text-gray-400 text-xs mt-1">
+                  Ative as notificações no botão "Notificações" do cabeçalho.
+                </p>
               </div>
             ) : (
               <div className="divide-y divide-gray-100">
@@ -395,10 +360,16 @@ export default function AdminNotifications() {
                       <Smartphone className="w-4 h-4 text-gray-500" />
                     </div>
                     <div className="min-w-0 flex-1">
-                      <p className="text-sm text-gray-700 font-medium truncate">{sub.userAgent}</p>
-                      <p className="text-xs text-gray-400 font-mono truncate">{sub.endpoint}</p>
+                      <p className="text-sm text-gray-700 font-medium truncate">
+                        {sub.userAgent}
+                      </p>
+                      <p className="text-xs text-gray-400 font-mono truncate">
+                        {sub.endpoint}
+                      </p>
                     </div>
-                    <Badge className="bg-green-100 text-green-700 border-green-200 flex-shrink-0">Ativo</Badge>
+                    <Badge className="bg-green-100 text-green-700 border-green-200 flex-shrink-0">
+                      Ativo
+                    </Badge>
                   </div>
                 ))}
               </div>
@@ -420,11 +391,15 @@ export default function AdminNotifications() {
             </button>
           </div>
           <Card className="overflow-hidden">
-            {(!logs || logs.length === 0) ? (
+            {!logs || logs.length === 0 ? (
               <div className="p-8 text-center">
                 <History className="w-10 h-10 text-gray-300 mx-auto mb-3" />
-                <p className="text-gray-500 text-sm">Nenhum envio registrado ainda.</p>
-                <p className="text-gray-400 text-xs mt-1">Os próximos envios automáticos e testes aparecerão aqui.</p>
+                <p className="text-gray-500 text-sm">
+                  Nenhum envio registrado ainda.
+                </p>
+                <p className="text-gray-400 text-xs mt-1">
+                  Os próximos envios automáticos e testes aparecerão aqui.
+                </p>
               </div>
             ) : (
               <div className="divide-y divide-gray-100">
@@ -434,8 +409,11 @@ export default function AdminNotifications() {
                   <span className="text-right">Dispositivos</span>
                   <span className="text-right">Enviado em</span>
                 </div>
-                {logs.map((log) => (
-                  <div key={log.id} className="grid grid-cols-[auto_1fr_auto_auto] gap-x-3 items-center px-4 py-3">
+                {logs.map(log => (
+                  <div
+                    key={log.id}
+                    className="grid grid-cols-[auto_1fr_auto_auto] gap-x-3 items-center px-4 py-3"
+                  >
                     {/* Status */}
                     <div className="flex-shrink-0">
                       {log.status === "success" ? (
@@ -455,29 +433,44 @@ export default function AdminNotifications() {
                           </span>
                         ) : (
                           <span className="text-sm font-medium text-gray-800">
-                            Semana {log.weekNumber} — {log.direction === "ida" ? "✈️ Ida" : "🏠 Volta"}
+                            Semana {log.weekNumber} —{" "}
+                            {log.direction === "ida" ? "✈️ Ida" : "🏠 Volta"}
                           </span>
                         )}
-                        <Badge className="text-xs bg-indigo-50 text-indigo-600 border-indigo-100">{log.avisoLabel}</Badge>
+                        <Badge className="text-xs bg-indigo-50 text-indigo-600 border-indigo-100">
+                          {log.avisoLabel}
+                        </Badge>
                       </div>
                       {!log.isTest && (
                         <p className="text-xs text-gray-400 mt-0.5">
                           {log.airline ? formatAirline(log.airline) : ""}
                           {log.flightNumber ? ` ${log.flightNumber}` : ""}
-                          {log.errorMessage ? ` · Erro: ${log.errorMessage}` : ""}
+                          {log.errorMessage
+                            ? ` · Erro: ${log.errorMessage}`
+                            : ""}
                         </p>
                       )}
                     </div>
                     {/* Dispositivos */}
                     <div className="text-right text-sm text-gray-600 flex-shrink-0">
-                      <span className={log.devicesReached === 0 ? "text-red-400" : "text-green-600"}>
+                      <span
+                        className={
+                          log.devicesReached === 0
+                            ? "text-red-400"
+                            : "text-green-600"
+                        }
+                      >
                         {log.devicesReached}
                       </span>
                       <span className="text-gray-400">/{log.totalDevices}</span>
                     </div>
                     {/* Timestamp */}
                     <div className="text-right text-xs text-gray-400 flex-shrink-0">
-                      {formatDatetimeBRT(log.sentAt instanceof Date ? log.sentAt.toISOString() : String(log.sentAt))}
+                      {formatDatetimeBRT(
+                        log.sentAt instanceof Date
+                          ? log.sentAt.toISOString()
+                          : String(log.sentAt)
+                      )}
                     </div>
                   </div>
                 ))}
@@ -488,15 +481,22 @@ export default function AdminNotifications() {
 
         {/* Ações */}
         <div>
-          <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">Ações</h2>
+          <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">
+            Ações
+          </h2>
           <div className="flex flex-wrap gap-3">
             <Button
               onClick={() => sendTestMutation.mutate()}
-              disabled={sendTestMutation.isPending || (data?.totalSubscriptions ?? 0) === 0}
+              disabled={
+                sendTestMutation.isPending ||
+                (data?.totalSubscriptions ?? 0) === 0
+              }
               className="gap-2 bg-blue-600 hover:bg-blue-700"
             >
               <Bell className="w-4 h-4" />
-              {sendTestMutation.isPending ? "Enviando..." : "Enviar Notificação de Teste"}
+              {sendTestMutation.isPending
+                ? "Enviando..."
+                : "Enviar Notificação de Teste"}
             </Button>
             <Link href="/">
               <Button variant="outline" className="gap-2">
@@ -516,71 +516,22 @@ export default function AdminNotifications() {
         {/* Rodapé com hora do servidor */}
         <div className="text-center pb-4">
           <p className="text-xs text-gray-400">
-            Hora do servidor (UTC): {data?.serverTime ? new Date(data.serverTime).toLocaleString("pt-BR", { timeZone: "UTC" }) : "—"}
+            Hora do servidor (UTC):{" "}
+            {data?.serverTime
+              ? new Date(data.serverTime).toLocaleString("pt-BR", {
+                  timeZone: "UTC",
+                })
+              : "—"}
             {" · "}
-            Hora de Brasília: {data?.serverTime ? new Date(data.serverTime).toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" }) : "—"}
+            Hora de Brasília:{" "}
+            {data?.serverTime
+              ? new Date(data.serverTime).toLocaleString("pt-BR", {
+                  timeZone: "America/Sao_Paulo",
+                })
+              : "—"}
           </p>
         </div>
       </div>
     </div>
   );
-}
-
-// Componente de linha de alerta
-function AlertRow({ alert }: { alert: ReturnType<typeof getAlertType> }) {
-  return (
-    <div className={`px-4 py-3 flex items-center gap-3 ${alert.status === "past" ? "opacity-50" : ""}`}>
-      <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
-        alert.direction === "ida" ? "bg-blue-100" : "bg-orange-100"
-      }`}>
-        <Plane className={`w-4 h-4 ${alert.direction === "ida" ? "text-blue-600" : "text-orange-500 rotate-180"}`} />
-      </div>
-      <div className="min-w-0 flex-1">
-        <div className="flex items-center gap-2 flex-wrap">
-          <span className="font-medium text-gray-800 text-sm">Semana {alert.weekNumber}</span>
-          <span className="text-gray-400 text-xs">·</span>
-          <span className="text-gray-600 text-sm">{alert.direction === "ida" ? "Ida" : "Volta"}</span>
-          {alert.airline && (
-            <>
-              <span className="text-gray-400 text-xs">·</span>
-              <span className="text-gray-600 text-sm">{formatAirline(alert.airline)} {alert.flightNumber}</span>
-            </>
-          )}
-          <span className="text-gray-400 text-xs">·</span>
-          <span className="text-xs text-indigo-600 font-medium">{alert.avisoLabel}</span>
-        </div>
-        <div className="flex items-center gap-3 mt-0.5">
-          <span className="text-xs text-gray-400">
-            Alerta: {formatDatetimeBRT(alert.alertDatetime)}
-          </span>
-          <ChevronRight className="w-3 h-3 text-gray-300" />
-          <span className="text-xs text-gray-400">
-            Voo: {formatDatetimeBRT(alert.flightDatetime + (alert.flightDatetime.includes('T') && !alert.flightDatetime.includes('+') ? '-03:00' : ''))}
-          </span>
-        </div>
-      </div>
-      <div className="flex flex-col items-end gap-1 flex-shrink-0">
-        <StatusBadge status={alert.status} />
-        {alert.status === "pending" && (
-          <span className="text-xs text-gray-500">{formatRelativeTime(alert.alertDatetime)}</span>
-        )}
-      </div>
-    </div>
-  );
-}
-
-// Tipo auxiliar para o AlertRow
-function getAlertType() {
-  return {} as {
-    weekNumber: number;
-    direction: "ida" | "volta";
-    avisoLabel: string;
-    avisoMinutes: number;
-    flightDatetime: string;
-    alertDatetime: string;
-    airline: string;
-    flightNumber: string;
-    status: "pending" | "sent" | "past";
-    minutesUntilAlert: number;
-  };
 }
