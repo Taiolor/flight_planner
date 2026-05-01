@@ -17,3 +17,7 @@
 
 **Learning:** Chaining array methods like `.map().filter().reduce()` inside a React `useMemo` hook for data-heavy components (like charts) creates multiple intermediate arrays, leading to excessive garbage collection overhead.
 **Action:** Replace chained array operations with single-pass standard `for` loops in performance-critical areas to minimize array allocations and memory usage.
+
+## 2024-05-01 - O(n) Date Parsing in React Render Loop
+**Learning:** Found an issue where the `getFeriadosDaSemana` function was parsing string dates inside a loop using `parseDate`, which splits strings and allocates `Date` objects repeatedly during a React render cycle. `getFeriadosDaSemana` itself was inside a render loop map.
+**Action:** When working with static or relatively stable data (like a year's worth of holiday dates), pre-compute the parsed timestamps once outside the hot path (or render loop) instead of running O(n) array string operations on every invocation.
