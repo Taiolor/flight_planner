@@ -272,7 +272,7 @@ function FlightPopup({
           </div>
           <button
             onClick={onClose}
-            className="text-white/70 hover:text-white transition-colors"
+            className="text-white/70 hover:text-white transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50 rounded-sm"
             title="Fechar"
             aria-label="Fechar calendário"
           >
@@ -584,7 +584,7 @@ export default function CalendarView() {
       {/* Cabeçalho */}
       <header className="bg-blue-700 text-white px-4 py-3 flex items-center gap-3 shadow-md sticky top-0 z-10">
         <Link href="/">
-          <button className="flex items-center gap-1.5 text-white/80 hover:text-white transition-colors text-sm font-medium">
+          <button className="flex items-center gap-1.5 text-white/80 hover:text-white transition-colors text-sm font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50 rounded-sm">
             <ArrowLeft className="w-4 h-4" />
             Voltar
           </button>

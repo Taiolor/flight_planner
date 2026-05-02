@@ -9,3 +9,7 @@
 ## 2025-04-29 - [Added Clear Filters Action to Empty State]
 **Learning:** Adding a "Clear Filters" button in an empty state when filters are overly restrictive significantly improves user recovery compared to forcing them to manually reset multiple filter inputs.
 **Action:** Always include a mechanism to clear active filters directly from the empty state view to enhance the usability of search and filter interfaces.
+
+## 2025-05-02 - Missing Focus Visible Styles on Raw Buttons
+**Learning:** Found multiple instances where raw `<button>` elements (not using the project's standard `Button` component) lacked proper focus states (`focus-visible:ring-2`), making keyboard navigation difficult to track.
+**Action:** Always ensure custom or raw buttons include standard Tailwind focus utilities (like `focus-visible:ring-2 focus-visible:ring-blue-500` or `focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 rounded-sm`) to maintain consistent keyboard accessibility.
