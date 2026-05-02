@@ -387,7 +387,7 @@ export default function AdminNotifications() {
             </h2>
             <button
               onClick={() => refetchLogs()}
-              className="text-xs text-gray-400 hover:text-gray-600 flex items-center gap-1"
+              className="text-xs text-gray-400 hover:text-gray-600 flex items-center gap-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm"
             >
               <RefreshCw className="w-3 h-3" /> Atualizar
             </button>

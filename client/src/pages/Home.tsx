@@ -1127,12 +1127,17 @@ export default function Home() {
         <div
           className="absolute inset-0 z-0 bg-cover bg-center transition-all duration-300 dark:bg-slate-900"
           style={{
-            backgroundImage: theme === 'dark' ? 'none' : "url('https://images.unsplash.com/photo-1436491865332-7a61a109cc05?q=80&w=2074&auto=format&fit=crop')",
+            backgroundImage:
+              theme === "dark"
+                ? "none"
+                : "url('https://images.unsplash.com/photo-1436491865332-7a61a109cc05?q=80&w=2074&auto=format&fit=crop')",
           }}
         >
-          <div className={`absolute inset-0 backdrop-blur-[2px] transition-all duration-300 ${
-            theme === 'dark' ? 'bg-slate-900/80' : 'bg-black/40'
-          }`}></div>
+          <div
+            className={`absolute inset-0 backdrop-blur-[2px] transition-all duration-300 ${
+              theme === "dark" ? "bg-slate-900/80" : "bg-black/40"
+            }`}
+          ></div>
         </div>
 
         <div className="container relative z-10 py-4 sm:py-8">
@@ -1157,12 +1162,12 @@ export default function Home() {
               <Button
                 size="sm"
                 variant="outline"
-                title={theme === 'dark' ? 'Modo claro' : 'Modo escuro'}
-                aria-label={theme === 'dark' ? 'Modo claro' : 'Modo escuro'}
+                title={theme === "dark" ? "Modo claro" : "Modo escuro"}
+                aria-label={theme === "dark" ? "Modo claro" : "Modo escuro"}
                 className="border-white/40 text-white hover:bg-white/20 backdrop-blur-sm bg-white/10"
                 onClick={toggleTheme}
               >
-                {theme === 'dark' ? (
+                {theme === "dark" ? (
                   <Sun className="w-4 h-4" />
                 ) : (
                   <Moon className="w-4 h-4" />
@@ -1170,7 +1175,10 @@ export default function Home() {
               </Button>
 
               {/* Seletor de Presets de Cores */}
-              <Select value={colorPreset} onValueChange={(value) => setColorPreset(value as ColorPreset)}>
+              <Select
+                value={colorPreset}
+                onValueChange={value => setColorPreset(value as ColorPreset)}
+              >
                 <SelectTrigger className="w-auto border-white/40 text-white hover:bg-white/20 backdrop-blur-sm bg-white/10">
                   <Sparkles className="w-4 h-4 mr-2" />
                   <SelectValue />
@@ -1386,23 +1394,37 @@ export default function Home() {
               <p className="text-blue-100 text-xs uppercase tracking-wider mb-3">
                 Gasto por Mês (R$)
               </p>
-              <ResponsiveContainer width="100%" height={160} className="chart-container">
+              <ResponsiveContainer
+                width="100%"
+                height={160}
+                className="chart-container"
+              >
                 <BarChart
                   data={annualSummaryData}
                   margin={{ top: 0, right: 8, left: 0, bottom: 0 }}
                 >
                   <CartesianGrid
                     strokeDasharray="3 3"
-                    stroke={theme === 'dark' ? "rgba(100,116,139,0.2)" : "rgba(255,255,255,0.1)"}
+                    stroke={
+                      theme === "dark"
+                        ? "rgba(100,116,139,0.2)"
+                        : "rgba(255,255,255,0.1)"
+                    }
                   />
                   <XAxis
                     dataKey="mes"
-                    tick={{ fill: theme === 'dark' ? "#94a3b8" : "#e0f2fe", fontSize: 12 }}
+                    tick={{
+                      fill: theme === "dark" ? "#94a3b8" : "#e0f2fe",
+                      fontSize: 12,
+                    }}
                     axisLine={false}
                     tickLine={false}
                   />
                   <YAxis
-                    tick={{ fill: theme === 'dark' ? "#94a3b8" : "#e0f2fe", fontSize: 11 }}
+                    tick={{
+                      fill: theme === "dark" ? "#94a3b8" : "#e0f2fe",
+                      fontSize: 11,
+                    }}
                     axisLine={false}
                     tickLine={false}
                     tickFormatter={v =>
@@ -1411,8 +1433,8 @@ export default function Home() {
                   />
                   <Tooltip
                     contentStyle={{
-                      background: theme === 'dark' ? "#1e293b" : "#1e3a5f",
-                      border: theme === 'dark' ? "1px solid #475569" : "none",
+                      background: theme === "dark" ? "#1e293b" : "#1e3a5f",
+                      border: theme === "dark" ? "1px solid #475569" : "none",
                       borderRadius: 8,
                       color: "#fff",
                     }}
@@ -1422,15 +1444,18 @@ export default function Home() {
                         : `R$ ${value.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`,
                       "Total Emitido",
                     ]}
-                    labelStyle={{ color: theme === 'dark' ? "#cbd5e1" : "#e0f2fe", fontWeight: 600 }}
+                    labelStyle={{
+                      color: theme === "dark" ? "#cbd5e1" : "#e0f2fe",
+                      fontWeight: 600,
+                    }}
                   />
                   <Bar
                     dataKey="total"
-                    fill={theme === 'dark' ? "#10b981" : "#34d399"}
+                    fill={theme === "dark" ? "#10b981" : "#34d399"}
                     radius={[4, 4, 0, 0]}
                     label={{
                       position: "top",
-                      fill: theme === 'dark' ? "#22d3ee" : "#06b6d4",
+                      fill: theme === "dark" ? "#22d3ee" : "#06b6d4",
                       fontSize: 10,
                       formatter: (v: number) =>
                         v > 0
@@ -1686,7 +1711,7 @@ export default function Home() {
                       {/* Cabeçalho do Mês */}
                       <button
                         onClick={() => toggleMonth(monthKey)}
-                        className={`w-full flex items-center justify-between px-3 sm:px-6 py-3 sm:py-4 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-inset rounded-t-xl ${
+                        className={`w-full flex items-center justify-between px-3 sm:px-6 py-3 sm:py-4 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-t-xl ${
                           isOpen
                             ? "bg-blue-600 text-white dark:bg-blue-700"
                             : "bg-white hover:bg-slate-50 text-slate-900 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-100"
@@ -1725,7 +1750,9 @@ export default function Home() {
                         <div className="flex items-center gap-1 sm:gap-4 text-xs sm:text-sm flex-wrap justify-end">
                           <span
                             className={
-                              isOpen ? "text-blue-100" : "text-slate-500 dark:text-slate-400"
+                              isOpen
+                                ? "text-blue-100"
+                                : "text-slate-500 dark:text-slate-400"
                             }
                           >
                             {monthWeeks.length} semana
@@ -1988,8 +2015,8 @@ export default function Home() {
                                             {/* Ida */}
                                             <div className="flex items-center gap-2 flex-wrap">
                                               <Calendar className="w-4 h-4 text-slate-400 flex-shrink-0" />
-                                             <span className="text-sm font-medium text-slate-600 dark:text-slate-300">
-                                                 Ida:
+                                              <span className="text-sm font-medium text-slate-600 dark:text-slate-300">
+                                                Ida:
                                               </span>
                                               <input
                                                 type="date"
@@ -2025,8 +2052,8 @@ export default function Home() {
                                             {/* Retorno */}
                                             <div className="flex items-center gap-2 flex-wrap">
                                               <Calendar className="w-4 h-4 text-slate-400 flex-shrink-0" />
-                                             <span className="text-sm font-medium text-slate-600 dark:text-slate-300">
-                                                 Retorno:
+                                              <span className="text-sm font-medium text-slate-600 dark:text-slate-300">
+                                                Retorno:
                                               </span>
                                               <input
                                                 type="date"
@@ -2136,7 +2163,7 @@ export default function Home() {
                                       onClick={() =>
                                         toggleWeekCard(week.weekNumber)
                                       }
-                                      className="focus:outline-none rounded-full p-1 hover:bg-slate-100 transition-colors"
+                                      className="focus:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-full p-1 hover:bg-slate-100 transition-colors"
                                       title={
                                         expandedWeekCards.has(week.weekNumber)
                                           ? "Recolher"
@@ -2256,8 +2283,8 @@ export default function Home() {
                                         <div className="flex-1 flex flex-col gap-3">
                                           {/* Seletor tipo de bilhete */}
                                           <div className="flex items-center gap-2">
-                                               <span className="text-[10px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">
-                                                 Tipo de Bilhete
+                                            <span className="text-[10px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">
+                                              Tipo de Bilhete
                                             </span>
                                             <div className="flex rounded-lg overflow-hidden border border-slate-200 shadow-sm">
                                               <button
@@ -2269,7 +2296,7 @@ export default function Home() {
                                                       "roundtrip",
                                                   }))
                                                 }
-                                                className={`px-3 py-1 text-xs font-semibold transition-colors ${
+                                                className={`px-3 py-1 text-xs font-semibold transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
                                                   (tempTicketType[
                                                     week.weekNumber
                                                   ] ?? "roundtrip") ===
@@ -2288,7 +2315,7 @@ export default function Home() {
                                                     [week.weekNumber]: "oneway",
                                                   }))
                                                 }
-                                                className={`px-3 py-1 text-xs font-semibold transition-colors border-l border-slate-200 ${
+                                                className={`px-3 py-1 text-xs font-semibold transition-colors border-l border-slate-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
                                                   (tempTicketType[
                                                     week.weekNumber
                                                   ] ?? "roundtrip") === "oneway"
@@ -2314,9 +2341,9 @@ export default function Home() {
                                             <div className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-700/50 overflow-hidden shadow-sm dark:shadow-slate-900/40">
                                               <div className="bg-slate-100/50 dark:bg-slate-700 border-b border-slate-200 dark:border-slate-600 px-4 py-2 flex items-center gap-2">
                                                 <Plane className="w-4 h-4 text-slate-400" />
-                                                 <span className="text-[11px] font-bold text-slate-600 dark:text-slate-200 uppercase tracking-widest">
-                                                   Ida
-                                                 </span>
+                                                <span className="text-[11px] font-bold text-slate-600 dark:text-slate-200 uppercase tracking-widest">
+                                                  Ida
+                                                </span>
                                               </div>
                                               <div className="p-3 flex flex-col gap-2.5">
                                                 <div className="flex flex-col gap-1">
@@ -2385,7 +2412,7 @@ export default function Home() {
                                                             })
                                                           )
                                                         }
-                                                        className="flex items-center gap-0.5 text-[10px] font-medium text-blue-500 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded px-1.5 py-0.5 transition-colors"
+                                                        className="flex items-center gap-0.5 text-[10px] font-medium text-blue-500 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded px-1.5 py-0.5 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                                                       >
                                                         <svg
                                                           className="w-3 h-3"
@@ -2731,7 +2758,7 @@ export default function Home() {
                                                             })
                                                           )
                                                         }
-                                                        className="flex items-center gap-0.5 text-[10px] font-medium text-blue-500 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded px-1.5 py-0.5 transition-colors"
+                                                        className="flex items-center gap-0.5 text-[10px] font-medium text-blue-500 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded px-1.5 py-0.5 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                                                       >
                                                         <svg
                                                           className="w-3 h-3"
@@ -2781,8 +2808,8 @@ export default function Home() {
                                                 <div className="bg-slate-100/50 dark:bg-slate-700 border-b border-slate-200 dark:border-slate-600 px-4 py-2 flex items-center gap-2">
                                                   <Plane className="w-4 h-4 text-slate-400 rotate-180" />
                                                   <span className="text-[11px] font-bold text-slate-600 dark:text-slate-200 uppercase tracking-widest">
-                                                      Volta
-                                                   </span>
+                                                    Volta
+                                                  </span>
                                                 </div>
                                                 <div className="p-3 flex flex-col gap-2.5">
                                                   <div className="flex flex-col gap-1">
@@ -3185,7 +3212,7 @@ export default function Home() {
                                             disabled={
                                               savingTicket[week.weekNumber]
                                             }
-                                            className="w-full py-3 rounded-2xl bg-slate-900 text-white text-sm font-semibold shadow-lg hover:bg-slate-800 active:scale-[0.98] transition-all flex items-center justify-center gap-2 disabled:opacity-60"
+                                            className="w-full py-3 rounded-2xl bg-slate-900 text-white text-sm font-semibold shadow-lg hover:bg-slate-800 active:scale-[0.98] transition-all flex items-center justify-center gap-2 disabled:opacity-60 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                                             onClick={() => {
                                               if (!isAuthenticated) {
                                                 setShowLoginModal(true);
@@ -3613,7 +3640,7 @@ export default function Home() {
                                                           calendarDurationMinutes
                                                         )
                                                       }
-                                                      className="w-full flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg bg-slate-100 hover:bg-slate-200 transition-colors text-[11px] font-medium text-slate-700 border border-slate-200"
+                                                      className="w-full flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg bg-slate-100 hover:bg-slate-200 transition-colors text-[11px] font-medium text-slate-700 border border-slate-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                                                     >
                                                       <Download className="w-3.5 h-3.5" />
                                                       Baixar .ics (Apple
@@ -3871,7 +3898,7 @@ export default function Home() {
               <div className="flex gap-2">
                 <button
                   onClick={selectAllChartAirlines}
-                  className="text-xs text-blue-600 hover:text-blue-800 font-medium px-2 py-1 rounded hover:bg-blue-50 transition-colors"
+                  className="text-xs text-blue-600 hover:text-blue-800 font-medium px-2 py-1 rounded hover:bg-blue-50 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   title="Selecionar todas as empresas"
                   aria-label="Selecionar todas as empresas"
                 >
@@ -3880,7 +3907,7 @@ export default function Home() {
                 <span className="text-slate-300">|</span>
                 <button
                   onClick={clearChartAirlines}
-                  className="text-xs text-slate-500 hover:text-slate-700 font-medium px-2 py-1 rounded hover:bg-slate-100 transition-colors"
+                  className="text-xs text-slate-500 hover:text-slate-700 font-medium px-2 py-1 rounded hover:bg-slate-100 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   title="Limpar seleção de empresas"
                   aria-label="Limpar seleção de empresas"
                 >
@@ -3904,7 +3931,7 @@ export default function Home() {
                     key={airline.id}
                     onClick={() => toggleChartAirline(airline.id)}
                     aria-pressed={isSelected}
-                    className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium border-2 transition-all ${
+                    className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium border-2 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
                       isSelected
                         ? "border-transparent text-white shadow-sm"
                         : "border-slate-300 text-slate-500 bg-white hover:border-slate-400"
@@ -3950,34 +3977,57 @@ export default function Home() {
                 <h3 className="text-sm font-semibold text-slate-600 mb-4 uppercase tracking-wide">
                   Preço Médio por Companhia (R$)
                 </h3>
-                <ResponsiveContainer width="100%" height={320} className="chart-container">
+                <ResponsiveContainer
+                  width="100%"
+                  height={320}
+                  className="chart-container"
+                >
                   <BarChart
                     data={chartData}
                     margin={{ top: 5, right: 20, left: 10, bottom: 5 }}
                   >
-                    <CartesianGrid strokeDasharray="3 3" stroke={theme === 'dark' ? "#334155" : "#f1f5f9"} />
+                    <CartesianGrid
+                      strokeDasharray="3 3"
+                      stroke={theme === "dark" ? "#334155" : "#f1f5f9"}
+                    />
                     <XAxis
                       dataKey="mes"
-                      tick={{ fontSize: 12, fill: theme === 'dark' ? "#94a3b8" : "#64748b" }}
+                      tick={{
+                        fontSize: 12,
+                        fill: theme === "dark" ? "#94a3b8" : "#64748b",
+                      }}
                     />
                     <YAxis
-                      tick={{ fontSize: 12, fill: theme === 'dark' ? "#94a3b8" : "#64748b" }}
+                      tick={{
+                        fontSize: 12,
+                        fill: theme === "dark" ? "#94a3b8" : "#64748b",
+                      }}
                       tickFormatter={v => (hideValues ? "•••" : `R$${v}`)}
                     />
                     <Tooltip
                       contentStyle={{
-                        background: theme === 'dark' ? "#1e293b" : "#ffffff",
-                        border: theme === 'dark' ? "1px solid #475569" : "1px solid #e2e8f0",
+                        background: theme === "dark" ? "#1e293b" : "#ffffff",
+                        border:
+                          theme === "dark"
+                            ? "1px solid #475569"
+                            : "1px solid #e2e8f0",
                         borderRadius: 8,
-                        color: theme === 'dark' ? "#f1f5f9" : "#1e293b",
+                        color: theme === "dark" ? "#f1f5f9" : "#1e293b",
                       }}
                       formatter={(value: number) => [
                         hideValues ? "••••" : `R$ ${value.toFixed(2)}`,
                         "",
                       ]}
-                      labelStyle={{ color: theme === 'dark' ? "#cbd5e1" : "#64748b", fontWeight: 600 }}
+                      labelStyle={{
+                        color: theme === "dark" ? "#cbd5e1" : "#64748b",
+                        fontWeight: 600,
+                      }}
                     />
-                    <Legend wrapperStyle={{ color: theme === 'dark' ? "#cbd5e1" : "#64748b" }} />
+                    <Legend
+                      wrapperStyle={{
+                        color: theme === "dark" ? "#cbd5e1" : "#64748b",
+                      }}
+                    />
                     {chartSelectedAirlines.has("kayak") && (
                       <Bar
                         dataKey="kayak"
@@ -4035,34 +4085,57 @@ export default function Home() {
                 <h3 className="text-sm font-semibold text-slate-600 mb-4 uppercase tracking-wide">
                   Menor Preço vs. Preço Médio por Mês (R$)
                 </h3>
-                <ResponsiveContainer width="100%" height={260} className="chart-container">
+                <ResponsiveContainer
+                  width="100%"
+                  height={260}
+                  className="chart-container"
+                >
                   <LineChart
                     data={chartData}
                     margin={{ top: 5, right: 20, left: 10, bottom: 5 }}
                   >
-                    <CartesianGrid strokeDasharray="3 3" stroke={theme === 'dark' ? "#334155" : "#f1f5f9"} />
+                    <CartesianGrid
+                      strokeDasharray="3 3"
+                      stroke={theme === "dark" ? "#334155" : "#f1f5f9"}
+                    />
                     <XAxis
                       dataKey="mes"
-                      tick={{ fontSize: 12, fill: theme === 'dark' ? "#94a3b8" : "#64748b" }}
+                      tick={{
+                        fontSize: 12,
+                        fill: theme === "dark" ? "#94a3b8" : "#64748b",
+                      }}
                     />
                     <YAxis
-                      tick={{ fontSize: 12, fill: theme === 'dark' ? "#94a3b8" : "#64748b" }}
+                      tick={{
+                        fontSize: 12,
+                        fill: theme === "dark" ? "#94a3b8" : "#64748b",
+                      }}
                       tickFormatter={v => (hideValues ? "•••" : `R$${v}`)}
                     />
                     <Tooltip
                       contentStyle={{
-                        background: theme === 'dark' ? "#1e293b" : "#ffffff",
-                        border: theme === 'dark' ? "1px solid #475569" : "1px solid #e2e8f0",
+                        background: theme === "dark" ? "#1e293b" : "#ffffff",
+                        border:
+                          theme === "dark"
+                            ? "1px solid #475569"
+                            : "1px solid #e2e8f0",
                         borderRadius: 8,
-                        color: theme === 'dark' ? "#f1f5f9" : "#1e293b",
+                        color: theme === "dark" ? "#f1f5f9" : "#1e293b",
                       }}
                       formatter={(value: number) => [
                         hideValues ? "••••" : `R$ ${value.toFixed(2)}`,
                         "",
                       ]}
-                      labelStyle={{ color: theme === 'dark' ? "#cbd5e1" : "#64748b", fontWeight: 600 }}
+                      labelStyle={{
+                        color: theme === "dark" ? "#cbd5e1" : "#64748b",
+                        fontWeight: 600,
+                      }}
                     />
-                    <Legend wrapperStyle={{ color: theme === 'dark' ? "#cbd5e1" : "#64748b" }} />
+                    <Legend
+                      wrapperStyle={{
+                        color: theme === "dark" ? "#cbd5e1" : "#64748b",
+                      }}
+                    />
                     <Line
                       type="monotone"
                       dataKey="menor"
