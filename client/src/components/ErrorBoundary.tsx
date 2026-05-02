@@ -35,7 +35,9 @@ class ErrorBoundary extends Component<Props, State> {
 
             <div className="p-4 w-full rounded bg-muted overflow-auto mb-6">
               <pre className="text-sm text-muted-foreground whitespace-break-spaces">
-                {this.state.error?.stack}
+                {import.meta.env.DEV
+                  ? this.state.error?.stack
+                  : "A problem occurred while loading this view. Please try reloading the page."}
               </pre>
             </div>
 
