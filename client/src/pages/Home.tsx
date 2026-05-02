@@ -1715,7 +1715,7 @@ export default function Home() {
                               className={`text-xs px-2 py-0.5 rounded-full font-semibold ${
                                 isOpen
                                   ? "bg-white/20 text-white"
-                                  : "bg-orange-100 text-orange-700"
+                                  : "bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-200"
                               }`}
                             >
                               🎉 Feriado
@@ -2014,8 +2014,8 @@ export default function Home() {
                                                   className={`text-xs px-2 py-0.5 rounded-full font-semibold ${
                                                     f.feriado.tipo ===
                                                     "nacional"
-                                                      ? "bg-red-100 text-red-700"
-                                                      : "bg-amber-100 text-amber-700"
+                                                      ? "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-200"
+                                                      : "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-200"
                                                   }`}
                                                 >
                                                   🎉 {f.feriado.nome}
@@ -2051,8 +2051,8 @@ export default function Home() {
                                                   className={`text-xs px-2 py-0.5 rounded-full font-semibold ${
                                                     f.feriado.tipo ===
                                                     "nacional"
-                                                      ? "bg-red-100 text-red-700"
-                                                      : "bg-amber-100 text-amber-700"
+                                                      ? "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-200"
+                                                      : "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-200"
                                                   }`}
                                                 >
                                                   🎉 {f.feriado.nome}
@@ -2061,7 +2061,7 @@ export default function Home() {
                                             </div>
                                             {feriadosIntervalo.length > 0 && (
                                               <p className="text-xs text-slate-500 flex items-center gap-1 flex-wrap pl-5">
-                                                <span className="text-orange-600 font-semibold">
+                                                <span className="text-orange-600 dark:text-orange-300 font-semibold">
                                                   ⚠️ Feriados no período:
                                                 </span>
                                                 {feriadosIntervalo.map(f => (
@@ -2070,8 +2070,8 @@ export default function Home() {
                                                     className={`px-2 py-0.5 rounded-full ${
                                                       f.feriado.tipo ===
                                                       "nacional"
-                                                        ? "bg-red-100 text-red-700"
-                                                        : "bg-amber-100 text-amber-700"
+                                                        ? "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-200"
+                                                        : "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-200"
                                                     }`}
                                                   >
                                                     {f.feriado.data.slice(0, 5)}{" "}
