@@ -17,3 +17,8 @@
 
 **Learning:** Chaining array methods like `.map().filter().reduce()` inside a React `useMemo` hook for data-heavy components (like charts) creates multiple intermediate arrays, leading to excessive garbage collection overhead.
 **Action:** Replace chained array operations with single-pass standard `for` loops in performance-critical areas to minimize array allocations and memory usage.
+
+## 2024-05-18 - Avoid Date Object Instantiation in Hot Loops
+
+**Learning:** Parsing date strings (e.g., `DD/MM/YYYY`) into JS `Date` objects inside loops (like verifying if a date is a holiday within a list of weeks) is highly inefficient and creates significant garbage collection overhead.
+**Action:** Convert the date strings directly to an integer format (e.g., `YYYYMMDD`) using basic string splitting and multiplication. Pre-compute these integer values for static lists (like known holidays) to allow lightning-fast O(1) mathematical comparisons during render loops.
