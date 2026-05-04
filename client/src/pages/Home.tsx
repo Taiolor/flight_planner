@@ -1123,16 +1123,23 @@ export default function Home() {
         className="relative shadow-xl sticky top-0 z-50 overflow-hidden"
         style={{ paddingTop: "env(safe-area-inset-top)" }}
       >
-        {/* Background Image with Overlay */}
+        {/* Background with Preset Gradient */}
         <div
-          className="absolute inset-0 z-0 bg-cover bg-center transition-all duration-300 dark:bg-slate-900"
+          className="absolute inset-0 z-0 bg-cover bg-center transition-all duration-500"
           style={{
-            backgroundImage: theme === 'dark' ? 'none' : "url('https://images.unsplash.com/photo-1436491865332-7a61a109cc05?q=80&w=2074&auto=format&fit=crop')",
+            backgroundImage: theme === 'dark'
+              ? `linear-gradient(135deg, var(--preset-header-from, #0f172a) 0%, var(--preset-header-to, #1e3a5f) 100%)`
+              : "url('https://images.unsplash.com/photo-1436491865332-7a61a109cc05?q=80&w=2074&auto=format&fit=crop')",
           }}
         >
-          <div className={`absolute inset-0 backdrop-blur-[2px] transition-all duration-300 ${
-            theme === 'dark' ? 'bg-slate-900/80' : 'bg-black/40'
-          }`}></div>
+          <div
+            className="absolute inset-0 backdrop-blur-[2px] transition-all duration-500"
+            style={{
+              background: theme === 'dark'
+                ? `var(--preset-header-overlay, rgba(15,23,42,0.75))`
+                : `linear-gradient(135deg, var(--preset-header-overlay, rgba(15,23,42,0.75)) 0%, rgba(0,0,0,0.3) 100%)`,
+            }}
+          ></div>
         </div>
 
         <div className="container relative z-10 py-4 sm:py-8">
