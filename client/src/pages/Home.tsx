@@ -1127,17 +1127,19 @@ export default function Home() {
         <div
           className="absolute inset-0 z-0 bg-cover bg-center transition-all duration-500"
           style={{
-            backgroundImage: theme === 'dark'
-              ? `linear-gradient(135deg, var(--preset-header-from, #0f172a) 0%, var(--preset-header-to, #1e3a5f) 100%)`
-              : "url('https://images.unsplash.com/photo-1436491865332-7a61a109cc05?q=80&w=2074&auto=format&fit=crop')",
+            backgroundImage:
+              theme === "dark"
+                ? `linear-gradient(135deg, var(--preset-header-from, #0f172a) 0%, var(--preset-header-to, #1e3a5f) 100%)`
+                : "url('https://images.unsplash.com/photo-1436491865332-7a61a109cc05?q=80&w=2074&auto=format&fit=crop')",
           }}
         >
           <div
             className="absolute inset-0 backdrop-blur-[2px] transition-all duration-500"
             style={{
-              background: theme === 'dark'
-                ? `var(--preset-header-overlay, rgba(15,23,42,0.75))`
-                : `linear-gradient(135deg, var(--preset-header-overlay, rgba(15,23,42,0.75)) 0%, rgba(0,0,0,0.3) 100%)`,
+              background:
+                theme === "dark"
+                  ? `var(--preset-header-overlay, rgba(15,23,42,0.75))`
+                  : `linear-gradient(135deg, var(--preset-header-overlay, rgba(15,23,42,0.75)) 0%, rgba(0,0,0,0.3) 100%)`,
             }}
           ></div>
         </div>
@@ -1164,12 +1166,12 @@ export default function Home() {
               <Button
                 size="sm"
                 variant="outline"
-                title={theme === 'dark' ? 'Modo claro' : 'Modo escuro'}
-                aria-label={theme === 'dark' ? 'Modo claro' : 'Modo escuro'}
+                title={theme === "dark" ? "Modo claro" : "Modo escuro"}
+                aria-label={theme === "dark" ? "Modo claro" : "Modo escuro"}
                 className="border-white/40 text-white hover:bg-white/20 backdrop-blur-sm bg-white/10"
                 onClick={toggleTheme}
               >
-                {theme === 'dark' ? (
+                {theme === "dark" ? (
                   <Sun className="w-4 h-4" />
                 ) : (
                   <Moon className="w-4 h-4" />
@@ -1177,7 +1179,10 @@ export default function Home() {
               </Button>
 
               {/* Seletor de Presets de Cores */}
-              <Select value={colorPreset} onValueChange={(value) => setColorPreset(value as ColorPreset)}>
+              <Select
+                value={colorPreset}
+                onValueChange={value => setColorPreset(value as ColorPreset)}
+              >
                 <SelectTrigger className="w-auto border-white/40 text-white hover:bg-white/20 backdrop-blur-sm bg-white/10">
                   <Sparkles className="w-4 h-4 mr-2" />
                   <SelectValue />
@@ -1393,23 +1398,37 @@ export default function Home() {
               <p className="text-blue-100 text-xs uppercase tracking-wider mb-3">
                 Gasto por Mês (R$)
               </p>
-              <ResponsiveContainer width="100%" height={160} className="chart-container">
+              <ResponsiveContainer
+                width="100%"
+                height={160}
+                className="chart-container"
+              >
                 <BarChart
                   data={annualSummaryData}
                   margin={{ top: 0, right: 8, left: 0, bottom: 0 }}
                 >
                   <CartesianGrid
                     strokeDasharray="3 3"
-                    stroke={theme === 'dark' ? "rgba(100,116,139,0.2)" : "rgba(255,255,255,0.1)"}
+                    stroke={
+                      theme === "dark"
+                        ? "rgba(100,116,139,0.2)"
+                        : "rgba(255,255,255,0.1)"
+                    }
                   />
                   <XAxis
                     dataKey="mes"
-                    tick={{ fill: theme === 'dark' ? "#94a3b8" : "#e0f2fe", fontSize: 12 }}
+                    tick={{
+                      fill: theme === "dark" ? "#94a3b8" : "#e0f2fe",
+                      fontSize: 12,
+                    }}
                     axisLine={false}
                     tickLine={false}
                   />
                   <YAxis
-                    tick={{ fill: theme === 'dark' ? "#94a3b8" : "#e0f2fe", fontSize: 11 }}
+                    tick={{
+                      fill: theme === "dark" ? "#94a3b8" : "#e0f2fe",
+                      fontSize: 11,
+                    }}
                     axisLine={false}
                     tickLine={false}
                     tickFormatter={v =>
@@ -1418,8 +1437,8 @@ export default function Home() {
                   />
                   <Tooltip
                     contentStyle={{
-                      background: theme === 'dark' ? "#1e293b" : "#1e3a5f",
-                      border: theme === 'dark' ? "1px solid #475569" : "none",
+                      background: theme === "dark" ? "#1e293b" : "#1e3a5f",
+                      border: theme === "dark" ? "1px solid #475569" : "none",
                       borderRadius: 8,
                       color: "#fff",
                     }}
@@ -1429,15 +1448,18 @@ export default function Home() {
                         : `R$ ${value.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`,
                       "Total Emitido",
                     ]}
-                    labelStyle={{ color: theme === 'dark' ? "#cbd5e1" : "#e0f2fe", fontWeight: 600 }}
+                    labelStyle={{
+                      color: theme === "dark" ? "#cbd5e1" : "#e0f2fe",
+                      fontWeight: 600,
+                    }}
                   />
                   <Bar
                     dataKey="total"
-                    fill={theme === 'dark' ? "#10b981" : "#34d399"}
+                    fill={theme === "dark" ? "#10b981" : "#34d399"}
                     radius={[4, 4, 0, 0]}
                     label={{
                       position: "top",
-                      fill: theme === 'dark' ? "#22d3ee" : "#06b6d4",
+                      fill: theme === "dark" ? "#22d3ee" : "#06b6d4",
                       fontSize: 10,
                       formatter: (v: number) =>
                         v > 0
@@ -1732,7 +1754,9 @@ export default function Home() {
                         <div className="flex items-center gap-1 sm:gap-4 text-xs sm:text-sm flex-wrap justify-end">
                           <span
                             className={
-                              isOpen ? "text-blue-100" : "text-slate-500 dark:text-slate-400"
+                              isOpen
+                                ? "text-blue-100"
+                                : "text-slate-500 dark:text-slate-400"
                             }
                           >
                             {monthWeeks.length} semana
@@ -1995,8 +2019,8 @@ export default function Home() {
                                             {/* Ida */}
                                             <div className="flex items-center gap-2 flex-wrap">
                                               <Calendar className="w-4 h-4 text-slate-400 flex-shrink-0" />
-                                             <span className="text-sm font-medium text-slate-600 dark:text-slate-300">
-                                                 Ida:
+                                              <span className="text-sm font-medium text-slate-600 dark:text-slate-300">
+                                                Ida:
                                               </span>
                                               <input
                                                 type="date"
@@ -2032,8 +2056,8 @@ export default function Home() {
                                             {/* Retorno */}
                                             <div className="flex items-center gap-2 flex-wrap">
                                               <Calendar className="w-4 h-4 text-slate-400 flex-shrink-0" />
-                                             <span className="text-sm font-medium text-slate-600 dark:text-slate-300">
-                                                 Retorno:
+                                              <span className="text-sm font-medium text-slate-600 dark:text-slate-300">
+                                                Retorno:
                                               </span>
                                               <input
                                                 type="date"
@@ -2263,12 +2287,18 @@ export default function Home() {
                                         <div className="flex-1 flex flex-col gap-3">
                                           {/* Seletor tipo de bilhete */}
                                           <div className="flex items-center gap-2">
-                                               <span className="text-[10px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">
-                                                 Tipo de Bilhete
+                                            <span className="text-[10px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">
+                                              Tipo de Bilhete
                                             </span>
                                             <div className="flex rounded-lg overflow-hidden border border-slate-200 shadow-sm">
                                               <button
                                                 type="button"
+                                                aria-pressed={
+                                                  (tempTicketType[
+                                                    week.weekNumber
+                                                  ] ?? "roundtrip") ===
+                                                  "roundtrip"
+                                                }
                                                 onClick={() =>
                                                   setTempTicketType(prev => ({
                                                     ...prev,
@@ -2276,7 +2306,7 @@ export default function Home() {
                                                       "roundtrip",
                                                   }))
                                                 }
-                                                className={`px-3 py-1 text-xs font-semibold transition-colors ${
+                                                className={`px-3 py-1 text-xs font-semibold transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-inset ${
                                                   (tempTicketType[
                                                     week.weekNumber
                                                   ] ?? "roundtrip") ===
@@ -2289,13 +2319,18 @@ export default function Home() {
                                               </button>
                                               <button
                                                 type="button"
+                                                aria-pressed={
+                                                  (tempTicketType[
+                                                    week.weekNumber
+                                                  ] ?? "roundtrip") === "oneway"
+                                                }
                                                 onClick={() =>
                                                   setTempTicketType(prev => ({
                                                     ...prev,
                                                     [week.weekNumber]: "oneway",
                                                   }))
                                                 }
-                                                className={`px-3 py-1 text-xs font-semibold transition-colors border-l border-slate-200 ${
+                                                className={`px-3 py-1 text-xs font-semibold transition-colors border-l border-slate-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-inset ${
                                                   (tempTicketType[
                                                     week.weekNumber
                                                   ] ?? "roundtrip") === "oneway"
@@ -2321,9 +2356,9 @@ export default function Home() {
                                             <div className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-700/50 overflow-hidden shadow-sm dark:shadow-slate-900/40">
                                               <div className="bg-slate-100/50 dark:bg-slate-700 border-b border-slate-200 dark:border-slate-600 px-4 py-2 flex items-center gap-2">
                                                 <Plane className="w-4 h-4 text-slate-400" />
-                                                 <span className="text-[11px] font-bold text-slate-600 dark:text-slate-200 uppercase tracking-widest">
-                                                   Ida
-                                                 </span>
+                                                <span className="text-[11px] font-bold text-slate-600 dark:text-slate-200 uppercase tracking-widest">
+                                                  Ida
+                                                </span>
                                               </div>
                                               <div className="p-3 flex flex-col gap-2.5">
                                                 <div className="flex flex-col gap-1">
@@ -2788,8 +2823,8 @@ export default function Home() {
                                                 <div className="bg-slate-100/50 dark:bg-slate-700 border-b border-slate-200 dark:border-slate-600 px-4 py-2 flex items-center gap-2">
                                                   <Plane className="w-4 h-4 text-slate-400 rotate-180" />
                                                   <span className="text-[11px] font-bold text-slate-600 dark:text-slate-200 uppercase tracking-widest">
-                                                      Volta
-                                                   </span>
+                                                    Volta
+                                                  </span>
                                                 </div>
                                                 <div className="p-3 flex flex-col gap-2.5">
                                                   <div className="flex flex-col gap-1">
@@ -3957,34 +3992,57 @@ export default function Home() {
                 <h3 className="text-sm font-semibold text-slate-600 mb-4 uppercase tracking-wide">
                   Preço Médio por Companhia (R$)
                 </h3>
-                <ResponsiveContainer width="100%" height={320} className="chart-container">
+                <ResponsiveContainer
+                  width="100%"
+                  height={320}
+                  className="chart-container"
+                >
                   <BarChart
                     data={chartData}
                     margin={{ top: 5, right: 20, left: 10, bottom: 5 }}
                   >
-                    <CartesianGrid strokeDasharray="3 3" stroke={theme === 'dark' ? "#334155" : "#f1f5f9"} />
+                    <CartesianGrid
+                      strokeDasharray="3 3"
+                      stroke={theme === "dark" ? "#334155" : "#f1f5f9"}
+                    />
                     <XAxis
                       dataKey="mes"
-                      tick={{ fontSize: 12, fill: theme === 'dark' ? "#94a3b8" : "#64748b" }}
+                      tick={{
+                        fontSize: 12,
+                        fill: theme === "dark" ? "#94a3b8" : "#64748b",
+                      }}
                     />
                     <YAxis
-                      tick={{ fontSize: 12, fill: theme === 'dark' ? "#94a3b8" : "#64748b" }}
+                      tick={{
+                        fontSize: 12,
+                        fill: theme === "dark" ? "#94a3b8" : "#64748b",
+                      }}
                       tickFormatter={v => (hideValues ? "•••" : `R$${v}`)}
                     />
                     <Tooltip
                       contentStyle={{
-                        background: theme === 'dark' ? "#1e293b" : "#ffffff",
-                        border: theme === 'dark' ? "1px solid #475569" : "1px solid #e2e8f0",
+                        background: theme === "dark" ? "#1e293b" : "#ffffff",
+                        border:
+                          theme === "dark"
+                            ? "1px solid #475569"
+                            : "1px solid #e2e8f0",
                         borderRadius: 8,
-                        color: theme === 'dark' ? "#f1f5f9" : "#1e293b",
+                        color: theme === "dark" ? "#f1f5f9" : "#1e293b",
                       }}
                       formatter={(value: number) => [
                         hideValues ? "••••" : `R$ ${value.toFixed(2)}`,
                         "",
                       ]}
-                      labelStyle={{ color: theme === 'dark' ? "#cbd5e1" : "#64748b", fontWeight: 600 }}
+                      labelStyle={{
+                        color: theme === "dark" ? "#cbd5e1" : "#64748b",
+                        fontWeight: 600,
+                      }}
                     />
-                    <Legend wrapperStyle={{ color: theme === 'dark' ? "#cbd5e1" : "#64748b" }} />
+                    <Legend
+                      wrapperStyle={{
+                        color: theme === "dark" ? "#cbd5e1" : "#64748b",
+                      }}
+                    />
                     {chartSelectedAirlines.has("kayak") && (
                       <Bar
                         dataKey="kayak"
@@ -4042,34 +4100,57 @@ export default function Home() {
                 <h3 className="text-sm font-semibold text-slate-600 mb-4 uppercase tracking-wide">
                   Menor Preço vs. Preço Médio por Mês (R$)
                 </h3>
-                <ResponsiveContainer width="100%" height={260} className="chart-container">
+                <ResponsiveContainer
+                  width="100%"
+                  height={260}
+                  className="chart-container"
+                >
                   <LineChart
                     data={chartData}
                     margin={{ top: 5, right: 20, left: 10, bottom: 5 }}
                   >
-                    <CartesianGrid strokeDasharray="3 3" stroke={theme === 'dark' ? "#334155" : "#f1f5f9"} />
+                    <CartesianGrid
+                      strokeDasharray="3 3"
+                      stroke={theme === "dark" ? "#334155" : "#f1f5f9"}
+                    />
                     <XAxis
                       dataKey="mes"
-                      tick={{ fontSize: 12, fill: theme === 'dark' ? "#94a3b8" : "#64748b" }}
+                      tick={{
+                        fontSize: 12,
+                        fill: theme === "dark" ? "#94a3b8" : "#64748b",
+                      }}
                     />
                     <YAxis
-                      tick={{ fontSize: 12, fill: theme === 'dark' ? "#94a3b8" : "#64748b" }}
+                      tick={{
+                        fontSize: 12,
+                        fill: theme === "dark" ? "#94a3b8" : "#64748b",
+                      }}
                       tickFormatter={v => (hideValues ? "•••" : `R$${v}`)}
                     />
                     <Tooltip
                       contentStyle={{
-                        background: theme === 'dark' ? "#1e293b" : "#ffffff",
-                        border: theme === 'dark' ? "1px solid #475569" : "1px solid #e2e8f0",
+                        background: theme === "dark" ? "#1e293b" : "#ffffff",
+                        border:
+                          theme === "dark"
+                            ? "1px solid #475569"
+                            : "1px solid #e2e8f0",
                         borderRadius: 8,
-                        color: theme === 'dark' ? "#f1f5f9" : "#1e293b",
+                        color: theme === "dark" ? "#f1f5f9" : "#1e293b",
                       }}
                       formatter={(value: number) => [
                         hideValues ? "••••" : `R$ ${value.toFixed(2)}`,
                         "",
                       ]}
-                      labelStyle={{ color: theme === 'dark' ? "#cbd5e1" : "#64748b", fontWeight: 600 }}
+                      labelStyle={{
+                        color: theme === "dark" ? "#cbd5e1" : "#64748b",
+                        fontWeight: 600,
+                      }}
                     />
-                    <Legend wrapperStyle={{ color: theme === 'dark' ? "#cbd5e1" : "#64748b" }} />
+                    <Legend
+                      wrapperStyle={{
+                        color: theme === "dark" ? "#cbd5e1" : "#64748b",
+                      }}
+                    />
                     <Line
                       type="monotone"
                       dataKey="menor"
