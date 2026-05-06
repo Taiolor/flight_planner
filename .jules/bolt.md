@@ -17,3 +17,7 @@
 
 **Learning:** Chaining array methods like `.map().filter().reduce()` inside a React `useMemo` hook for data-heavy components (like charts) creates multiple intermediate arrays, leading to excessive garbage collection overhead.
 **Action:** Replace chained array operations with single-pass standard `for` loops in performance-critical areas to minimize array allocations and memory usage.
+
+## 2024-05-05 - Avoid Date allocations in tight React render loops
+**Learning:** Frequent instantiations of `Date` objects and array allocations via `String.split()` inside React render loops (e.g., inside deeply nested loops or heavily called helper functions) can create significant garbage collection pressure.
+**Action:** Pre-compute date values or convert string representations directly to an integer `YYYYMMDD` format outside the render loop for numerical comparisons instead of full date-object operations.
