@@ -17,3 +17,6 @@
 
 **Learning:** Chaining array methods like `.map().filter().reduce()` inside a React `useMemo` hook for data-heavy components (like charts) creates multiple intermediate arrays, leading to excessive garbage collection overhead.
 **Action:** Replace chained array operations with single-pass standard `for` loops in performance-critical areas to minimize array allocations and memory usage.
+## 2026-05-07 - Redundant Date Parsing in Notification Job
+**Learning:** Parsing dates repeatedly inside nested loops (e.g., (\text{avisos} \times \text{weeks})$) causes unnecessary CPU overhead, especially as the number of records grows.
+**Action:** Pre-calculate (hoist) date parsing and filtering logic outside of nested loops to reduce complexity to (\text{weeks} + \text{avisos})$.
