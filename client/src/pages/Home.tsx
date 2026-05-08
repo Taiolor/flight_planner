@@ -806,18 +806,25 @@ export default function Home() {
       return next;
     });
   };
-  const selectedWeeks = useMemo(
-    () => weeksData.filter(w => w.isSelected === 1),
-    [weeksData]
-  );
-  const issuedCount = useMemo(
-    () => weeksData.filter(w => w.isSelected && w.isTicketIssued).length,
-    [weeksData]
-  );
-  const totalCost = useMemo(() => {
-    return weeksData
-      .filter(w => w.isSelected)
-      .reduce((sum, w) => sum + (getLowestPrice(w.weekNumber) ?? 0), 0);
+  // ⚡ Bolt Optimization: Combine selectedWeeks, issuedCount, and totalCost into a single pass
+  // to avoid multiple O(N) loops and intermediate array allocations (.filter, .reduce)
+  const { selectedWeeks, issuedCount, totalCost } = useMemo(() => {
+    const selected: WeekData[] = [];
+    let count = 0;
+    let cost = 0;
+
+    for (let i = 0; i < weeksData.length; i++) {
+      const w = weeksData[i];
+      if (w.isSelected === 1) {
+        selected.push(w);
+        if (w.isTicketIssued) {
+          count++;
+        }
+        cost += getLowestPrice(w.weekNumber) ?? 0;
+      }
+    }
+
+    return { selectedWeeks: selected, issuedCount: count, totalCost: cost };
   }, [weeksData, getLowestPrice]);
 
   // Dados para o gráfico de variação de preços por mês (todas as empresas)
