@@ -2372,12 +2372,6 @@ export default function Home() {
                                                       "roundtrip",
                                                   }))
                                                 }
-                                                aria-pressed={
-                                                  (tempTicketType[
-                                                    week.weekNumber
-                                                  ] ?? "roundtrip") ===
-                                                  "roundtrip"
-                                                }
                                                 className={`px-3 py-1 text-xs font-semibold transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-inset ${
                                                   (tempTicketType[
                                                     week.weekNumber
