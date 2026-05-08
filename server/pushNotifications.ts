@@ -106,9 +106,7 @@ export async function sendPushToAll(
     const ok = await sendPushToOne(sub.endpoint, sub.p256dh, sub.auth, payload);
     if (ok) sent++;
   }
-  console.log(
-    `[Push] Enviado para ${sent}/${subs.length} dispositivos.`
-  );
+  console.log(`[Push] Enviado para ${sent}/${subs.length} dispositivos.`);
   return sent;
 }
 
@@ -168,9 +166,21 @@ export async function checkAndNotifyUpcomingFlights(): Promise<void> {
     { minutes: settings.aviso2Minutes, label: "Aviso 2" },
   ].filter(a => a.minutes > 0);
 
+  const issuedWeeks = weeks.filter(w => w.isTicketIssued);
   console.log(
-    `[Push] Verificando ${weeks.filter(w => w.isTicketIssued).length} voos emitidos. Avisos ativos: ${avisos.map(a => formatMinutes(a.minutes)).join(", ") || "nenhum"}. Hora atual (UTC): ${now.toISOString()}`
+    `[Push] Verificando ${issuedWeeks.length} voos emitidos. Avisos ativos: ${avisos.map(a => formatMinutes(a.minutes)).join(", ") || "nenhum"}. Hora atual (UTC): ${now.toISOString()}`
   );
+
+  // ⚡ Bolt: Hoist date parsing outside the nested loops to avoid O(N*M) time complexity
+  const parsedWeeks = issuedWeeks.map(w => ({
+    week: w,
+    departureTime: w.departureFlightDatetime
+      ? parseBrasiliaDatetime(w.departureFlightDatetime)
+      : null,
+    returnTime: w.returnFlightDatetime
+      ? parseBrasiliaDatetime(w.returnFlightDatetime)
+      : null,
+  }));
 
   for (const aviso of avisos) {
     // Janela de ±50 min ao redor do horário configurado
@@ -183,15 +193,9 @@ export async function checkAndNotifyUpcomingFlights(): Promise<void> {
       `[Push] ${aviso.label} (${antecedenciaLabel}): janela ${windowStart.toISOString()} → ${windowEnd.toISOString()}`
     );
 
-    for (const week of weeks) {
-      if (!week.isTicketIssued) continue;
-
+    for (const { week, departureTime, returnTime } of parsedWeeks) {
       // Verificar voo de ida
-      if (week.departureFlightDatetime) {
-        const departureTime = parseBrasiliaDatetime(
-          week.departureFlightDatetime
-        );
-        if (isNaN(departureTime.getTime())) continue;
+      if (departureTime && !isNaN(departureTime.getTime())) {
         if (departureTime >= windowStart && departureTime <= windowEnd) {
           const airline = week.departureAirline
             ? (airlineNames[week.departureAirline.toUpperCase()] ??
@@ -246,9 +250,7 @@ export async function checkAndNotifyUpcomingFlights(): Promise<void> {
       }
 
       // Verificar voo de volta
-      if (week.returnFlightDatetime) {
-        const returnTime = parseBrasiliaDatetime(week.returnFlightDatetime);
-        if (isNaN(returnTime.getTime())) continue;
+      if (returnTime && !isNaN(returnTime.getTime())) {
         if (returnTime >= windowStart && returnTime <= windowEnd) {
           const airline = week.returnAirline
             ? (airlineNames[week.returnAirline.toUpperCase()] ??
