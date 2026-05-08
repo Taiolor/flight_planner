@@ -168,8 +168,20 @@ export async function checkAndNotifyUpcomingFlights(): Promise<void> {
     { minutes: settings.aviso2Minutes, label: "Aviso 2" },
   ].filter(a => a.minutes > 0);
 
+  const issuedWeeks = weeks
+    .filter(w => w.isTicketIssued)
+    .map(w => ({
+      ...w,
+      departureTime: w.departureFlightDatetime
+        ? parseBrasiliaDatetime(w.departureFlightDatetime)
+        : null,
+      returnTime: w.returnFlightDatetime
+        ? parseBrasiliaDatetime(w.returnFlightDatetime)
+        : null,
+    }));
+
   console.log(
-    `[Push] Verificando ${weeks.filter(w => w.isTicketIssued).length} voos emitidos. Avisos ativos: ${avisos.map(a => formatMinutes(a.minutes)).join(", ") || "nenhum"}. Hora atual (UTC): ${now.toISOString()}`
+    `[Push] Verificando ${issuedWeeks.length} voos emitidos. Avisos ativos: ${avisos.map(a => formatMinutes(a.minutes)).join(", ") || "nenhum"}. Hora atual (UTC): ${now.toISOString()}`
   );
 
   for (const aviso of avisos) {
@@ -183,14 +195,10 @@ export async function checkAndNotifyUpcomingFlights(): Promise<void> {
       `[Push] ${aviso.label} (${antecedenciaLabel}): janela ${windowStart.toISOString()} → ${windowEnd.toISOString()}`
     );
 
-    for (const week of weeks) {
-      if (!week.isTicketIssued) continue;
-
+    for (const week of issuedWeeks) {
       // Verificar voo de ida
-      if (week.departureFlightDatetime) {
-        const departureTime = parseBrasiliaDatetime(
-          week.departureFlightDatetime
-        );
+      if (week.departureTime) {
+        const departureTime = week.departureTime;
         if (isNaN(departureTime.getTime())) continue;
         if (departureTime >= windowStart && departureTime <= windowEnd) {
           const airline = week.departureAirline
@@ -246,8 +254,8 @@ export async function checkAndNotifyUpcomingFlights(): Promise<void> {
       }
 
       // Verificar voo de volta
-      if (week.returnFlightDatetime) {
-        const returnTime = parseBrasiliaDatetime(week.returnFlightDatetime);
+      if (week.returnTime) {
+        const returnTime = week.returnTime;
         if (isNaN(returnTime.getTime())) continue;
         if (returnTime >= windowStart && returnTime <= windowEnd) {
           const airline = week.returnAirline

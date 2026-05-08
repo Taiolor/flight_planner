@@ -39,6 +39,17 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Label } from "@/components/ui/label";
 import {
   ChevronDown,
@@ -724,17 +735,34 @@ export default function Home() {
     }
 
     // After grouping, compute the aggregates per month once
+    // ⚡ Single-pass iteration to avoid multiple array allocations from .filter(), .some(), .reduce()
     for (const group of groups) {
-      group.monthIssued = group.weeks.filter(w => w.isTicketIssued).length;
-      group.monthSelected = group.weeks.filter(w => w.isSelected).length;
-      group.monthHasHoliday = group.weeks.some(
-        w =>
+      let issuedCount = 0;
+      let selectedCount = 0;
+      let hasHoliday = false;
+      let issuedTotal = 0;
+
+      for (const w of group.weeks) {
+        if (w.isTicketIssued) {
+          issuedCount++;
+          issuedTotal += getLowestPrice(w.weekNumber) ?? 0;
+        }
+        if (w.isSelected) {
+          selectedCount++;
+        }
+        if (
+          !hasHoliday &&
           getFeriadosPorIntervalo(w.weekNumber, w.departureDate, w.returnDate)
             .length > 0
-      );
-      group.monthIssuedTotal = group.weeks
-        .filter(w => w.isTicketIssued)
-        .reduce((sum, w) => sum + (getLowestPrice(w.weekNumber) ?? 0), 0);
+        ) {
+          hasHoliday = true;
+        }
+      }
+
+      group.monthIssued = issuedCount;
+      group.monthSelected = selectedCount;
+      group.monthHasHoliday = hasHoliday;
+      group.monthIssuedTotal = issuedTotal;
     }
 
     return groups;
@@ -2125,18 +2153,45 @@ export default function Home() {
                                       </Button>
                                     </div>
                                     {/* Excluir */}
-                                    <Button
-                                      variant="outline"
-                                      size="sm"
-                                      onClick={() =>
-                                        handleDelete(week.weekNumber)
-                                      }
-                                      className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                                      title="Excluir semana"
-                                      aria-label="Excluir semana"
-                                    >
-                                      <Trash2 className="w-4 h-4" />
-                                    </Button>
+                                    <AlertDialog>
+                                      <AlertDialogTrigger asChild>
+                                        <Button
+                                          variant="outline"
+                                          size="sm"
+                                          className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                                          title="Excluir semana"
+                                          aria-label="Excluir semana"
+                                        >
+                                          <Trash2 className="w-4 h-4" />
+                                        </Button>
+                                      </AlertDialogTrigger>
+                                      <AlertDialogContent>
+                                        <AlertDialogHeader>
+                                          <AlertDialogTitle>
+                                            Excluir Semana {week.weekNumber}?
+                                          </AlertDialogTitle>
+                                          <AlertDialogDescription>
+                                            Tem certeza de que deseja excluir os
+                                            dados da Semana {week.weekNumber}?
+                                            Esta ação pode ser desfeita
+                                            posteriormente.
+                                          </AlertDialogDescription>
+                                        </AlertDialogHeader>
+                                        <AlertDialogFooter>
+                                          <AlertDialogCancel>
+                                            Cancelar
+                                          </AlertDialogCancel>
+                                          <AlertDialogAction
+                                            onClick={() =>
+                                              handleDelete(week.weekNumber)
+                                            }
+                                            className="bg-red-600 text-white hover:bg-red-700 focus:ring-red-600"
+                                          >
+                                            Excluir
+                                          </AlertDialogAction>
+                                        </AlertDialogFooter>
+                                      </AlertDialogContent>
+                                    </AlertDialog>
                                     {/* Expandir/Recolher */}
                                     <button
                                       type="button"
@@ -2269,6 +2324,12 @@ export default function Home() {
                                             <div className="flex rounded-lg overflow-hidden border border-slate-200 shadow-sm">
                                               <button
                                                 type="button"
+                                                aria-pressed={
+                                                  (tempTicketType[
+                                                    week.weekNumber
+                                                  ] ?? "roundtrip") ===
+                                                  "roundtrip"
+                                                }
                                                 onClick={() =>
                                                   setTempTicketType(prev => ({
                                                     ...prev,
@@ -2276,7 +2337,7 @@ export default function Home() {
                                                       "roundtrip",
                                                   }))
                                                 }
-                                                className={`px-3 py-1 text-xs font-semibold transition-colors ${
+                                                className={`px-3 py-1 text-xs font-semibold transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-inset ${
                                                   (tempTicketType[
                                                     week.weekNumber
                                                   ] ?? "roundtrip") ===
@@ -2289,13 +2350,18 @@ export default function Home() {
                                               </button>
                                               <button
                                                 type="button"
+                                                aria-pressed={
+                                                  (tempTicketType[
+                                                    week.weekNumber
+                                                  ] ?? "roundtrip") === "oneway"
+                                                }
                                                 onClick={() =>
                                                   setTempTicketType(prev => ({
                                                     ...prev,
                                                     [week.weekNumber]: "oneway",
                                                   }))
                                                 }
-                                                className={`px-3 py-1 text-xs font-semibold transition-colors border-l border-slate-200 ${
+                                                className={`px-3 py-1 text-xs font-semibold transition-colors border-l border-slate-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-inset ${
                                                   (tempTicketType[
                                                     week.weekNumber
                                                   ] ?? "roundtrip") === "oneway"

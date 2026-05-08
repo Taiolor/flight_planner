@@ -949,11 +949,24 @@ export const feriados2026: Feriado[] = [
   { data: '01/01/2027', nome: 'Confraternização Universal', tipo: 'nacional' },
 ];
 
-// Converte DD/MM/YYYY para objeto Date
-function parseDate(dateStr: string): Date {
-  const [day, month, year] = dateStr.split('/').map(Number);
-  return new Date(year, month - 1, day);
+// ⚡ Bolt Optimization:
+// Converte string de data DD/MM/YYYY para um número YYYYMMDD para
+// comparações rápidas sem instanciar objetos Date.
+function dateToInt(dateStr: string): number {
+  return parseInt(
+    dateStr.substring(6, 10) +
+      dateStr.substring(3, 5) +
+      dateStr.substring(0, 2),
+    10
+  );
 }
+
+// ⚡ Bolt Optimization:
+// Pré-calcula as representações inteiras dos feriados para evitar cálculos repetidos no loop.
+const feriados2026Ints = feriados2026.map(f => ({
+  ...f,
+  dataInt: dateToInt(f.data),
+}));
 
 export interface FeriadoInfo {
   feriado: Feriado;
@@ -968,21 +981,22 @@ export interface FeriadoInfo {
  */
 export function getFeriadosDaSemana(departureDate: string, returnDate: string): FeriadoInfo[] {
   const result: FeriadoInfo[] = [];
-  const depDate = parseDate(departureDate);
-  const retDate = parseDate(returnDate);
 
-  for (const f of feriados2026) {
-    const fDate = parseDate(f.data);
-    const fTime = fDate.getTime();
-    const depTime = depDate.getTime();
-    const retTime = retDate.getTime();
+  // ⚡ Bolt Optimization: Uso de inteiros para performance em render loops.
+  // Evita múltiplas alocações de array (.split) e instâncias de Date.
+  const depTime = dateToInt(departureDate);
+  const retTime = dateToInt(returnDate);
+
+  for (let i = 0; i < feriados2026Ints.length; i++) {
+    const fObj = feriados2026Ints[i];
+    const fTime = fObj.dataInt;
 
     if (fTime === depTime) {
-      result.push({ feriado: f, tipo: 'ida' });
+      result.push({ feriado: fObj, tipo: 'ida' });
     } else if (fTime === retTime) {
-      result.push({ feriado: f, tipo: 'retorno' });
+      result.push({ feriado: fObj, tipo: 'retorno' });
     } else if (fTime > depTime && fTime < retTime) {
-      result.push({ feriado: f, tipo: 'intervalo' });
+      result.push({ feriado: fObj, tipo: 'intervalo' });
     }
   }
   return result;
