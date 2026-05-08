@@ -80,8 +80,15 @@ export const appRouter = router({
         })
       )
       .mutation(async ({ input, ctx }) => {
-        const allowedEmail = process.env.AUTH_EMAIL ?? "";
-        const allowedPassword = process.env.AUTH_PASSWORD ?? "";
+        const allowedEmail = process.env.AUTH_EMAIL;
+        const allowedPassword = process.env.AUTH_PASSWORD;
+
+        if (!allowedEmail || !allowedPassword) {
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Authentication is not configured on the server.",
+          });
+        }
 
         // Comparação timing-safe com SHA-256 para prevenir timing side-channel attacks
         // Hash SHA-256 garante buffers de tamanho fixo (32 bytes), eliminando length leakage
@@ -93,7 +100,10 @@ export const appRouter = router({
           .createHash("sha256")
           .update(allowedEmail.toLowerCase().trim())
           .digest();
-        const emailMatch = crypto.timingSafeEqual(givenEmailHash, expectedEmailHash);
+        const emailMatch = crypto.timingSafeEqual(
+          givenEmailHash,
+          expectedEmailHash
+        );
 
         const givenPasswordHash = crypto
           .createHash("sha256")
@@ -103,7 +113,10 @@ export const appRouter = router({
           .createHash("sha256")
           .update(allowedPassword)
           .digest();
-        const passwordMatch = crypto.timingSafeEqual(givenPasswordHash, expectedPasswordHash);
+        const passwordMatch = crypto.timingSafeEqual(
+          givenPasswordHash,
+          expectedPasswordHash
+        );
 
         if (!emailMatch || !passwordMatch) {
           throw new TRPCError({
@@ -145,8 +158,8 @@ export const appRouter = router({
       ctx.res.clearCookie(SESSION_COOKIE, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
-          // Security: Use lax to mitigate CSRF attacks
-          sameSite: "lax",
+        // Security: Use lax to mitigate CSRF attacks
+        sameSite: "lax",
         path: "/",
       });
       return { success: true };
