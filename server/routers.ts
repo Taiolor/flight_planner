@@ -469,6 +469,14 @@ export const appRouter = router({
       const issuedWeeks = weeks.filter(w => w.isTicketIssued);
 
       for (const week of issuedWeeks) {
+        // ⚡ Bolt: Hoist date parsing outside the nested loops to avoid O(N*M) time complexity
+        const departureFlightTime = week.departureFlightDatetime
+          ? parseBrasiliaDatetime(week.departureFlightDatetime)
+          : null;
+        const returnFlightTime = week.returnFlightDatetime
+          ? parseBrasiliaDatetime(week.returnFlightDatetime)
+          : null;
+
         for (const aviso of avisos) {
           const targetMs = aviso.minutes * 60 * 1000;
           const windowStart = new Date(
@@ -477,10 +485,8 @@ export const appRouter = router({
           const windowEnd = new Date(now.getTime() + targetMs + 50 * 60 * 1000);
 
           // Voo de ida
-          if (week.departureFlightDatetime) {
-            const flightTime = parseBrasiliaDatetime(
-              week.departureFlightDatetime
-            );
+          if (week.departureFlightDatetime && departureFlightTime) {
+            const flightTime = departureFlightTime;
             if (!isNaN(flightTime.getTime())) {
               const alertTime = new Date(flightTime.getTime() - targetMs);
               const minutesUntilAlert = Math.round(
@@ -506,8 +512,8 @@ export const appRouter = router({
           }
 
           // Voo de volta
-          if (week.returnFlightDatetime) {
-            const flightTime = parseBrasiliaDatetime(week.returnFlightDatetime);
+          if (week.returnFlightDatetime && returnFlightTime) {
+            const flightTime = returnFlightTime;
             if (!isNaN(flightTime.getTime())) {
               const alertTime = new Date(flightTime.getTime() - targetMs);
               const minutesUntilAlert = Math.round(
@@ -587,14 +593,20 @@ export const appRouter = router({
       let minTimeUntilAlert = Infinity;
 
       for (const week of weeks.filter(w => w.isTicketIssued)) {
+        // ⚡ Bolt: Hoist date parsing outside the nested loops to avoid O(N*M) time complexity
+        const departureFlightTime = week.departureFlightDatetime
+          ? parseBrasiliaDatetime(week.departureFlightDatetime)
+          : null;
+        const returnFlightTime = week.returnFlightDatetime
+          ? parseBrasiliaDatetime(week.returnFlightDatetime)
+          : null;
+
         for (const aviso of avisos) {
           const targetMs = aviso.minutes * 60 * 1000;
 
           // Voo de ida
-          if (week.departureFlightDatetime) {
-            const flightTime = parseBrasiliaDatetime(
-              week.departureFlightDatetime
-            );
+          if (week.departureFlightDatetime && departureFlightTime) {
+            const flightTime = departureFlightTime;
             if (!isNaN(flightTime.getTime()) && flightTime > now) {
               const alertTime = new Date(flightTime.getTime() - targetMs);
               const minutesUntilAlert = Math.round(
@@ -621,8 +633,8 @@ export const appRouter = router({
           }
 
           // Voo de volta
-          if (week.returnFlightDatetime) {
-            const flightTime = parseBrasiliaDatetime(week.returnFlightDatetime);
+          if (week.returnFlightDatetime && returnFlightTime) {
+            const flightTime = returnFlightTime;
             if (!isNaN(flightTime.getTime()) && flightTime > now) {
               const alertTime = new Date(flightTime.getTime() - targetMs);
               const minutesUntilAlert = Math.round(
