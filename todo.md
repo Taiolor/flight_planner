@@ -169,3 +169,7 @@
 - [x] Criar testes unitários para o módulo de cotações (server/quotes.test.ts)
 - [x] Resolver conflitos de merge em Home.tsx (marcadores de conflito removidos)
 - [x] Verificar 0 erros TypeScript e 52 testes passando
+- [x] Semanas passadas exibidas em cinza escuro (opacidade reduzida, interações desabilitadas, aviso informativo)
+- [x] Semana corrente destacada com borda azul e badge "● atual"
+- [x] Semanas futuras mantêm cor normal e são totalmente interativas
+- [x] Resumo de semanas (atual/futuras/passadas) exibido no header da página de cotações

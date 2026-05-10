@@ -2,6 +2,9 @@
  * Página de Cotações de Passagens Aéreas
  * Integra Sky Scrapper API (automático) com fallback para Kayak (manual)
  * Rota fixa: GRU → NVT, ida domingo, volta sexta
+ *
+ * Semanas passadas: exibidas em cinza escuro (opacidade reduzida, interações desabilitadas)
+ * Semana corrente e futuras: cor normal, totalmente interativas
  */
 
 import { useState, useMemo } from "react";
@@ -14,56 +17,73 @@ import { Badge } from "@/components/ui/badge";
 import {
   Plane,
   ExternalLink,
-  RefreshCw,
   Trash2,
   Bot,
   Link2,
   AlertCircle,
   TrendingDown,
-  Calendar,
   ChevronDown,
   ChevronUp,
   Loader2,
   DollarSign,
+  Clock,
 } from "lucide-react";
 import { useTheme } from "@/contexts/ThemeContext";
 
-// URL padrão do Kayak para GRU → NVT
-const buildKayakUrl = (departureDate: string, returnDate: string): string => {
-  // Converter DD/MM/YYYY para YYYY-MM-DD
-  const toIso = (d: string) => {
-    const [day, month, year] = d.split("/");
-    return `${year}-${month}-${day}`;
-  };
-  const dep = toIso(departureDate);
-  const ret = toIso(returnDate);
-  return `https://www.kayak.com.br/flights/GRU-NVT/${dep}/${ret}?ucs=p1nu6v&sort=bestflight_a`;
-};
+// ─── Utilitários de data ─────────────────────────────────────────────────────
 
-// Formatar data DD/MM/YYYY para exibição
-const formatDateBR = (dateStr: string): string => {
-  if (!dateStr) return "";
-  if (dateStr.includes("/")) return dateStr; // já está no formato BR
-  const [year, month, day] = dateStr.split("-");
-  return `${day}/${month}/${year}`;
-};
-
-// Converter DD/MM/YYYY para YYYY-MM-DD
+/** Converte DD/MM/YYYY → YYYY-MM-DD (se já estiver em ISO, retorna sem alterar) */
 const toIsoDate = (d: string): string => {
-  if (d.includes("-")) return d; // já está no formato ISO
+  if (d.includes("-")) return d;
   const [day, month, year] = d.split("/");
   return `${year}-${month}-${day}`;
 };
 
-// Formatar preço em centavos para BRL
-const formatCurrency = (cents: number): string => {
-  return (cents / 100).toLocaleString("pt-BR", {
-    style: "currency",
-    currency: "BRL",
-  });
+/** Formata DD/MM/YYYY para exibição (ou converte ISO → BR) */
+const formatDateBR = (dateStr: string): string => {
+  if (!dateStr) return "";
+  if (dateStr.includes("/")) return dateStr;
+  const [year, month, day] = dateStr.split("-");
+  return `${day}/${month}/${year}`;
 };
 
-// Badge de fonte do preço
+/** Formata centavos para BRL */
+const formatCurrency = (cents: number): string =>
+  (cents / 100).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+
+/** URL padrão do Kayak para GRU → NVT */
+const buildKayakUrl = (departureDate: string, returnDate: string): string => {
+  const dep = toIsoDate(departureDate);
+  const ret = toIsoDate(returnDate);
+  return `https://www.kayak.com.br/flights/GRU-NVT/${dep}/${ret}?ucs=p1nu6v&sort=bestflight_a`;
+};
+
+/**
+ * Determina se uma semana é passada, corrente ou futura.
+ * Usa a data de IDA (domingo) como referência.
+ * Considera "corrente" a semana cujo domingo de ida já passou mas o retorno (sexta) ainda não.
+ */
+const getWeekStatus = (
+  departureDate: string,
+  returnDate: string
+): "past" | "current" | "future" => {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const depIso = toIsoDate(departureDate);
+  const retIso = toIsoDate(returnDate);
+
+  const dep = new Date(depIso + "T00:00:00");
+  const ret = new Date(retIso + "T00:00:00");
+
+  if (ret < today) return "past";
+  if (dep <= today && ret >= today) return "current";
+  return "future";
+};
+
+// ─── Componentes auxiliares ───────────────────────────────────────────────────
+
+/** Badge de fonte do preço */
 const SourceBadge = ({ source }: { source: "api" | "manual" }) => {
   if (source === "api") {
     return (
@@ -81,10 +101,11 @@ const SourceBadge = ({ source }: { source: "api" | "manual" }) => {
   );
 };
 
-// Componente de linha de cotação individual
+/** Linha de cotação individual */
 const QuoteRow = ({
   quote,
   onDelete,
+  isPast,
 }: {
   quote: {
     id: number;
@@ -94,12 +115,19 @@ const QuoteRow = ({
     quotedAt: Date;
   };
   onDelete: (id: number) => void;
+  isPast: boolean;
 }) => {
   const quotedDate = new Date(quote.quotedAt);
   return (
-    <div className="flex items-center justify-between py-2 px-3 rounded-lg bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600 gap-2">
+    <div className={`flex items-center justify-between py-2 px-3 rounded-lg border gap-2 ${
+      isPast
+        ? "bg-slate-100 dark:bg-slate-800/60 border-slate-200 dark:border-slate-700"
+        : "bg-slate-50 dark:bg-slate-700/50 border-slate-200 dark:border-slate-600"
+    }`}>
       <div className="flex items-center gap-3 flex-1 min-w-0">
-        <span className="text-lg font-bold text-slate-800 dark:text-slate-100 whitespace-nowrap">
+        <span className={`text-lg font-bold whitespace-nowrap ${
+          isPast ? "text-slate-400 dark:text-slate-500" : "text-slate-800 dark:text-slate-100"
+        }`}>
           {formatCurrency(quote.lowestPrice)}
         </span>
         <SourceBadge source={quote.source} />
@@ -131,7 +159,7 @@ const QuoteRow = ({
   );
 };
 
-// Componente de card de semana
+/** Card de semana — aparência e interatividade variam conforme status */
 const WeekCard = ({
   week,
   quotes,
@@ -163,9 +191,14 @@ const WeekCard = ({
   const kayakUrl = buildKayakUrl(week.ida.data, week.retorno.data);
   const apiLimitReached = apiUsage.requestsUsed >= apiUsage.requestsLimit;
 
-  const lowestQuote = quotes.length > 0
-    ? quotes.reduce((min, q) => q.lowestPrice < min.lowestPrice ? q : min)
-    : null;
+  const status = getWeekStatus(week.ida.data, week.retorno.data);
+  const isPast = status === "past";
+  const isCurrent = status === "current";
+
+  const lowestQuote =
+    quotes.length > 0
+      ? quotes.reduce((min, q) => (q.lowestPrice < min.lowestPrice ? q : min))
+      : null;
 
   const handleSaveManual = () => {
     const price = parseFloat(manualPrice.replace(",", "."));
@@ -177,143 +210,239 @@ const WeekCard = ({
     setManualPrice("");
   };
 
+  // ── Estilos condicionais por status ──────────────────────────────────────
+  const cardBg = isPast
+    ? "bg-slate-100 dark:bg-slate-800/40 border-slate-200 dark:border-slate-700/60"
+    : isCurrent
+    ? "bg-white dark:bg-slate-800 border-blue-300 dark:border-blue-600 ring-1 ring-blue-200 dark:ring-blue-700"
+    : "bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700";
+
+  const headerHover = isPast
+    ? "hover:bg-slate-200/60 dark:hover:bg-slate-700/30"
+    : "hover:bg-slate-50 dark:hover:bg-slate-700/50";
+
+  const weekNumBg = isPast
+    ? "bg-slate-200 dark:bg-slate-700/60"
+    : isCurrent
+    ? "bg-blue-100 dark:bg-blue-900/40"
+    : "bg-slate-100 dark:bg-slate-700";
+
+  const weekNumText = isPast
+    ? "text-slate-400 dark:text-slate-500"
+    : isCurrent
+    ? "text-blue-700 dark:text-blue-300"
+    : "text-slate-800 dark:text-slate-100";
+
+  const weekLabelText = isPast
+    ? "text-slate-400 dark:text-slate-500"
+    : isCurrent
+    ? "text-blue-600 dark:text-blue-400"
+    : "text-slate-500 dark:text-slate-400";
+
+  const dateTextDep = isPast
+    ? "text-slate-400 dark:text-slate-500"
+    : "text-blue-600 dark:text-blue-400";
+
+  const dateTextRet = isPast
+    ? "text-slate-400 dark:text-slate-500"
+    : "text-orange-600 dark:text-orange-400";
+
+  const arrowText = isPast
+    ? "text-slate-300 dark:text-slate-600"
+    : "text-slate-400 dark:text-slate-500";
+
   return (
-    <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm overflow-hidden transition-all duration-200">
+    <div
+      className={`rounded-xl border shadow-sm overflow-hidden transition-all duration-200 ${cardBg} ${
+        isPast ? "opacity-60" : ""
+      }`}
+    >
       {/* Header do card */}
       <button
         type="button"
         onClick={() => setExpanded(!expanded)}
-        className="w-full flex items-center justify-between px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-inset"
+        className={`w-full flex items-center justify-between px-4 py-3 transition-colors focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-inset ${headerHover}`}
         aria-expanded={expanded}
       >
         <div className="flex items-center gap-3">
-          <div className="flex items-center gap-1.5 bg-slate-100 dark:bg-slate-700 rounded-lg px-2.5 py-1">
-            <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Sem.</span>
-            <span className="text-sm font-bold text-slate-800 dark:text-slate-100">{week.semana}</span>
+          {/* Badge de número da semana */}
+          <div className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1 ${weekNumBg}`}>
+            <span className={`text-xs font-bold uppercase tracking-wider ${weekLabelText}`}>
+              Sem.
+            </span>
+            <span className={`text-sm font-bold ${weekNumText}`}>{week.semana}</span>
+            {isCurrent && (
+              <span className="ml-0.5 text-[10px] font-semibold text-blue-600 dark:text-blue-400 uppercase tracking-wide">
+                ● atual
+              </span>
+            )}
           </div>
+
+          {/* Datas e menor preço */}
           <div className="text-left">
-            <div className="text-sm font-medium text-slate-700 dark:text-slate-200">
-              <span className="text-blue-600 dark:text-blue-400">✈ {formatDateBR(week.ida.data)}</span>
-              <span className="text-slate-400 dark:text-slate-500 mx-1.5">→</span>
-              <span className="text-orange-600 dark:text-orange-400">↩ {formatDateBR(week.retorno.data)}</span>
+            <div className="text-sm font-medium">
+              <span className={dateTextDep}>✈ {formatDateBR(week.ida.data)}</span>
+              <span className={`mx-1.5 ${arrowText}`}>→</span>
+              <span className={dateTextRet}>↩ {formatDateBR(week.retorno.data)}</span>
             </div>
-            {lowestQuote && (
+            {lowestQuote ? (
               <div className="flex items-center gap-1.5 mt-0.5">
-                <TrendingDown className="w-3 h-3 text-emerald-500" />
-                <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400">
+                <TrendingDown className={`w-3 h-3 ${isPast ? "text-slate-400" : "text-emerald-500"}`} />
+                <span className={`text-xs font-semibold ${
+                  isPast ? "text-slate-400 dark:text-slate-500" : "text-emerald-600 dark:text-emerald-400"
+                }`}>
                   {formatCurrency(lowestQuote.lowestPrice)}
                 </span>
                 <SourceBadge source={lowestQuote.source} />
               </div>
-            )}
+            ) : isPast ? (
+              <span className="text-[11px] text-slate-400 dark:text-slate-500 italic">sem cotação registrada</span>
+            ) : null}
           </div>
         </div>
+
         <div className="flex items-center gap-2">
+          {/* Indicador visual de passado */}
+          {isPast && (
+            <span className="hidden sm:flex items-center gap-1 text-[11px] text-slate-400 dark:text-slate-500">
+              <Clock className="w-3 h-3" />
+              passado
+            </span>
+          )}
           {quotes.length > 0 && (
-            <Badge variant="secondary" className="text-xs">
+            <Badge
+              variant="secondary"
+              className={`text-xs ${isPast ? "opacity-60" : ""}`}
+            >
               {quotes.length} cotação{quotes.length !== 1 ? "ões" : ""}
             </Badge>
           )}
           {expanded ? (
-            <ChevronUp className="w-4 h-4 text-slate-400" />
+            <ChevronUp className={`w-4 h-4 ${isPast ? "text-slate-300 dark:text-slate-600" : "text-slate-400"}`} />
           ) : (
-            <ChevronDown className="w-4 h-4 text-slate-400" />
+            <ChevronDown className={`w-4 h-4 ${isPast ? "text-slate-300 dark:text-slate-600" : "text-slate-400"}`} />
           )}
         </div>
       </button>
 
       {/* Conteúdo expandido */}
       {expanded && (
-        <div className="border-t border-slate-200 dark:border-slate-700 px-4 py-4 space-y-4">
-          {/* Botões de ação */}
-          <div className="flex flex-wrap gap-2">
-            {/* Botão API */}
-            <Button
-              size="sm"
-              onClick={() => onFetchApi(week.semana, depIso, retIso)}
-              disabled={isLoadingApi || apiLimitReached}
-              className={`flex items-center gap-1.5 text-xs ${
-                apiLimitReached
-                  ? "bg-slate-300 dark:bg-slate-600 cursor-not-allowed"
-                  : "bg-emerald-600 hover:bg-emerald-700 text-white"
-              }`}
-              title={apiLimitReached ? "Limite mensal atingido — use o Kayak" : "Buscar preço via Sky Scrapper API"}
-            >
-              {isLoadingApi ? (
-                <Loader2 className="w-3.5 h-3.5 animate-spin" />
-              ) : (
-                <Bot className="w-3.5 h-3.5" />
-              )}
-              {isLoadingApi ? "Buscando..." : "Buscar via API"}
-            </Button>
-
-            {/* Botão Kayak */}
-            <a
-              href={kayakUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md bg-blue-600 hover:bg-blue-700 text-white transition-colors focus-visible:ring-2 focus-visible:ring-blue-500"
-            >
-              <ExternalLink className="w-3.5 h-3.5" />
-              Abrir Kayak
-            </a>
-          </div>
-
-          {/* Aviso de limite atingido */}
-          {apiLimitReached && (
-            <div className="flex items-start gap-2 p-3 rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800">
-              <AlertCircle className="w-4 h-4 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
-              <p className="text-xs text-amber-700 dark:text-amber-300">
-                <strong>Limite mensal atingido</strong> ({apiUsage.requestsUsed}/{apiUsage.requestsLimit} requisições).
-                Use o botão <strong>Abrir Kayak</strong> para consultar o preço e insira manualmente abaixo.
+        <div className={`border-t px-4 py-4 space-y-4 ${
+          isPast
+            ? "border-slate-200 dark:border-slate-700/60"
+            : "border-slate-200 dark:border-slate-700"
+        }`}>
+          {/* Aviso de semana passada */}
+          {isPast && (
+            <div className="flex items-start gap-2 p-3 rounded-lg bg-slate-100 dark:bg-slate-700/40 border border-slate-200 dark:border-slate-700">
+              <Clock className="w-4 h-4 text-slate-400 dark:text-slate-500 flex-shrink-0 mt-0.5" />
+              <p className="text-xs text-slate-500 dark:text-slate-400">
+                Esta semana já passou. As cotações salvas são mantidas apenas para consulta histórica.
+                Novos preços não podem ser buscados para datas passadas.
               </p>
             </div>
           )}
 
-          {/* Campo de preço manual */}
-          <div className="space-y-2">
-            <label className="text-xs font-semibold text-slate-600 dark:text-slate-300 flex items-center gap-1.5">
-              <DollarSign className="w-3.5 h-3.5" />
-              Inserir preço manualmente (R$)
-            </label>
-            <div className="flex gap-2">
-              <Input
-                type="number"
-                min="0"
-                step="0.01"
-                placeholder="Ex: 350.90"
-                value={manualPrice}
-                onChange={e => setManualPrice(e.target.value)}
-                className="h-8 text-sm dark:bg-slate-700 dark:border-slate-600 dark:text-slate-100 dark:placeholder-slate-400 max-w-[160px]"
-                onKeyDown={e => e.key === "Enter" && handleSaveManual()}
-              />
+          {/* Botões de ação — apenas para semanas presentes/futuras */}
+          {!isPast && (
+            <div className="flex flex-wrap gap-2">
+              {/* Botão API */}
               <Button
                 size="sm"
-                onClick={handleSaveManual}
-                disabled={!manualPrice}
-                className="h-8 text-xs bg-blue-600 hover:bg-blue-700 text-white"
+                onClick={() => onFetchApi(week.semana, depIso, retIso)}
+                disabled={isLoadingApi || apiLimitReached}
+                className={`flex items-center gap-1.5 text-xs ${
+                  apiLimitReached
+                    ? "bg-slate-300 dark:bg-slate-600 cursor-not-allowed"
+                    : "bg-emerald-600 hover:bg-emerald-700 text-white"
+                }`}
+                title={
+                  apiLimitReached
+                    ? "Limite mensal atingido — use o Kayak"
+                    : "Buscar preço via Sky Scrapper API"
+                }
               >
-                <Link2 className="w-3.5 h-3.5 mr-1" />
-                Salvar
+                {isLoadingApi ? (
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                ) : (
+                  <Bot className="w-3.5 h-3.5" />
+                )}
+                {isLoadingApi ? "Buscando..." : "Buscar via API"}
               </Button>
+
+              {/* Botão Kayak */}
+              <a
+                href={kayakUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md bg-blue-600 hover:bg-blue-700 text-white transition-colors focus-visible:ring-2 focus-visible:ring-blue-500"
+              >
+                <ExternalLink className="w-3.5 h-3.5" />
+                Abrir Kayak
+              </a>
             </div>
-          </div>
+          )}
+
+          {/* Aviso de limite atingido */}
+          {!isPast && apiLimitReached && (
+            <div className="flex items-start gap-2 p-3 rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800">
+              <AlertCircle className="w-4 h-4 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
+              <p className="text-xs text-amber-700 dark:text-amber-300">
+                <strong>Limite mensal atingido</strong> ({apiUsage.requestsUsed}/
+                {apiUsage.requestsLimit} requisições). Use o botão{" "}
+                <strong>Abrir Kayak</strong> para consultar o preço e insira manualmente abaixo.
+              </p>
+            </div>
+          )}
+
+          {/* Campo de preço manual — apenas para semanas presentes/futuras */}
+          {!isPast && (
+            <div className="space-y-2">
+              <label className="text-xs font-semibold text-slate-600 dark:text-slate-300 flex items-center gap-1.5">
+                <DollarSign className="w-3.5 h-3.5" />
+                Inserir preço manualmente (R$)
+              </label>
+              <div className="flex gap-2">
+                <Input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  placeholder="Ex: 350.90"
+                  value={manualPrice}
+                  onChange={(e) => setManualPrice(e.target.value)}
+                  className="h-8 text-sm dark:bg-slate-700 dark:border-slate-600 dark:text-slate-100 dark:placeholder-slate-400 max-w-[160px]"
+                  onKeyDown={(e) => e.key === "Enter" && handleSaveManual()}
+                />
+                <Button
+                  size="sm"
+                  onClick={handleSaveManual}
+                  disabled={!manualPrice}
+                  className="h-8 text-xs bg-blue-600 hover:bg-blue-700 text-white"
+                >
+                  <Link2 className="w-3.5 h-3.5 mr-1" />
+                  Salvar
+                </Button>
+              </div>
+            </div>
+          )}
 
           {/* Lista de cotações salvas */}
           {quotes.length > 0 && (
             <div className="space-y-2">
-              <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+              <p className={`text-xs font-semibold uppercase tracking-wider ${
+                isPast ? "text-slate-400 dark:text-slate-500" : "text-slate-500 dark:text-slate-400"
+              }`}>
                 Cotações salvas
               </p>
               <div className="space-y-1.5">
-                {quotes.map(q => (
-                  <QuoteRow key={q.id} quote={q} onDelete={onDelete} />
+                {quotes.map((q) => (
+                  <QuoteRow key={q.id} quote={q} onDelete={onDelete} isPast={isPast} />
                 ))}
               </div>
             </div>
           )}
 
-          {quotes.length === 0 && (
+          {quotes.length === 0 && !isPast && (
             <p className="text-xs text-slate-400 dark:text-slate-500 italic text-center py-2">
               Nenhuma cotação salva ainda. Use os botões acima para buscar preços.
             </p>
@@ -324,22 +453,29 @@ const WeekCard = ({
   );
 };
 
+// ─── Componente principal ─────────────────────────────────────────────────────
+
 export default function FlightQuotes() {
   const { theme } = useTheme();
-  const _isDark = theme === 'dark'; // para uso futuro se necessário
+  const _isDark = theme === "dark";
   const [loadingWeek, setLoadingWeek] = useState<number | null>(null);
 
   // Queries
-  const { data: allQuotes = [], refetch: refetchQuotes } = trpc.quotes.getAll.useQuery();
-  const { data: apiUsage = { requestsUsed: 0, requestsLimit: 20 }, refetch: refetchUsage } =
-    trpc.quotes.getApiUsage.useQuery();
+  const { data: allQuotes = [], refetch: refetchQuotes } =
+    trpc.quotes.getAll.useQuery();
+  const {
+    data: apiUsage = { requestsUsed: 0, requestsLimit: 20 },
+    refetch: refetchUsage,
+  } = trpc.quotes.getApiUsage.useQuery();
 
   // Mutations
   const fetchFromApi = trpc.quotes.fetchFromApi.useMutation({
     onSuccess: (data) => {
       toast.success(
         `Preço encontrado: ${data.lowestPriceFormatted}${data.airline ? ` (${data.airline})` : ""}`,
-        { description: `Requisições usadas: ${data.requestsUsed}/${data.requestsLimit}` }
+        {
+          description: `Requisições usadas: ${data.requestsUsed}/${data.requestsLimit}`,
+        }
       );
       refetchQuotes();
       refetchUsage();
@@ -381,12 +517,21 @@ export default function FlightQuotes() {
     return map;
   }, [allQuotes]);
 
-  const handleFetchApi = (weekNumber: number, departureDate: string, returnDate: string) => {
+  const handleFetchApi = (
+    weekNumber: number,
+    departureDate: string,
+    returnDate: string
+  ) => {
     setLoadingWeek(weekNumber);
     fetchFromApi.mutate({ weekNumber, departureDate, returnDate });
   };
 
-  const handleSaveManual = (weekNumber: number, departureDate: string, returnDate: string, price: number) => {
+  const handleSaveManual = (
+    weekNumber: number,
+    departureDate: string,
+    returnDate: string,
+    price: number
+  ) => {
     saveManual.mutate({ weekNumber, departureDate, returnDate, price });
   };
 
@@ -394,11 +539,27 @@ export default function FlightQuotes() {
     deleteQuote.mutate({ id });
   };
 
-  const usagePercent = Math.round((apiUsage.requestsUsed / apiUsage.requestsLimit) * 100);
+  const usagePercent = Math.round(
+    (apiUsage.requestsUsed / apiUsage.requestsLimit) * 100
+  );
   const usageColor =
-    usagePercent >= 90 ? "bg-red-500" :
-    usagePercent >= 70 ? "bg-amber-500" :
-    "bg-emerald-500";
+    usagePercent >= 90
+      ? "bg-red-500"
+      : usagePercent >= 70
+      ? "bg-amber-500"
+      : "bg-emerald-500";
+
+  // Contar semanas por status para exibir no header
+  const weekCounts = useMemo(() => {
+    let past = 0, current = 0, future = 0;
+    for (const w of flightData) {
+      const s = getWeekStatus(w.ida.data, w.retorno.data);
+      if (s === "past") past++;
+      else if (s === "current") current++;
+      else future++;
+    }
+    return { past, current, future };
+  }, []);
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-900 transition-colors duration-300">
@@ -416,6 +577,23 @@ export default function FlightQuotes() {
               <p className="text-sm text-slate-500 dark:text-slate-400">
                 GRU (Guarulhos) → NVT (Navegantes) · Ida: domingo · Volta: sexta
               </p>
+              {/* Resumo de semanas */}
+              <div className="flex items-center gap-3 mt-2 flex-wrap">
+                {weekCounts.current > 0 && (
+                  <span className="inline-flex items-center gap-1 text-xs font-medium text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700 rounded-full px-2 py-0.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-blue-500 inline-block" />
+                    {weekCounts.current} semana atual
+                  </span>
+                )}
+                <span className="inline-flex items-center gap-1 text-xs font-medium text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-900/30 border border-emerald-200 dark:border-emerald-700 rounded-full px-2 py-0.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block" />
+                  {weekCounts.future} semanas futuras
+                </span>
+                <span className="inline-flex items-center gap-1 text-xs font-medium text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600 rounded-full px-2 py-0.5">
+                  <Clock className="w-3 h-3" />
+                  {weekCounts.past} semanas passadas
+                </span>
+              </div>
             </div>
 
             {/* Contador de uso da API */}
@@ -462,10 +640,16 @@ export default function FlightQuotes() {
               <strong>Kayak Manual</strong> — preço inserido manualmente
             </span>
           </div>
+          <div className="flex items-center gap-1.5">
+            <Clock className="w-4 h-4 text-slate-400" />
+            <span className="text-xs text-slate-500 dark:text-slate-400">
+              <strong>Cinza</strong> — semana já passou
+            </span>
+          </div>
         </div>
 
         <div className="space-y-3">
-          {flightData.map(week => (
+          {flightData.map((week) => (
             <WeekCard
               key={week.semana}
               week={week}
