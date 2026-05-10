@@ -468,7 +468,18 @@ export const appRouter = router({
 
       const issuedWeeks = weeks.filter(w => w.isTicketIssued);
 
-      for (const week of issuedWeeks) {
+      // ⚡ Bolt: Hoist date parsing outside the nested loops to avoid O(N*M) time complexity
+      const parsedIssuedWeeks = issuedWeeks.map(w => ({
+        week: w,
+        departureTime: w.departureFlightDatetime
+          ? parseBrasiliaDatetime(w.departureFlightDatetime)
+          : null,
+        returnTime: w.returnFlightDatetime
+          ? parseBrasiliaDatetime(w.returnFlightDatetime)
+          : null,
+      }));
+
+      for (const { week, departureTime, returnTime } of parsedIssuedWeeks) {
         for (const aviso of avisos) {
           const targetMs = aviso.minutes * 60 * 1000;
           const windowStart = new Date(
@@ -477,25 +488,25 @@ export const appRouter = router({
           const windowEnd = new Date(now.getTime() + targetMs + 50 * 60 * 1000);
 
           // Voo de ida
-          if (week.departureFlightDatetime) {
-            const flightTime = parseBrasiliaDatetime(
-              week.departureFlightDatetime
-            );
-            if (!isNaN(flightTime.getTime())) {
-              const alertTime = new Date(flightTime.getTime() - targetMs);
+          if (departureTime) {
+            if (!isNaN(departureTime.getTime())) {
+              const alertTime = new Date(departureTime.getTime() - targetMs);
               const minutesUntilAlert = Math.round(
                 (alertTime.getTime() - now.getTime()) / 60000
               );
               let status: "pending" | "sent" | "past" = "pending";
-              if (flightTime < now) status = "past";
-              else if (flightTime >= windowStart && flightTime <= windowEnd)
+              if (departureTime < now) status = "past";
+              else if (
+                departureTime >= windowStart &&
+                departureTime <= windowEnd
+              )
                 status = "sent";
               scheduledAlerts.push({
                 weekNumber: Number(week.weekNumber),
                 direction: "ida",
                 avisoLabel: aviso.label,
                 avisoMinutes: aviso.minutes,
-                flightDatetime: week.departureFlightDatetime,
+                flightDatetime: week.departureFlightDatetime!,
                 alertDatetime: alertTime.toISOString(),
                 airline: week.departureAirline ?? "",
                 flightNumber: week.departureFlightNumber ?? "",
@@ -506,23 +517,22 @@ export const appRouter = router({
           }
 
           // Voo de volta
-          if (week.returnFlightDatetime) {
-            const flightTime = parseBrasiliaDatetime(week.returnFlightDatetime);
-            if (!isNaN(flightTime.getTime())) {
-              const alertTime = new Date(flightTime.getTime() - targetMs);
+          if (returnTime) {
+            if (!isNaN(returnTime.getTime())) {
+              const alertTime = new Date(returnTime.getTime() - targetMs);
               const minutesUntilAlert = Math.round(
                 (alertTime.getTime() - now.getTime()) / 60000
               );
               let status: "pending" | "sent" | "past" = "pending";
-              if (flightTime < now) status = "past";
-              else if (flightTime >= windowStart && flightTime <= windowEnd)
+              if (returnTime < now) status = "past";
+              else if (returnTime >= windowStart && returnTime <= windowEnd)
                 status = "sent";
               scheduledAlerts.push({
                 weekNumber: Number(week.weekNumber),
                 direction: "volta",
                 avisoLabel: aviso.label,
                 avisoMinutes: aviso.minutes,
-                flightDatetime: week.returnFlightDatetime,
+                flightDatetime: week.returnFlightDatetime!,
                 alertDatetime: alertTime.toISOString(),
                 airline: week.returnAirline ?? "",
                 flightNumber: week.returnFlightNumber ?? "",
@@ -586,17 +596,27 @@ export const appRouter = router({
       let nextAlert: NextAlert | null = null;
       let minTimeUntilAlert = Infinity;
 
-      for (const week of weeks.filter(w => w.isTicketIssued)) {
+      // ⚡ Bolt: Hoist date parsing outside the nested loops for nextAlert logic too
+      const parsedAlertWeeks = weeks
+        .filter(w => w.isTicketIssued)
+        .map(w => ({
+          week: w,
+          departureTime: w.departureFlightDatetime
+            ? parseBrasiliaDatetime(w.departureFlightDatetime)
+            : null,
+          returnTime: w.returnFlightDatetime
+            ? parseBrasiliaDatetime(w.returnFlightDatetime)
+            : null,
+        }));
+
+      for (const { week, departureTime, returnTime } of parsedAlertWeeks) {
         for (const aviso of avisos) {
           const targetMs = aviso.minutes * 60 * 1000;
 
           // Voo de ida
-          if (week.departureFlightDatetime) {
-            const flightTime = parseBrasiliaDatetime(
-              week.departureFlightDatetime
-            );
-            if (!isNaN(flightTime.getTime()) && flightTime > now) {
-              const alertTime = new Date(flightTime.getTime() - targetMs);
+          if (departureTime) {
+            if (!isNaN(departureTime.getTime()) && departureTime > now) {
+              const alertTime = new Date(departureTime.getTime() - targetMs);
               const minutesUntilAlert = Math.round(
                 (alertTime.getTime() - now.getTime()) / 60000
               );
@@ -614,17 +634,16 @@ export const appRouter = router({
                   flightNumber: week.departureFlightNumber,
                   departureAirport: week.departureAirport,
                   arrivalAirport: week.returnAirport,
-                  flightDatetime: week.departureFlightDatetime,
+                  flightDatetime: week.departureFlightDatetime!,
                 };
               }
             }
           }
 
           // Voo de volta
-          if (week.returnFlightDatetime) {
-            const flightTime = parseBrasiliaDatetime(week.returnFlightDatetime);
-            if (!isNaN(flightTime.getTime()) && flightTime > now) {
-              const alertTime = new Date(flightTime.getTime() - targetMs);
+          if (returnTime) {
+            if (!isNaN(returnTime.getTime()) && returnTime > now) {
+              const alertTime = new Date(returnTime.getTime() - targetMs);
               const minutesUntilAlert = Math.round(
                 (alertTime.getTime() - now.getTime()) / 60000
               );
@@ -642,7 +661,7 @@ export const appRouter = router({
                   flightNumber: week.returnFlightNumber,
                   departureAirport: week.returnAirport,
                   arrivalAirport: week.departureAirport,
-                  flightDatetime: week.returnFlightDatetime,
+                  flightDatetime: week.returnFlightDatetime!,
                 };
               }
             }
