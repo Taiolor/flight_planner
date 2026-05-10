@@ -2229,7 +2229,7 @@ export default function Home() {
                                       onClick={() =>
                                         toggleWeekCard(week.weekNumber)
                                       }
-                                      className="focus:outline-none rounded-full p-1 hover:bg-slate-100 transition-colors"
+                                      className="focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded-full p-1 hover:bg-slate-100 transition-colors"
                                       title={
                                         expandedWeekCards.has(week.weekNumber)
                                           ? "Recolher"
@@ -2493,7 +2493,7 @@ export default function Home() {
                                                             })
                                                           )
                                                         }
-                                                        className="flex items-center gap-0.5 text-[10px] font-medium text-blue-500 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded px-1.5 py-0.5 transition-colors"
+                                                        className="flex items-center gap-0.5 text-[10px] font-medium text-blue-500 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded px-1.5 py-0.5 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
                                                       >
                                                         <svg
                                                           className="w-3 h-3"
@@ -2839,7 +2839,7 @@ export default function Home() {
                                                             })
                                                           )
                                                         }
-                                                        className="flex items-center gap-0.5 text-[10px] font-medium text-blue-500 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded px-1.5 py-0.5 transition-colors"
+                                                        className="flex items-center gap-0.5 text-[10px] font-medium text-blue-500 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded px-1.5 py-0.5 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
                                                       >
                                                         <svg
                                                           className="w-3 h-3"
@@ -3293,7 +3293,7 @@ export default function Home() {
                                             disabled={
                                               savingTicket[week.weekNumber]
                                             }
-                                            className="w-full py-3 rounded-2xl bg-slate-900 text-white text-sm font-semibold shadow-lg hover:bg-slate-800 active:scale-[0.98] transition-all flex items-center justify-center gap-2 disabled:opacity-60"
+                                            className="w-full py-3 rounded-2xl bg-slate-900 text-white text-sm font-semibold shadow-lg hover:bg-slate-800 active:scale-[0.98] transition-all flex items-center justify-center gap-2 disabled:opacity-60 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-2"
                                             onClick={() => {
                                               if (!isAuthenticated) {
                                                 setShowLoginModal(true);
@@ -3721,7 +3721,7 @@ export default function Home() {
                                                           calendarDurationMinutes
                                                         )
                                                       }
-                                                      className="w-full flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg bg-slate-100 hover:bg-slate-200 transition-colors text-[11px] font-medium text-slate-700 border border-slate-200"
+                                                      className="w-full flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg bg-slate-100 hover:bg-slate-200 transition-colors text-[11px] font-medium text-slate-700 border border-slate-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-500 focus-visible:ring-offset-1"
                                                     >
                                                       <Download className="w-3.5 h-3.5" />
                                                       Baixar .ics (Apple
@@ -3979,7 +3979,7 @@ export default function Home() {
               <div className="flex gap-2">
                 <button
                   onClick={selectAllChartAirlines}
-                  className="text-xs text-blue-600 hover:text-blue-800 font-medium px-2 py-1 rounded hover:bg-blue-50 transition-colors"
+                  className="text-xs text-blue-600 hover:text-blue-800 font-medium px-2 py-1 rounded hover:bg-blue-50 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
                   title="Selecionar todas as empresas"
                   aria-label="Selecionar todas as empresas"
                 >
@@ -3988,7 +3988,7 @@ export default function Home() {
                 <span className="text-slate-300">|</span>
                 <button
                   onClick={clearChartAirlines}
-                  className="text-xs text-slate-500 hover:text-slate-700 font-medium px-2 py-1 rounded hover:bg-slate-100 transition-colors"
+                  className="text-xs text-slate-500 hover:text-slate-700 font-medium px-2 py-1 rounded hover:bg-slate-100 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
                   title="Limpar seleção de empresas"
                   aria-label="Limpar seleção de empresas"
                 >
@@ -4012,7 +4012,7 @@ export default function Home() {
                     key={airline.id}
                     onClick={() => toggleChartAirline(airline.id)}
                     aria-pressed={isSelected}
-                    className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium border-2 transition-all ${
+                    className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium border-2 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 ${
                       isSelected
                         ? "border-transparent text-white shadow-sm"
                         : "border-slate-300 text-slate-500 bg-white hover:border-slate-400"
