@@ -26,6 +26,9 @@ const NVT_SKY_ID = "NVT";
 const NVT_ENTITY_ID = "95673774";
 const RAPIDAPI_HOST = "sky-scrapper.p.rapidapi.com";
 
+/** Espera ms milissegundos */
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
 /** Retorna o yearMonth atual no formato YYYY-MM */
 function getCurrentYearMonth(): string {
   const now = new Date();
@@ -34,73 +37,109 @@ function getCurrentYearMonth(): string {
   return `${year}-${month}`;
 }
 
-/** Chama a Sky Scrapper API para buscar o menor preço de voo */
+/**
+ * Chama a Sky Scrapper API para buscar o menor preço de voo.
+ *
+ * O endpoint searchFlights v2 é assíncrono: a primeira chamada retorna
+ * context.status = "incomplete" com um sessionId. É necessário fazer
+ * polling em /searchIncomplete até status = "complete" ou até ter itinerários.
+ *
+ * Nota: a API retorna price.raw como valor numérico em BRL (o símbolo
+ * formatado pode aparecer incorretamente como ₹ — ignoramos o símbolo).
+ */
 async function fetchSkyScrapperPrice(
   departureDate: string,
   returnDate: string,
   apiKey: string
 ): Promise<{ lowestPrice: number; airline: string | null; rawResponse: string }> {
-  const url = new URL(
-    `https://${RAPIDAPI_HOST}/api/v2/flights/searchFlightsComplete`
-  );
-  url.searchParams.set("originSkyId", GRU_SKY_ID);
-  url.searchParams.set("destinationSkyId", NVT_SKY_ID);
-  url.searchParams.set("originEntityId", GRU_ENTITY_ID);
-  url.searchParams.set("destinationEntityId", NVT_ENTITY_ID);
-  url.searchParams.set("date", departureDate);
-  url.searchParams.set("returnDate", returnDate);
-  url.searchParams.set("adults", "1");
-  url.searchParams.set("currency", "BRL");
-  url.searchParams.set("market", "BR");
-  url.searchParams.set("locale", "pt-BR");
-  url.searchParams.set("cabinClass", "economy");
+  const headers = {
+    "x-rapidapi-key": apiKey,
+    "x-rapidapi-host": RAPIDAPI_HOST,
+  };
 
-  const response = await fetch(url.toString(), {
-    method: "GET",
-    headers: {
-      "x-rapidapi-key": apiKey,
-      "x-rapidapi-host": RAPIDAPI_HOST,
-    },
-  });
+  // ── Passo 1: Iniciar a busca ──────────────────────────────────────────────
+  const searchUrl = new URL(`https://${RAPIDAPI_HOST}/api/v2/flights/searchFlights`);
+  searchUrl.searchParams.set("originSkyId", GRU_SKY_ID);
+  searchUrl.searchParams.set("destinationSkyId", NVT_SKY_ID);
+  searchUrl.searchParams.set("originEntityId", GRU_ENTITY_ID);
+  searchUrl.searchParams.set("destinationEntityId", NVT_ENTITY_ID);
+  searchUrl.searchParams.set("date", departureDate);
+  searchUrl.searchParams.set("returnDate", returnDate);
+  searchUrl.searchParams.set("adults", "1");
+  searchUrl.searchParams.set("currency", "BRL");
+  searchUrl.searchParams.set("market", "pt-BR");
+  searchUrl.searchParams.set("countryCode", "BR");
+  searchUrl.searchParams.set("cabinClass", "economy");
+  searchUrl.searchParams.set("sortBy", "best");
 
-  if (!response.ok) {
-    const errorText = await response.text();
+  const initResponse = await fetch(searchUrl.toString(), { headers });
+  if (!initResponse.ok) {
+    const errorText = await initResponse.text();
     throw new TRPCError({
       code: "INTERNAL_SERVER_ERROR",
-      message: `Sky Scrapper API retornou erro ${response.status}: ${errorText}`,
+      message: `Sky Scrapper API erro ${initResponse.status}: ${errorText}`,
     });
   }
 
-  const data = await response.json();
-  const rawResponse = JSON.stringify(data).slice(0, 5000); // Limitar tamanho
+  const initData = await initResponse.json();
+  const sessionId: string | undefined = initData?.data?.context?.sessionId;
 
-  // Extrair menor preço da resposta
-  // A API retorna itinerários com preços em data.data.itineraries
-  const itineraries = data?.data?.itineraries ?? [];
+  if (!sessionId) {
+    throw new TRPCError({
+      code: "INTERNAL_SERVER_ERROR",
+      message: "Sky Scrapper API não retornou sessionId",
+    });
+  }
 
-  if (!itineraries || itineraries.length === 0) {
+  // ── Passo 2: Polling até obter resultados completos ───────────────────────
+  let itineraries: any[] = initData?.data?.itineraries ?? [];
+  let contextStatus: string = initData?.data?.context?.status ?? "incomplete";
+  let lastData = initData;
+  const MAX_POLLS = 5;
+  const POLL_DELAY_MS = 2000;
+
+  for (let attempt = 0; attempt < MAX_POLLS && (contextStatus !== "complete" || itineraries.length === 0); attempt++) {
+    await sleep(POLL_DELAY_MS);
+    const pollUrl = new URL(`https://${RAPIDAPI_HOST}/api/v2/flights/searchIncomplete`);
+    pollUrl.searchParams.set("sessionId", sessionId);
+
+    const pollResponse = await fetch(pollUrl.toString(), { headers });
+    if (!pollResponse.ok) continue; // Ignorar erros transitórios no polling
+
+    const pollData = await pollResponse.json();
+    contextStatus = pollData?.data?.context?.status ?? contextStatus;
+    const newItins = pollData?.data?.itineraries ?? [];
+    if (newItins.length > 0) {
+      itineraries = newItins;
+      lastData = pollData;
+    }
+
+    if (contextStatus === "complete" && itineraries.length > 0) break;
+  }
+
+  const rawResponse = JSON.stringify(lastData).slice(0, 5000);
+
+  if (itineraries.length === 0) {
     throw new TRPCError({
       code: "NOT_FOUND",
-      message: "Nenhum voo encontrado para as datas selecionadas",
+      message: "Nenhum voo encontrado para as datas selecionadas. Tente usar o Kayak para inserir o preço manualmente.",
     });
   }
 
+  // ── Passo 3: Extrair menor preço ─────────────────────────────────────────
+  // price.raw é o valor numérico em BRL (o símbolo formatado pode estar errado)
   let lowestPrice = Infinity;
   let airline: string | null = null;
 
   for (const itin of itineraries) {
-    const price = itin?.price?.raw ?? itin?.price?.formatted;
-    if (price !== undefined && price !== null) {
-      const priceNum = typeof price === "number" ? price : parseFloat(String(price).replace(/[^0-9.]/g, ""));
-      if (!isNaN(priceNum) && priceNum < lowestPrice) {
-        lowestPrice = priceNum;
-        // Tentar extrair companhia aérea
-        const legs = itin?.legs ?? [];
-        if (legs.length > 0) {
-          const carriers = legs[0]?.carriers?.marketing ?? [];
-          if (carriers.length > 0) {
-            airline = carriers[0]?.name ?? null;
-          }
+    const priceRaw = itin?.price?.raw;
+    if (typeof priceRaw === "number" && !isNaN(priceRaw) && priceRaw > 0 && priceRaw < lowestPrice) {
+      lowestPrice = priceRaw;
+      const legs = itin?.legs ?? [];
+      if (legs.length > 0) {
+        const carriers = legs[0]?.carriers?.marketing ?? [];
+        if (carriers.length > 0) {
+          airline = carriers[0]?.name ?? null;
         }
       }
     }
