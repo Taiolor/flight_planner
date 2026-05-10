@@ -177,3 +177,47 @@ export const notificationLogs = mysqlTable("notification_logs", {
 
 export type NotificationLog = typeof notificationLogs.$inferSelect;
 export type InsertNotificationLog = typeof notificationLogs.$inferInsert;
+
+/**
+ * Tabela para armazenar cotações de preços de passagens aéreas
+ * source: 'api' = obtido via Sky Scrapper API | 'manual' = inserido manualmente via Kayak
+ */
+export const flightQuotes = mysqlTable(
+  "flight_quotes",
+  {
+    id: int("id").autoincrement().primaryKey(),
+    weekNumber: int("weekNumber").notNull(),
+    departureDate: varchar("departureDate", { length: 20 }).notNull(), // YYYY-MM-DD
+    returnDate: varchar("returnDate", { length: 20 }).notNull(),       // YYYY-MM-DD
+    lowestPrice: int("lowestPrice").notNull(),                          // em centavos (R$)
+    currency: varchar("currency", { length: 10 }).default("BRL").notNull(),
+    source: mysqlEnum("source", ["api", "manual"]).notNull(),           // origem do preço
+    airline: varchar("airline", { length: 100 }),                       // companhia (quando disponível)
+    apiRequestsUsed: int("apiRequestsUsed").default(0).notNull(),       // contador de req usadas no mês
+    rawResponse: text("rawResponse"),                                   // resposta bruta da API (debug)
+    quotedAt: timestamp("quotedAt").defaultNow().notNull(),
+    createdAt: timestamp("createdAt").defaultNow().notNull(),
+    updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+  },
+  table => [
+    index("idx_flight_quotes_weekNumber").on(table.weekNumber),
+    index("idx_flight_quotes_quotedAt").on(table.quotedAt),
+  ]
+);
+
+export type FlightQuote = typeof flightQuotes.$inferSelect;
+export type InsertFlightQuote = typeof flightQuotes.$inferInsert;
+
+/**
+ * Tabela para rastrear uso mensal da API Sky Scrapper
+ */
+export const apiUsageTracker = mysqlTable("api_usage_tracker", {
+  id: int("id").autoincrement().primaryKey(),
+  yearMonth: varchar("yearMonth", { length: 7 }).notNull().unique(), // YYYY-MM
+  requestsUsed: int("requestsUsed").default(0).notNull(),
+  requestsLimit: int("requestsLimit").default(20).notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type ApiUsageTracker = typeof apiUsageTracker.$inferSelect;
+export type InsertApiUsageTracker = typeof apiUsageTracker.$inferInsert;

@@ -120,6 +120,13 @@
       "when": 1777508487085,
       "tag": "0016_gray_joshua_kane",
       "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "5",
+      "when": 1778447290720,
+      "tag": "0017_right_vengeance",
+      "breakpoints": true
     }
   ]
 }

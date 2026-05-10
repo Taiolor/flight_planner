@@ -80,6 +80,7 @@ import {
   ShieldCheck,
   Sun,
   Moon,
+  DollarSign,
 } from "lucide-react";
 import { Link } from "wouter";
 import {
@@ -1339,6 +1340,16 @@ export default function Home() {
                   className="bg-white bg-opacity-10 border-white text-white hover:bg-white hover:text-blue-700"
                 >
                   <CalendarDays className="w-4 h-4 mr-1" /> Calendário
+                </Button>
+              </Link>
+              <Link href="/cotacoes">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="bg-white bg-opacity-10 border-white text-white hover:bg-white hover:text-blue-700"
+                  title="Cotações de Passagens"
+                >
+                  <DollarSign className="w-4 h-4 mr-1" /> Cotações
                 </Button>
               </Link>
               {isAuthenticated && (

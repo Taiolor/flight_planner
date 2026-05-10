@@ -1,4 +1,5 @@
 import { COOKIE_NAME } from "@shared/const";
+import { quotesRouter } from "./routers/quotes";
 import type { Request } from "express";
 import crypto from "crypto";
 import { getSessionCookieOptions } from "./_core/cookies";
@@ -768,6 +769,11 @@ export const appRouter = router({
         return { success: true };
       }),
   }),
+
+  // =====================
+  // Cotações de Passagens (Sky Scrapper API + Kayak manual)
+  // =====================
+  quotes: quotesRouter,
 });
 
 export type AppRouter = typeof appRouter;

@@ -1,6 +1,6 @@
 import { and, desc, eq, gt, lt } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, users, flightWeeks, flightPrices, InsertFlightWeek, InsertFlightPrice, authSessions, InsertAuthSession, pushSubscriptions, InsertPushSubscription, notificationSettings, notificationLogs, InsertNotificationLog } from "../drizzle/schema";
+import { InsertUser, users, flightWeeks, flightPrices, InsertFlightWeek, InsertFlightPrice, authSessions, InsertAuthSession, pushSubscriptions, InsertPushSubscription, notificationSettings, notificationLogs, InsertNotificationLog, flightQuotes, InsertFlightQuote, apiUsageTracker } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -386,5 +386,78 @@ export async function deleteOldNotificationLogs(daysOld = 90): Promise<number> {
   } catch (error) {
     console.error("[Cleanup] Erro ao deletar logs antigos:", error);
     return 0;
+  }
+}
+
+// =====================
+// Flight Quotes
+// =====================
+
+export async function getAllFlightQuotes() {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(flightQuotes).orderBy(desc(flightQuotes.quotedAt));
+}
+
+export async function getFlightQuotesByWeek(weekNumber: number) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(flightQuotes)
+    .where(eq(flightQuotes.weekNumber, weekNumber))
+    .orderBy(desc(flightQuotes.quotedAt));
+}
+
+export async function insertFlightQuote(data: InsertFlightQuote) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const result = await db.insert(flightQuotes).values(data);
+  return result;
+}
+
+export async function deleteFlightQuote(id: number) {
+  const db = await getDb();
+  if (!db) return;
+  await db.delete(flightQuotes).where(eq(flightQuotes.id, id));
+}
+
+// =====================
+// API Usage Tracker
+// =====================
+
+export async function getApiUsage(yearMonth: string) {
+  const db = await getDb();
+  if (!db) return { requestsUsed: 0, requestsLimit: 20 };
+
+  const rows = await db.select().from(apiUsageTracker)
+    .where(eq(apiUsageTracker.yearMonth, yearMonth))
+    .limit(1);
+
+  if (rows.length === 0) {
+    return { requestsUsed: 0, requestsLimit: 20 };
+  }
+  return { requestsUsed: rows[0].requestsUsed, requestsLimit: rows[0].requestsLimit };
+}
+
+export async function incrementApiUsage(yearMonth: string): Promise<{ requestsUsed: number; requestsLimit: number }> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const rows = await db.select().from(apiUsageTracker)
+    .where(eq(apiUsageTracker.yearMonth, yearMonth))
+    .limit(1);
+
+  if (rows.length === 0) {
+    await db.insert(apiUsageTracker).values({
+      yearMonth,
+      requestsUsed: 1,
+      requestsLimit: 20,
+    });
+    return { requestsUsed: 1, requestsLimit: 20 };
+  } else {
+    const newCount = rows[0].requestsUsed + 1;
+    await db.update(apiUsageTracker)
+      .set({ requestsUsed: newCount })
+      .where(eq(apiUsageTracker.yearMonth, yearMonth));
+    return { requestsUsed: newCount, requestsLimit: rows[0].requestsLimit };
   }
 }
