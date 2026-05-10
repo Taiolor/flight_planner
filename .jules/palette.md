@@ -12,3 +12,7 @@
 ## 2024-05-06 - A11y on Custom Segmented Controls
 **Learning:** Custom segmented controls (like the ticket type selector) often lack native radio button semantics, making them opaque to screen readers. Grouping them with `role="group"` and `aria-label`, along with adding `aria-pressed` to the individual buttons, significantly improves their accessibility.
 **Action:** When implementing or updating custom toggle groups, always ensure the container has a `role="group"` and `aria-label`, and the buttons themselves manage `aria-pressed` states. Also remember to use `focus-visible:ring-inset` if the parent has `overflow-hidden`.
+
+## 2024-05-10 - Consistently applied focus-visible
+**Learning:** Found multiple native `<button>` elements that were missing focus states, hurting keyboard navigation accessibility. Using `focus:outline-none focus-visible:ring-2` combined with ring colors provides an accessible and aesthetically pleasing focus indicator that only appears during keyboard interaction.
+**Action:** Always check newly added buttons or interactive elements to ensure they include explicit `focus-visible` styles when building new components or reviewing PRs.
