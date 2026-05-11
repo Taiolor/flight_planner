@@ -209,9 +209,24 @@ export const quotesRouter = router({
         });
       }
 
+      // Se a data de ida já passou, usar a data de hoje como data de ida
+      // (a API não aceita datas passadas; isso ocorre na semana corrente)
+      const todayIso = new Date().toISOString().slice(0, 10);
+      const effectiveDeparture =
+        input.departureDate < todayIso ? todayIso : input.departureDate;
+
+      // Garantir que a data de retorno seja posterior à data de ida efetiva
+      if (input.returnDate <= effectiveDeparture) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message:
+            "A data de retorno já passou. Não é possível buscar voos para esta semana.",
+        });
+      }
+
       // Buscar preço na API
       const { lowestPrice, airline, rawResponse } = await fetchSkyScrapperPrice(
-        input.departureDate,
+        effectiveDeparture,
         input.returnDate,
         apiKey
       );
