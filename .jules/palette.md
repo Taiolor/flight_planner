@@ -16,3 +16,6 @@
 ## 2024-05-10 - Consistently applied focus-visible
 **Learning:** Found multiple native `<button>` elements that were missing focus states, hurting keyboard navigation accessibility. Using `focus:outline-none focus-visible:ring-2` combined with ring colors provides an accessible and aesthetically pleasing focus indicator that only appears during keyboard interaction.
 **Action:** Always check newly added buttons or interactive elements to ensure they include explicit `focus-visible` styles when building new components or reviewing PRs.
+## $(date +%Y-%m-%d) - Icon-only links accessibility
+**Learning:** The `title` attribute is not a reliable substitute for `aria-label` for screen reader users on icon-only links. Furthermore, do not add `aria-label` to buttons that already contain meaningful text, as it overrides the accessible name.
+**Action:** Always add explicit `aria-label` attributes to icon-only interactive elements (both buttons and links) to ensure proper screen reader announcements, and ensure that elements with text rely on their content.

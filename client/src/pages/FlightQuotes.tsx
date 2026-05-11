@@ -119,15 +119,21 @@ const QuoteRow = ({
 }) => {
   const quotedDate = new Date(quote.quotedAt);
   return (
-    <div className={`flex items-center justify-between py-2 px-3 rounded-lg border gap-2 ${
-      isPast
-        ? "bg-slate-100 dark:bg-slate-800/60 border-slate-200 dark:border-slate-700"
-        : "bg-slate-50 dark:bg-slate-700/50 border-slate-200 dark:border-slate-600"
-    }`}>
+    <div
+      className={`flex items-center justify-between py-2 px-3 rounded-lg border gap-2 ${
+        isPast
+          ? "bg-slate-100 dark:bg-slate-800/60 border-slate-200 dark:border-slate-700"
+          : "bg-slate-50 dark:bg-slate-700/50 border-slate-200 dark:border-slate-600"
+      }`}
+    >
       <div className="flex items-center gap-3 flex-1 min-w-0">
-        <span className={`text-lg font-bold whitespace-nowrap ${
-          isPast ? "text-slate-400 dark:text-slate-500" : "text-slate-800 dark:text-slate-100"
-        }`}>
+        <span
+          className={`text-lg font-bold whitespace-nowrap ${
+            isPast
+              ? "text-slate-400 dark:text-slate-500"
+              : "text-slate-800 dark:text-slate-100"
+          }`}
+        >
           {formatCurrency(quote.lowestPrice)}
         </span>
         <SourceBadge source={quote.source} />
@@ -178,8 +184,17 @@ const WeekCard = ({
     quotedAt: Date;
   }>;
   apiUsage: { requestsUsed: number; requestsLimit: number };
-  onFetchApi: (weekNumber: number, departureDate: string, returnDate: string) => void;
-  onSaveManual: (weekNumber: number, departureDate: string, returnDate: string, price: number) => void;
+  onFetchApi: (
+    weekNumber: number,
+    departureDate: string,
+    returnDate: string
+  ) => void;
+  onSaveManual: (
+    weekNumber: number,
+    departureDate: string,
+    returnDate: string,
+    price: number
+  ) => void;
   onDelete: (id: number) => void;
   isLoadingApi: boolean;
 }) => {
@@ -214,8 +229,8 @@ const WeekCard = ({
   const cardBg = isPast
     ? "bg-slate-100 dark:bg-slate-800/40 border-slate-200 dark:border-slate-700/60"
     : isCurrent
-    ? "bg-white dark:bg-slate-800 border-blue-300 dark:border-blue-600 ring-1 ring-blue-200 dark:ring-blue-700"
-    : "bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700";
+      ? "bg-white dark:bg-slate-800 border-blue-300 dark:border-blue-600 ring-1 ring-blue-200 dark:ring-blue-700"
+      : "bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700";
 
   const headerHover = isPast
     ? "hover:bg-slate-200/60 dark:hover:bg-slate-700/30"
@@ -224,20 +239,20 @@ const WeekCard = ({
   const weekNumBg = isPast
     ? "bg-slate-200 dark:bg-slate-700/60"
     : isCurrent
-    ? "bg-blue-100 dark:bg-blue-900/40"
-    : "bg-slate-100 dark:bg-slate-700";
+      ? "bg-blue-100 dark:bg-blue-900/40"
+      : "bg-slate-100 dark:bg-slate-700";
 
   const weekNumText = isPast
     ? "text-slate-400 dark:text-slate-500"
     : isCurrent
-    ? "text-blue-700 dark:text-blue-300"
-    : "text-slate-800 dark:text-slate-100";
+      ? "text-blue-700 dark:text-blue-300"
+      : "text-slate-800 dark:text-slate-100";
 
   const weekLabelText = isPast
     ? "text-slate-400 dark:text-slate-500"
     : isCurrent
-    ? "text-blue-600 dark:text-blue-400"
-    : "text-slate-500 dark:text-slate-400";
+      ? "text-blue-600 dark:text-blue-400"
+      : "text-slate-500 dark:text-slate-400";
 
   const dateTextDep = isPast
     ? "text-slate-400 dark:text-slate-500"
@@ -263,14 +278,21 @@ const WeekCard = ({
         onClick={() => setExpanded(!expanded)}
         className={`w-full flex items-center justify-between px-4 py-3 transition-colors focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-inset ${headerHover}`}
         aria-expanded={expanded}
+        aria-label={expanded ? "Recolher detalhes" : "Expandir detalhes"}
       >
         <div className="flex items-center gap-3">
           {/* Badge de número da semana */}
-          <div className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1 ${weekNumBg}`}>
-            <span className={`text-xs font-bold uppercase tracking-wider ${weekLabelText}`}>
+          <div
+            className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1 ${weekNumBg}`}
+          >
+            <span
+              className={`text-xs font-bold uppercase tracking-wider ${weekLabelText}`}
+            >
               Sem.
             </span>
-            <span className={`text-sm font-bold ${weekNumText}`}>{week.semana}</span>
+            <span className={`text-sm font-bold ${weekNumText}`}>
+              {week.semana}
+            </span>
             {isCurrent && (
               <span className="ml-0.5 text-[10px] font-semibold text-blue-600 dark:text-blue-400 uppercase tracking-wide">
                 ● atual
@@ -281,22 +303,34 @@ const WeekCard = ({
           {/* Datas e menor preço */}
           <div className="text-left">
             <div className="text-sm font-medium">
-              <span className={dateTextDep}>✈ {formatDateBR(week.ida.data)}</span>
+              <span className={dateTextDep}>
+                ✈ {formatDateBR(week.ida.data)}
+              </span>
               <span className={`mx-1.5 ${arrowText}`}>→</span>
-              <span className={dateTextRet}>↩ {formatDateBR(week.retorno.data)}</span>
+              <span className={dateTextRet}>
+                ↩ {formatDateBR(week.retorno.data)}
+              </span>
             </div>
             {lowestQuote ? (
               <div className="flex items-center gap-1.5 mt-0.5">
-                <TrendingDown className={`w-3 h-3 ${isPast ? "text-slate-400" : "text-emerald-500"}`} />
-                <span className={`text-xs font-semibold ${
-                  isPast ? "text-slate-400 dark:text-slate-500" : "text-emerald-600 dark:text-emerald-400"
-                }`}>
+                <TrendingDown
+                  className={`w-3 h-3 ${isPast ? "text-slate-400" : "text-emerald-500"}`}
+                />
+                <span
+                  className={`text-xs font-semibold ${
+                    isPast
+                      ? "text-slate-400 dark:text-slate-500"
+                      : "text-emerald-600 dark:text-emerald-400"
+                  }`}
+                >
                   {formatCurrency(lowestQuote.lowestPrice)}
                 </span>
                 <SourceBadge source={lowestQuote.source} />
               </div>
             ) : isPast ? (
-              <span className="text-[11px] text-slate-400 dark:text-slate-500 italic">sem cotação registrada</span>
+              <span className="text-[11px] text-slate-400 dark:text-slate-500 italic">
+                sem cotação registrada
+              </span>
             ) : null}
           </div>
         </div>
@@ -318,27 +352,34 @@ const WeekCard = ({
             </Badge>
           )}
           {expanded ? (
-            <ChevronUp className={`w-4 h-4 ${isPast ? "text-slate-300 dark:text-slate-600" : "text-slate-400"}`} />
+            <ChevronUp
+              className={`w-4 h-4 ${isPast ? "text-slate-300 dark:text-slate-600" : "text-slate-400"}`}
+            />
           ) : (
-            <ChevronDown className={`w-4 h-4 ${isPast ? "text-slate-300 dark:text-slate-600" : "text-slate-400"}`} />
+            <ChevronDown
+              className={`w-4 h-4 ${isPast ? "text-slate-300 dark:text-slate-600" : "text-slate-400"}`}
+            />
           )}
         </div>
       </button>
 
       {/* Conteúdo expandido */}
       {expanded && (
-        <div className={`border-t px-4 py-4 space-y-4 ${
-          isPast
-            ? "border-slate-200 dark:border-slate-700/60"
-            : "border-slate-200 dark:border-slate-700"
-        }`}>
+        <div
+          className={`border-t px-4 py-4 space-y-4 ${
+            isPast
+              ? "border-slate-200 dark:border-slate-700/60"
+              : "border-slate-200 dark:border-slate-700"
+          }`}
+        >
           {/* Aviso de semana passada */}
           {isPast && (
             <div className="flex items-start gap-2 p-3 rounded-lg bg-slate-100 dark:bg-slate-700/40 border border-slate-200 dark:border-slate-700">
               <Clock className="w-4 h-4 text-slate-400 dark:text-slate-500 flex-shrink-0 mt-0.5" />
               <p className="text-xs text-slate-500 dark:text-slate-400">
-                Esta semana já passou. As cotações salvas são mantidas apenas para consulta histórica.
-                Novos preços não podem ser buscados para datas passadas.
+                Esta semana já passou. As cotações salvas são mantidas apenas
+                para consulta histórica. Novos preços não podem ser buscados
+                para datas passadas.
               </p>
             </div>
           )}
@@ -388,9 +429,10 @@ const WeekCard = ({
             <div className="flex items-start gap-2 p-3 rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800">
               <AlertCircle className="w-4 h-4 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
               <p className="text-xs text-amber-700 dark:text-amber-300">
-                <strong>Limite mensal atingido</strong> ({apiUsage.requestsUsed}/
-                {apiUsage.requestsLimit} requisições). Use o botão{" "}
-                <strong>Abrir Kayak</strong> para consultar o preço e insira manualmente abaixo.
+                <strong>Limite mensal atingido</strong> ({apiUsage.requestsUsed}
+                /{apiUsage.requestsLimit} requisições). Use o botão{" "}
+                <strong>Abrir Kayak</strong> para consultar o preço e insira
+                manualmente abaixo.
               </p>
             </div>
           )}
@@ -409,9 +451,9 @@ const WeekCard = ({
                   step="0.01"
                   placeholder="Ex: 350.90"
                   value={manualPrice}
-                  onChange={(e) => setManualPrice(e.target.value)}
+                  onChange={e => setManualPrice(e.target.value)}
                   className="h-8 text-sm dark:bg-slate-700 dark:border-slate-600 dark:text-slate-100 dark:placeholder-slate-400 max-w-[160px]"
-                  onKeyDown={(e) => e.key === "Enter" && handleSaveManual()}
+                  onKeyDown={e => e.key === "Enter" && handleSaveManual()}
                 />
                 <Button
                   size="sm"
@@ -429,14 +471,23 @@ const WeekCard = ({
           {/* Lista de cotações salvas */}
           {quotes.length > 0 && (
             <div className="space-y-2">
-              <p className={`text-xs font-semibold uppercase tracking-wider ${
-                isPast ? "text-slate-400 dark:text-slate-500" : "text-slate-500 dark:text-slate-400"
-              }`}>
+              <p
+                className={`text-xs font-semibold uppercase tracking-wider ${
+                  isPast
+                    ? "text-slate-400 dark:text-slate-500"
+                    : "text-slate-500 dark:text-slate-400"
+                }`}
+              >
                 Cotações salvas
               </p>
               <div className="space-y-1.5">
-                {quotes.map((q) => (
-                  <QuoteRow key={q.id} quote={q} onDelete={onDelete} isPast={isPast} />
+                {quotes.map(q => (
+                  <QuoteRow
+                    key={q.id}
+                    quote={q}
+                    onDelete={onDelete}
+                    isPast={isPast}
+                  />
                 ))}
               </div>
             </div>
@@ -444,7 +495,8 @@ const WeekCard = ({
 
           {quotes.length === 0 && !isPast && (
             <p className="text-xs text-slate-400 dark:text-slate-500 italic text-center py-2">
-              Nenhuma cotação salva ainda. Use os botões acima para buscar preços.
+              Nenhuma cotação salva ainda. Use os botões acima para buscar
+              preços.
             </p>
           )}
         </div>
@@ -470,7 +522,7 @@ export default function FlightQuotes() {
 
   // Mutations
   const fetchFromApi = trpc.quotes.fetchFromApi.useMutation({
-    onSuccess: (data) => {
+    onSuccess: data => {
       toast.success(
         `Preço encontrado: ${data.lowestPriceFormatted}${data.airline ? ` (${data.airline})` : ""}`,
         {
@@ -481,18 +533,18 @@ export default function FlightQuotes() {
       refetchUsage();
       setLoadingWeek(null);
     },
-    onError: (err) => {
+    onError: err => {
       toast.error("Erro ao buscar preço via API", { description: err.message });
       setLoadingWeek(null);
     },
   });
 
   const saveManual = trpc.quotes.saveManual.useMutation({
-    onSuccess: (data) => {
+    onSuccess: data => {
       toast.success(`Preço salvo: ${data.lowestPriceFormatted}`);
       refetchQuotes();
     },
-    onError: (err) => {
+    onError: err => {
       toast.error("Erro ao salvar preço", { description: err.message });
     },
   });
@@ -502,7 +554,7 @@ export default function FlightQuotes() {
       toast.success("Cotação excluída");
       refetchQuotes();
     },
-    onError: (err) => {
+    onError: err => {
       toast.error("Erro ao excluir cotação", { description: err.message });
     },
   });
@@ -546,12 +598,14 @@ export default function FlightQuotes() {
     usagePercent >= 90
       ? "bg-red-500"
       : usagePercent >= 70
-      ? "bg-amber-500"
-      : "bg-emerald-500";
+        ? "bg-amber-500"
+        : "bg-emerald-500";
 
   // Contar semanas por status para exibir no header
   const weekCounts = useMemo(() => {
-    let past = 0, current = 0, future = 0;
+    let past = 0,
+      current = 0,
+      future = 0;
     for (const w of flightData) {
       const s = getWeekStatus(w.ida.data, w.retorno.data);
       if (s === "past") past++;
@@ -611,7 +665,8 @@ export default function FlightQuotes() {
                 />
               </div>
               <span className="text-xs text-slate-500 dark:text-slate-400">
-                {apiUsage.requestsUsed}/{apiUsage.requestsLimit} requisições usadas este mês
+                {apiUsage.requestsUsed}/{apiUsage.requestsLimit} requisições
+                usadas este mês
               </span>
               {apiUsage.requestsUsed >= apiUsage.requestsLimit && (
                 <Badge className="bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300 border border-red-200 dark:border-red-800 text-xs">
@@ -649,7 +704,7 @@ export default function FlightQuotes() {
         </div>
 
         <div className="space-y-3">
-          {flightData.map((week) => (
+          {flightData.map(week => (
             <WeekCard
               key={week.semana}
               week={week}
