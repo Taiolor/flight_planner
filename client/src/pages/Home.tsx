@@ -80,6 +80,7 @@ import {
   ShieldCheck,
   Sun,
   Moon,
+  DollarSign,
 } from "lucide-react";
 import { Link } from "wouter";
 import {
@@ -1341,6 +1342,16 @@ export default function Home() {
                   <CalendarDays className="w-4 h-4 mr-1" /> Calendário
                 </Button>
               </Link>
+              <Link href="/cotacoes">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="bg-white bg-opacity-10 border-white text-white hover:bg-white hover:text-blue-700"
+                  title="Cotações de Passagens"
+                >
+                  <DollarSign className="w-4 h-4 mr-1" /> Cotações
+                </Button>
+              </Link>
               {isAuthenticated && (
                 <Link href="/admin/notifications">
                   <Button
@@ -2296,6 +2307,7 @@ export default function Home() {
                                                       <Input
                                                         type="number"
                                                         placeholder="R$ 0,00"
+                                                        aria-label={`Preço ${airline.name}`}
                                                         defaultValue={
                                                           currentPrice
                                                         }
@@ -2333,6 +2345,7 @@ export default function Home() {
                                                       target="_blank"
                                                       rel="noopener noreferrer"
                                                       title={`Buscar na ${airline.name}`}
+                                                      aria-label={`Buscar na ${airline.name}`}
                                                     >
                                                       <ExternalLink className="w-3.5 h-3.5" />
                                                     </a>
