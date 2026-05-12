@@ -265,8 +265,15 @@ export const appRouter = router({
       return getAllFlightWeeks();
     }),
 
-    // Buscar todos os preços (público)
-    getPrices: publicProcedure.query(async () => {
+    // Buscar todos os preços
+    getPrices: publicProcedure.query(async ({ ctx }) => {
+      const session = await getSessionFromCookie(ctx.req);
+      if (!session) {
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+          message: "Faça login para acessar os preços.",
+        });
+      }
       return getAllFlightPrices();
     }),
 
