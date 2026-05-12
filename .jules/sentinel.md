@@ -12,3 +12,7 @@
 **Vulnerability:** The React error boundary component (`client/src/components/ErrorBoundary.tsx`) was rendering the raw stack trace (`error.stack`) directly to the UI, exposing internal code paths and potentially sensitive implementation details to end users.
 **Learning:** Stack traces should only be visible to developers in a development environment to aid debugging. Leaking them in production introduces unnecessary risk and an unprofessional user experience.
 **Prevention:** Use Vite's built-in `import.meta.env.DEV` flag to conditionally render stack traces, falling back to a generic message or just the standard `error.message` for production environments.
+## 2026-04-28 - Insecure Random Token Generation
+**Vulnerability:** The session token generation (`createAuthSession` in `server/db.ts`) relied on an unimported `crypto` object falling back to the global environment to call `getRandomValues`, combined with a manually chained `.map` over a `Uint8Array` to convert bytes to a hex string.
+**Learning:** Depending on the global `crypto` object in Node.js instead of explicitly importing the native `crypto` module can lead to missing dependencies or inconsistent availability in different runtimes (or tests without the WebCrypto API globally exposed). Manual conversion of byte arrays to hex strings is also less robust and less standard.
+**Prevention:** Always explicitly `import crypto from "crypto";` in Node.js applications and use the standard `crypto.randomBytes(32).toString('hex')` to generate secure, cryptographically random hex strings.
