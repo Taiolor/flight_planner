@@ -479,35 +479,46 @@ export const appRouter = router({
           : null,
       }));
 
-      for (const { week, departureTime, returnTime } of parsedIssuedWeeks) {
-        for (const aviso of avisos) {
-          const targetMs = aviso.minutes * 60 * 1000;
-          const windowStart = new Date(
-            now.getTime() + targetMs - 50 * 60 * 1000
-          );
-          const windowEnd = new Date(now.getTime() + targetMs + 50 * 60 * 1000);
+      const nowMs = now.getTime();
 
-          // Voo de ida
-          if (departureTime) {
-            if (!isNaN(departureTime.getTime())) {
-              const alertTime = new Date(departureTime.getTime() - targetMs);
+      // ⚡ Bolt: Pre-calculate targetMs and window boundaries
+      const precalculatedAvisos = avisos.map(aviso => {
+        const targetMs = aviso.minutes * 60 * 1000;
+        return {
+          ...aviso,
+          targetMs,
+          windowStartMs: nowMs + targetMs - 50 * 60 * 1000,
+          windowEndMs: nowMs + targetMs + 50 * 60 * 1000,
+        };
+      });
+
+      for (const { week, departureTime, returnTime } of parsedIssuedWeeks) {
+        // Voo de ida
+        if (departureTime) {
+          const depTimeMs = departureTime.getTime();
+          if (!isNaN(depTimeMs)) {
+            const depPast = depTimeMs < nowMs;
+            for (const aviso of precalculatedAvisos) {
+              const alertTimeMs = depTimeMs - aviso.targetMs;
               const minutesUntilAlert = Math.round(
-                (alertTime.getTime() - now.getTime()) / 60000
+                (alertTimeMs - nowMs) / 60000
               );
+
               let status: "pending" | "sent" | "past" = "pending";
-              if (departureTime < now) status = "past";
+              if (depPast) status = "past";
               else if (
-                departureTime >= windowStart &&
-                departureTime <= windowEnd
+                depTimeMs >= aviso.windowStartMs &&
+                depTimeMs <= aviso.windowEndMs
               )
                 status = "sent";
+
               scheduledAlerts.push({
                 weekNumber: Number(week.weekNumber),
                 direction: "ida",
                 avisoLabel: aviso.label,
                 avisoMinutes: aviso.minutes,
                 flightDatetime: week.departureFlightDatetime!,
-                alertDatetime: alertTime.toISOString(),
+                alertDatetime: new Date(alertTimeMs).toISOString(),
                 airline: week.departureAirline ?? "",
                 flightNumber: week.departureFlightNumber ?? "",
                 status,
@@ -515,25 +526,34 @@ export const appRouter = router({
               });
             }
           }
+        }
 
-          // Voo de volta
-          if (returnTime) {
-            if (!isNaN(returnTime.getTime())) {
-              const alertTime = new Date(returnTime.getTime() - targetMs);
+        // Voo de volta
+        if (returnTime) {
+          const retTimeMs = returnTime.getTime();
+          if (!isNaN(retTimeMs)) {
+            const retPast = retTimeMs < nowMs;
+            for (const aviso of precalculatedAvisos) {
+              const alertTimeMs = retTimeMs - aviso.targetMs;
               const minutesUntilAlert = Math.round(
-                (alertTime.getTime() - now.getTime()) / 60000
+                (alertTimeMs - nowMs) / 60000
               );
+
               let status: "pending" | "sent" | "past" = "pending";
-              if (returnTime < now) status = "past";
-              else if (returnTime >= windowStart && returnTime <= windowEnd)
+              if (retPast) status = "past";
+              else if (
+                retTimeMs >= aviso.windowStartMs &&
+                retTimeMs <= aviso.windowEndMs
+              )
                 status = "sent";
+
               scheduledAlerts.push({
                 weekNumber: Number(week.weekNumber),
                 direction: "volta",
                 avisoLabel: aviso.label,
                 avisoMinutes: aviso.minutes,
                 flightDatetime: week.returnFlightDatetime!,
-                alertDatetime: alertTime.toISOString(),
+                alertDatetime: new Date(alertTimeMs).toISOString(),
                 airline: week.returnAirline ?? "",
                 flightNumber: week.returnFlightNumber ?? "",
                 status,
@@ -609,16 +629,24 @@ export const appRouter = router({
             : null,
         }));
 
-      for (const { week, departureTime, returnTime } of parsedAlertWeeks) {
-        for (const aviso of avisos) {
-          const targetMs = aviso.minutes * 60 * 1000;
+      const nowMsNext = now.getTime();
 
-          // Voo de ida
-          if (departureTime) {
-            if (!isNaN(departureTime.getTime()) && departureTime > now) {
-              const alertTime = new Date(departureTime.getTime() - targetMs);
+      const precalculatedAvisosNext = avisos.map(aviso => {
+        return {
+          ...aviso,
+          targetMs: aviso.minutes * 60 * 1000,
+        };
+      });
+
+      for (const { week, departureTime, returnTime } of parsedAlertWeeks) {
+        // Voo de ida
+        if (departureTime) {
+          const depTimeMs = departureTime.getTime();
+          if (!isNaN(depTimeMs) && depTimeMs > nowMsNext) {
+            for (const aviso of precalculatedAvisosNext) {
+              const alertTimeMs = depTimeMs - aviso.targetMs;
               const minutesUntilAlert = Math.round(
-                (alertTime.getTime() - now.getTime()) / 60000
+                (alertTimeMs - nowMsNext) / 60000
               );
               if (
                 minutesUntilAlert > 0 &&
@@ -639,13 +667,16 @@ export const appRouter = router({
               }
             }
           }
+        }
 
-          // Voo de volta
-          if (returnTime) {
-            if (!isNaN(returnTime.getTime()) && returnTime > now) {
-              const alertTime = new Date(returnTime.getTime() - targetMs);
+        // Voo de volta
+        if (returnTime) {
+          const retTimeMs = returnTime.getTime();
+          if (!isNaN(retTimeMs) && retTimeMs > nowMsNext) {
+            for (const aviso of precalculatedAvisosNext) {
+              const alertTimeMs = retTimeMs - aviso.targetMs;
               const minutesUntilAlert = Math.round(
-                (alertTime.getTime() - now.getTime()) / 60000
+                (alertTimeMs - nowMsNext) / 60000
               );
               if (
                 minutesUntilAlert > 0 &&
