@@ -1,7 +1,22 @@
 import { and, desc, eq, gt, lt } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, users, flightWeeks, flightPrices, InsertFlightWeek, InsertFlightPrice, authSessions, InsertAuthSession, pushSubscriptions, InsertPushSubscription, notificationSettings, notificationLogs, InsertNotificationLog } from "../drizzle/schema";
-import { ENV } from './_core/env';
+import {
+  InsertUser,
+  users,
+  flightWeeks,
+  flightPrices,
+  public_prices,
+  InsertFlightWeek,
+  InsertFlightPrice,
+  authSessions,
+  InsertAuthSession,
+  pushSubscriptions,
+  InsertPushSubscription,
+  notificationSettings,
+  notificationLogs,
+  InsertNotificationLog,
+} from "../drizzle/schema";
+import { ENV } from "./_core/env";
 
 let _db: ReturnType<typeof drizzle> | null = null;
 
@@ -56,8 +71,8 @@ export async function upsertUser(user: InsertUser): Promise<void> {
       values.role = user.role;
       updateSet.role = user.role;
     } else if (user.openId === ENV.ownerOpenId) {
-      values.role = 'admin';
-      updateSet.role = 'admin';
+      values.role = "admin";
+      updateSet.role = "admin";
     }
 
     if (!values.lastSignedIn) {
@@ -84,7 +99,11 @@ export async function getUserByOpenId(openId: string) {
     return undefined;
   }
 
-  const result = await db.select().from(users).where(eq(users.openId, openId)).limit(1);
+  const result = await db
+    .select()
+    .from(users)
+    .where(eq(users.openId, openId))
+    .limit(1);
 
   return result.length > 0 ? result[0] : undefined;
 }
@@ -103,12 +122,15 @@ export async function upsertFlightWeek(week: InsertFlightWeek) {
   const db = await getDb();
   if (!db) return;
 
-  const existing = await db.select().from(flightWeeks)
+  const existing = await db
+    .select()
+    .from(flightWeeks)
     .where(eq(flightWeeks.weekNumber, week.weekNumber))
     .limit(1);
 
   if (existing.length > 0) {
-    await db.update(flightWeeks)
+    await db
+      .update(flightWeeks)
       .set({
         departureDate: week.departureDate,
         returnDate: week.returnDate,
@@ -125,36 +147,42 @@ export async function upsertFlightWeek(week: InsertFlightWeek) {
   }
 }
 
-export async function updateFlightWeekStatus(weekNumber: number, data: {
-  isDeleted?: number;
-  isTicketIssued?: number;
-  isSelected?: number;
-  departureDate?: string;
-  returnDate?: string;
-  departureDayOfWeek?: string;
-  returnDayOfWeek?: string;
-  departureAirline?: string | null;
-  returnAirline?: string | null;
-  departureFlightDatetime?: string | null;
-  returnFlightDatetime?: string | null;
-  departureAirport?: string | null;
-  returnAirport?: string | null;
-  departureLocator?: string | null;
-  returnLocator?: string | null;
-  departureFlightNumber?: string | null;
-  returnFlightNumber?: string | null;
-  ticketType?: string | null;
-}) {
+export async function updateFlightWeekStatus(
+  weekNumber: number,
+  data: {
+    isDeleted?: number;
+    isTicketIssued?: number;
+    isSelected?: number;
+    departureDate?: string;
+    returnDate?: string;
+    departureDayOfWeek?: string;
+    returnDayOfWeek?: string;
+    departureAirline?: string | null;
+    returnAirline?: string | null;
+    departureFlightDatetime?: string | null;
+    returnFlightDatetime?: string | null;
+    departureAirport?: string | null;
+    returnAirport?: string | null;
+    departureLocator?: string | null;
+    returnLocator?: string | null;
+    departureFlightNumber?: string | null;
+    returnFlightNumber?: string | null;
+    ticketType?: string | null;
+  }
+) {
   const db = await getDb();
   if (!db) return;
 
-  const existing = await db.select().from(flightWeeks)
+  const existing = await db
+    .select()
+    .from(flightWeeks)
     .where(eq(flightWeeks.weekNumber, weekNumber))
     .limit(1);
 
   if (existing.length === 0) return;
 
-  await db.update(flightWeeks)
+  await db
+    .update(flightWeeks)
     .set(data)
     .where(eq(flightWeeks.weekNumber, weekNumber));
 }
@@ -179,24 +207,41 @@ export async function getAllFlightPrices() {
   return db.select().from(flightPrices);
 }
 
-export async function upsertFlightPrice(weekNumber: number, airline: string, price: string) {
+export async function getPublicPrices() {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(public_prices);
+}
+
+export async function upsertFlightPrice(
+  weekNumber: number,
+  airline: string,
+  price: string
+) {
   const db = await getDb();
   if (!db) return;
 
-  const existing = await db.select().from(flightPrices)
-    .where(and(
-      eq(flightPrices.weekNumber, weekNumber),
-      eq(flightPrices.airline, airline)
-    ))
+  const existing = await db
+    .select()
+    .from(flightPrices)
+    .where(
+      and(
+        eq(flightPrices.weekNumber, weekNumber),
+        eq(flightPrices.airline, airline)
+      )
+    )
     .limit(1);
 
   if (existing.length > 0) {
-    await db.update(flightPrices)
+    await db
+      .update(flightPrices)
       .set({ price })
-      .where(and(
-        eq(flightPrices.weekNumber, weekNumber),
-        eq(flightPrices.airline, airline)
-      ));
+      .where(
+        and(
+          eq(flightPrices.weekNumber, weekNumber),
+          eq(flightPrices.airline, airline)
+        )
+      );
   } else {
     await db.insert(flightPrices).values({ weekNumber, airline, price });
   }
@@ -206,11 +251,14 @@ export async function deleteFlightPrice(weekNumber: number, airline: string) {
   const db = await getDb();
   if (!db) return;
 
-  await db.delete(flightPrices)
-    .where(and(
-      eq(flightPrices.weekNumber, weekNumber),
-      eq(flightPrices.airline, airline)
-    ));
+  await db
+    .delete(flightPrices)
+    .where(
+      and(
+        eq(flightPrices.weekNumber, weekNumber),
+        eq(flightPrices.airline, airline)
+      )
+    );
 }
 
 // =====================
@@ -223,8 +271,8 @@ export async function createAuthSession(email: string): Promise<string> {
 
   // Gerar token único
   const token = Array.from(crypto.getRandomValues(new Uint8Array(32)))
-    .map(b => b.toString(16).padStart(2, '0'))
-    .join('');
+    .map(b => b.toString(16).padStart(2, "0"))
+    .join("");
 
   // Sessão expira em 8 horas
   const expiresAt = new Date(Date.now() + 8 * 60 * 60 * 1000);
@@ -238,17 +286,19 @@ export async function createAuthSession(email: string): Promise<string> {
   return token;
 }
 
-export async function validateAuthSession(token: string): Promise<{ email: string } | null> {
+export async function validateAuthSession(
+  token: string
+): Promise<{ email: string } | null> {
   const db = await getDb();
   if (!db) return null;
 
   const now = new Date();
-  const result = await db.select()
+  const result = await db
+    .select()
     .from(authSessions)
-    .where(and(
-      eq(authSessions.sessionToken, token),
-      gt(authSessions.expiresAt, now)
-    ))
+    .where(
+      and(eq(authSessions.sessionToken, token), gt(authSessions.expiresAt, now))
+    )
     .limit(1);
 
   if (result.length === 0) return null;
@@ -259,8 +309,7 @@ export async function deleteAuthSession(token: string): Promise<void> {
   const db = await getDb();
   if (!db) return;
 
-  await db.delete(authSessions)
-    .where(eq(authSessions.sessionToken, token));
+  await db.delete(authSessions).where(eq(authSessions.sessionToken, token));
 }
 
 export async function cleanExpiredSessions(): Promise<void> {
@@ -268,28 +317,35 @@ export async function cleanExpiredSessions(): Promise<void> {
   if (!db) return;
 
   const now = new Date();
-  await db.delete(authSessions)
-    .where(lt(authSessions.expiresAt, now));
+  await db.delete(authSessions).where(lt(authSessions.expiresAt, now));
 }
 
 // =====================
 // Push Subscriptions
 // =====================
 
-export async function savePushSubscription(data: InsertPushSubscription): Promise<void> {
+export async function savePushSubscription(
+  data: InsertPushSubscription
+): Promise<void> {
   const db = await getDb();
   if (!db) return;
 
   // Verificar se já existe uma subscription com o mesmo endpoint
-  const existing = await db.select()
+  const existing = await db
+    .select()
     .from(pushSubscriptions)
     .where(eq(pushSubscriptions.endpoint, data.endpoint))
     .limit(1);
 
   if (existing.length > 0) {
     // Atualizar chaves caso tenham mudado
-    await db.update(pushSubscriptions)
-      .set({ p256dh: data.p256dh, auth: data.auth, userAgent: data.userAgent ?? null })
+    await db
+      .update(pushSubscriptions)
+      .set({
+        p256dh: data.p256dh,
+        auth: data.auth,
+        userAgent: data.userAgent ?? null,
+      })
       .where(eq(pushSubscriptions.endpoint, data.endpoint));
   } else {
     await db.insert(pushSubscriptions).values(data);
@@ -300,7 +356,8 @@ export async function deletePushSubscription(endpoint: string): Promise<void> {
   const db = await getDb();
   if (!db) return;
 
-  await db.delete(pushSubscriptions)
+  await db
+    .delete(pushSubscriptions)
     .where(eq(pushSubscriptions.endpoint, endpoint));
 }
 
@@ -314,7 +371,8 @@ export async function getPushSubscriptionByEndpoint(endpoint: string) {
   const db = await getDb();
   if (!db) return null;
 
-  const result = await db.select()
+  const result = await db
+    .select()
     .from(pushSubscriptions)
     .where(eq(pushSubscriptions.endpoint, endpoint))
     .limit(1);
@@ -333,21 +391,32 @@ export async function getNotificationSettings() {
   const rows = await db.select().from(notificationSettings).limit(1);
   if (rows.length === 0) {
     // Criar registro padrão se não existir
-    await db.insert(notificationSettings).values({ aviso1Minutes: 1440, aviso2Minutes: 0 });
+    await db
+      .insert(notificationSettings)
+      .values({ aviso1Minutes: 1440, aviso2Minutes: 0 });
     return { aviso1Minutes: 1440, aviso2Minutes: 0 };
   }
-  return { aviso1Minutes: rows[0].aviso1Minutes, aviso2Minutes: rows[0].aviso2Minutes };
+  return {
+    aviso1Minutes: rows[0].aviso1Minutes,
+    aviso2Minutes: rows[0].aviso2Minutes,
+  };
 }
 
-export async function updateNotificationSettings(aviso1Minutes: number, aviso2Minutes: number) {
+export async function updateNotificationSettings(
+  aviso1Minutes: number,
+  aviso2Minutes: number
+) {
   const db = await getDb();
   if (!db) return;
 
   const rows = await db.select().from(notificationSettings).limit(1);
   if (rows.length === 0) {
-    await db.insert(notificationSettings).values({ aviso1Minutes, aviso2Minutes });
+    await db
+      .insert(notificationSettings)
+      .values({ aviso1Minutes, aviso2Minutes });
   } else {
-    await db.update(notificationSettings)
+    await db
+      .update(notificationSettings)
       .set({ aviso1Minutes, aviso2Minutes })
       .where(eq(notificationSettings.id, rows[0].id));
   }
@@ -357,7 +426,9 @@ export async function updateNotificationSettings(aviso1Minutes: number, aviso2Mi
 // Notification Logs
 // =====================
 
-export async function insertNotificationLog(data: InsertNotificationLog): Promise<void> {
+export async function insertNotificationLog(
+  data: InsertNotificationLog
+): Promise<void> {
   const db = await getDb();
   if (!db) return;
   await db.insert(notificationLogs).values(data);
@@ -366,7 +437,8 @@ export async function insertNotificationLog(data: InsertNotificationLog): Promis
 export async function getNotificationLogs(limit = 100) {
   const db = await getDb();
   if (!db) return [];
-  return db.select()
+  return db
+    .select()
     .from(notificationLogs)
     .orderBy(desc(notificationLogs.sentAt))
     .limit(limit);
@@ -380,7 +452,8 @@ export async function deleteOldNotificationLogs(daysOld = 90): Promise<number> {
   cutoffDate.setDate(cutoffDate.getDate() - daysOld);
 
   try {
-    await db.delete(notificationLogs)
+    await db
+      .delete(notificationLogs)
       .where(lt(notificationLogs.sentAt, cutoffDate));
     return 1; // Sucesso
   } catch (error) {
