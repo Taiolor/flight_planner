@@ -146,29 +146,6 @@ const QuoteRow = ({
     quote.returnDeparture;
 
   return (
-<<<<<<< Updated upstream
-    <div
-      className={`flex items-center justify-between py-2 px-3 rounded-lg border gap-2 ${
-        isPast
-          ? "bg-slate-100 dark:bg-slate-800/60 border-slate-200 dark:border-slate-700"
-          : "bg-slate-50 dark:bg-slate-700/50 border-slate-200 dark:border-slate-600"
-      }`}
-    >
-      <div className="flex items-center gap-3 flex-1 min-w-0">
-        <span
-          className={`text-lg font-bold whitespace-nowrap ${
-            isPast
-              ? "text-slate-400 dark:text-slate-500"
-              : "text-slate-800 dark:text-slate-100"
-          }`}
-        >
-          {formatCurrency(quote.lowestPrice)}
-        </span>
-        <SourceBadge source={quote.source} />
-        {quote.airline && (
-          <span className="text-xs text-slate-500 dark:text-slate-400 truncate">
-            {quote.airline}
-=======
     <div className={`rounded-lg border overflow-hidden ${
       isPast
         ? "bg-slate-100 dark:bg-slate-800/60 border-slate-200 dark:border-slate-700"
@@ -181,7 +158,6 @@ const QuoteRow = ({
             isPast ? "text-slate-400 dark:text-slate-500" : "text-slate-800 dark:text-slate-100"
           }`}>
             {formatCurrency(quote.lowestPrice)}
->>>>>>> Stashed changes
           </span>
           <SourceBadge source={quote.source} />
           {/* Exibir companhia legada se não houver dados detalhados */}
