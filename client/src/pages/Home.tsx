@@ -2307,6 +2307,7 @@ export default function Home() {
                                                       <Input
                                                         type="number"
                                                         placeholder="R$ 0,00"
+                                                        aria-label={`Preço ${airline.name}`}
                                                         defaultValue={
                                                           currentPrice
                                                         }
