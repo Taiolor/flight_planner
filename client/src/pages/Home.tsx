@@ -2345,6 +2345,7 @@ export default function Home() {
                                                       target="_blank"
                                                       rel="noopener noreferrer"
                                                       title={`Buscar na ${airline.name}`}
+                                                      aria-label={`Buscar na ${airline.name}`}
                                                     >
                                                       <ExternalLink className="w-3.5 h-3.5" />
                                                     </a>
