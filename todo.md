@@ -173,3 +173,12 @@
 - [x] Semana corrente destacada com borda azul e badge "● atual"
 - [x] Semanas futuras mantêm cor normal e são totalmente interativas
 - [x] Resumo de semanas (atual/futuras/passadas) exibido no header da página de cotações
+
+## Dados detalhados da cotação via API
+- [ ] Capturar companhia aérea de ida e volta do voo mais barato
+- [ ] Capturar data e hora de partida de ida e volta
+- [ ] Adicionar colunas no schema do banco (outboundAirline, returnAirline, outboundDeparture, returnDeparture)
+- [ ] Executar pnpm db:push para aplicar as novas colunas
+- [ ] Atualizar helpers de DB para persistir os novos campos
+- [ ] Atualizar router de cotações para extrair e salvar os novos campos da resposta da API
+- [ ] Exibir companhia aérea e data/hora de ida e volta na página de cotações

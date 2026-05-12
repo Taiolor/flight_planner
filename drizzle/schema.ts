@@ -192,7 +192,13 @@ export const flightQuotes = mysqlTable(
     lowestPrice: int("lowestPrice").notNull(),                          // em centavos (R$)
     currency: varchar("currency", { length: 10 }).default("BRL").notNull(),
     source: mysqlEnum("source", ["api", "manual"]).notNull(),           // origem do preço
-    airline: varchar("airline", { length: 100 }),                       // companhia (quando disponível)
+    airline: varchar("airline", { length: 100 }),                       // companhia ida (quando disponível)
+    outboundAirline: varchar("outboundAirline", { length: 100 }),       // companhia aérea voo de ida
+    returnAirline: varchar("returnAirline", { length: 100 }),           // companhia aérea voo de volta
+    outboundDeparture: varchar("outboundDeparture", { length: 30 }),    // data/hora partida ida (ISO 8601)
+    outboundArrival: varchar("outboundArrival", { length: 30 }),        // data/hora chegada ida (ISO 8601)
+    returnDeparture: varchar("returnDeparture", { length: 30 }),        // data/hora partida volta (ISO 8601)
+    returnArrival: varchar("returnArrival", { length: 30 }),            // data/hora chegada volta (ISO 8601)
     apiRequestsUsed: int("apiRequestsUsed").default(0).notNull(),       // contador de req usadas no mês
     rawResponse: text("rawResponse"),                                   // resposta bruta da API (debug)
     quotedAt: timestamp("quotedAt").defaultNow().notNull(),

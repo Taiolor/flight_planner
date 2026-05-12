@@ -101,6 +101,21 @@ const SourceBadge = ({ source }: { source: "api" | "manual" }) => {
   );
 };
 
+/** Formata datetime ISO 8601 para exibição legível (ex: "07/06 às 22:05") */
+const formatFlightDatetime = (iso: string | null): string => {
+  if (!iso) return "";
+  try {
+    const d = new Date(iso);
+    const day = String(d.getDate()).padStart(2, "0");
+    const month = String(d.getMonth() + 1).padStart(2, "0");
+    const hour = String(d.getHours()).padStart(2, "0");
+    const min = String(d.getMinutes()).padStart(2, "0");
+    return `${day}/${month} às ${hour}:${min}`;
+  } catch {
+    return iso;
+  }
+};
+
 /** Linha de cotação individual */
 const QuoteRow = ({
   quote,
@@ -112,13 +127,26 @@ const QuoteRow = ({
     lowestPrice: number;
     source: "api" | "manual";
     airline: string | null;
+    outboundAirline?: string | null;
+    returnAirline?: string | null;
+    outboundDeparture?: string | null;
+    outboundArrival?: string | null;
+    returnDeparture?: string | null;
+    returnArrival?: string | null;
     quotedAt: Date;
   };
   onDelete: (id: number) => void;
   isPast: boolean;
 }) => {
   const quotedDate = new Date(quote.quotedAt);
+  const hasFlightDetails =
+    quote.outboundAirline ||
+    quote.returnAirline ||
+    quote.outboundDeparture ||
+    quote.returnDeparture;
+
   return (
+<<<<<<< Updated upstream
     <div
       className={`flex items-center justify-between py-2 px-3 rounded-lg border gap-2 ${
         isPast
@@ -140,27 +168,127 @@ const QuoteRow = ({
         {quote.airline && (
           <span className="text-xs text-slate-500 dark:text-slate-400 truncate">
             {quote.airline}
+=======
+    <div className={`rounded-lg border overflow-hidden ${
+      isPast
+        ? "bg-slate-100 dark:bg-slate-800/60 border-slate-200 dark:border-slate-700"
+        : "bg-slate-50 dark:bg-slate-700/50 border-slate-200 dark:border-slate-600"
+    }`}>
+      {/* Linha principal: preço + fonte + data da cotação + botão excluir */}
+      <div className="flex items-center justify-between py-2 px-3 gap-2">
+        <div className="flex items-center gap-3 flex-1 min-w-0">
+          <span className={`text-lg font-bold whitespace-nowrap ${
+            isPast ? "text-slate-400 dark:text-slate-500" : "text-slate-800 dark:text-slate-100"
+          }`}>
+            {formatCurrency(quote.lowestPrice)}
+>>>>>>> Stashed changes
           </span>
-        )}
+          <SourceBadge source={quote.source} />
+          {/* Exibir companhia legada se não houver dados detalhados */}
+          {!hasFlightDetails && quote.airline && (
+            <span className="text-xs text-slate-500 dark:text-slate-400 truncate">
+              {quote.airline}
+            </span>
+          )}
+        </div>
+        <div className="flex items-center gap-2 flex-shrink-0">
+          <span className="text-xs text-slate-400 dark:text-slate-500 hidden sm:block">
+            {quotedDate.toLocaleDateString("pt-BR", {
+              day: "2-digit",
+              month: "2-digit",
+              hour: "2-digit",
+              minute: "2-digit",
+            })}
+          </span>
+          <button
+            type="button"
+            onClick={() => onDelete(quote.id)}
+            className="p-1 rounded text-slate-400 hover:text-red-500 dark:hover:text-red-400 transition-colors focus-visible:ring-2 focus-visible:ring-red-500"
+            aria-label="Excluir cotação"
+          >
+            <Trash2 className="w-3.5 h-3.5" />
+          </button>
+        </div>
       </div>
-      <div className="flex items-center gap-2 flex-shrink-0">
-        <span className="text-xs text-slate-400 dark:text-slate-500 hidden sm:block">
-          {quotedDate.toLocaleDateString("pt-BR", {
-            day: "2-digit",
-            month: "2-digit",
-            hour: "2-digit",
-            minute: "2-digit",
-          })}
-        </span>
-        <button
-          type="button"
-          onClick={() => onDelete(quote.id)}
-          className="p-1 rounded text-slate-400 hover:text-red-500 dark:hover:text-red-400 transition-colors focus-visible:ring-2 focus-visible:ring-red-500"
-          aria-label="Excluir cotação"
-        >
-          <Trash2 className="w-3.5 h-3.5" />
-        </button>
-      </div>
+
+      {/* Detalhes de ida e volta (apenas quando disponível via API) */}
+      {hasFlightDetails && (
+        <div className={`px-3 pb-2.5 pt-0 border-t grid grid-cols-2 gap-2 ${
+          isPast
+            ? "border-slate-200 dark:border-slate-700"
+            : "border-slate-200 dark:border-slate-600"
+        }`}>
+          {/* Voo de Ida */}
+          <div className={`rounded-md p-2 ${
+            isPast
+              ? "bg-slate-200/60 dark:bg-slate-700/40"
+              : "bg-white dark:bg-slate-800/60"
+          }`}>
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 mb-1 flex items-center gap-1">
+              <Plane className="w-3 h-3" />
+              Ida
+            </p>
+            {quote.outboundAirline && (
+              <p className={`text-xs font-medium truncate ${
+                isPast ? "text-slate-400 dark:text-slate-500" : "text-slate-700 dark:text-slate-200"
+              }`}>
+                {quote.outboundAirline}
+              </p>
+            )}
+            {quote.outboundDeparture && (
+              <p className={`text-xs flex items-center gap-1 mt-0.5 ${
+                isPast ? "text-slate-400 dark:text-slate-500" : "text-slate-500 dark:text-slate-400"
+              }`}>
+                <Clock className="w-3 h-3 flex-shrink-0" />
+                Partida: {formatFlightDatetime(quote.outboundDeparture)}
+              </p>
+            )}
+            {quote.outboundArrival && (
+              <p className={`text-xs flex items-center gap-1 ${
+                isPast ? "text-slate-400 dark:text-slate-500" : "text-slate-500 dark:text-slate-400"
+              }`}>
+                <Clock className="w-3 h-3 flex-shrink-0" />
+                Chegada: {formatFlightDatetime(quote.outboundArrival)}
+              </p>
+            )}
+          </div>
+
+          {/* Voo de Volta */}
+          <div className={`rounded-md p-2 ${
+            isPast
+              ? "bg-slate-200/60 dark:bg-slate-700/40"
+              : "bg-white dark:bg-slate-800/60"
+          }`}>
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-blue-600 dark:text-blue-400 mb-1 flex items-center gap-1">
+              <Plane className="w-3 h-3 rotate-180" />
+              Volta
+            </p>
+            {quote.returnAirline && (
+              <p className={`text-xs font-medium truncate ${
+                isPast ? "text-slate-400 dark:text-slate-500" : "text-slate-700 dark:text-slate-200"
+              }`}>
+                {quote.returnAirline}
+              </p>
+            )}
+            {quote.returnDeparture && (
+              <p className={`text-xs flex items-center gap-1 mt-0.5 ${
+                isPast ? "text-slate-400 dark:text-slate-500" : "text-slate-500 dark:text-slate-400"
+              }`}>
+                <Clock className="w-3 h-3 flex-shrink-0" />
+                Partida: {formatFlightDatetime(quote.returnDeparture)}
+              </p>
+            )}
+            {quote.returnArrival && (
+              <p className={`text-xs flex items-center gap-1 ${
+                isPast ? "text-slate-400 dark:text-slate-500" : "text-slate-500 dark:text-slate-400"
+              }`}>
+                <Clock className="w-3 h-3 flex-shrink-0" />
+                Chegada: {formatFlightDatetime(quote.returnArrival)}
+              </p>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 };
