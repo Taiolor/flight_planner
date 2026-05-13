@@ -17,12 +17,13 @@ describe("Environment Configuration", () => {
     );
   });
 
-  it("should use a fallback secret in development if JWT_SECRET is missing", async () => {
+  it("should use a dynamically generated fallback secret in development if JWT_SECRET is missing", async () => {
     process.env.NODE_ENV = "development";
     delete process.env.JWT_SECRET;
 
     const { ENV } = await import("./_core/env");
-    expect(ENV.cookieSecret).toBe("dev-secret-do-not-use-in-production");
+    expect(typeof ENV.cookieSecret).toBe("string");
+    expect(ENV.cookieSecret.length).toBe(64); // 32 bytes hex encoded is 64 chars
   });
 
   it("should use the provided JWT_SECRET if present", async () => {

@@ -12,3 +12,7 @@
 **Vulnerability:** The React error boundary component (`client/src/components/ErrorBoundary.tsx`) was rendering the raw stack trace (`error.stack`) directly to the UI, exposing internal code paths and potentially sensitive implementation details to end users.
 **Learning:** Stack traces should only be visible to developers in a development environment to aid debugging. Leaking them in production introduces unnecessary risk and an unprofessional user experience.
 **Prevention:** Use Vite's built-in `import.meta.env.DEV` flag to conditionally render stack traces, falling back to a generic message or just the standard `error.message` for production environments.
+## 2026-05-13 - Hardcoded Development Fallback Secret
+**Vulnerability:** A static fallback secret ('dev-secret-do-not-use-in-production') was being used in development environments when the JWT_SECRET environment variable was missing.
+**Learning:** Hardcoded secrets in any environment can accidentally leak or be deployed to production, increasing the risk of unauthorized access.
+**Prevention:** Always use dynamically generated, securely random values for fallback secrets in non-production environments to avoid accidental misuse.

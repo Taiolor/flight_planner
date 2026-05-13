@@ -1,10 +1,14 @@
+import { randomBytes } from "crypto";
+
 const getJwtSecret = () => {
   const secret = process.env.JWT_SECRET;
   if (!secret) {
     if (process.env.NODE_ENV === "production") {
-      throw new Error("JWT_SECRET environment variable is required in production");
+      throw new Error(
+        "JWT_SECRET environment variable is required in production"
+      );
     }
-    return "dev-secret-do-not-use-in-production";
+    return randomBytes(32).toString("hex");
   }
   return secret;
 };
