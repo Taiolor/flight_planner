@@ -146,17 +146,23 @@ const QuoteRow = ({
     quote.returnDeparture;
 
   return (
-    <div className={`rounded-lg border overflow-hidden ${
-      isPast
-        ? "bg-slate-100 dark:bg-slate-800/60 border-slate-200 dark:border-slate-700"
-        : "bg-slate-50 dark:bg-slate-700/50 border-slate-200 dark:border-slate-600"
-    }`}>
+    <div
+      className={`rounded-lg border overflow-hidden ${
+        isPast
+          ? "bg-slate-100 dark:bg-slate-800/60 border-slate-200 dark:border-slate-700"
+          : "bg-slate-50 dark:bg-slate-700/50 border-slate-200 dark:border-slate-600"
+      }`}
+    >
       {/* Linha principal: preço + fonte + data da cotação + botão excluir */}
       <div className="flex items-center justify-between py-2 px-3 gap-2">
         <div className="flex items-center gap-3 flex-1 min-w-0">
-          <span className={`text-lg font-bold whitespace-nowrap ${
-            isPast ? "text-slate-400 dark:text-slate-500" : "text-slate-800 dark:text-slate-100"
-          }`}>
+          <span
+            className={`text-lg font-bold whitespace-nowrap ${
+              isPast
+                ? "text-slate-400 dark:text-slate-500"
+                : "text-slate-800 dark:text-slate-100"
+            }`}
+          >
             {formatCurrency(quote.lowestPrice)}
           </span>
           <SourceBadge source={quote.source} />
@@ -189,40 +195,56 @@ const QuoteRow = ({
 
       {/* Detalhes de ida e volta (apenas quando disponível via API) */}
       {hasFlightDetails && (
-        <div className={`px-3 pb-2.5 pt-0 border-t grid grid-cols-2 gap-2 ${
-          isPast
-            ? "border-slate-200 dark:border-slate-700"
-            : "border-slate-200 dark:border-slate-600"
-        }`}>
-          {/* Voo de Ida */}
-          <div className={`rounded-md p-2 ${
+        <div
+          className={`px-3 pb-2.5 pt-0 border-t grid grid-cols-2 gap-2 ${
             isPast
-              ? "bg-slate-200/60 dark:bg-slate-700/40"
-              : "bg-white dark:bg-slate-800/60"
-          }`}>
+              ? "border-slate-200 dark:border-slate-700"
+              : "border-slate-200 dark:border-slate-600"
+          }`}
+        >
+          {/* Voo de Ida */}
+          <div
+            className={`rounded-md p-2 ${
+              isPast
+                ? "bg-slate-200/60 dark:bg-slate-700/40"
+                : "bg-white dark:bg-slate-800/60"
+            }`}
+          >
             <p className="text-[10px] font-semibold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 mb-1 flex items-center gap-1">
               <Plane className="w-3 h-3" />
               Ida
             </p>
             {quote.outboundAirline && (
-              <p className={`text-xs font-medium truncate ${
-                isPast ? "text-slate-400 dark:text-slate-500" : "text-slate-700 dark:text-slate-200"
-              }`}>
+              <p
+                className={`text-xs font-medium truncate ${
+                  isPast
+                    ? "text-slate-400 dark:text-slate-500"
+                    : "text-slate-700 dark:text-slate-200"
+                }`}
+              >
                 {quote.outboundAirline}
               </p>
             )}
             {quote.outboundDeparture && (
-              <p className={`text-xs flex items-center gap-1 mt-0.5 ${
-                isPast ? "text-slate-400 dark:text-slate-500" : "text-slate-500 dark:text-slate-400"
-              }`}>
+              <p
+                className={`text-xs flex items-center gap-1 mt-0.5 ${
+                  isPast
+                    ? "text-slate-400 dark:text-slate-500"
+                    : "text-slate-500 dark:text-slate-400"
+                }`}
+              >
                 <Clock className="w-3 h-3 flex-shrink-0" />
                 Partida: {formatFlightDatetime(quote.outboundDeparture)}
               </p>
             )}
             {quote.outboundArrival && (
-              <p className={`text-xs flex items-center gap-1 ${
-                isPast ? "text-slate-400 dark:text-slate-500" : "text-slate-500 dark:text-slate-400"
-              }`}>
+              <p
+                className={`text-xs flex items-center gap-1 ${
+                  isPast
+                    ? "text-slate-400 dark:text-slate-500"
+                    : "text-slate-500 dark:text-slate-400"
+                }`}
+              >
                 <Clock className="w-3 h-3 flex-shrink-0" />
                 Chegada: {formatFlightDatetime(quote.outboundArrival)}
               </p>
@@ -230,34 +252,48 @@ const QuoteRow = ({
           </div>
 
           {/* Voo de Volta */}
-          <div className={`rounded-md p-2 ${
-            isPast
-              ? "bg-slate-200/60 dark:bg-slate-700/40"
-              : "bg-white dark:bg-slate-800/60"
-          }`}>
+          <div
+            className={`rounded-md p-2 ${
+              isPast
+                ? "bg-slate-200/60 dark:bg-slate-700/40"
+                : "bg-white dark:bg-slate-800/60"
+            }`}
+          >
             <p className="text-[10px] font-semibold uppercase tracking-wider text-blue-600 dark:text-blue-400 mb-1 flex items-center gap-1">
               <Plane className="w-3 h-3 rotate-180" />
               Volta
             </p>
             {quote.returnAirline && (
-              <p className={`text-xs font-medium truncate ${
-                isPast ? "text-slate-400 dark:text-slate-500" : "text-slate-700 dark:text-slate-200"
-              }`}>
+              <p
+                className={`text-xs font-medium truncate ${
+                  isPast
+                    ? "text-slate-400 dark:text-slate-500"
+                    : "text-slate-700 dark:text-slate-200"
+                }`}
+              >
                 {quote.returnAirline}
               </p>
             )}
             {quote.returnDeparture && (
-              <p className={`text-xs flex items-center gap-1 mt-0.5 ${
-                isPast ? "text-slate-400 dark:text-slate-500" : "text-slate-500 dark:text-slate-400"
-              }`}>
+              <p
+                className={`text-xs flex items-center gap-1 mt-0.5 ${
+                  isPast
+                    ? "text-slate-400 dark:text-slate-500"
+                    : "text-slate-500 dark:text-slate-400"
+                }`}
+              >
                 <Clock className="w-3 h-3 flex-shrink-0" />
                 Partida: {formatFlightDatetime(quote.returnDeparture)}
               </p>
             )}
             {quote.returnArrival && (
-              <p className={`text-xs flex items-center gap-1 ${
-                isPast ? "text-slate-400 dark:text-slate-500" : "text-slate-500 dark:text-slate-400"
-              }`}>
+              <p
+                className={`text-xs flex items-center gap-1 ${
+                  isPast
+                    ? "text-slate-400 dark:text-slate-500"
+                    : "text-slate-500 dark:text-slate-400"
+                }`}
+              >
                 <Clock className="w-3 h-3 flex-shrink-0" />
                 Chegada: {formatFlightDatetime(quote.returnArrival)}
               </p>
@@ -297,13 +333,24 @@ const WeekCard = ({
     weekNumber: number,
     departureDate: string,
     returnDate: string,
-    price: number
+    price: number,
+    details?: {
+      outboundAirline?: string;
+      returnAirline?: string;
+      outboundDeparture?: string;
+      returnDeparture?: string;
+    }
   ) => void;
   onDelete: (id: number) => void;
   isLoadingApi: boolean;
 }) => {
   const [expanded, setExpanded] = useState(false);
+  const [showManualDetails, setShowManualDetails] = useState(false);
   const [manualPrice, setManualPrice] = useState("");
+  const [outboundAirline, setOutboundAirline] = useState("");
+  const [returnAirline, setReturnAirline] = useState("");
+  const [outboundDeparture, setOutboundDeparture] = useState("");
+  const [returnDeparture, setReturnDeparture] = useState("");
 
   const depIso = toIsoDate(week.ida.data);
   const retIso = toIsoDate(week.retorno.data);
@@ -325,8 +372,23 @@ const WeekCard = ({
       toast.error("Informe um preço válido (ex: 350.90)");
       return;
     }
-    onSaveManual(week.semana, depIso, retIso, price);
+
+    const details = showManualDetails
+      ? {
+          outboundAirline: outboundAirline || undefined,
+          returnAirline: returnAirline || undefined,
+          outboundDeparture: outboundDeparture || undefined,
+          returnDeparture: returnDeparture || undefined,
+        }
+      : undefined;
+
+    onSaveManual(week.semana, depIso, retIso, price, details);
     setManualPrice("");
+    setOutboundAirline("");
+    setReturnAirline("");
+    setOutboundDeparture("");
+    setReturnDeparture("");
+    setShowManualDetails(false);
   };
 
   // ── Estilos condicionais por status ──────────────────────────────────────
@@ -568,7 +630,64 @@ const WeekCard = ({
                   <Link2 className="w-3.5 h-3.5 mr-1" />
                   Salvar
                 </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowManualDetails(!showManualDetails)}
+                  className="h-8 text-xs border-slate-200 dark:border-slate-600"
+                >
+                  {showManualDetails ? "Menos detalhes" : "Mais detalhes"}
+                </Button>
               </div>
+
+              {showManualDetails && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3 rounded-lg bg-slate-50 dark:bg-slate-700/30 border border-slate-200 dark:border-slate-600 mt-2 animate-in fade-in slide-in-from-top-1 duration-200">
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-bold uppercase text-slate-500 dark:text-slate-400">
+                      Cia Aérea Ida
+                    </label>
+                    <Input
+                      placeholder="Ex: LATAM"
+                      value={outboundAirline}
+                      onChange={e => setOutboundAirline(e.target.value)}
+                      className="h-8 text-xs dark:bg-slate-800"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-bold uppercase text-slate-500 dark:text-slate-400">
+                      Cia Aérea Volta
+                    </label>
+                    <Input
+                      placeholder="Ex: GOL"
+                      value={returnAirline}
+                      onChange={e => setReturnAirline(e.target.value)}
+                      className="h-8 text-xs dark:bg-slate-800"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-bold uppercase text-slate-500 dark:text-slate-400">
+                      Partida Ida
+                    </label>
+                    <Input
+                      type="datetime-local"
+                      value={outboundDeparture}
+                      onChange={e => setOutboundDeparture(e.target.value)}
+                      className="h-8 text-xs dark:bg-slate-800"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-bold uppercase text-slate-500 dark:text-slate-400">
+                      Partida Volta
+                    </label>
+                    <Input
+                      type="datetime-local"
+                      value={returnDeparture}
+                      onChange={e => setReturnDeparture(e.target.value)}
+                      className="h-8 text-xs dark:bg-slate-800"
+                    />
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
@@ -686,9 +805,21 @@ export default function FlightQuotes() {
     weekNumber: number,
     departureDate: string,
     returnDate: string,
-    price: number
+    price: number,
+    details?: {
+      outboundAirline?: string;
+      returnAirline?: string;
+      outboundDeparture?: string;
+      returnDeparture?: string;
+    }
   ) => {
-    saveManual.mutate({ weekNumber, departureDate, returnDate, price });
+    saveManual.mutate({
+      weekNumber,
+      departureDate,
+      returnDate,
+      price,
+      ...details,
+    });
   };
 
   const handleDelete = (id: number) => {

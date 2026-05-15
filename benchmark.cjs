@@ -1,7 +1,7 @@
-const { performance } = require('node:perf_hooks');
+const { performance } = require("node:perf_hooks");
 
 // Mock network delay function
-const mockSendPush = async (endpoint) => {
+const mockSendPush = async endpoint => {
   return new Promise(resolve => setTimeout(() => resolve(true), 50));
 };
 
@@ -22,7 +22,9 @@ async function parallel(subs) {
 }
 
 async function run() {
-  const subs = Array.from({ length: 50 }, (_, i) => ({ endpoint: `endpoint-${i}` }));
+  const subs = Array.from({ length: 50 }, (_, i) => ({
+    endpoint: `endpoint-${i}`,
+  }));
 
   console.log("Starting benchmark...");
 
