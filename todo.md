@@ -96,7 +96,7 @@
 - [x] Bug: números de voo de ida e volta não aparecem nos cards das semanas (campo preenchido mas não exibido) — causa: Service Worker com cache antigo do app quebrado; solução: desregistrar SW e recarregar
 - [ ] Bug: erro ao gerar PDF (botão PDF no cabeçalho não funciona)
 - [x] Substituir botão lápis + popup de edição de datas por date pickers inline no card (data ida + data volta com label do dia da semana ao lado)
-- [ ] Ao clicar em "Não Emitido" para expandir o card, copiar automaticamente as datas dos date-pickers (Ida e Retorno) para os campos de data/hora do bilhete (datetime-local Ida e Volta)
+- [x] Ao clicar em "Não Emitido" para expandir o card, copiar automaticamente as datas dos date-pickers (Ida e Retorno) para os campos de data/hora do bilhete (datetime-local Ida e Volta)
 - [x] Alterar título do frame de preços de "GRU → NVT • Preços" para "Consulta de Preços"
 - [x] Bug: ícone do site (favicon) aparece em branco
 - [x] Bug: logotipo no cabeçalho do site aparece em branco
