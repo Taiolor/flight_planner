@@ -30,3 +30,8 @@
 ## 2026-05-15 - Optimization of getCurrentYearMonth
 **Learning:** Caching the output string of frequently called static functions returning date ranges significantly improves local execution time.
 **Action:** Evaluate using static strings to replace repetitive dynamic output that relies on the exact same parameters/context.
+
+## 2024-05-18 - Database Query Single-Flight Caching
+
+**Learning:** When multiple requests fetch the exact same data from the database concurrently (e.g., in a "thundering herd" scenario during server startup or traffic spikes), relying on just standard await without caching causes redundant database connections and queries for the same un-resolved outcome.
+**Action:** Implement a "single-flight" caching mechanism by caching the Promise of the database operation itself in a module-level variable, returning the ongoing promise if one exists, and ensuring to clear it in a `finally` block once the operation completes.
