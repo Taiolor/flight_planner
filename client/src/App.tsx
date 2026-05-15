@@ -56,9 +56,7 @@ function App() {
   return (
     <ErrorBoundary>
       <YearProvider>
-        <ThemeProvider
-          defaultTheme="light"
-        >
+        <ThemeProvider defaultTheme="light">
           <TooltipProvider>
             <Toaster />
             <Router />

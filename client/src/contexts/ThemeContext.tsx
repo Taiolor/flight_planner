@@ -140,7 +140,9 @@ export function ThemeProvider({
   };
 
   return (
-    <ThemeContext.Provider value={{ theme, toggleTheme, switchable, colorPreset, setColorPreset }}>
+    <ThemeContext.Provider
+      value={{ theme, toggleTheme, switchable, colorPreset, setColorPreset }}
+    >
       {children}
     </ThemeContext.Provider>
   );

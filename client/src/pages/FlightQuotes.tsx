@@ -58,13 +58,6 @@ const buildKayakUrl = (departureDate: string, returnDate: string): string => {
   return `https://www.kayak.com.br/flights/GRU-NVT/${dep}/${ret}?ucs=p1nu6v&sort=bestflight_a`;
 };
 
-/** Helper for fast date comparison */
-const dateToInt = (d: string): number => {
-  if (d.includes("-")) return parseInt(d.replace(/-/g, ""), 10);
-  const parts = d.split("/");
-  return parseInt(`${parts[2]}${parts[1]}${parts[0]}`, 10);
-};
-
 /**
  * Determina se uma semana é passada, corrente ou futura.
  * Usa a data de IDA (domingo) como referência.
@@ -72,22 +65,16 @@ const dateToInt = (d: string): number => {
  */
 const getWeekStatus = (
   departureDate: string,
-  returnDate: string,
-  todayInt?: number
+  returnDate: string
 ): "past" | "current" | "future" => {
-  let today = todayInt;
-  if (!today) {
-    const d = new Date();
-    today = parseInt(
-      `${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, "0")}${String(
-        d.getDate()
-      ).padStart(2, "0")}`,
-      10
-    );
-  }
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
 
-  const dep = dateToInt(departureDate);
-  const ret = dateToInt(returnDate);
+  const depIso = toIsoDate(departureDate);
+  const retIso = toIsoDate(returnDate);
+
+  const dep = new Date(depIso + "T00:00:00");
+  const ret = new Date(retIso + "T00:00:00");
 
   if (ret < today) return "past";
   if (dep <= today && ret >= today) return "current";
@@ -346,31 +333,31 @@ const WeekCard = ({
     weekNumber: number,
     departureDate: string,
     returnDate: string,
-    price: number
+    price: number,
+    details?: {
+      outboundAirline?: string;
+      returnAirline?: string;
+      outboundDeparture?: string;
+      returnDeparture?: string;
+    }
   ) => void;
   onDelete: (id: number) => void;
   isLoadingApi: boolean;
 }) => {
   const [expanded, setExpanded] = useState(false);
+  const [showManualDetails, setShowManualDetails] = useState(false);
   const [manualPrice, setManualPrice] = useState("");
+  const [outboundAirline, setOutboundAirline] = useState("");
+  const [returnAirline, setReturnAirline] = useState("");
+  const [outboundDeparture, setOutboundDeparture] = useState("");
+  const [returnDeparture, setReturnDeparture] = useState("");
 
   const depIso = toIsoDate(week.ida.data);
   const retIso = toIsoDate(week.retorno.data);
   const kayakUrl = buildKayakUrl(week.ida.data, week.retorno.data);
   const apiLimitReached = apiUsage.requestsUsed >= apiUsage.requestsLimit;
 
-  const todayInt = useMemo(() => {
-    const today = new Date();
-    return parseInt(
-      `${today.getFullYear()}${String(today.getMonth() + 1).padStart(
-        2,
-        "0"
-      )}${String(today.getDate()).padStart(2, "0")}`,
-      10
-    );
-  }, []);
-
-  const status = getWeekStatus(week.ida.data, week.retorno.data, todayInt);
+  const status = getWeekStatus(week.ida.data, week.retorno.data);
   const isPast = status === "past";
   const isCurrent = status === "current";
 
@@ -385,8 +372,23 @@ const WeekCard = ({
       toast.error("Informe um preço válido (ex: 350.90)");
       return;
     }
-    onSaveManual(week.semana, depIso, retIso, price);
+
+    const details = showManualDetails
+      ? {
+          outboundAirline: outboundAirline || undefined,
+          returnAirline: returnAirline || undefined,
+          outboundDeparture: outboundDeparture || undefined,
+          returnDeparture: returnDeparture || undefined,
+        }
+      : undefined;
+
+    onSaveManual(week.semana, depIso, retIso, price, details);
     setManualPrice("");
+    setOutboundAirline("");
+    setReturnAirline("");
+    setOutboundDeparture("");
+    setReturnDeparture("");
+    setShowManualDetails(false);
   };
 
   // ── Estilos condicionais por status ──────────────────────────────────────
@@ -628,7 +630,64 @@ const WeekCard = ({
                   <Link2 className="w-3.5 h-3.5 mr-1" />
                   Salvar
                 </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowManualDetails(!showManualDetails)}
+                  className="h-8 text-xs border-slate-200 dark:border-slate-600"
+                >
+                  {showManualDetails ? "Menos detalhes" : "Mais detalhes"}
+                </Button>
               </div>
+
+              {showManualDetails && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3 rounded-lg bg-slate-50 dark:bg-slate-700/30 border border-slate-200 dark:border-slate-600 mt-2 animate-in fade-in slide-in-from-top-1 duration-200">
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-bold uppercase text-slate-500 dark:text-slate-400">
+                      Cia Aérea Ida
+                    </label>
+                    <Input
+                      placeholder="Ex: LATAM"
+                      value={outboundAirline}
+                      onChange={e => setOutboundAirline(e.target.value)}
+                      className="h-8 text-xs dark:bg-slate-800"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-bold uppercase text-slate-500 dark:text-slate-400">
+                      Cia Aérea Volta
+                    </label>
+                    <Input
+                      placeholder="Ex: GOL"
+                      value={returnAirline}
+                      onChange={e => setReturnAirline(e.target.value)}
+                      className="h-8 text-xs dark:bg-slate-800"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-bold uppercase text-slate-500 dark:text-slate-400">
+                      Partida Ida
+                    </label>
+                    <Input
+                      type="datetime-local"
+                      value={outboundDeparture}
+                      onChange={e => setOutboundDeparture(e.target.value)}
+                      className="h-8 text-xs dark:bg-slate-800"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-bold uppercase text-slate-500 dark:text-slate-400">
+                      Partida Volta
+                    </label>
+                    <Input
+                      type="datetime-local"
+                      value={returnDeparture}
+                      onChange={e => setReturnDeparture(e.target.value)}
+                      className="h-8 text-xs dark:bg-slate-800"
+                    />
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
@@ -746,15 +805,25 @@ export default function FlightQuotes() {
     weekNumber: number,
     departureDate: string,
     returnDate: string,
-    price: number
+    price: number,
+    details?: {
+      outboundAirline?: string;
+      returnAirline?: string;
+      outboundDeparture?: string;
+      returnDeparture?: string;
+    }
   ) => {
-    saveManual.mutate({ weekNumber, departureDate, returnDate, price });
+    saveManual.mutate({
+      weekNumber,
+      departureDate,
+      returnDate,
+      price,
+      ...details,
+    });
   };
 
   const handleDelete = (id: number) => {
-    if (window.confirm("Tem certeza que deseja excluir esta cotação?")) {
-      deleteQuote.mutate({ id });
-    }
+    deleteQuote.mutate({ id });
   };
 
   const usagePercent = Math.round(
@@ -772,16 +841,8 @@ export default function FlightQuotes() {
     let past = 0,
       current = 0,
       future = 0;
-    const today = new Date();
-    const todayInt = parseInt(
-      `${today.getFullYear()}${String(today.getMonth() + 1).padStart(
-        2,
-        "0"
-      )}${String(today.getDate()).padStart(2, "0")}`,
-      10
-    );
     for (const w of flightData) {
-      const s = getWeekStatus(w.ida.data, w.retorno.data, todayInt);
+      const s = getWeekStatus(w.ida.data, w.retorno.data);
       if (s === "past") past++;
       else if (s === "current") current++;
       else future++;
