@@ -146,17 +146,23 @@ const QuoteRow = ({
     quote.returnDeparture;
 
   return (
-    <div className={`rounded-lg border overflow-hidden ${
-      isPast
-        ? "bg-slate-100 dark:bg-slate-800/60 border-slate-200 dark:border-slate-700"
-        : "bg-slate-50 dark:bg-slate-700/50 border-slate-200 dark:border-slate-600"
-    }`}>
+    <div
+      className={`rounded-lg border overflow-hidden ${
+        isPast
+          ? "bg-slate-100 dark:bg-slate-800/60 border-slate-200 dark:border-slate-700"
+          : "bg-slate-50 dark:bg-slate-700/50 border-slate-200 dark:border-slate-600"
+      }`}
+    >
       {/* Linha principal: preço + fonte + data da cotação + botão excluir */}
       <div className="flex items-center justify-between py-2 px-3 gap-2">
         <div className="flex items-center gap-3 flex-1 min-w-0">
-          <span className={`text-lg font-bold whitespace-nowrap ${
-            isPast ? "text-slate-400 dark:text-slate-500" : "text-slate-800 dark:text-slate-100"
-          }`}>
+          <span
+            className={`text-lg font-bold whitespace-nowrap ${
+              isPast
+                ? "text-slate-400 dark:text-slate-500"
+                : "text-slate-800 dark:text-slate-100"
+            }`}
+          >
             {formatCurrency(quote.lowestPrice)}
           </span>
           <SourceBadge source={quote.source} />
@@ -189,40 +195,56 @@ const QuoteRow = ({
 
       {/* Detalhes de ida e volta (apenas quando disponível via API) */}
       {hasFlightDetails && (
-        <div className={`px-3 pb-2.5 pt-0 border-t grid grid-cols-2 gap-2 ${
-          isPast
-            ? "border-slate-200 dark:border-slate-700"
-            : "border-slate-200 dark:border-slate-600"
-        }`}>
-          {/* Voo de Ida */}
-          <div className={`rounded-md p-2 ${
+        <div
+          className={`px-3 pb-2.5 pt-0 border-t grid grid-cols-2 gap-2 ${
             isPast
-              ? "bg-slate-200/60 dark:bg-slate-700/40"
-              : "bg-white dark:bg-slate-800/60"
-          }`}>
+              ? "border-slate-200 dark:border-slate-700"
+              : "border-slate-200 dark:border-slate-600"
+          }`}
+        >
+          {/* Voo de Ida */}
+          <div
+            className={`rounded-md p-2 ${
+              isPast
+                ? "bg-slate-200/60 dark:bg-slate-700/40"
+                : "bg-white dark:bg-slate-800/60"
+            }`}
+          >
             <p className="text-[10px] font-semibold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 mb-1 flex items-center gap-1">
               <Plane className="w-3 h-3" />
               Ida
             </p>
             {quote.outboundAirline && (
-              <p className={`text-xs font-medium truncate ${
-                isPast ? "text-slate-400 dark:text-slate-500" : "text-slate-700 dark:text-slate-200"
-              }`}>
+              <p
+                className={`text-xs font-medium truncate ${
+                  isPast
+                    ? "text-slate-400 dark:text-slate-500"
+                    : "text-slate-700 dark:text-slate-200"
+                }`}
+              >
                 {quote.outboundAirline}
               </p>
             )}
             {quote.outboundDeparture && (
-              <p className={`text-xs flex items-center gap-1 mt-0.5 ${
-                isPast ? "text-slate-400 dark:text-slate-500" : "text-slate-500 dark:text-slate-400"
-              }`}>
+              <p
+                className={`text-xs flex items-center gap-1 mt-0.5 ${
+                  isPast
+                    ? "text-slate-400 dark:text-slate-500"
+                    : "text-slate-500 dark:text-slate-400"
+                }`}
+              >
                 <Clock className="w-3 h-3 flex-shrink-0" />
                 Partida: {formatFlightDatetime(quote.outboundDeparture)}
               </p>
             )}
             {quote.outboundArrival && (
-              <p className={`text-xs flex items-center gap-1 ${
-                isPast ? "text-slate-400 dark:text-slate-500" : "text-slate-500 dark:text-slate-400"
-              }`}>
+              <p
+                className={`text-xs flex items-center gap-1 ${
+                  isPast
+                    ? "text-slate-400 dark:text-slate-500"
+                    : "text-slate-500 dark:text-slate-400"
+                }`}
+              >
                 <Clock className="w-3 h-3 flex-shrink-0" />
                 Chegada: {formatFlightDatetime(quote.outboundArrival)}
               </p>
@@ -230,34 +252,48 @@ const QuoteRow = ({
           </div>
 
           {/* Voo de Volta */}
-          <div className={`rounded-md p-2 ${
-            isPast
-              ? "bg-slate-200/60 dark:bg-slate-700/40"
-              : "bg-white dark:bg-slate-800/60"
-          }`}>
+          <div
+            className={`rounded-md p-2 ${
+              isPast
+                ? "bg-slate-200/60 dark:bg-slate-700/40"
+                : "bg-white dark:bg-slate-800/60"
+            }`}
+          >
             <p className="text-[10px] font-semibold uppercase tracking-wider text-blue-600 dark:text-blue-400 mb-1 flex items-center gap-1">
               <Plane className="w-3 h-3 rotate-180" />
               Volta
             </p>
             {quote.returnAirline && (
-              <p className={`text-xs font-medium truncate ${
-                isPast ? "text-slate-400 dark:text-slate-500" : "text-slate-700 dark:text-slate-200"
-              }`}>
+              <p
+                className={`text-xs font-medium truncate ${
+                  isPast
+                    ? "text-slate-400 dark:text-slate-500"
+                    : "text-slate-700 dark:text-slate-200"
+                }`}
+              >
                 {quote.returnAirline}
               </p>
             )}
             {quote.returnDeparture && (
-              <p className={`text-xs flex items-center gap-1 mt-0.5 ${
-                isPast ? "text-slate-400 dark:text-slate-500" : "text-slate-500 dark:text-slate-400"
-              }`}>
+              <p
+                className={`text-xs flex items-center gap-1 mt-0.5 ${
+                  isPast
+                    ? "text-slate-400 dark:text-slate-500"
+                    : "text-slate-500 dark:text-slate-400"
+                }`}
+              >
                 <Clock className="w-3 h-3 flex-shrink-0" />
                 Partida: {formatFlightDatetime(quote.returnDeparture)}
               </p>
             )}
             {quote.returnArrival && (
-              <p className={`text-xs flex items-center gap-1 ${
-                isPast ? "text-slate-400 dark:text-slate-500" : "text-slate-500 dark:text-slate-400"
-              }`}>
+              <p
+                className={`text-xs flex items-center gap-1 ${
+                  isPast
+                    ? "text-slate-400 dark:text-slate-500"
+                    : "text-slate-500 dark:text-slate-400"
+                }`}
+              >
                 <Clock className="w-3 h-3 flex-shrink-0" />
                 Chegada: {formatFlightDatetime(quote.returnArrival)}
               </p>

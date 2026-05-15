@@ -27,25 +27,34 @@ const NVT_ENTITY_ID = "95673774";
 const RAPIDAPI_HOST = "sky-scrapper.p.rapidapi.com";
 
 /** Espera ms milissegundos */
-const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+const sleep = (ms: number) => new Promise(r => setTimeout(r, ms));
 
 /** Retorna o yearMonth atual no formato YYYY-MM */
+let cachedYearMonth = "";
+let lastMonth = -1;
+let lastYear = -1;
 function getCurrentYearMonth(): string {
   const now = new Date();
-  const year = now.getFullYear();
-  const month = String(now.getMonth() + 1).padStart(2, "0");
-  return `${year}-${month}`;
+  const currentMonth = now.getMonth();
+  const currentYear = now.getFullYear();
+  if (currentMonth !== lastMonth || currentYear !== lastYear) {
+    lastMonth = currentMonth;
+    lastYear = currentYear;
+    const month = String(currentMonth + 1).padStart(2, "0");
+    cachedYearMonth = `${currentYear}-${month}`;
+  }
+  return cachedYearMonth;
 }
 
 interface FlightLegInfo {
   airline: string | null;
   departure: string | null; // ISO 8601 datetime ex: "2026-06-07T22:05:00"
-  arrival: string | null;   // ISO 8601 datetime
+  arrival: string | null; // ISO 8601 datetime
 }
 
 interface SkyScrapperResult {
   lowestPrice: number;
-  airline: string | null;       // companhia ida (compatível com campo legado)
+  airline: string | null; // companhia ida (compatível com campo legado)
   outboundAirline: string | null;
   returnAirline: string | null;
   outboundDeparture: string | null;
@@ -76,7 +85,9 @@ async function fetchSkyScrapperPrice(
   };
 
   // ── Passo 1: Iniciar a busca ──────────────────────────────────────────────
-  const searchUrl = new URL(`https://${RAPIDAPI_HOST}/api/v2/flights/searchFlights`);
+  const searchUrl = new URL(
+    `https://${RAPIDAPI_HOST}/api/v2/flights/searchFlights`
+  );
   searchUrl.searchParams.set("originSkyId", GRU_SKY_ID);
   searchUrl.searchParams.set("destinationSkyId", NVT_SKY_ID);
   searchUrl.searchParams.set("originEntityId", GRU_ENTITY_ID);
@@ -118,11 +129,14 @@ async function fetchSkyScrapperPrice(
 
   for (
     let attempt = 0;
-    attempt < MAX_POLLS && (contextStatus !== "complete" || itineraries.length === 0);
+    attempt < MAX_POLLS &&
+    (contextStatus !== "complete" || itineraries.length === 0);
     attempt++
   ) {
     await sleep(POLL_DELAY_MS);
-    const pollUrl = new URL(`https://${RAPIDAPI_HOST}/api/v2/flights/searchIncomplete`);
+    const pollUrl = new URL(
+      `https://${RAPIDAPI_HOST}/api/v2/flights/searchIncomplete`
+    );
     pollUrl.searchParams.set("sessionId", sessionId);
 
     const pollResponse = await fetch(pollUrl.toString(), { headers });
@@ -152,13 +166,22 @@ async function fetchSkyScrapperPrice(
   // ── Passo 3: Extrair menor preço e dados detalhados ───────────────────────
   // price.raw é o valor numérico em BRL (o símbolo formatado pode estar errado)
   let lowestPrice = Infinity;
-  let outboundInfo: FlightLegInfo = { airline: null, departure: null, arrival: null };
-  let returnInfo: FlightLegInfo = { airline: null, departure: null, arrival: null };
+  let outboundInfo: FlightLegInfo = {
+    airline: null,
+    departure: null,
+    arrival: null,
+  };
+  let returnInfo: FlightLegInfo = {
+    airline: null,
+    departure: null,
+    arrival: null,
+  };
 
   /** Extrai companhia aérea e horários de um leg da API */
   const extractLegInfo = (leg: any): FlightLegInfo => {
     const carriers = leg?.carriers?.marketing ?? leg?.carriers?.operating ?? [];
-    const airlineName = carriers.length > 0 ? (carriers[0]?.name ?? null) : null;
+    const airlineName =
+      carriers.length > 0 ? (carriers[0]?.name ?? null) : null;
     return {
       airline: airlineName,
       departure: leg?.departure ?? null, // ISO 8601: "2026-06-07T22:05:00"
@@ -232,8 +255,12 @@ export const quotesRouter = router({
     .input(
       z.object({
         weekNumber: z.number().int().positive(),
-        departureDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Formato YYYY-MM-DD"),
-        returnDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Formato YYYY-MM-DD"),
+        departureDate: z
+          .string()
+          .regex(/^\d{4}-\d{2}-\d{2}$/, "Formato YYYY-MM-DD"),
+        returnDate: z
+          .string()
+          .regex(/^\d{4}-\d{2}-\d{2}$/, "Formato YYYY-MM-DD"),
       })
     )
     .mutation(async ({ input }) => {
@@ -303,10 +330,13 @@ export const quotesRouter = router({
 
       return {
         lowestPrice: result.lowestPrice,
-        lowestPriceFormatted: (result.lowestPrice / 100).toLocaleString("pt-BR", {
-          style: "currency",
-          currency: "BRL",
-        }),
+        lowestPriceFormatted: (result.lowestPrice / 100).toLocaleString(
+          "pt-BR",
+          {
+            style: "currency",
+            currency: "BRL",
+          }
+        ),
         airline: result.airline,
         outboundAirline: result.outboundAirline,
         returnAirline: result.returnAirline,
@@ -327,8 +357,12 @@ export const quotesRouter = router({
     .input(
       z.object({
         weekNumber: z.number().int().positive(),
-        departureDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Formato YYYY-MM-DD"),
-        returnDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Formato YYYY-MM-DD"),
+        departureDate: z
+          .string()
+          .regex(/^\d{4}-\d{2}-\d{2}$/, "Formato YYYY-MM-DD"),
+        returnDate: z
+          .string()
+          .regex(/^\d{4}-\d{2}-\d{2}$/, "Formato YYYY-MM-DD"),
         price: z.number().positive("Preço deve ser positivo"),
         airline: z.string().optional(),
         outboundAirline: z.string().optional(),

@@ -8,21 +8,12 @@ describe("Environment Configuration", () => {
     process.env = { ...originalEnv };
   });
 
-  it("should throw an error in production if JWT_SECRET is missing", async () => {
-    process.env.NODE_ENV = "production";
+  it("should throw an error if JWT_SECRET is missing", async () => {
     delete process.env.JWT_SECRET;
 
     await expect(import("./_core/env")).rejects.toThrow(
-      "JWT_SECRET environment variable is required in production"
+      "JWT_SECRET environment variable is required"
     );
-  });
-
-  it("should use a fallback secret in development if JWT_SECRET is missing", async () => {
-    process.env.NODE_ENV = "development";
-    delete process.env.JWT_SECRET;
-
-    const { ENV } = await import("./_core/env");
-    expect(ENV.cookieSecret).toBe("dev-secret-do-not-use-in-production");
   });
 
   it("should use the provided JWT_SECRET if present", async () => {
