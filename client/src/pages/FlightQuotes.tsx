@@ -297,13 +297,24 @@ const WeekCard = ({
     weekNumber: number,
     departureDate: string,
     returnDate: string,
-    price: number
+    price: number,
+    details?: {
+      outboundAirline?: string;
+      returnAirline?: string;
+      outboundDeparture?: string;
+      returnDeparture?: string;
+    }
   ) => void;
   onDelete: (id: number) => void;
   isLoadingApi: boolean;
 }) => {
   const [expanded, setExpanded] = useState(false);
+  const [showManualDetails, setShowManualDetails] = useState(false);
   const [manualPrice, setManualPrice] = useState("");
+  const [outboundAirline, setOutboundAirline] = useState("");
+  const [returnAirline, setReturnAirline] = useState("");
+  const [outboundDeparture, setOutboundDeparture] = useState("");
+  const [returnDeparture, setReturnDeparture] = useState("");
 
   const depIso = toIsoDate(week.ida.data);
   const retIso = toIsoDate(week.retorno.data);
@@ -325,8 +336,23 @@ const WeekCard = ({
       toast.error("Informe um preço válido (ex: 350.90)");
       return;
     }
-    onSaveManual(week.semana, depIso, retIso, price);
+
+    const details = showManualDetails
+      ? {
+          outboundAirline: outboundAirline || undefined,
+          returnAirline: returnAirline || undefined,
+          outboundDeparture: outboundDeparture || undefined,
+          returnDeparture: returnDeparture || undefined,
+        }
+      : undefined;
+
+    onSaveManual(week.semana, depIso, retIso, price, details);
     setManualPrice("");
+    setOutboundAirline("");
+    setReturnAirline("");
+    setOutboundDeparture("");
+    setReturnDeparture("");
+    setShowManualDetails(false);
   };
 
   // ── Estilos condicionais por status ──────────────────────────────────────
@@ -568,7 +594,64 @@ const WeekCard = ({
                   <Link2 className="w-3.5 h-3.5 mr-1" />
                   Salvar
                 </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowManualDetails(!showManualDetails)}
+                  className="h-8 text-xs border-slate-200 dark:border-slate-600"
+                >
+                  {showManualDetails ? "Menos detalhes" : "Mais detalhes"}
+                </Button>
               </div>
+
+              {showManualDetails && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3 rounded-lg bg-slate-50 dark:bg-slate-700/30 border border-slate-200 dark:border-slate-600 mt-2 animate-in fade-in slide-in-from-top-1 duration-200">
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-bold uppercase text-slate-500 dark:text-slate-400">
+                      Cia Aérea Ida
+                    </label>
+                    <Input
+                      placeholder="Ex: LATAM"
+                      value={outboundAirline}
+                      onChange={e => setOutboundAirline(e.target.value)}
+                      className="h-8 text-xs dark:bg-slate-800"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-bold uppercase text-slate-500 dark:text-slate-400">
+                      Cia Aérea Volta
+                    </label>
+                    <Input
+                      placeholder="Ex: GOL"
+                      value={returnAirline}
+                      onChange={e => setReturnAirline(e.target.value)}
+                      className="h-8 text-xs dark:bg-slate-800"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-bold uppercase text-slate-500 dark:text-slate-400">
+                      Partida Ida
+                    </label>
+                    <Input
+                      type="datetime-local"
+                      value={outboundDeparture}
+                      onChange={e => setOutboundDeparture(e.target.value)}
+                      className="h-8 text-xs dark:bg-slate-800"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-bold uppercase text-slate-500 dark:text-slate-400">
+                      Partida Volta
+                    </label>
+                    <Input
+                      type="datetime-local"
+                      value={returnDeparture}
+                      onChange={e => setReturnDeparture(e.target.value)}
+                      className="h-8 text-xs dark:bg-slate-800"
+                    />
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
@@ -686,9 +769,21 @@ export default function FlightQuotes() {
     weekNumber: number,
     departureDate: string,
     returnDate: string,
-    price: number
+    price: number,
+    details?: {
+      outboundAirline?: string;
+      returnAirline?: string;
+      outboundDeparture?: string;
+      returnDeparture?: string;
+    }
   ) => {
-    saveManual.mutate({ weekNumber, departureDate, returnDate, price });
+    saveManual.mutate({
+      weekNumber,
+      departureDate,
+      returnDate,
+      price,
+      ...details,
+    });
   };
 
   const handleDelete = (id: number) => {

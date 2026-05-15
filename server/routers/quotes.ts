@@ -331,6 +331,12 @@ export const quotesRouter = router({
         returnDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Formato YYYY-MM-DD"),
         price: z.number().positive("Preço deve ser positivo"),
         airline: z.string().optional(),
+        outboundAirline: z.string().optional(),
+        returnAirline: z.string().optional(),
+        outboundDeparture: z.string().optional(),
+        outboundArrival: z.string().optional(),
+        returnDeparture: z.string().optional(),
+        returnArrival: z.string().optional(),
       })
     )
     .mutation(async ({ input }) => {
@@ -344,6 +350,12 @@ export const quotesRouter = router({
         currency: "BRL",
         source: "manual",
         airline: input.airline ?? null,
+        outboundAirline: input.outboundAirline ?? null,
+        returnAirline: input.returnAirline ?? null,
+        outboundDeparture: input.outboundDeparture ?? null,
+        outboundArrival: input.outboundArrival ?? null,
+        returnDeparture: input.returnDeparture ?? null,
+        returnArrival: input.returnArrival ?? null,
         apiRequestsUsed: 0,
         rawResponse: null,
         quotedAt: new Date(),

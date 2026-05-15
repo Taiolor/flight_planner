@@ -180,6 +180,7 @@ export type InsertNotificationLog = typeof notificationLogs.$inferInsert;
 
 /**
  * Tabela para armazenar cotações de preços de passagens aéreas
+ * (Colunas adicionadas: outboundAirline, returnAirline, outboundDeparture, outboundArrival, returnDeparture, returnArrival)
  * source: 'api' = obtido via Sky Scrapper API | 'manual' = inserido manualmente via Kayak
  */
 export const flightQuotes = mysqlTable(
