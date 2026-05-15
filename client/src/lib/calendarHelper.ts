@@ -10,42 +10,42 @@
  */
 
 export interface CalendarEventParams {
-  title: string;           // ex: "✈️ Voo IDA LA3045 — LATAM Airlines"
-  flightDatetime: string;  // ISO local "YYYY-MM-DDTHH:mm"
-  location: string;        // ex: "Aeroporto de Guarulhos (GRU)"
-  description: string;     // ex: "Localizador: ABC123\nCompanhia: LATAM"
-  leadMinutes?: number;    // antecedência em minutos antes do voo (padrão: 120)
+  title: string; // ex: "✈️ Voo IDA LA3045 — LATAM Airlines"
+  flightDatetime: string; // ISO local "YYYY-MM-DDTHH:mm"
+  location: string; // ex: "Aeroporto de Guarulhos (GRU)"
+  description: string; // ex: "Localizador: ABC123\nCompanhia: LATAM"
+  leadMinutes?: number; // antecedência em minutos antes do voo (padrão: 120)
 }
 
 /** Opções de antecedência disponíveis para o usuário */
 export const LEAD_OPTIONS: { label: string; minutes: number }[] = [
-  { label: '1h antes', minutes: 60 },
-  { label: '1h30 antes', minutes: 90 },
-  { label: '2h antes', minutes: 120 },
-  { label: '2h30 antes', minutes: 150 },
-  { label: '3h antes', minutes: 180 },
+  { label: "1h antes", minutes: 60 },
+  { label: "1h30 antes", minutes: 90 },
+  { label: "2h antes", minutes: 120 },
+  { label: "2h30 antes", minutes: 150 },
+  { label: "3h antes", minutes: 180 },
 ];
 
 /** Opções de duração do voo (tempo de chegada) */
 export const DURATION_OPTIONS: { label: string; minutes: number }[] = [
-  { label: '1h de voo', minutes: 60 },
-  { label: '1h15 de voo', minutes: 75 },
-  { label: '1h30 de voo', minutes: 90 },
-  { label: '1h45 de voo', minutes: 105 },
-  { label: '2h de voo', minutes: 120 },
+  { label: "1h de voo", minutes: 60 },
+  { label: "1h15 de voo", minutes: 75 },
+  { label: "1h30 de voo", minutes: 90 },
+  { label: "1h45 de voo", minutes: 105 },
+  { label: "2h de voo", minutes: 120 },
 ];
 
 /** Formata data para o formato Google/Outlook: YYYYMMDDTHHmmss */
 function toCalendarDate(date: Date): string {
-  const pad = (n: number) => String(n).padStart(2, '0');
+  const pad = (n: number) => String(n).padStart(2, "0");
   return (
     date.getFullYear().toString() +
     pad(date.getMonth() + 1) +
     pad(date.getDate()) +
-    'T' +
+    "T" +
     pad(date.getHours()) +
     pad(date.getMinutes()) +
-    '00'
+    "00"
   );
 }
 
@@ -57,7 +57,7 @@ function toCalendarDate(date: Date): string {
 function getEventTimes(
   flightDatetime: string,
   leadMinutes: number = 120,
-  durationMinutes: number = 75,
+  durationMinutes: number = 75
 ): { start: Date; end: Date } {
   const flightDate = new Date(flightDatetime);
   const start = new Date(flightDate.getTime() - leadMinutes * 60 * 1000);
@@ -69,13 +69,13 @@ function getEventTimes(
 export function getGoogleCalendarLink(
   params: CalendarEventParams,
   leadMinutes?: number,
-  durationMinutes?: number,
+  durationMinutes?: number
 ): string {
   const lead = leadMinutes ?? params.leadMinutes ?? 120;
   const dur = durationMinutes ?? 75;
   const { start, end } = getEventTimes(params.flightDatetime, lead, dur);
   const fmt = toCalendarDate;
-  const base = 'https://calendar.google.com/calendar/render?action=TEMPLATE';
+  const base = "https://calendar.google.com/calendar/render?action=TEMPLATE";
   const query = new URLSearchParams({
     text: params.title,
     dates: `${fmt(start)}/${fmt(end)}`,
@@ -89,13 +89,13 @@ export function getGoogleCalendarLink(
 export function getOutlookLink(
   params: CalendarEventParams,
   leadMinutes?: number,
-  durationMinutes?: number,
+  durationMinutes?: number
 ): string {
   const lead = leadMinutes ?? params.leadMinutes ?? 120;
   const dur = durationMinutes ?? 75;
   const { start, end } = getEventTimes(params.flightDatetime, lead, dur);
   const base =
-    'https://outlook.live.com/calendar/0/deeplink/compose?path=/calendar/action/compose&rru=addevent';
+    "https://outlook.live.com/calendar/0/deeplink/compose?path=/calendar/action/compose&rru=addevent";
   const query = new URLSearchParams({
     subject: params.title,
     startdt: start.toISOString(),
@@ -110,41 +110,45 @@ export function getOutlookLink(
 export function generateICS(
   events: CalendarEventParams[],
   leadMinutes: number = 120,
-  durationMinutes: number = 75,
+  durationMinutes: number = 75
 ): string {
   const fmt = toCalendarDate;
   const lines: string[] = [
-    'BEGIN:VCALENDAR',
-    'VERSION:2.0',
-    'PRODID:-//Planejador de Passagens//PT',
-    'CALSCALE:GREGORIAN',
-    'METHOD:PUBLISH',
+    "BEGIN:VCALENDAR",
+    "VERSION:2.0",
+    "PRODID:-//Planejador de Passagens//PT",
+    "CALSCALE:GREGORIAN",
+    "METHOD:PUBLISH",
   ];
 
   events.forEach((params, idx) => {
     const lead = leadMinutes ?? params.leadMinutes ?? 120;
-    const { start, end } = getEventTimes(params.flightDatetime, lead, durationMinutes);
+    const { start, end } = getEventTimes(
+      params.flightDatetime,
+      lead,
+      durationMinutes
+    );
     const uid = `flight-${Date.now()}-${idx}@passagens`;
     lines.push(
-      'BEGIN:VEVENT',
+      "BEGIN:VEVENT",
       `UID:${uid}`,
       `DTSTAMP:${fmt(new Date())}`,
       `DTSTART:${fmt(start)}`,
       `DTEND:${fmt(end)}`,
       `SUMMARY:${params.title}`,
-      `DESCRIPTION:${params.description.replace(/\n/g, '\\n')}`,
+      `DESCRIPTION:${params.description.replace(/\n/g, "\\n")}`,
       `LOCATION:${params.location}`,
-      'BEGIN:VALARM',
+      "BEGIN:VALARM",
       `TRIGGER:-PT${lead}M`,
-      'ACTION:DISPLAY',
-      'DESCRIPTION:Lembrete de voo',
-      'END:VALARM',
-      'END:VEVENT',
+      "ACTION:DISPLAY",
+      "DESCRIPTION:Lembrete de voo",
+      "END:VALARM",
+      "END:VEVENT"
     );
   });
 
-  lines.push('END:VCALENDAR');
-  return lines.join('\r\n');
+  lines.push("END:VCALENDAR");
+  return lines.join("\r\n");
 }
 
 /** Dispara download de arquivo .ics no browser */
@@ -152,12 +156,12 @@ export function downloadICS(
   events: CalendarEventParams[],
   filename: string,
   leadMinutes: number = 120,
-  durationMinutes: number = 75,
+  durationMinutes: number = 75
 ): void {
   const content = generateICS(events, leadMinutes, durationMinutes);
-  const blob = new Blob([content], { type: 'text/calendar;charset=utf-8' });
+  const blob = new Blob([content], { type: "text/calendar;charset=utf-8" });
   const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
+  const a = document.createElement("a");
   a.href = url;
   a.download = filename;
   document.body.appendChild(a);
@@ -168,11 +172,11 @@ export function downloadICS(
 
 /** Mapa de aeroportos para nomes completos */
 export const airportNames: Record<string, string> = {
-  GRU: 'Aeroporto Internacional de Guarulhos (GRU)',
-  CGH: 'Aeroporto de Congonhas (CGH)',
-  VCP: 'Aeroporto Internacional de Viracopos (VCP)',
-  NVT: 'Aeroporto Internacional de Navegantes (NVT)',
-  JOI: 'Aeroporto de Joinville (JOI)',
+  GRU: "Aeroporto Internacional de Guarulhos (GRU)",
+  CGH: "Aeroporto de Congonhas (CGH)",
+  VCP: "Aeroporto Internacional de Viracopos (VCP)",
+  NVT: "Aeroporto Internacional de Navegantes (NVT)",
+  JOI: "Aeroporto de Joinville (JOI)",
 };
 
 /**
@@ -180,18 +184,18 @@ export const airportNames: Record<string, string> = {
  * dos eventos de calendário (Google Calendar, Outlook, .ics).
  */
 export const airportAddresses: Record<string, string> = {
-  GRU: 'Aeroporto Internacional de Guarulhos (GRU) — Rod. Hélio Smidt, s/nº, Cumbica, Guarulhos - SP, CEP 07190-100',
-  CGH: 'Aeroporto de Congonhas (CGH) — Av. Washington Luís, s/nº, Vila Congonhas, São Paulo - SP, CEP 04626-911',
-  VCP: 'Aeroporto Internacional de Viracopos (VCP) — Rod. Santos Dumont, km 66, Campinas - SP, CEP 13055-900',
-  NVT: 'Aeroporto Internacional de Navegantes - Ministro Victor Konder (NVT) — Rua Osmar Gaya, 1297, Meia Praia, Navegantes - SC, CEP 88372-900',
-  JOI: 'Aeroporto de Joinville - Lauro Carneiro de Loyola (JOI) — Rua Araranguá, 2011, América, Joinville - SC, CEP 89204-000',
+  GRU: "Aeroporto Internacional de Guarulhos (GRU) — Rod. Hélio Smidt, s/nº, Cumbica, Guarulhos - SP, CEP 07190-100",
+  CGH: "Aeroporto de Congonhas (CGH) — Av. Washington Luís, s/nº, Vila Congonhas, São Paulo - SP, CEP 04626-911",
+  VCP: "Aeroporto Internacional de Viracopos (VCP) — Rod. Santos Dumont, km 66, Campinas - SP, CEP 13055-900",
+  NVT: "Aeroporto Internacional de Navegantes - Ministro Victor Konder (NVT) — Rua Osmar Gaya, 1297, Meia Praia, Navegantes - SC, CEP 88372-900",
+  JOI: "Aeroporto de Joinville - Lauro Carneiro de Loyola (JOI) — Rua Araranguá, 2011, América, Joinville - SC, CEP 89204-000",
 };
 
 /** Mapa de companhias para nomes completos */
 export const airlineNames: Record<string, string> = {
-  latam: 'LATAM Airlines',
-  gol: 'Gol Linhas Aéreas',
-  azul: 'Azul Linhas Aéreas',
+  latam: "LATAM Airlines",
+  gol: "Gol Linhas Aéreas",
+  azul: "Azul Linhas Aéreas",
 };
 
 /**
@@ -199,9 +203,9 @@ export const airlineNames: Record<string, string> = {
  * Usados para montar a URL de rastreamento de voo no Google.
  */
 export const airlineIataCodes: Record<string, string> = {
-  latam: 'LA',
-  gol:   'G3',
-  azul:  'AD',
+  latam: "LA",
+  gol: "G3",
+  azul: "AD",
 };
 
 /**
@@ -221,14 +225,16 @@ export function buildFlightTrackUrl(
   flightNumber: string,
   departureAirport: string,
   arrivalAirport: string,
-  flightDatetime: string,
+  flightDatetime: string
 ): string {
-  const iata = airlineIataCodes[airline.toLowerCase()] ?? airline.toUpperCase().slice(0, 2);
+  const iata =
+    airlineIataCodes[airline.toLowerCase()] ??
+    airline.toUpperCase().slice(0, 2);
   // Extrair apenas os dígitos do número do voo e pegar os últimos 4
   // Padrão: [AA][9999] — 2 letras da companhia + 4 dígitos do voo
   // Ex: 'LA3045' -> '3045', 'G31234' -> '1234', '3045' -> '3045'
-  const allDigits = flightNumber.replace(/[^0-9]/g, '');
-  const digits = allDigits.slice(-4).padStart(4, '0');
+  const allDigits = flightNumber.replace(/[^0-9]/g, "");
+  const digits = allDigits.slice(-4).padStart(4, "0");
   // Extrair data no formato YYYY-MM-DD
   const date = flightDatetime.slice(0, 10);
   const query = `${iata}+flight+${digits}+from+${departureAirport.toUpperCase()}+to+${arrivalAirport.toUpperCase()},+${date}`;
@@ -237,11 +243,19 @@ export function buildFlightTrackUrl(
 
 /** Retorna o dia da semana em português para uma data no formato YYYY-MM-DD */
 function getDayOfWeek(dateStr: string): string {
-  if (!dateStr) return '';
-  const days = ['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado'];
+  if (!dateStr) return "";
+  const days = [
+    "Domingo",
+    "Segunda-feira",
+    "Terça-feira",
+    "Quarta-feira",
+    "Quinta-feira",
+    "Sexta-feira",
+    "Sábado",
+  ];
   // Adicionar T12:00 para evitar problemas de fuso horário
-  const d = new Date(dateStr + 'T12:00:00');
-  return days[d.getDay()] ?? '';
+  const d = new Date(dateStr + "T12:00:00");
+  return days[d.getDay()] ?? "";
 }
 
 /**
@@ -265,44 +279,84 @@ export function buildWhatsAppShareUrl(params: {
 }): string {
   const {
     weekLabel,
-    departureDate, departureTime, departureAirport,
-    departureAirline, departureFlightNumber, departureLocator,
-    returnDate, returnTime, returnAirport,
-    returnAirline, returnFlightNumber, returnLocator,
+    departureDate,
+    departureTime,
+    departureAirport,
+    departureAirline,
+    departureFlightNumber,
+    departureLocator,
+    returnDate,
+    returnTime,
+    returnAirport,
+    returnAirline,
+    returnFlightNumber,
+    returnLocator,
   } = params;
 
-  const depDow = departureDate ? getDayOfWeek(departureDate) : '';
-  const retDow = returnDate ? getDayOfWeek(returnDate) : '';
+  const depDow = departureDate ? getDayOfWeek(departureDate) : "";
+  const retDow = returnDate ? getDayOfWeek(returnDate) : "";
 
-  const depAirlineName = airlineNames[departureAirline?.toLowerCase()] ?? departureAirline ?? '';
-  const retAirlineName = airlineNames[returnAirline?.toLowerCase()] ?? returnAirline ?? '';
+  const depAirlineName =
+    airlineNames[departureAirline?.toLowerCase()] ?? departureAirline ?? "";
+  const retAirlineName =
+    airlineNames[returnAirline?.toLowerCase()] ?? returnAirline ?? "";
 
   // Montar URLs de rastreamento
-  const depTrackUrl = (departureFlightNumber && departureDate)
-    ? buildFlightTrackUrl(departureAirline, departureFlightNumber, departureAirport || 'GRU', returnAirport || 'NVT', departureDate + 'T00:00')
-    : '';
-  const retTrackUrl = (returnFlightNumber && returnDate)
-    ? buildFlightTrackUrl(returnAirline, returnFlightNumber, returnAirport || 'NVT', departureAirport || 'GRU', returnDate + 'T00:00')
-    : '';
+  const depTrackUrl =
+    departureFlightNumber && departureDate
+      ? buildFlightTrackUrl(
+          departureAirline,
+          departureFlightNumber,
+          departureAirport || "GRU",
+          returnAirport || "NVT",
+          departureDate + "T00:00"
+        )
+      : "";
+  const retTrackUrl =
+    returnFlightNumber && returnDate
+      ? buildFlightTrackUrl(
+          returnAirline,
+          returnFlightNumber,
+          returnAirport || "NVT",
+          departureAirport || "GRU",
+          returnDate + "T00:00"
+        )
+      : "";
 
   const lines: string[] = [];
   lines.push(`✈️ *Smart Fly — Passagem Confirmada!*`);
   lines.push(`📅 *${weekLabel}*`);
-  lines.push('');
-  lines.push(`🛫 *IDA — ${departureAirport || 'GRU'} → ${returnAirport || 'NVT'}*`);
-  if (departureDate) lines.push(`   📆 ${depDow ? depDow + ', ' : ''}${departureDate}${departureTime ? ' às ' + departureTime : ''}`);
-  if (depAirlineName) lines.push(`   🏢 ${depAirlineName}${departureFlightNumber ? ' • Voo ' + departureFlightNumber : ''}`);
+  lines.push("");
+  lines.push(
+    `🛫 *IDA — ${departureAirport || "GRU"} → ${returnAirport || "NVT"}*`
+  );
+  if (departureDate)
+    lines.push(
+      `   📆 ${depDow ? depDow + ", " : ""}${departureDate}${departureTime ? " às " + departureTime : ""}`
+    );
+  if (depAirlineName)
+    lines.push(
+      `   🏢 ${depAirlineName}${departureFlightNumber ? " • Voo " + departureFlightNumber : ""}`
+    );
   if (departureLocator) lines.push(`   🔑 Localizador: *${departureLocator}*`);
   if (depTrackUrl) lines.push(`   🔍 Rastrear: ${depTrackUrl}`);
-  lines.push('');
-  lines.push(`🛬 *VOLTA — ${returnAirport || 'NVT'} → ${departureAirport || 'GRU'}*`);
-  if (returnDate) lines.push(`   📆 ${retDow ? retDow + ', ' : ''}${returnDate}${returnTime ? ' às ' + returnTime : ''}`);
-  if (retAirlineName) lines.push(`   🏢 ${retAirlineName}${returnFlightNumber ? ' • Voo ' + returnFlightNumber : ''}`);
+  lines.push("");
+  lines.push(
+    `🛬 *VOLTA — ${returnAirport || "NVT"} → ${departureAirport || "GRU"}*`
+  );
+  if (returnDate)
+    lines.push(
+      `   📆 ${retDow ? retDow + ", " : ""}${returnDate}${returnTime ? " às " + returnTime : ""}`
+    );
+  if (retAirlineName)
+    lines.push(
+      `   🏢 ${retAirlineName}${returnFlightNumber ? " • Voo " + returnFlightNumber : ""}`
+    );
   if (returnLocator) lines.push(`   🔑 Localizador: *${returnLocator}*`);
   if (retTrackUrl) lines.push(`   🔍 Rastrear: ${retTrackUrl}`);
-  lines.push('');
+  lines.push("");
   lines.push(`🚀 _Gerado pelo Smart Fly_`);
 
-  const text = lines.join('\n');
+  const text = lines.join("\n");
   return `https://wa.me/?text=${encodeURIComponent(text)}`;
 }

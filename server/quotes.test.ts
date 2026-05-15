@@ -39,7 +39,7 @@ describe("quotes utilities", () => {
 
   describe("price conversion", () => {
     it("deve converter reais para centavos corretamente", () => {
-      const price = 350.90;
+      const price = 350.9;
       const cents = Math.round(price * 100);
       expect(cents).toBe(35090);
     });
@@ -61,7 +61,10 @@ describe("quotes utilities", () => {
   });
 
   describe("Kayak URL builder", () => {
-    const buildKayakUrl = (departureDate: string, returnDate: string): string => {
+    const buildKayakUrl = (
+      departureDate: string,
+      returnDate: string
+    ): string => {
       const toIso = (d: string) => {
         const [day, month, year] = d.split("/");
         return `${year}-${month}-${day}`;
@@ -111,7 +114,9 @@ describe("quotes utilities", () => {
 
     it("deve calcular percentual de uso corretamente", () => {
       const usage = { requestsUsed: 10, requestsLimit: 20 };
-      const percent = Math.round((usage.requestsUsed / usage.requestsLimit) * 100);
+      const percent = Math.round(
+        (usage.requestsUsed / usage.requestsLimit) * 100
+      );
       expect(percent).toBe(50);
     });
   });
