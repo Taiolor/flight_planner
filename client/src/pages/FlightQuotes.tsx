@@ -58,6 +58,13 @@ const buildKayakUrl = (departureDate: string, returnDate: string): string => {
   return `https://www.kayak.com.br/flights/GRU-NVT/${dep}/${ret}?ucs=p1nu6v&sort=bestflight_a`;
 };
 
+/** Helper for fast date comparison */
+const dateToInt = (d: string): number => {
+  if (d.includes("-")) return parseInt(d.replace(/-/g, ""), 10);
+  const parts = d.split("/");
+  return parseInt(`${parts[2]}${parts[1]}${parts[0]}`, 10);
+};
+
 /**
  * Determina se uma semana é passada, corrente ou futura.
  * Usa a data de IDA (domingo) como referência.
@@ -65,16 +72,22 @@ const buildKayakUrl = (departureDate: string, returnDate: string): string => {
  */
 const getWeekStatus = (
   departureDate: string,
-  returnDate: string
+  returnDate: string,
+  todayInt?: number
 ): "past" | "current" | "future" => {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
+  let today = todayInt;
+  if (!today) {
+    const d = new Date();
+    today = parseInt(
+      `${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, "0")}${String(
+        d.getDate()
+      ).padStart(2, "0")}`,
+      10
+    );
+  }
 
-  const depIso = toIsoDate(departureDate);
-  const retIso = toIsoDate(returnDate);
-
-  const dep = new Date(depIso + "T00:00:00");
-  const ret = new Date(retIso + "T00:00:00");
+  const dep = dateToInt(departureDate);
+  const ret = dateToInt(returnDate);
 
   if (ret < today) return "past";
   if (dep <= today && ret >= today) return "current";
@@ -346,7 +359,18 @@ const WeekCard = ({
   const kayakUrl = buildKayakUrl(week.ida.data, week.retorno.data);
   const apiLimitReached = apiUsage.requestsUsed >= apiUsage.requestsLimit;
 
-  const status = getWeekStatus(week.ida.data, week.retorno.data);
+  const todayInt = useMemo(() => {
+    const today = new Date();
+    return parseInt(
+      `${today.getFullYear()}${String(today.getMonth() + 1).padStart(
+        2,
+        "0"
+      )}${String(today.getDate()).padStart(2, "0")}`,
+      10
+    );
+  }, []);
+
+  const status = getWeekStatus(week.ida.data, week.retorno.data, todayInt);
   const isPast = status === "past";
   const isCurrent = status === "current";
 
@@ -748,8 +772,16 @@ export default function FlightQuotes() {
     let past = 0,
       current = 0,
       future = 0;
+    const today = new Date();
+    const todayInt = parseInt(
+      `${today.getFullYear()}${String(today.getMonth() + 1).padStart(
+        2,
+        "0"
+      )}${String(today.getDate()).padStart(2, "0")}`,
+      10
+    );
     for (const w of flightData) {
-      const s = getWeekStatus(w.ida.data, w.retorno.data);
+      const s = getWeekStatus(w.ida.data, w.retorno.data, todayInt);
       if (s === "past") past++;
       else if (s === "current") current++;
       else future++;
