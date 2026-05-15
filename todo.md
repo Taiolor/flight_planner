@@ -70,12 +70,14 @@
 - [x] Botão "Testar Notificação" visível apenas quando push está ativo, envia notificação de teste via endpoint push.sendTest
 
 ## Bugs (sessão atual)
+
 - [x] Bug: ao trocar companhia no combo, o localizador com 2 chars (sigla anterior) não é atualizado para a nova sigla
 - [x] Bug: campo datetime com apenas data (sem horário) exibe "Invalid Date" no badge do dia da semana
 - [x] Remover botão "Testar Notificação" do header (funcionalidade validada)
 - [x] Bug: campos datetime de ida e volta não herdam os valores já gravados no banco ao abrir o card de bilhete
 
 ## Sessão atual
+
 - [x] Bug: ao clicar em "Não Emitido" os campos datetime não herdam os valores do banco (data de ida/volta da semana)
 - [x] Exportar para PDF: botão no cabeçalho, layout visual colorido A4, quebra de páginas por mês
 - [x] Job agendado no servidor: enviar notificação push 24h antes do voo
@@ -147,6 +149,7 @@
 - [x] Performance: Otimizar getLowestPrice com useMemo/lowestPriceMap O(1) (PR #2)
 
 ## Merges e Correções dos PRs (27/04/2026)
+
 - [x] Sincronizar main local com GitHub (PRs #19, #21, #22, #23, #26, #28)
 - [x] Merge PR #14 (ARIA accordion toggle)
 - [x] Merge PR #18 (single-pass loops chartData)
@@ -175,10 +178,11 @@
 - [x] Resumo de semanas (atual/futuras/passadas) exibido no header da página de cotações
 
 ## Dados detalhados da cotação via API
-- [ ] Capturar companhia aérea de ida e volta do voo mais barato
-- [ ] Capturar data e hora de partida de ida e volta
-- [ ] Adicionar colunas no schema do banco (outboundAirline, returnAirline, outboundDeparture, returnDeparture)
-- [ ] Executar pnpm db:push para aplicar as novas colunas
-- [ ] Atualizar helpers de DB para persistir os novos campos
-- [ ] Atualizar router de cotações para extrair e salvar os novos campos da resposta da API
-- [ ] Exibir companhia aérea e data/hora de ida e volta na página de cotações
+
+- [x] Capturar companhia aérea de ida e volta do voo mais barato
+- [x] Capturar data e hora de partida de ida e volta
+- [x] Adicionar colunas no schema do banco (outboundAirline, returnAirline, outboundDeparture, returnDeparture)
+- [x] Executar pnpm db:push para aplicar as novas colunas
+- [x] Atualizar helpers de DB para persistir os novos campos
+- [x] Atualizar router de cotações para extrair e salvar os novos campos da resposta da API
+- [x] Exibir companhia aérea e data/hora de ida e volta na página de cotações

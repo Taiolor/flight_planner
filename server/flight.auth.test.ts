@@ -18,7 +18,11 @@ vi.mock("./db", () => ({
 }));
 
 function createTestContext(cookieOverride = ""): TrpcContext {
-  const cookies: Array<{ name: string; value: string; options: Record<string, unknown> }> = [];
+  const cookies: Array<{
+    name: string;
+    value: string;
+    options: Record<string, unknown>;
+  }> = [];
 
   return {
     user: null,
@@ -27,7 +31,11 @@ function createTestContext(cookieOverride = ""): TrpcContext {
       headers: { cookie: cookieOverride },
     } as TrpcContext["req"],
     res: {
-      cookie: (name: string, value: string, options: Record<string, unknown>) => {
+      cookie: (
+        name: string,
+        value: string,
+        options: Record<string, unknown>
+      ) => {
         cookies.push({ name, value, options });
       },
       clearCookie: vi.fn(),
@@ -115,8 +123,12 @@ describe("flightAuth.logout", () => {
 
 describe("flights.updateWeekStatus with airline fields", () => {
   it("should accept departureAirline and returnAirline fields", async () => {
-    const { validateAuthSession, updateFlightWeekStatus } = await import("./db");
-    (validateAuthSession as ReturnType<typeof vi.fn>).mockResolvedValueOnce({ email: "taiolor@gmail.com" });
+    const { validateAuthSession, updateFlightWeekStatus } = await import(
+      "./db"
+    );
+    (validateAuthSession as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+      email: "taiolor@gmail.com",
+    });
 
     const ctx = createTestContext("flight_session=valid-token");
     const caller = appRouter.createCaller(ctx);
@@ -129,16 +141,21 @@ describe("flights.updateWeekStatus with airline fields", () => {
     });
 
     expect(result.success).toBe(true);
-    expect(updateFlightWeekStatus).toHaveBeenCalledWith(5, expect.objectContaining({
-      isTicketIssued: 1,
-      departureAirline: "latam",
-      returnAirline: "gol",
-    }));
+    expect(updateFlightWeekStatus).toHaveBeenCalledWith(
+      5,
+      expect.objectContaining({
+        isTicketIssued: 1,
+        departureAirline: "latam",
+        returnAirline: "gol",
+      })
+    );
   });
 
   it("should reject update without authentication", async () => {
     const { validateAuthSession } = await import("./db");
-    (validateAuthSession as ReturnType<typeof vi.fn>).mockResolvedValueOnce(null);
+    (validateAuthSession as ReturnType<typeof vi.fn>).mockResolvedValueOnce(
+      null
+    );
 
     const ctx = createTestContext("");
     const caller = appRouter.createCaller(ctx);

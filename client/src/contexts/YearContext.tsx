@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, ReactNode } from 'react';
+import { createContext, useContext, useState, ReactNode } from "react";
 
 interface YearContextType {
   selectedYear: number;
@@ -20,7 +20,7 @@ export function YearProvider({ children }: { children: ReactNode }) {
 export function useYear() {
   const context = useContext(YearContext);
   if (!context) {
-    throw new Error('useYear deve ser usado dentro de YearProvider');
+    throw new Error("useYear deve ser usado dentro de YearProvider");
   }
   return context;
 }
