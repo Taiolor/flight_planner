@@ -30,11 +30,20 @@ const RAPIDAPI_HOST = "sky-scrapper.p.rapidapi.com";
 const sleep = (ms: number) => new Promise(r => setTimeout(r, ms));
 
 /** Retorna o yearMonth atual no formato YYYY-MM */
+let cachedYearMonth = "";
+let lastMonth = -1;
+let lastYear = -1;
 function getCurrentYearMonth(): string {
   const now = new Date();
-  const year = now.getFullYear();
-  const month = String(now.getMonth() + 1).padStart(2, "0");
-  return `${year}-${month}`;
+  const currentMonth = now.getMonth();
+  const currentYear = now.getFullYear();
+  if (currentMonth !== lastMonth || currentYear !== lastYear) {
+    lastMonth = currentMonth;
+    lastYear = currentYear;
+    const month = String(currentMonth + 1).padStart(2, "0");
+    cachedYearMonth = `${currentYear}-${month}`;
+  }
+  return cachedYearMonth;
 }
 
 interface FlightLegInfo {
