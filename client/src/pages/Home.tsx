@@ -1047,31 +1047,28 @@ export default function Home() {
           const depDate = toInputDate(week.departureDate);
           const retDate = toInputDate(week.returnDate);
 
-          // Para o campo de IDA: usar data+hora do banco se existir e tiver horário,
-          // caso contrário usar a data da semana com horário fixo 00:00
+          // Para o campo de IDA: usar a data do date-picker inline (depDate).
+          // Se já existir horário salvo no banco, preservá-lo; caso contrário, usar 00:00.
           const savedDep = week.departureFlightDatetime ?? "";
-          const hasSavedDepTime =
-            savedDep.includes("T") && savedDep.length > 10;
+          const savedDepTime =
+            savedDep.includes("T") && savedDep.length > 10
+              ? savedDep.split("T")[1]
+              : "00:00";
           setTempDepartureDatetime(prev => ({
             ...prev,
-            [weekNumber]: hasSavedDepTime
-              ? savedDep
-              : depDate
-                ? `${depDate}T00:00`
-                : "",
+            [weekNumber]: depDate ? `${depDate}T${savedDepTime}` : "",
           }));
 
-          // Para o campo de VOLTA: mesma lógica
+          // Para o campo de VOLTA: usar a data do date-picker inline (retDate).
+          // Se já existir horário salvo no banco, preservá-lo; caso contrário, usar 00:00.
           const savedRet = week.returnFlightDatetime ?? "";
-          const hasSavedRetTime =
-            savedRet.includes("T") && savedRet.length > 10;
+          const savedRetTime =
+            savedRet.includes("T") && savedRet.length > 10
+              ? savedRet.split("T")[1]
+              : "00:00";
           setTempReturnDatetime(prev => ({
             ...prev,
-            [weekNumber]: hasSavedRetTime
-              ? savedRet
-              : retDate
-                ? `${retDate}T00:00`
-                : "",
+            [weekNumber]: retDate ? `${retDate}T${savedRetTime}` : "",
           }));
         }
       }
