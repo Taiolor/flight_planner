@@ -6,6 +6,7 @@ import {
 } from "./pushNotifications";
 import * as db from "./db";
 import webpush from "web-push";
+import { WebPushError } from "web-push";
 import { ENV } from "./_core/env";
 
 vi.mock("./db");
@@ -20,6 +21,91 @@ vi.mock("./_core/env", () => ({
 describe("pushNotifications", () => {
   beforeEach(() => {
     vi.resetAllMocks();
+  });
+
+  describe("sendPushToOne", () => {
+    const payload: PushPayload = { title: "Test", body: "Test body" };
+
+    it("should successfully send a push notification", async () => {
+      vi.mocked(webpush.sendNotification).mockResolvedValue({} as any);
+
+      const result = await sendPushToOne(
+        "endpoint1",
+        "p256dh1",
+        "auth1",
+        payload
+      );
+
+      expect(result).toBe(true);
+      expect(webpush.sendNotification).toHaveBeenCalledWith(
+        { endpoint: "endpoint1", keys: { p256dh: "p256dh1", auth: "auth1" } },
+        JSON.stringify(payload),
+        { TTL: 86400 }
+      );
+    });
+
+    it("should delete subscription and return false if webpush throws WebPushError with statusCode 410", async () => {
+      const error = new WebPushError("Gone", 410, {} as any, "", "");
+      error.statusCode = 410; // set manually because WebPushError is mocked
+      vi.mocked(webpush.sendNotification).mockRejectedValue(error);
+
+      const result = await sendPushToOne(
+        "endpoint1",
+        "p256dh1",
+        "auth1",
+        payload
+      );
+
+      expect(result).toBe(false);
+      expect(db.deletePushSubscription).toHaveBeenCalledWith("endpoint1");
+    });
+
+    it("should delete subscription and return false if webpush throws WebPushError with statusCode 404", async () => {
+      const error = new WebPushError("Not Found", 404, {} as any, "", "");
+      error.statusCode = 404; // set manually because WebPushError is mocked
+      vi.mocked(webpush.sendNotification).mockRejectedValue(error);
+
+      const result = await sendPushToOne(
+        "endpoint1",
+        "p256dh1",
+        "auth1",
+        payload
+      );
+
+      expect(result).toBe(false);
+      expect(db.deletePushSubscription).toHaveBeenCalledWith("endpoint1");
+    });
+
+    it("should return false without deleting subscription for other WebPushError status codes", async () => {
+      const error = new WebPushError("Unauthorized", 401, {} as any, "", "");
+      error.statusCode = 401; // set manually because WebPushError is mocked
+      vi.mocked(webpush.sendNotification).mockRejectedValue(error);
+
+      const result = await sendPushToOne(
+        "endpoint1",
+        "p256dh1",
+        "auth1",
+        payload
+      );
+
+      expect(result).toBe(false);
+      expect(db.deletePushSubscription).not.toHaveBeenCalled();
+    });
+
+    it("should return false without deleting subscription for generic errors", async () => {
+      const error = new Error("Generic error");
+      vi.mocked(webpush.sendNotification).mockRejectedValue(error);
+
+      const result = await sendPushToOne(
+        "endpoint1",
+        "p256dh1",
+        "auth1",
+        payload
+      );
+
+      expect(result).toBe(false);
+      expect(db.deletePushSubscription).not.toHaveBeenCalled();
+    });
   });
 
   describe("sendPushToAll", () => {

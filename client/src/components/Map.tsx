@@ -128,8 +128,7 @@ export function MapView({
   const init = usePersistFn(async () => {
     await loadMapScript();
     if (!mapContainer.current) {
-      console.error("Map container not found");
-      return;
+      throw new Error("Map container not found");
     }
     map.current = new window.google.maps.Map(mapContainer.current, {
       zoom: initialZoom,

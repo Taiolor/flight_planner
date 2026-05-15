@@ -1,4 +1,5 @@
 import { COOKIE_NAME } from "@shared/const";
+import { quotesRouter } from "./routers/quotes";
 import type { Request } from "express";
 import crypto from "crypto";
 import { getSessionCookieOptions } from "./_core/cookies";
@@ -265,8 +266,15 @@ export const appRouter = router({
       return getAllFlightWeeks();
     }),
 
-    // Buscar todos os preços (público)
-    getPrices: publicProcedure.query(async () => {
+    // Buscar todos os preços
+    getPrices: publicProcedure.query(async ({ ctx }) => {
+      const session = await getSessionFromCookie(ctx.req);
+      if (!session) {
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+          message: "Faça login para acessar os preços.",
+        });
+      }
       return getAllFlightPrices();
     }),
 
@@ -468,41 +476,57 @@ export const appRouter = router({
 
       const issuedWeeks = weeks.filter(w => w.isTicketIssued);
 
-      for (const week of issuedWeeks) {
-        // ⚡ Bolt: Hoist date parsing outside the nested loops to avoid O(N*M) time complexity
-        const departureFlightTime = week.departureFlightDatetime
-          ? parseBrasiliaDatetime(week.departureFlightDatetime)
-          : null;
-        const returnFlightTime = week.returnFlightDatetime
-          ? parseBrasiliaDatetime(week.returnFlightDatetime)
-          : null;
+      // ⚡ Bolt: Hoist date parsing outside the nested loops to avoid O(N*M) time complexity
+      const parsedIssuedWeeks = issuedWeeks.map(w => ({
+        week: w,
+        departureTime: w.departureFlightDatetime
+          ? parseBrasiliaDatetime(w.departureFlightDatetime)
+          : null,
+        returnTime: w.returnFlightDatetime
+          ? parseBrasiliaDatetime(w.returnFlightDatetime)
+          : null,
+      }));
 
-        for (const aviso of avisos) {
-          const targetMs = aviso.minutes * 60 * 1000;
-          const windowStart = new Date(
-            now.getTime() + targetMs - 50 * 60 * 1000
-          );
-          const windowEnd = new Date(now.getTime() + targetMs + 50 * 60 * 1000);
+      const nowMs = now.getTime();
 
-          // Voo de ida
-          if (week.departureFlightDatetime && departureFlightTime) {
-            const flightTime = departureFlightTime;
-            if (!isNaN(flightTime.getTime())) {
-              const alertTime = new Date(flightTime.getTime() - targetMs);
+      // ⚡ Bolt: Pre-calculate targetMs and window boundaries
+      const precalculatedAvisos = avisos.map(aviso => {
+        const targetMs = aviso.minutes * 60 * 1000;
+        return {
+          ...aviso,
+          targetMs,
+          windowStartMs: nowMs + targetMs - 50 * 60 * 1000,
+          windowEndMs: nowMs + targetMs + 50 * 60 * 1000,
+        };
+      });
+
+      for (const { week, departureTime, returnTime } of parsedIssuedWeeks) {
+        // Voo de ida
+        if (departureTime) {
+          const depTimeMs = departureTime.getTime();
+          if (!isNaN(depTimeMs)) {
+            const depPast = depTimeMs < nowMs;
+            for (const aviso of precalculatedAvisos) {
+              const alertTimeMs = depTimeMs - aviso.targetMs;
               const minutesUntilAlert = Math.round(
-                (alertTime.getTime() - now.getTime()) / 60000
+                (alertTimeMs - nowMs) / 60000
               );
+
               let status: "pending" | "sent" | "past" = "pending";
-              if (flightTime < now) status = "past";
-              else if (flightTime >= windowStart && flightTime <= windowEnd)
+              if (depPast) status = "past";
+              else if (
+                depTimeMs >= aviso.windowStartMs &&
+                depTimeMs <= aviso.windowEndMs
+              )
                 status = "sent";
+
               scheduledAlerts.push({
                 weekNumber: Number(week.weekNumber),
                 direction: "ida",
                 avisoLabel: aviso.label,
                 avisoMinutes: aviso.minutes,
-                flightDatetime: week.departureFlightDatetime,
-                alertDatetime: alertTime.toISOString(),
+                flightDatetime: week.departureFlightDatetime!,
+                alertDatetime: new Date(alertTimeMs).toISOString(),
                 airline: week.departureAirline ?? "",
                 flightNumber: week.departureFlightNumber ?? "",
                 status,
@@ -510,26 +534,34 @@ export const appRouter = router({
               });
             }
           }
+        }
 
-          // Voo de volta
-          if (week.returnFlightDatetime && returnFlightTime) {
-            const flightTime = returnFlightTime;
-            if (!isNaN(flightTime.getTime())) {
-              const alertTime = new Date(flightTime.getTime() - targetMs);
+        // Voo de volta
+        if (returnTime) {
+          const retTimeMs = returnTime.getTime();
+          if (!isNaN(retTimeMs)) {
+            const retPast = retTimeMs < nowMs;
+            for (const aviso of precalculatedAvisos) {
+              const alertTimeMs = retTimeMs - aviso.targetMs;
               const minutesUntilAlert = Math.round(
-                (alertTime.getTime() - now.getTime()) / 60000
+                (alertTimeMs - nowMs) / 60000
               );
+
               let status: "pending" | "sent" | "past" = "pending";
-              if (flightTime < now) status = "past";
-              else if (flightTime >= windowStart && flightTime <= windowEnd)
+              if (retPast) status = "past";
+              else if (
+                retTimeMs >= aviso.windowStartMs &&
+                retTimeMs <= aviso.windowEndMs
+              )
                 status = "sent";
+
               scheduledAlerts.push({
                 weekNumber: Number(week.weekNumber),
                 direction: "volta",
                 avisoLabel: aviso.label,
                 avisoMinutes: aviso.minutes,
-                flightDatetime: week.returnFlightDatetime,
-                alertDatetime: alertTime.toISOString(),
+                flightDatetime: week.returnFlightDatetime!,
+                alertDatetime: new Date(alertTimeMs).toISOString(),
                 airline: week.returnAirline ?? "",
                 flightNumber: week.returnFlightNumber ?? "",
                 status,
@@ -592,25 +624,37 @@ export const appRouter = router({
       let nextAlert: NextAlert | null = null;
       let minTimeUntilAlert = Infinity;
 
-      for (const week of weeks.filter(w => w.isTicketIssued)) {
-        // ⚡ Bolt: Hoist date parsing outside the nested loops to avoid O(N*M) time complexity
-        const departureFlightTime = week.departureFlightDatetime
-          ? parseBrasiliaDatetime(week.departureFlightDatetime)
-          : null;
-        const returnFlightTime = week.returnFlightDatetime
-          ? parseBrasiliaDatetime(week.returnFlightDatetime)
-          : null;
+      // ⚡ Bolt: Hoist date parsing outside the nested loops for nextAlert logic too
+      const parsedAlertWeeks = weeks
+        .filter(w => w.isTicketIssued)
+        .map(w => ({
+          week: w,
+          departureTime: w.departureFlightDatetime
+            ? parseBrasiliaDatetime(w.departureFlightDatetime)
+            : null,
+          returnTime: w.returnFlightDatetime
+            ? parseBrasiliaDatetime(w.returnFlightDatetime)
+            : null,
+        }));
 
-        for (const aviso of avisos) {
-          const targetMs = aviso.minutes * 60 * 1000;
+      const nowMsNext = now.getTime();
 
-          // Voo de ida
-          if (week.departureFlightDatetime && departureFlightTime) {
-            const flightTime = departureFlightTime;
-            if (!isNaN(flightTime.getTime()) && flightTime > now) {
-              const alertTime = new Date(flightTime.getTime() - targetMs);
+      const precalculatedAvisosNext = avisos.map(aviso => {
+        return {
+          ...aviso,
+          targetMs: aviso.minutes * 60 * 1000,
+        };
+      });
+
+      for (const { week, departureTime, returnTime } of parsedAlertWeeks) {
+        // Voo de ida
+        if (departureTime) {
+          const depTimeMs = departureTime.getTime();
+          if (!isNaN(depTimeMs) && depTimeMs > nowMsNext) {
+            for (const aviso of precalculatedAvisosNext) {
+              const alertTimeMs = depTimeMs - aviso.targetMs;
               const minutesUntilAlert = Math.round(
-                (alertTime.getTime() - now.getTime()) / 60000
+                (alertTimeMs - nowMsNext) / 60000
               );
               if (
                 minutesUntilAlert > 0 &&
@@ -626,19 +670,21 @@ export const appRouter = router({
                   flightNumber: week.departureFlightNumber,
                   departureAirport: week.departureAirport,
                   arrivalAirport: week.returnAirport,
-                  flightDatetime: week.departureFlightDatetime,
+                  flightDatetime: week.departureFlightDatetime!,
                 };
               }
             }
           }
+        }
 
-          // Voo de volta
-          if (week.returnFlightDatetime && returnFlightTime) {
-            const flightTime = returnFlightTime;
-            if (!isNaN(flightTime.getTime()) && flightTime > now) {
-              const alertTime = new Date(flightTime.getTime() - targetMs);
+        // Voo de volta
+        if (returnTime) {
+          const retTimeMs = returnTime.getTime();
+          if (!isNaN(retTimeMs) && retTimeMs > nowMsNext) {
+            for (const aviso of precalculatedAvisosNext) {
+              const alertTimeMs = retTimeMs - aviso.targetMs;
               const minutesUntilAlert = Math.round(
-                (alertTime.getTime() - now.getTime()) / 60000
+                (alertTimeMs - nowMsNext) / 60000
               );
               if (
                 minutesUntilAlert > 0 &&
@@ -654,7 +700,7 @@ export const appRouter = router({
                   flightNumber: week.returnFlightNumber,
                   departureAirport: week.returnAirport,
                   arrivalAirport: week.departureAirport,
-                  flightDatetime: week.returnFlightDatetime,
+                  flightDatetime: week.returnFlightDatetime!,
                 };
               }
             }
@@ -761,6 +807,11 @@ export const appRouter = router({
         return { success: true };
       }),
   }),
+
+  // =====================
+  // Cotações de Passagens (Sky Scrapper API + Kayak manual)
+  // =====================
+  quotes: quotesRouter,
 });
 
 export type AppRouter = typeof appRouter;

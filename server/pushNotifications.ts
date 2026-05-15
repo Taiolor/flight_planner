@@ -101,11 +101,12 @@ export async function sendPushToAll(
     return 0;
   }
 
-  let sent = 0;
-  for (const sub of subs) {
-    const ok = await sendPushToOne(sub.endpoint, sub.p256dh, sub.auth, payload);
-    if (ok) sent++;
-  }
+  // ⚡ Bolt: Execute push notifications in parallel to reduce overall network latency
+  const results = await Promise.all(
+    subs.map(sub => sendPushToOne(sub.endpoint, sub.p256dh, sub.auth, payload))
+  );
+
+  const sent = results.filter(Boolean).length;
   console.log(`[Push] Enviado para ${sent}/${subs.length} dispositivos.`);
   return sent;
 }

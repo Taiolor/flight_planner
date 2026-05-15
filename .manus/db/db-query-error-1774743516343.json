@@ -2,7 +2,5 @@
   "query": "ALTER TABLE `flight_weeks` ADD COLUMN `ticketType` varchar(20) DEFAULT 'roundtrip';",
   "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3hTCxLMFFnvwjKu.root --database HQ655wm9a6bck22hJAwYRc --execute ALTER TABLE `flight_weeks` ADD COLUMN `ticketType` varchar(20) DEFAULT 'roundtrip';",
   "returncode": 1,
-  "logs": [
-    "ERROR 1060 (42S21) at line 1: Duplicate column name 'ticketType'"
-  ]
+  "logs": ["ERROR 1060 (42S21) at line 1: Duplicate column name 'ticketType'"]
 }

@@ -1,9 +1,9 @@
-import { useState } from 'react';
-import { renderToStaticMarkup } from 'react-dom/server';
-import jsPDF from 'jspdf';
-import html2canvas from 'html2canvas';
-import { Button } from '@/components/ui/button';
-import { FileDown, Loader2 } from 'lucide-react';
+import { useState } from "react";
+import { renderToStaticMarkup } from "react-dom/server";
+import jsPDF from "jspdf";
+import html2canvas from "html2canvas";
+import { Button } from "@/components/ui/button";
+import { FileDown, Loader2 } from "lucide-react";
 
 interface WeekData {
   weekNumber: number;
@@ -35,84 +35,171 @@ interface FlightPdfExportProps {
   totalInvested: number;
 }
 
-const AIRLINE_COLORS: Record<string, { bg: string; text: string; label: string }> = {
-  latam: { bg: '#e8002d', text: '#fff', label: 'LATAM' },
-  gol:   { bg: '#ff6600', text: '#fff', label: 'GOL' },
-  azul:  { bg: '#1a3c8f', text: '#fff', label: 'AZUL' },
+const AIRLINE_COLORS: Record<
+  string,
+  { bg: string; text: string; label: string }
+> = {
+  latam: { bg: "#e8002d", text: "#fff", label: "LATAM" },
+  gol: { bg: "#ff6600", text: "#fff", label: "GOL" },
+  azul: { bg: "#1a3c8f", text: "#fff", label: "AZUL" },
 };
 
 function formatDatetime(dt: string | null | undefined): string {
-  if (!dt) return '—';
-  const iso = dt.includes('T') ? dt : dt + 'T12:00';
+  if (!dt) return "—";
+  const iso = dt.includes("T") ? dt : dt + "T12:00";
   const d = new Date(iso);
   if (isNaN(d.getTime())) return dt;
-  return d.toLocaleString('pt-BR', {
-    day: '2-digit', month: '2-digit', year: 'numeric',
-    hour: '2-digit', minute: '2-digit',
+  return d.toLocaleString("pt-BR", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
   });
 }
 
 function getMonthLabel(dateStr: string): string {
-  const parts = dateStr.split('/');
-  if (parts.length !== 3) return '';
+  const parts = dateStr.split("/");
+  if (parts.length !== 3) return "";
   const d = new Date(`${parts[2]}-${parts[1]}-${parts[0]}T12:00`);
-  return d.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+  return d.toLocaleDateString("pt-BR", { month: "long", year: "numeric" });
 }
 
 // ─── Componentes de página (sem hooks — apenas JSX puro para renderToStaticMarkup) ─
 
-function CoverPage({ issued, totalInvested }: { issued: WeekData[]; totalInvested: number }) {
+function CoverPage({
+  issued,
+  totalInvested,
+}: {
+  issued: WeekData[];
+  totalInvested: number;
+}) {
   return (
-    <div style={{
-      fontFamily: 'Arial, sans-serif',
-      width: '794px',
-      background: 'linear-gradient(135deg, #1e3a8a 0%, #1d4ed8 50%, #0ea5e9 100%)',
-      padding: '60px 48px 48px',
-      color: '#fff',
-      minHeight: '1123px',
-      boxSizing: 'border-box',
-    }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '32px' }}>
-        <div style={{
-          width: '56px', height: '56px', borderRadius: '14px',
-          background: 'rgba(255,255,255,0.2)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontSize: '28px',
-        }}>✈</div>
+    <div
+      style={{
+        fontFamily: "Arial, sans-serif",
+        width: "794px",
+        background:
+          "linear-gradient(135deg, #1e3a8a 0%, #1d4ed8 50%, #0ea5e9 100%)",
+        padding: "60px 48px 48px",
+        color: "#fff",
+        minHeight: "1123px",
+        boxSizing: "border-box",
+      }}
+    >
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: "16px",
+          marginBottom: "32px",
+        }}
+      >
+        <div
+          style={{
+            width: "56px",
+            height: "56px",
+            borderRadius: "14px",
+            background: "rgba(255,255,255,0.2)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            fontSize: "28px",
+          }}
+        >
+          ✈
+        </div>
         <div>
-          <div style={{ fontSize: '32px', fontWeight: 800, letterSpacing: '-0.5px' }}>Smart Fly</div>
-          <div style={{ fontSize: '14px', opacity: 0.75 }}>Relatório de Passagens Aéreas 2026</div>
+          <div
+            style={{
+              fontSize: "32px",
+              fontWeight: 800,
+              letterSpacing: "-0.5px",
+            }}
+          >
+            Smart Fly
+          </div>
+          <div style={{ fontSize: "14px", opacity: 0.75 }}>
+            Relatório de Passagens Aéreas 2026
+          </div>
         </div>
       </div>
 
-      <div style={{ display: 'flex', gap: '24px', marginTop: '40px', flexWrap: 'wrap' }}>
+      <div
+        style={{
+          display: "flex",
+          gap: "24px",
+          marginTop: "40px",
+          flexWrap: "wrap",
+        }}
+      >
         {[
-          { label: 'Bilhetes Emitidos', value: String(issued.length), color: '#fff' },
-          { label: 'Total Investido', value: `R$ ${totalInvested.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`, color: '#34d399' },
-          { label: 'Média por Viagem', value: issued.length > 0 ? `R$ ${(totalInvested / issued.length).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}` : '—', color: '#fbbf24' },
+          {
+            label: "Bilhetes Emitidos",
+            value: String(issued.length),
+            color: "#fff",
+          },
+          {
+            label: "Total Investido",
+            value: `R$ ${totalInvested.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`,
+            color: "#34d399",
+          },
+          {
+            label: "Média por Viagem",
+            value:
+              issued.length > 0
+                ? `R$ ${(totalInvested / issued.length).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`
+                : "—",
+            color: "#fbbf24",
+          },
         ].map(item => (
-          <div key={item.label} style={{
-            background: 'rgba(255,255,255,0.15)', borderRadius: '12px',
-            padding: '20px 28px', flex: '1', minWidth: '180px',
-          }}>
-            <div style={{ fontSize: '11px', opacity: 0.7, textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '8px' }}>
+          <div
+            key={item.label}
+            style={{
+              background: "rgba(255,255,255,0.15)",
+              borderRadius: "12px",
+              padding: "20px 28px",
+              flex: "1",
+              minWidth: "180px",
+            }}
+          >
+            <div
+              style={{
+                fontSize: "11px",
+                opacity: 0.7,
+                textTransform: "uppercase",
+                letterSpacing: "1px",
+                marginBottom: "8px",
+              }}
+            >
               {item.label}
             </div>
-            <div style={{ fontSize: '28px', fontWeight: 800, color: item.color }}>
+            <div
+              style={{ fontSize: "28px", fontWeight: 800, color: item.color }}
+            >
               {item.value}
             </div>
           </div>
         ))}
       </div>
 
-      <div style={{ marginTop: '48px', fontSize: '12px', opacity: 0.55 }}>
-        Gerado em {new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' })}
+      <div style={{ marginTop: "48px", fontSize: "12px", opacity: 0.55 }}>
+        Gerado em{" "}
+        {new Date().toLocaleDateString("pt-BR", {
+          day: "2-digit",
+          month: "long",
+          year: "numeric",
+        })}
       </div>
     </div>
   );
 }
 
-function MonthPage({ monthLabel, weeks, priceMap }: {
+function MonthPage({
+  monthLabel,
+  weeks,
+  priceMap,
+}: {
   monthLabel: string;
   weeks: WeekData[];
   priceMap: PriceMap;
@@ -126,118 +213,261 @@ function MonthPage({ monthLabel, weeks, priceMap }: {
   }, 0);
 
   return (
-    <div style={{
-      fontFamily: 'Arial, sans-serif',
-      width: '794px',
-      background: '#f8fafc',
-      padding: '32px 48px 40px',
-      boxSizing: 'border-box',
-    }}>
-      <div style={{
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        borderBottom: '3px solid #1d4ed8', paddingBottom: '12px', marginBottom: '24px',
-      }}>
-        <div style={{ fontSize: '22px', fontWeight: 800, color: '#1e3a8a', textTransform: 'capitalize' }}>
+    <div
+      style={{
+        fontFamily: "Arial, sans-serif",
+        width: "794px",
+        background: "#f8fafc",
+        padding: "32px 48px 40px",
+        boxSizing: "border-box",
+      }}
+    >
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          borderBottom: "3px solid #1d4ed8",
+          paddingBottom: "12px",
+          marginBottom: "24px",
+        }}
+      >
+        <div
+          style={{
+            fontSize: "22px",
+            fontWeight: 800,
+            color: "#1e3a8a",
+            textTransform: "capitalize",
+          }}
+        >
           {monthLabel}
         </div>
         {monthTotal > 0 && (
-          <div style={{
-            background: '#dbeafe', color: '#1d4ed8', borderRadius: '8px',
-            padding: '6px 18px', fontSize: '13px', fontWeight: 700,
-          }}>
-            Total: R$ {monthTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+          <div
+            style={{
+              background: "#dbeafe",
+              color: "#1d4ed8",
+              borderRadius: "8px",
+              padding: "6px 18px",
+              fontSize: "13px",
+              fontWeight: 700,
+            }}
+          >
+            Total: R${" "}
+            {monthTotal.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
           </div>
         )}
       </div>
 
       {weeks.map((week, wi) => {
         const prices = priceMap[week.weekNumber] || {};
-        const depAirlineKey = week.departureAirline?.toLowerCase() ?? '';
-        const retAirlineKey = week.returnAirline?.toLowerCase() ?? '';
-        const depPrice = depAirlineKey && prices[depAirlineKey] ? parseFloat(prices[depAirlineKey]) : null;
+        const depAirlineKey = week.departureAirline?.toLowerCase() ?? "";
+        const retAirlineKey = week.returnAirline?.toLowerCase() ?? "";
+        const depPrice =
+          depAirlineKey && prices[depAirlineKey]
+            ? parseFloat(prices[depAirlineKey])
+            : null;
         const depAirlineInfo = AIRLINE_COLORS[depAirlineKey];
         const retAirlineInfo = AIRLINE_COLORS[retAirlineKey];
 
         return (
-          <div key={week.weekNumber} style={{
-            background: '#fff',
-            borderRadius: '12px',
-            border: '1px solid #e2e8f0',
-            marginBottom: wi < weeks.length - 1 ? '16px' : '0',
-            overflow: 'hidden',
-          }}>
-            <div style={{
-              background: 'linear-gradient(90deg, #1e3a8a 0%, #1d4ed8 100%)',
-              color: '#fff',
-              padding: '10px 20px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-            }}>
-              <div style={{ fontWeight: 700, fontSize: '14px' }}>
-                Semana {week.weekNumber} — {week.departureDate} → {week.returnDate}
+          <div
+            key={week.weekNumber}
+            style={{
+              background: "#fff",
+              borderRadius: "12px",
+              border: "1px solid #e2e8f0",
+              marginBottom: wi < weeks.length - 1 ? "16px" : "0",
+              overflow: "hidden",
+            }}
+          >
+            <div
+              style={{
+                background: "linear-gradient(90deg, #1e3a8a 0%, #1d4ed8 100%)",
+                color: "#fff",
+                padding: "10px 20px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+              }}
+            >
+              <div style={{ fontWeight: 700, fontSize: "14px" }}>
+                Semana {week.weekNumber} — {week.departureDate} →{" "}
+                {week.returnDate}
               </div>
               {depPrice !== null && !isNaN(depPrice) && (
-                <div style={{
-                  background: 'rgba(255,255,255,0.2)', borderRadius: '6px',
-                  padding: '3px 12px', fontSize: '13px', fontWeight: 700,
-                }}>
-                  R$ {depPrice.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                <div
+                  style={{
+                    background: "rgba(255,255,255,0.2)",
+                    borderRadius: "6px",
+                    padding: "3px 12px",
+                    fontSize: "13px",
+                    fontWeight: 700,
+                  }}
+                >
+                  R${" "}
+                  {depPrice.toLocaleString("pt-BR", {
+                    minimumFractionDigits: 2,
+                  })}
                 </div>
               )}
             </div>
 
-            <div style={{ display: 'flex' }}>
+            <div style={{ display: "flex" }}>
               {/* IDA */}
-              <div style={{ flex: 1, padding: '16px 20px', borderRight: '1px solid #e2e8f0' }}>
-                <div style={{
-                  fontSize: '10px', fontWeight: 800, textTransform: 'uppercase',
-                  letterSpacing: '1px', color: '#1d4ed8', marginBottom: '10px',
-                }}>→ IDA</div>
-                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px' }}>
+              <div
+                style={{
+                  flex: 1,
+                  padding: "16px 20px",
+                  borderRight: "1px solid #e2e8f0",
+                }}
+              >
+                <div
+                  style={{
+                    fontSize: "10px",
+                    fontWeight: 800,
+                    textTransform: "uppercase",
+                    letterSpacing: "1px",
+                    color: "#1d4ed8",
+                    marginBottom: "10px",
+                  }}
+                >
+                  → IDA
+                </div>
+                <table
+                  style={{
+                    width: "100%",
+                    borderCollapse: "collapse",
+                    fontSize: "12px",
+                  }}
+                >
                   <tbody>
                     {week.departureAirline && (
                       <tr>
-                        <td style={{ color: '#64748b', paddingBottom: '6px', width: '90px', verticalAlign: 'middle' }}>Companhia</td>
-                        <td style={{ paddingBottom: '6px', verticalAlign: 'middle' }}>
+                        <td
+                          style={{
+                            color: "#64748b",
+                            paddingBottom: "6px",
+                            width: "90px",
+                            verticalAlign: "middle",
+                          }}
+                        >
+                          Companhia
+                        </td>
+                        <td
+                          style={{
+                            paddingBottom: "6px",
+                            verticalAlign: "middle",
+                          }}
+                        >
                           {depAirlineInfo ? (
-                            <span style={{
-                              display: 'inline-block',
-                              background: depAirlineInfo.bg,
-                              color: depAirlineInfo.text,
-                              borderRadius: '4px',
-                              padding: '3px 10px',
-                              fontSize: '11px',
-                              fontWeight: 700,
-                              minWidth: '52px',
-                              textAlign: 'center',
-                            }}>{depAirlineInfo.label}</span>
-                          ) : week.departureAirline}
+                            <span
+                              style={{
+                                display: "inline-block",
+                                background: depAirlineInfo.bg,
+                                color: depAirlineInfo.text,
+                                borderRadius: "4px",
+                                padding: "3px 10px",
+                                fontSize: "11px",
+                                fontWeight: 700,
+                                minWidth: "52px",
+                                textAlign: "center",
+                              }}
+                            >
+                              {depAirlineInfo.label}
+                            </span>
+                          ) : (
+                            week.departureAirline
+                          )}
                         </td>
                       </tr>
                     )}
                     {week.departureFlightNumber && (
                       <tr>
-                        <td style={{ color: '#64748b', paddingBottom: '6px', verticalAlign: 'middle' }}>Voo</td>
-                        <td style={{ paddingBottom: '6px', fontWeight: 700, color: '#1e293b', verticalAlign: 'middle' }}>{week.departureFlightNumber}</td>
+                        <td
+                          style={{
+                            color: "#64748b",
+                            paddingBottom: "6px",
+                            verticalAlign: "middle",
+                          }}
+                        >
+                          Voo
+                        </td>
+                        <td
+                          style={{
+                            paddingBottom: "6px",
+                            fontWeight: 700,
+                            color: "#1e293b",
+                            verticalAlign: "middle",
+                          }}
+                        >
+                          {week.departureFlightNumber}
+                        </td>
                       </tr>
                     )}
                     {week.departureLocator && (
                       <tr>
-                        <td style={{ color: '#64748b', paddingBottom: '6px', verticalAlign: 'middle' }}>Localizador</td>
-                        <td style={{ paddingBottom: '6px', fontWeight: 700, color: '#1e293b', fontFamily: 'monospace', letterSpacing: '1px', verticalAlign: 'middle' }}>{week.departureLocator}</td>
+                        <td
+                          style={{
+                            color: "#64748b",
+                            paddingBottom: "6px",
+                            verticalAlign: "middle",
+                          }}
+                        >
+                          Localizador
+                        </td>
+                        <td
+                          style={{
+                            paddingBottom: "6px",
+                            fontWeight: 700,
+                            color: "#1e293b",
+                            fontFamily: "monospace",
+                            letterSpacing: "1px",
+                            verticalAlign: "middle",
+                          }}
+                        >
+                          {week.departureLocator}
+                        </td>
                       </tr>
                     )}
                     {week.departureFlightDatetime && (
                       <tr>
-                        <td style={{ color: '#64748b', paddingBottom: '6px', verticalAlign: 'middle' }}>Data/Hora</td>
-                        <td style={{ paddingBottom: '6px', color: '#1e293b', verticalAlign: 'middle' }}>{formatDatetime(week.departureFlightDatetime)}</td>
+                        <td
+                          style={{
+                            color: "#64748b",
+                            paddingBottom: "6px",
+                            verticalAlign: "middle",
+                          }}
+                        >
+                          Data/Hora
+                        </td>
+                        <td
+                          style={{
+                            paddingBottom: "6px",
+                            color: "#1e293b",
+                            verticalAlign: "middle",
+                          }}
+                        >
+                          {formatDatetime(week.departureFlightDatetime)}
+                        </td>
                       </tr>
                     )}
                     {week.departureAirport && (
                       <tr>
-                        <td style={{ color: '#64748b', verticalAlign: 'middle' }}>Aeroporto</td>
-                        <td style={{ fontWeight: 600, color: '#1e293b', verticalAlign: 'middle' }}>{week.departureAirport}</td>
+                        <td
+                          style={{ color: "#64748b", verticalAlign: "middle" }}
+                        >
+                          Aeroporto
+                        </td>
+                        <td
+                          style={{
+                            fontWeight: 600,
+                            color: "#1e293b",
+                            verticalAlign: "middle",
+                          }}
+                        >
+                          {week.departureAirport}
+                        </td>
                       </tr>
                     )}
                   </tbody>
@@ -245,55 +475,153 @@ function MonthPage({ monthLabel, weeks, priceMap }: {
               </div>
 
               {/* VOLTA */}
-              <div style={{ flex: 1, padding: '16px 20px' }}>
-                <div style={{
-                  fontSize: '10px', fontWeight: 800, textTransform: 'uppercase',
-                  letterSpacing: '1px', color: '#ea580c', marginBottom: '10px',
-                }}>↩ VOLTA</div>
-                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px' }}>
+              <div style={{ flex: 1, padding: "16px 20px" }}>
+                <div
+                  style={{
+                    fontSize: "10px",
+                    fontWeight: 800,
+                    textTransform: "uppercase",
+                    letterSpacing: "1px",
+                    color: "#ea580c",
+                    marginBottom: "10px",
+                  }}
+                >
+                  ↩ VOLTA
+                </div>
+                <table
+                  style={{
+                    width: "100%",
+                    borderCollapse: "collapse",
+                    fontSize: "12px",
+                  }}
+                >
                   <tbody>
                     {week.returnAirline && (
                       <tr>
-                        <td style={{ color: '#64748b', paddingBottom: '6px', width: '90px', verticalAlign: 'middle' }}>Companhia</td>
-                        <td style={{ paddingBottom: '6px', verticalAlign: 'middle' }}>
+                        <td
+                          style={{
+                            color: "#64748b",
+                            paddingBottom: "6px",
+                            width: "90px",
+                            verticalAlign: "middle",
+                          }}
+                        >
+                          Companhia
+                        </td>
+                        <td
+                          style={{
+                            paddingBottom: "6px",
+                            verticalAlign: "middle",
+                          }}
+                        >
                           {retAirlineInfo ? (
-                            <span style={{
-                              display: 'inline-block',
-                              background: retAirlineInfo.bg,
-                              color: retAirlineInfo.text,
-                              borderRadius: '4px',
-                              padding: '3px 10px',
-                              fontSize: '11px',
-                              fontWeight: 700,
-                              minWidth: '52px',
-                              textAlign: 'center',
-                            }}>{retAirlineInfo.label}</span>
-                          ) : week.returnAirline}
+                            <span
+                              style={{
+                                display: "inline-block",
+                                background: retAirlineInfo.bg,
+                                color: retAirlineInfo.text,
+                                borderRadius: "4px",
+                                padding: "3px 10px",
+                                fontSize: "11px",
+                                fontWeight: 700,
+                                minWidth: "52px",
+                                textAlign: "center",
+                              }}
+                            >
+                              {retAirlineInfo.label}
+                            </span>
+                          ) : (
+                            week.returnAirline
+                          )}
                         </td>
                       </tr>
                     )}
                     {week.returnFlightNumber && (
                       <tr>
-                        <td style={{ color: '#64748b', paddingBottom: '6px', verticalAlign: 'middle' }}>Voo</td>
-                        <td style={{ paddingBottom: '6px', fontWeight: 700, color: '#1e293b', verticalAlign: 'middle' }}>{week.returnFlightNumber}</td>
+                        <td
+                          style={{
+                            color: "#64748b",
+                            paddingBottom: "6px",
+                            verticalAlign: "middle",
+                          }}
+                        >
+                          Voo
+                        </td>
+                        <td
+                          style={{
+                            paddingBottom: "6px",
+                            fontWeight: 700,
+                            color: "#1e293b",
+                            verticalAlign: "middle",
+                          }}
+                        >
+                          {week.returnFlightNumber}
+                        </td>
                       </tr>
                     )}
                     {week.returnLocator && (
                       <tr>
-                        <td style={{ color: '#64748b', paddingBottom: '6px', verticalAlign: 'middle' }}>Localizador</td>
-                        <td style={{ paddingBottom: '6px', fontWeight: 700, color: '#1e293b', fontFamily: 'monospace', letterSpacing: '1px', verticalAlign: 'middle' }}>{week.returnLocator}</td>
+                        <td
+                          style={{
+                            color: "#64748b",
+                            paddingBottom: "6px",
+                            verticalAlign: "middle",
+                          }}
+                        >
+                          Localizador
+                        </td>
+                        <td
+                          style={{
+                            paddingBottom: "6px",
+                            fontWeight: 700,
+                            color: "#1e293b",
+                            fontFamily: "monospace",
+                            letterSpacing: "1px",
+                            verticalAlign: "middle",
+                          }}
+                        >
+                          {week.returnLocator}
+                        </td>
                       </tr>
                     )}
                     {week.returnFlightDatetime && (
                       <tr>
-                        <td style={{ color: '#64748b', paddingBottom: '6px', verticalAlign: 'middle' }}>Data/Hora</td>
-                        <td style={{ paddingBottom: '6px', color: '#1e293b', verticalAlign: 'middle' }}>{formatDatetime(week.returnFlightDatetime)}</td>
+                        <td
+                          style={{
+                            color: "#64748b",
+                            paddingBottom: "6px",
+                            verticalAlign: "middle",
+                          }}
+                        >
+                          Data/Hora
+                        </td>
+                        <td
+                          style={{
+                            paddingBottom: "6px",
+                            color: "#1e293b",
+                            verticalAlign: "middle",
+                          }}
+                        >
+                          {formatDatetime(week.returnFlightDatetime)}
+                        </td>
                       </tr>
                     )}
                     {week.returnAirport && (
                       <tr>
-                        <td style={{ color: '#64748b', verticalAlign: 'middle' }}>Aeroporto</td>
-                        <td style={{ fontWeight: 600, color: '#1e293b', verticalAlign: 'middle' }}>{week.returnAirport}</td>
+                        <td
+                          style={{ color: "#64748b", verticalAlign: "middle" }}
+                        >
+                          Aeroporto
+                        </td>
+                        <td
+                          style={{
+                            fontWeight: 600,
+                            color: "#1e293b",
+                            verticalAlign: "middle",
+                          }}
+                        >
+                          {week.returnAirport}
+                        </td>
                       </tr>
                     )}
                   </tbody>
@@ -304,37 +632,45 @@ function MonthPage({ monthLabel, weeks, priceMap }: {
         );
       })}
 
-      <div style={{
-        marginTop: '24px', paddingTop: '12px',
-        borderTop: '1px solid #e2e8f0',
-        fontSize: '10px', color: '#94a3b8', textAlign: 'center',
-      }}>
-        Smart Fly • Relatório gerado automaticamente • {new Date().toLocaleDateString('pt-BR')}
+      <div
+        style={{
+          marginTop: "24px",
+          paddingTop: "12px",
+          borderTop: "1px solid #e2e8f0",
+          fontSize: "10px",
+          color: "#94a3b8",
+          textAlign: "center",
+        }}
+      >
+        Smart Fly • Relatório gerado automaticamente •{" "}
+        {new Date().toLocaleDateString("pt-BR")}
       </div>
     </div>
   );
 }
 
 // ─── Renderiza JSX como HTML estático em iframe e captura com html2canvas ────
-async function renderPageToCanvas(jsx: React.ReactElement): Promise<HTMLCanvasElement> {
+async function renderPageToCanvas(
+  jsx: React.ReactElement
+): Promise<HTMLCanvasElement> {
   return new Promise((resolve, reject) => {
     // Gerar HTML puro (sem React runtime — apenas string HTML)
     const htmlContent = renderToStaticMarkup(jsx);
 
     // Criar div oculto diretamente no DOM principal (html2canvas não consegue capturar iframes)
-    const container = document.createElement('div');
+    const container = document.createElement("div");
     container.style.cssText = [
-      'position:fixed',
-      'top:0',
-      'left:0',
-      'width:794px',
-      'min-height:1123px',
-      'background:#fff',
-      'z-index:-9999',
-      'pointer-events:none',
-      'overflow:visible',
-      'font-family:Arial,sans-serif',
-    ].join(';');
+      "position:fixed",
+      "top:0",
+      "left:0",
+      "width:794px",
+      "min-height:1123px",
+      "background:#fff",
+      "z-index:-9999",
+      "pointer-events:none",
+      "overflow:visible",
+      "font-family:Arial,sans-serif",
+    ].join(";");
     container.innerHTML = htmlContent;
     document.body.appendChild(container);
 
@@ -343,12 +679,12 @@ async function renderPageToCanvas(jsx: React.ReactElement): Promise<HTMLCanvasEl
       setTimeout(async () => {
         try {
           const el = container.firstElementChild as HTMLElement;
-          if (!el) throw new Error('Elemento não encontrado no container');
+          if (!el) throw new Error("Elemento não encontrado no container");
 
           const canvas = await html2canvas(el, {
             scale: 2,
             useCORS: true,
-            backgroundColor: '#ffffff',
+            backgroundColor: "#ffffff",
             width: 794,
             windowWidth: 794,
             logging: false,
@@ -356,7 +692,7 @@ async function renderPageToCanvas(jsx: React.ReactElement): Promise<HTMLCanvasEl
           });
 
           if (!canvas || canvas.width === 0 || canvas.height === 0) {
-            throw new Error('Canvas gerado com dimensões inválidas');
+            throw new Error("Canvas gerado com dimensões inválidas");
           }
 
           resolve(canvas);
@@ -372,8 +708,89 @@ async function renderPageToCanvas(jsx: React.ReactElement): Promise<HTMLCanvasEl
   });
 }
 
+function addCanvasToPdfHelper(
+  pdf: jsPDF,
+  canvas: HTMLCanvasElement,
+  isFirst: boolean,
+  pdfW: number,
+  pdfH: number
+) {
+  if (!isFirst) pdf.addPage();
+
+  const imgData = canvas.toDataURL("image/jpeg", 0.92);
+  const canvasW = canvas.width;
+  const canvasH = canvas.height;
+
+  console.log("[PDF Debug] canvas dimensions:", canvasW, "x", canvasH);
+
+  // Validar dimensões do canvas
+  if (!canvasW || !canvasH || canvasW === 0 || canvasH === 0) {
+    console.error("[PDF Debug] Canvas inválido, pulando página");
+    return;
+  }
+
+  // O canvas é gerado com scale:2 (dobro da resolução)
+  // canvasW/2 = largura real em pixels CSS (794px)
+  // pdfW = largura do PDF em mm (210mm para A4)
+  const scale = pdfW / (canvasW / 2);
+  const imgH = (canvasH / 2) * scale;
+
+  console.log("[PDF Debug] scale:", scale, "imgH:", imgH, "pdfH:", pdfH);
+
+  // Tolerância de 1mm para evitar entrar no branch de múltiplas páginas por diferença de arredondamento
+  const TOLERANCE_MM = 1.0;
+  if (imgH <= pdfH + TOLERANCE_MM) {
+    // Cabe em uma única página — clipa a altura para o tamanho exato da página
+    const finalH = Math.min(imgH, pdfH);
+    pdf.addImage(imgData, "JPEG", 0, 0, pdfW, finalH);
+  } else {
+    let yOffset = 0;
+    let firstSlice = true;
+    while (yOffset < imgH) {
+      if (!firstSlice) pdf.addPage();
+      firstSlice = false;
+
+      const sliceHeightPx = Math.round((pdfH / scale) * 2);
+      const sliceYPx = Math.round((yOffset / scale) * 2);
+      const actualSliceH = Math.min(sliceHeightPx, canvasH - sliceYPx);
+
+      // Ignorar fatias com altura zero (fim do canvas)
+      if (actualSliceH <= 0) break;
+
+      const sliceCanvas = document.createElement("canvas");
+      sliceCanvas.width = canvasW;
+      sliceCanvas.height = actualSliceH;
+      const ctx = sliceCanvas.getContext("2d")!;
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(0, 0, canvasW, actualSliceH);
+      ctx.drawImage(
+        canvas,
+        0,
+        sliceYPx,
+        canvasW,
+        actualSliceH,
+        0,
+        0,
+        canvasW,
+        actualSliceH
+      );
+
+      const sliceData = sliceCanvas.toDataURL("image/jpeg", 0.92);
+      const sliceHMm = (actualSliceH / 2) * scale;
+      if (sliceHMm > 0) {
+        pdf.addImage(sliceData, "JPEG", 0, 0, pdfW, sliceHMm);
+      }
+      yOffset += pdfH;
+    }
+  }
+}
+
 // ─── Botão de exportação ─────────────────────────────────────────────────────
-export function ExportPdfButton({ weeksData, priceMap, totalInvested }: FlightPdfExportProps) {
+export function ExportPdfButton({
+  weeksData,
+  priceMap,
+  totalInvested,
+}: FlightPdfExportProps) {
   const [exporting, setExporting] = useState(false);
 
   const issued = weeksData.filter(w => !!w.isTicketIssued && !w.isDeleted);
@@ -392,90 +809,37 @@ export function ExportPdfButton({ weeksData, priceMap, totalInvested }: FlightPd
     setExporting(true);
 
     try {
-      const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+      const pdf = new jsPDF({
+        orientation: "portrait",
+        unit: "mm",
+        format: "a4",
+      });
       const pdfW = pdf.internal.pageSize.getWidth();
       const pdfH = pdf.internal.pageSize.getHeight();
-
-      const addCanvasToPdf = (canvas: HTMLCanvasElement, isFirst: boolean) => {
-        if (!isFirst) pdf.addPage();
-
-        const imgData = canvas.toDataURL('image/jpeg', 0.92);
-        const canvasW = canvas.width;
-        const canvasH = canvas.height;
-
-        console.log('[PDF Debug] canvas dimensions:', canvasW, 'x', canvasH);
-
-        // Validar dimensões do canvas
-        if (!canvasW || !canvasH || canvasW === 0 || canvasH === 0) {
-          console.error('[PDF Debug] Canvas inválido, pulando página');
-          return;
-        }
-
-        // O canvas é gerado com scale:2 (dobro da resolução)
-        // canvasW/2 = largura real em pixels CSS (794px)
-        // pdfW = largura do PDF em mm (210mm para A4)
-        const scale = pdfW / (canvasW / 2);
-        const imgH = (canvasH / 2) * scale;
-
-        console.log('[PDF Debug] scale:', scale, 'imgH:', imgH, 'pdfH:', pdfH);
-
-        // Tolerância de 1mm para evitar entrar no branch de múltiplas páginas por diferença de arredondamento
-        const TOLERANCE_MM = 1.0;
-        if (imgH <= pdfH + TOLERANCE_MM) {
-          // Cabe em uma única página — clipa a altura para o tamanho exato da página
-          const finalH = Math.min(imgH, pdfH);
-          pdf.addImage(imgData, 'JPEG', 0, 0, pdfW, finalH);
-        } else {
-          let yOffset = 0;
-          let firstSlice = true;
-          while (yOffset < imgH) {
-            if (!firstSlice) pdf.addPage();
-            firstSlice = false;
-
-            const sliceHeightPx = Math.round((pdfH / scale) * 2);
-            const sliceYPx = Math.round((yOffset / scale) * 2);
-            const actualSliceH = Math.min(sliceHeightPx, canvasH - sliceYPx);
-
-            // Ignorar fatias com altura zero (fim do canvas)
-            if (actualSliceH <= 0) break;
-
-            const sliceCanvas = document.createElement('canvas');
-            sliceCanvas.width = canvasW;
-            sliceCanvas.height = actualSliceH;
-            const ctx = sliceCanvas.getContext('2d')!;
-            ctx.fillStyle = '#ffffff';
-            ctx.fillRect(0, 0, canvasW, actualSliceH);
-            ctx.drawImage(canvas, 0, sliceYPx, canvasW, actualSliceH, 0, 0, canvasW, actualSliceH);
-
-            const sliceData = sliceCanvas.toDataURL('image/jpeg', 0.92);
-            const sliceHMm = (actualSliceH / 2) * scale;
-            if (sliceHMm > 0) {
-              pdf.addImage(sliceData, 'JPEG', 0, 0, pdfW, sliceHMm);
-            }
-            yOffset += pdfH;
-          }
-        }
-      };
 
       // 1. Capa
       const coverCanvas = await renderPageToCanvas(
         <CoverPage issued={issued} totalInvested={totalInvested} />
       );
-      addCanvasToPdf(coverCanvas, true);
+      addCanvasToPdfHelper(pdf, coverCanvas, true, pdfW, pdfH);
 
       // 2. Uma página por mês
       for (let i = 0; i < months.length; i++) {
         const [monthLabel, weeks] = months[i];
         const monthCanvas = await renderPageToCanvas(
-          <MonthPage monthLabel={monthLabel} weeks={weeks} priceMap={priceMap} />
+          <MonthPage
+            monthLabel={monthLabel}
+            weeks={weeks}
+            priceMap={priceMap}
+          />
         );
-        addCanvasToPdf(monthCanvas, false);
+        addCanvasToPdfHelper(pdf, monthCanvas, false, pdfW, pdfH);
       }
 
-      pdf.save('SmartFly-Passagens-2026.pdf');
+      pdf.save("SmartFly-Passagens-2026.pdf");
     } catch (err) {
-      console.error('[PDF Export Error]', err);
-      alert('Erro ao gerar o PDF. Tente novamente.');
+      console.error("[PDF Export Error]", err);
+      alert("Erro ao gerar o PDF. Tente novamente.");
     } finally {
       setExporting(false);
     }
@@ -487,7 +851,11 @@ export function ExportPdfButton({ weeksData, priceMap, totalInvested }: FlightPd
       variant="outline"
       onClick={handleExport}
       disabled={exporting || issued.length === 0}
-      title={issued.length === 0 ? 'Nenhum bilhete emitido para exportar' : 'Exportar relatório em PDF'}
+      title={
+        issued.length === 0
+          ? "Nenhum bilhete emitido para exportar"
+          : "Exportar relatório em PDF"
+      }
       className="bg-white/10 border-white text-white hover:bg-white hover:text-blue-700 transition-all"
     >
       {exporting ? (

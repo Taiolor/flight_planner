@@ -18,6 +18,15 @@
 **Learning:** Chaining array methods like `.map().filter().reduce()` inside a React `useMemo` hook for data-heavy components (like charts) creates multiple intermediate arrays, leading to excessive garbage collection overhead.
 **Action:** Replace chained array operations with single-pass standard `for` loops in performance-critical areas to minimize array allocations and memory usage.
 
-## 2024-05-07 - Hoist Expensive Computations from O(N*M) Loops
-**Learning:** Found a nested loop `for (aviso of avisos) { for (week of weeks) { parseDate(week.date) } }` which evaluated `parseBrasiliaDatetime()` multiple times for the same week data. This causes O(N*M) time complexity for a relatively expensive pure function (date parsing).
+## 2024-05-07 - Hoist Expensive Computations from O(N\*M) Loops
+
+**Learning:** Found a nested loop `for (aviso of avisos) { for (week of weeks) { parseDate(week.date) } }` which evaluated `parseBrasiliaDatetime()` multiple times for the same week data. This causes O(N\*M) time complexity for a relatively expensive pure function (date parsing).
 **Action:** Always pre-calculate (hoist) shared computations that depend on only one loop variable before entering multiple nested loops. Mapping an array to cache results transforms the time complexity to O(N+M) and avoids redundant execution.
+
+## 2026-06-01 - Avoid Redundant Date Instantiations in Nested Loops
+
+**Learning:** Instantiating `new Date()` inside nested loops is a common source of performance degradation in Node.js due to object allocation and garbage collection overhead. Pre-calculating boundaries in milliseconds and using standard arithmetic drastically improves throughput.
+**Action:** Always seek to evaluate date logic by converting inputs to millisecond integers using `.getTime()` and hoisting calculation boundaries outside tight inner loops.
+## 2026-05-15 - Optimization of getCurrentYearMonth
+**Learning:** Caching the output string of frequently called static functions returning date ranges significantly improves local execution time.
+**Action:** Evaluate using static strings to replace repetitive dynamic output that relies on the exact same parameters/context.
