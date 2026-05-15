@@ -58,6 +58,13 @@ const buildKayakUrl = (departureDate: string, returnDate: string): string => {
   return `https://www.kayak.com.br/flights/GRU-NVT/${dep}/${ret}?ucs=p1nu6v&sort=bestflight_a`;
 };
 
+/** Helper for fast date comparison */
+const dateToInt = (d: string): number => {
+  if (d.includes("-")) return parseInt(d.replace(/-/g, ""), 10);
+  const parts = d.split("/");
+  return parseInt(`${parts[2]}${parts[1]}${parts[0]}`, 10);
+};
+
 /**
  * Determina se uma semana é passada, corrente ou futura.
  * Usa a data de IDA (domingo) como referência.
@@ -65,16 +72,22 @@ const buildKayakUrl = (departureDate: string, returnDate: string): string => {
  */
 const getWeekStatus = (
   departureDate: string,
-  returnDate: string
+  returnDate: string,
+  todayInt?: number
 ): "past" | "current" | "future" => {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
+  let today = todayInt;
+  if (!today) {
+    const d = new Date();
+    today = parseInt(
+      `${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, "0")}${String(
+        d.getDate()
+      ).padStart(2, "0")}`,
+      10
+    );
+  }
 
-  const depIso = toIsoDate(departureDate);
-  const retIso = toIsoDate(returnDate);
-
-  const dep = new Date(depIso + "T00:00:00");
-  const ret = new Date(retIso + "T00:00:00");
+  const dep = dateToInt(departureDate);
+  const ret = dateToInt(returnDate);
 
   if (ret < today) return "past";
   if (dep <= today && ret >= today) return "current";
@@ -146,17 +159,23 @@ const QuoteRow = ({
     quote.returnDeparture;
 
   return (
-    <div className={`rounded-lg border overflow-hidden ${
-      isPast
-        ? "bg-slate-100 dark:bg-slate-800/60 border-slate-200 dark:border-slate-700"
-        : "bg-slate-50 dark:bg-slate-700/50 border-slate-200 dark:border-slate-600"
-    }`}>
+    <div
+      className={`rounded-lg border overflow-hidden ${
+        isPast
+          ? "bg-slate-100 dark:bg-slate-800/60 border-slate-200 dark:border-slate-700"
+          : "bg-slate-50 dark:bg-slate-700/50 border-slate-200 dark:border-slate-600"
+      }`}
+    >
       {/* Linha principal: preço + fonte + data da cotação + botão excluir */}
       <div className="flex items-center justify-between py-2 px-3 gap-2">
         <div className="flex items-center gap-3 flex-1 min-w-0">
-          <span className={`text-lg font-bold whitespace-nowrap ${
-            isPast ? "text-slate-400 dark:text-slate-500" : "text-slate-800 dark:text-slate-100"
-          }`}>
+          <span
+            className={`text-lg font-bold whitespace-nowrap ${
+              isPast
+                ? "text-slate-400 dark:text-slate-500"
+                : "text-slate-800 dark:text-slate-100"
+            }`}
+          >
             {formatCurrency(quote.lowestPrice)}
           </span>
           <SourceBadge source={quote.source} />
@@ -189,40 +208,56 @@ const QuoteRow = ({
 
       {/* Detalhes de ida e volta (apenas quando disponível via API) */}
       {hasFlightDetails && (
-        <div className={`px-3 pb-2.5 pt-0 border-t grid grid-cols-2 gap-2 ${
-          isPast
-            ? "border-slate-200 dark:border-slate-700"
-            : "border-slate-200 dark:border-slate-600"
-        }`}>
-          {/* Voo de Ida */}
-          <div className={`rounded-md p-2 ${
+        <div
+          className={`px-3 pb-2.5 pt-0 border-t grid grid-cols-2 gap-2 ${
             isPast
-              ? "bg-slate-200/60 dark:bg-slate-700/40"
-              : "bg-white dark:bg-slate-800/60"
-          }`}>
+              ? "border-slate-200 dark:border-slate-700"
+              : "border-slate-200 dark:border-slate-600"
+          }`}
+        >
+          {/* Voo de Ida */}
+          <div
+            className={`rounded-md p-2 ${
+              isPast
+                ? "bg-slate-200/60 dark:bg-slate-700/40"
+                : "bg-white dark:bg-slate-800/60"
+            }`}
+          >
             <p className="text-[10px] font-semibold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 mb-1 flex items-center gap-1">
               <Plane className="w-3 h-3" />
               Ida
             </p>
             {quote.outboundAirline && (
-              <p className={`text-xs font-medium truncate ${
-                isPast ? "text-slate-400 dark:text-slate-500" : "text-slate-700 dark:text-slate-200"
-              }`}>
+              <p
+                className={`text-xs font-medium truncate ${
+                  isPast
+                    ? "text-slate-400 dark:text-slate-500"
+                    : "text-slate-700 dark:text-slate-200"
+                }`}
+              >
                 {quote.outboundAirline}
               </p>
             )}
             {quote.outboundDeparture && (
-              <p className={`text-xs flex items-center gap-1 mt-0.5 ${
-                isPast ? "text-slate-400 dark:text-slate-500" : "text-slate-500 dark:text-slate-400"
-              }`}>
+              <p
+                className={`text-xs flex items-center gap-1 mt-0.5 ${
+                  isPast
+                    ? "text-slate-400 dark:text-slate-500"
+                    : "text-slate-500 dark:text-slate-400"
+                }`}
+              >
                 <Clock className="w-3 h-3 flex-shrink-0" />
                 Partida: {formatFlightDatetime(quote.outboundDeparture)}
               </p>
             )}
             {quote.outboundArrival && (
-              <p className={`text-xs flex items-center gap-1 ${
-                isPast ? "text-slate-400 dark:text-slate-500" : "text-slate-500 dark:text-slate-400"
-              }`}>
+              <p
+                className={`text-xs flex items-center gap-1 ${
+                  isPast
+                    ? "text-slate-400 dark:text-slate-500"
+                    : "text-slate-500 dark:text-slate-400"
+                }`}
+              >
                 <Clock className="w-3 h-3 flex-shrink-0" />
                 Chegada: {formatFlightDatetime(quote.outboundArrival)}
               </p>
@@ -230,34 +265,48 @@ const QuoteRow = ({
           </div>
 
           {/* Voo de Volta */}
-          <div className={`rounded-md p-2 ${
-            isPast
-              ? "bg-slate-200/60 dark:bg-slate-700/40"
-              : "bg-white dark:bg-slate-800/60"
-          }`}>
+          <div
+            className={`rounded-md p-2 ${
+              isPast
+                ? "bg-slate-200/60 dark:bg-slate-700/40"
+                : "bg-white dark:bg-slate-800/60"
+            }`}
+          >
             <p className="text-[10px] font-semibold uppercase tracking-wider text-blue-600 dark:text-blue-400 mb-1 flex items-center gap-1">
               <Plane className="w-3 h-3 rotate-180" />
               Volta
             </p>
             {quote.returnAirline && (
-              <p className={`text-xs font-medium truncate ${
-                isPast ? "text-slate-400 dark:text-slate-500" : "text-slate-700 dark:text-slate-200"
-              }`}>
+              <p
+                className={`text-xs font-medium truncate ${
+                  isPast
+                    ? "text-slate-400 dark:text-slate-500"
+                    : "text-slate-700 dark:text-slate-200"
+                }`}
+              >
                 {quote.returnAirline}
               </p>
             )}
             {quote.returnDeparture && (
-              <p className={`text-xs flex items-center gap-1 mt-0.5 ${
-                isPast ? "text-slate-400 dark:text-slate-500" : "text-slate-500 dark:text-slate-400"
-              }`}>
+              <p
+                className={`text-xs flex items-center gap-1 mt-0.5 ${
+                  isPast
+                    ? "text-slate-400 dark:text-slate-500"
+                    : "text-slate-500 dark:text-slate-400"
+                }`}
+              >
                 <Clock className="w-3 h-3 flex-shrink-0" />
                 Partida: {formatFlightDatetime(quote.returnDeparture)}
               </p>
             )}
             {quote.returnArrival && (
-              <p className={`text-xs flex items-center gap-1 ${
-                isPast ? "text-slate-400 dark:text-slate-500" : "text-slate-500 dark:text-slate-400"
-              }`}>
+              <p
+                className={`text-xs flex items-center gap-1 ${
+                  isPast
+                    ? "text-slate-400 dark:text-slate-500"
+                    : "text-slate-500 dark:text-slate-400"
+                }`}
+              >
                 <Clock className="w-3 h-3 flex-shrink-0" />
                 Chegada: {formatFlightDatetime(quote.returnArrival)}
               </p>
@@ -310,7 +359,18 @@ const WeekCard = ({
   const kayakUrl = buildKayakUrl(week.ida.data, week.retorno.data);
   const apiLimitReached = apiUsage.requestsUsed >= apiUsage.requestsLimit;
 
-  const status = getWeekStatus(week.ida.data, week.retorno.data);
+  const todayInt = useMemo(() => {
+    const today = new Date();
+    return parseInt(
+      `${today.getFullYear()}${String(today.getMonth() + 1).padStart(
+        2,
+        "0"
+      )}${String(today.getDate()).padStart(2, "0")}`,
+      10
+    );
+  }, []);
+
+  const status = getWeekStatus(week.ida.data, week.retorno.data, todayInt);
   const isPast = status === "past";
   const isCurrent = status === "current";
 
@@ -710,8 +770,16 @@ export default function FlightQuotes() {
     let past = 0,
       current = 0,
       future = 0;
+    const today = new Date();
+    const todayInt = parseInt(
+      `${today.getFullYear()}${String(today.getMonth() + 1).padStart(
+        2,
+        "0"
+      )}${String(today.getDate()).padStart(2, "0")}`,
+      10
+    );
     for (const w of flightData) {
-      const s = getWeekStatus(w.ida.data, w.retorno.data);
+      const s = getWeekStatus(w.ida.data, w.retorno.data, todayInt);
       if (s === "past") past++;
       else if (s === "current") current++;
       else future++;
