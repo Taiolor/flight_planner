@@ -180,6 +180,7 @@ export type InsertNotificationLog = typeof notificationLogs.$inferInsert;
 
 /**
  * Tabela para armazenar cotações de preços de passagens aéreas
+ * (Colunas adicionadas: outboundAirline, returnAirline, outboundDeparture, outboundArrival, returnDeparture, returnArrival)
  * source: 'api' = obtido via Sky Scrapper API | 'manual' = inserido manualmente via Kayak
  */
 export const flightQuotes = mysqlTable(
@@ -188,19 +189,19 @@ export const flightQuotes = mysqlTable(
     id: int("id").autoincrement().primaryKey(),
     weekNumber: int("weekNumber").notNull(),
     departureDate: varchar("departureDate", { length: 20 }).notNull(), // YYYY-MM-DD
-    returnDate: varchar("returnDate", { length: 20 }).notNull(),       // YYYY-MM-DD
-    lowestPrice: int("lowestPrice").notNull(),                          // em centavos (R$)
+    returnDate: varchar("returnDate", { length: 20 }).notNull(), // YYYY-MM-DD
+    lowestPrice: int("lowestPrice").notNull(), // em centavos (R$)
     currency: varchar("currency", { length: 10 }).default("BRL").notNull(),
-    source: mysqlEnum("source", ["api", "manual"]).notNull(),           // origem do preço
-    airline: varchar("airline", { length: 100 }),                       // companhia ida (quando disponível)
-    outboundAirline: varchar("outboundAirline", { length: 100 }),       // companhia aérea voo de ida
-    returnAirline: varchar("returnAirline", { length: 100 }),           // companhia aérea voo de volta
-    outboundDeparture: varchar("outboundDeparture", { length: 30 }),    // data/hora partida ida (ISO 8601)
-    outboundArrival: varchar("outboundArrival", { length: 30 }),        // data/hora chegada ida (ISO 8601)
-    returnDeparture: varchar("returnDeparture", { length: 30 }),        // data/hora partida volta (ISO 8601)
-    returnArrival: varchar("returnArrival", { length: 30 }),            // data/hora chegada volta (ISO 8601)
-    apiRequestsUsed: int("apiRequestsUsed").default(0).notNull(),       // contador de req usadas no mês
-    rawResponse: text("rawResponse"),                                   // resposta bruta da API (debug)
+    source: mysqlEnum("source", ["api", "manual"]).notNull(), // origem do preço
+    airline: varchar("airline", { length: 100 }), // companhia ida (quando disponível)
+    outboundAirline: varchar("outboundAirline", { length: 100 }), // companhia aérea voo de ida
+    returnAirline: varchar("returnAirline", { length: 100 }), // companhia aérea voo de volta
+    outboundDeparture: varchar("outboundDeparture", { length: 30 }), // data/hora partida ida (ISO 8601)
+    outboundArrival: varchar("outboundArrival", { length: 30 }), // data/hora chegada ida (ISO 8601)
+    returnDeparture: varchar("returnDeparture", { length: 30 }), // data/hora partida volta (ISO 8601)
+    returnArrival: varchar("returnArrival", { length: 30 }), // data/hora chegada volta (ISO 8601)
+    apiRequestsUsed: int("apiRequestsUsed").default(0).notNull(), // contador de req usadas no mês
+    rawResponse: text("rawResponse"), // resposta bruta da API (debug)
     quotedAt: timestamp("quotedAt").defaultNow().notNull(),
     createdAt: timestamp("createdAt").defaultNow().notNull(),
     updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
