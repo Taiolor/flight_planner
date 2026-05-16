@@ -1908,6 +1908,17 @@ export default function Home() {
                                             🎉 {week.holiday}
                                           </span>
                                         )}
+                                        {/* Jogos da Copa do Mundo no intervalo da semana */}
+                                        {getFeriadosPorIntervalo(week.weekNumber, week.departureDate, week.returnDate)
+                                          .filter(f => f.feriado.tipo === "copa")
+                                          .map(f => (
+                                            <span
+                                              key={f.feriado.data + f.tipo}
+                                              className="text-xs bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-200 px-2 py-1 rounded font-semibold"
+                                            >
+                                              {f.feriado.nome}
+                                            </span>
+                                          ))}
                                         {lowestPrice && (
                                           <span className="text-xs bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-200 px-2 py-1 rounded font-semibold">
                                             💰{" "}
@@ -2088,13 +2099,14 @@ export default function Home() {
                                                 <span
                                                   key={f.feriado.data}
                                                   className={`text-xs px-2 py-0.5 rounded-full font-semibold ${
-                                                    f.feriado.tipo ===
-                                                    "nacional"
+                                                    f.feriado.tipo === "copa"
+                                                      ? "bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-200"
+                                                      : f.feriado.tipo === "nacional"
                                                       ? "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-200"
                                                       : "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-200"
                                                   }`}
                                                 >
-                                                  🎉 {f.feriado.nome}
+                                                  {f.feriado.tipo === "copa" ? f.feriado.nome : `🎉 ${f.feriado.nome}`}
                                                 </span>
                                               ))}
                                             </div>
@@ -2125,30 +2137,46 @@ export default function Home() {
                                                 <span
                                                   key={f.feriado.data}
                                                   className={`text-xs px-2 py-0.5 rounded-full font-semibold ${
-                                                    f.feriado.tipo ===
-                                                    "nacional"
+                                                    f.feriado.tipo === "copa"
+                                                      ? "bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-200"
+                                                      : f.feriado.tipo === "nacional"
                                                       ? "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-200"
                                                       : "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-200"
                                                   }`}
                                                 >
-                                                  🎉 {f.feriado.nome}
+                                                  {f.feriado.tipo === "copa" ? f.feriado.nome : `🎉 ${f.feriado.nome}`}
                                                 </span>
                                               ))}
                                             </div>
-                                            {feriadosIntervalo.length > 0 && (
+                                            {feriadosIntervalo.filter(f => f.feriado.tipo !== "copa").length > 0 && (
                                               <p className="text-xs text-slate-500 flex items-center gap-1 flex-wrap pl-5">
                                                 <span className="text-orange-600 dark:text-orange-300 font-semibold">
                                                   ⚠️ Feriados no período:
                                                 </span>
-                                                {feriadosIntervalo.map(f => (
+                                                {feriadosIntervalo.filter(f => f.feriado.tipo !== "copa").map(f => (
                                                   <span
                                                     key={f.feriado.data}
                                                     className={`px-2 py-0.5 rounded-full ${
-                                                      f.feriado.tipo ===
-                                                      "nacional"
+                                                      f.feriado.tipo === "nacional"
                                                         ? "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-200"
                                                         : "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-200"
                                                     }`}
+                                                  >
+                                                    {f.feriado.data.slice(0, 5)}{" "}
+                                                    – {f.feriado.nome}
+                                                  </span>
+                                                ))}
+                                              </p>
+                                            )}
+                                            {feriadosIntervalo.filter(f => f.feriado.tipo === "copa").length > 0 && (
+                                              <p className="text-xs text-slate-500 flex items-center gap-1 flex-wrap pl-5">
+                                                <span className="text-green-700 dark:text-green-300 font-semibold">
+                                                  ⚽ Copa 2026 no período:
+                                                </span>
+                                                {feriadosIntervalo.filter(f => f.feriado.tipo === "copa").map(f => (
+                                                  <span
+                                                    key={f.feriado.data}
+                                                    className="px-2 py-0.5 rounded-full bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-200 font-semibold"
                                                   >
                                                     {f.feriado.data.slice(0, 5)}{" "}
                                                     – {f.feriado.nome}
