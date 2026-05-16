@@ -379,22 +379,40 @@ export async function getPushSubscriptionByEndpoint(endpoint: string) {
 // Notification Settings
 // =====================
 
-export async function getNotificationSettings() {
-  const db = await getDb();
-  if (!db) return { aviso1Minutes: 1440, aviso2Minutes: 0 };
+let cachedSettingsPromise: Promise<{
+  aviso1Minutes: number;
+  aviso2Minutes: number;
+}> | null = null;
 
-  const rows = await db.select().from(notificationSettings).limit(1);
-  if (rows.length === 0) {
-    // Criar registro padrão se não existir
-    await db
-      .insert(notificationSettings)
-      .values({ aviso1Minutes: 1440, aviso2Minutes: 0 });
-    return { aviso1Minutes: 1440, aviso2Minutes: 0 };
+export async function getNotificationSettings() {
+  if (cachedSettingsPromise) {
+    return cachedSettingsPromise;
   }
-  return {
-    aviso1Minutes: rows[0].aviso1Minutes,
-    aviso2Minutes: rows[0].aviso2Minutes,
-  };
+
+  cachedSettingsPromise = (async () => {
+    const db = await getDb();
+    if (!db) return { aviso1Minutes: 1440, aviso2Minutes: 0 };
+
+    const rows = await db.select().from(notificationSettings).limit(1);
+    if (rows.length === 0) {
+      // Criar registro padrão se não existir
+      await db
+        .insert(notificationSettings)
+        .values({ aviso1Minutes: 1440, aviso2Minutes: 0 });
+      return { aviso1Minutes: 1440, aviso2Minutes: 0 };
+    }
+    return {
+      aviso1Minutes: rows[0].aviso1Minutes,
+      aviso2Minutes: rows[0].aviso2Minutes,
+    };
+  })();
+
+  try {
+    return await cachedSettingsPromise;
+  } catch (error) {
+    cachedSettingsPromise = null;
+    throw error;
+  }
 }
 
 export async function updateNotificationSettings(
@@ -415,6 +433,9 @@ export async function updateNotificationSettings(
       .set({ aviso1Minutes, aviso2Minutes })
       .where(eq(notificationSettings.id, rows[0].id));
   }
+
+  // Invalidate cache
+  cachedSettingsPromise = Promise.resolve({ aviso1Minutes, aviso2Minutes });
 }
 
 // =====================
