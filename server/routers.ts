@@ -10,6 +10,7 @@ import { TRPCError } from "@trpc/server";
 import {
   getAllFlightWeeks,
   getAllFlightPrices,
+  getPublicPrices,
   upsertFlightWeek,
   updateFlightWeekStatus,
   initFlightWeeks,
@@ -276,6 +277,10 @@ export const appRouter = router({
         });
       }
       return getAllFlightPrices();
+    }),
+
+    getPublicPrices: publicProcedure.query(async () => {
+      return getPublicPrices();
     }),
 
     // Inicializar semanas com dados padrão (só roda se não houver dados)

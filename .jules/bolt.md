@@ -22,6 +22,16 @@
 
 **Learning:** Found a nested loop `for (aviso of avisos) { for (week of weeks) { parseDate(week.date) } }` which evaluated `parseBrasiliaDatetime()` multiple times for the same week data. This causes O(N\*M) time complexity for a relatively expensive pure function (date parsing).
 **Action:** Always pre-calculate (hoist) shared computations that depend on only one loop variable before entering multiple nested loops. Mapping an array to cache results transforms the time complexity to O(N+M) and avoids redundant execution.
+
 ## 2026-06-01 - Avoid Redundant Date Instantiations in Nested Loops
+
 **Learning:** Instantiating `new Date()` inside nested loops is a common source of performance degradation in Node.js due to object allocation and garbage collection overhead. Pre-calculating boundaries in milliseconds and using standard arithmetic drastically improves throughput.
 **Action:** Always seek to evaluate date logic by converting inputs to millisecond integers using `.getTime()` and hoisting calculation boundaries outside tight inner loops.
+## 2026-05-15 - Optimization of getCurrentYearMonth
+**Learning:** Caching the output string of frequently called static functions returning date ranges significantly improves local execution time.
+**Action:** Evaluate using static strings to replace repetitive dynamic output that relies on the exact same parameters/context.
+
+## 2024-05-18 - Database Query Single-Flight Caching
+
+**Learning:** When multiple requests fetch the exact same data from the database concurrently (e.g., in a "thundering herd" scenario during server startup or traffic spikes), relying on just standard await without caching causes redundant database connections and queries for the same un-resolved outcome.
+**Action:** Implement a "single-flight" caching mechanism by caching the Promise of the database operation itself in a module-level variable, returning the ongoing promise if one exists, and ensuring to clear it in a `finally` block once the operation completes.

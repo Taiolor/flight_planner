@@ -96,9 +96,9 @@
 - [x] Limpar base de push subscriptions duplicadas do banco (alertas repetidos)
 - [x] Bug: overlay do popup de push notifications captura cliques e impede interação com selects e botões internos
 - [x] Bug: números de voo de ida e volta não aparecem nos cards das semanas (campo preenchido mas não exibido) — causa: Service Worker com cache antigo do app quebrado; solução: desregistrar SW e recarregar
-- [ ] Bug: erro ao gerar PDF (botão PDF no cabeçalho não funciona)
+- [x] Bug: erro ao gerar PDF (botão PDF no cabeçalho não funciona)
 - [x] Substituir botão lápis + popup de edição de datas por date pickers inline no card (data ida + data volta com label do dia da semana ao lado)
-- [ ] Ao clicar em "Não Emitido" para expandir o card, copiar automaticamente as datas dos date-pickers (Ida e Retorno) para os campos de data/hora do bilhete (datetime-local Ida e Volta)
+- [x] Ao clicar em "Não Emitido" para expandir o card, copiar automaticamente as datas dos date-pickers (Ida e Retorno) para os campos de data/hora do bilhete (datetime-local Ida e Volta)
 - [x] Alterar título do frame de preços de "GRU → NVT • Preços" para "Consulta de Preços"
 - [x] Bug: ícone do site (favicon) aparece em branco
 - [x] Bug: logotipo no cabeçalho do site aparece em branco
@@ -179,10 +179,10 @@
 
 ## Dados detalhados da cotação via API
 
-- [ ] Capturar companhia aérea de ida e volta do voo mais barato
-- [ ] Capturar data e hora de partida de ida e volta
-- [ ] Adicionar colunas no schema do banco (outboundAirline, returnAirline, outboundDeparture, returnDeparture)
-- [ ] Executar pnpm db:push para aplicar as novas colunas
-- [ ] Atualizar helpers de DB para persistir os novos campos
+- [x] Capturar companhia aérea de ida e volta do voo mais barato
+- [x] Capturar data e hora de partida de ida e volta
+- [x] Adicionar colunas no schema do banco (outboundAirline, returnAirline, outboundDeparture, returnDeparture)
+- [x] Executar pnpm db:push para aplicar as novas colunas
+- [x] Atualizar helpers de DB para persistir os novos campos
 - [x] Atualizar router de cotações para extrair e salvar os novos campos da resposta da API
-- [ ] Exibir companhia aérea e data/hora de ida e volta na página de cotações
+- [x] Exibir companhia aérea e data/hora de ida e volta na página de cotações

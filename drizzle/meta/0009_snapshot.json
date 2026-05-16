@@ -49,17 +49,13 @@
       "compositePrimaryKeys": {
         "auth_sessions_id": {
           "name": "auth_sessions_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {
         "auth_sessions_sessionToken_unique": {
           "name": "auth_sessions_sessionToken_unique",
-          "columns": [
-            "sessionToken"
-          ]
+          "columns": ["sessionToken"]
         }
       },
       "checkConstraint": {}
@@ -118,9 +114,7 @@
       "compositePrimaryKeys": {
         "flight_prices_id": {
           "name": "flight_prices_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {},
@@ -295,9 +289,7 @@
       "compositePrimaryKeys": {
         "flight_weeks_id": {
           "name": "flight_weeks_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {},
@@ -344,9 +336,7 @@
       "compositePrimaryKeys": {
         "notification_settings_id": {
           "name": "notification_settings_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {},
@@ -405,9 +395,7 @@
       "compositePrimaryKeys": {
         "otp_codes_id": {
           "name": "otp_codes_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {},
@@ -465,9 +453,7 @@
       "compositePrimaryKeys": {
         "push_subscriptions_id": {
           "name": "push_subscriptions_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {},
@@ -550,17 +536,13 @@
       "compositePrimaryKeys": {
         "users_id": {
           "name": "users_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {
         "users_openId_unique": {
           "name": "users_openId_unique",
-          "columns": [
-            "openId"
-          ]
+          "columns": ["openId"]
         }
       },
       "checkConstraint": {}

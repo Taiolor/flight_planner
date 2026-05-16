@@ -2,10 +2,12 @@ import crypto from "crypto";
 import { and, desc, eq, gt, lt } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import {
+  FlightWeek,
   InsertUser,
   users,
   flightWeeks,
   flightPrices,
+  public_prices,
   InsertFlightWeek,
   InsertFlightPrice,
   authSessions,
@@ -115,10 +117,26 @@ export async function getUserByOpenId(openId: string) {
 // Flight Weeks
 // =====================
 
-export async function getAllFlightWeeks() {
-  const db = await getDb();
-  if (!db) return [];
-  return db.select().from(flightWeeks).orderBy(flightWeeks.weekNumber);
+// ⚡ Bolt: Single-flight mechanism to prevent thundering herd when multiple requests fetch flight weeks concurrently
+let _flightWeeksPromise: Promise<FlightWeek[]> | null = null;
+
+export async function getAllFlightWeeks(): Promise<FlightWeek[]> {
+  if (_flightWeeksPromise) return _flightWeeksPromise;
+
+  _flightWeeksPromise = (async () => {
+    try {
+      const db = await getDb();
+      if (!db) return [];
+      return await db
+        .select()
+        .from(flightWeeks)
+        .orderBy(flightWeeks.weekNumber);
+    } finally {
+      _flightWeeksPromise = null;
+    }
+  })();
+
+  return _flightWeeksPromise;
 }
 
 export async function upsertFlightWeek(week: InsertFlightWeek) {
@@ -204,10 +222,32 @@ export async function initFlightWeeks(weeks: InsertFlightWeek[]) {
 // Flight Prices
 // =====================
 
-export async function getAllFlightPrices() {
+// ⚡ Bolt: Single-flight mechanism to prevent thundering herd when multiple requests fetch flight prices concurrently
+let _flightPricesPromise: Promise<(typeof flightPrices.$inferSelect)[]> | null =
+  null;
+
+export async function getAllFlightPrices(): Promise<
+  (typeof flightPrices.$inferSelect)[]
+> {
+  if (_flightPricesPromise) return _flightPricesPromise;
+
+  _flightPricesPromise = (async () => {
+    try {
+      const db = await getDb();
+      if (!db) return [];
+      return await db.select().from(flightPrices);
+    } finally {
+      _flightPricesPromise = null;
+    }
+  })();
+
+  return _flightPricesPromise;
+}
+
+export async function getPublicPrices() {
   const db = await getDb();
   if (!db) return [];
-  return db.select().from(flightPrices);
+  return db.select().from(public_prices);
 }
 
 export async function upsertFlightPrice(
@@ -379,22 +419,40 @@ export async function getPushSubscriptionByEndpoint(endpoint: string) {
 // Notification Settings
 // =====================
 
-export async function getNotificationSettings() {
-  const db = await getDb();
-  if (!db) return { aviso1Minutes: 1440, aviso2Minutes: 0 };
+let cachedSettingsPromise: Promise<{
+  aviso1Minutes: number;
+  aviso2Minutes: number;
+}> | null = null;
 
-  const rows = await db.select().from(notificationSettings).limit(1);
-  if (rows.length === 0) {
-    // Criar registro padrão se não existir
-    await db
-      .insert(notificationSettings)
-      .values({ aviso1Minutes: 1440, aviso2Minutes: 0 });
-    return { aviso1Minutes: 1440, aviso2Minutes: 0 };
+export async function getNotificationSettings() {
+  if (cachedSettingsPromise) {
+    return cachedSettingsPromise;
   }
-  return {
-    aviso1Minutes: rows[0].aviso1Minutes,
-    aviso2Minutes: rows[0].aviso2Minutes,
-  };
+
+  cachedSettingsPromise = (async () => {
+    const db = await getDb();
+    if (!db) return { aviso1Minutes: 1440, aviso2Minutes: 0 };
+
+    const rows = await db.select().from(notificationSettings).limit(1);
+    if (rows.length === 0) {
+      // Criar registro padrão se não existir
+      await db
+        .insert(notificationSettings)
+        .values({ aviso1Minutes: 1440, aviso2Minutes: 0 });
+      return { aviso1Minutes: 1440, aviso2Minutes: 0 };
+    }
+    return {
+      aviso1Minutes: rows[0].aviso1Minutes,
+      aviso2Minutes: rows[0].aviso2Minutes,
+    };
+  })();
+
+  try {
+    return await cachedSettingsPromise;
+  } catch (error) {
+    cachedSettingsPromise = null;
+    throw error;
+  }
 }
 
 export async function updateNotificationSettings(
@@ -415,6 +473,9 @@ export async function updateNotificationSettings(
       .set({ aviso1Minutes, aviso2Minutes })
       .where(eq(notificationSettings.id, rows[0].id));
   }
+
+  // Invalidate cache
+  cachedSettingsPromise = Promise.resolve({ aviso1Minutes, aviso2Minutes });
 }
 
 // =====================
