@@ -2,6 +2,7 @@ import crypto from "crypto";
 import { and, desc, eq, gt, lt } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import {
+  FlightWeek,
   InsertUser,
   users,
   flightWeeks,
@@ -116,10 +117,26 @@ export async function getUserByOpenId(openId: string) {
 // Flight Weeks
 // =====================
 
-export async function getAllFlightWeeks() {
-  const db = await getDb();
-  if (!db) return [];
-  return db.select().from(flightWeeks).orderBy(flightWeeks.weekNumber);
+// ⚡ Bolt: Single-flight mechanism to prevent thundering herd when multiple requests fetch flight weeks concurrently
+let _flightWeeksPromise: Promise<FlightWeek[]> | null = null;
+
+export async function getAllFlightWeeks(): Promise<FlightWeek[]> {
+  if (_flightWeeksPromise) return _flightWeeksPromise;
+
+  _flightWeeksPromise = (async () => {
+    try {
+      const db = await getDb();
+      if (!db) return [];
+      return await db
+        .select()
+        .from(flightWeeks)
+        .orderBy(flightWeeks.weekNumber);
+    } finally {
+      _flightWeeksPromise = null;
+    }
+  })();
+
+  return _flightWeeksPromise;
 }
 
 export async function upsertFlightWeek(week: InsertFlightWeek) {
@@ -205,10 +222,26 @@ export async function initFlightWeeks(weeks: InsertFlightWeek[]) {
 // Flight Prices
 // =====================
 
-export async function getAllFlightPrices() {
-  const db = await getDb();
-  if (!db) return [];
-  return db.select().from(flightPrices);
+// ⚡ Bolt: Single-flight mechanism to prevent thundering herd when multiple requests fetch flight prices concurrently
+let _flightPricesPromise: Promise<(typeof flightPrices.$inferSelect)[]> | null =
+  null;
+
+export async function getAllFlightPrices(): Promise<
+  (typeof flightPrices.$inferSelect)[]
+> {
+  if (_flightPricesPromise) return _flightPricesPromise;
+
+  _flightPricesPromise = (async () => {
+    try {
+      const db = await getDb();
+      if (!db) return [];
+      return await db.select().from(flightPrices);
+    } finally {
+      _flightPricesPromise = null;
+    }
+  })();
+
+  return _flightPricesPromise;
 }
 
 export async function getPublicPrices() {
