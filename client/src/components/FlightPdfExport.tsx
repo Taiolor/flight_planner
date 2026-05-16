@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
-import jsPDF from "jspdf";
+import { jsPDF } from "jspdf";
 import html2canvas from "html2canvas";
 import { Button } from "@/components/ui/button";
 import { FileDown, Loader2 } from "lucide-react";

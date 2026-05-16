@@ -96,7 +96,7 @@
 - [x] Limpar base de push subscriptions duplicadas do banco (alertas repetidos)
 - [x] Bug: overlay do popup de push notifications captura cliques e impede interação com selects e botões internos
 - [x] Bug: números de voo de ida e volta não aparecem nos cards das semanas (campo preenchido mas não exibido) — causa: Service Worker com cache antigo do app quebrado; solução: desregistrar SW e recarregar
-- [ ] Bug: erro ao gerar PDF (botão PDF no cabeçalho não funciona)
+- [x] Bug: erro ao gerar PDF (botão PDF no cabeçalho não funciona)
 - [x] Substituir botão lápis + popup de edição de datas por date pickers inline no card (data ida + data volta com label do dia da semana ao lado)
 - [x] Ao clicar em "Não Emitido" para expandir o card, copiar automaticamente as datas dos date-pickers (Ida e Retorno) para os campos de data/hora do bilhete (datetime-local Ida e Volta)
 - [x] Alterar título do frame de preços de "GRU → NVT • Preços" para "Consulta de Preços"
