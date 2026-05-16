@@ -365,7 +365,9 @@ export default function Home() {
 
   // tRPC queries
   const weeksQuery = trpc.flights.getWeeks.useQuery();
-  const pricesQuery = trpc.flights.getPrices.useQuery();
+  const pricesQuery = trpc.flights.getPrices.useQuery(undefined, {
+    enabled: isAuthenticated,
+  });
   const utils = trpc.useUtils();
 
   // Pull-to-refresh: puxar para baixo no topo da página para recarregar os dados

@@ -1,0 +1,31 @@
+{
+  "query": "SELECT * FROM public_prices;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3hTCxLMFFnvwjKu.root --database HQ655wm9a6bck22hJAwYRc --execute SELECT * FROM public_prices;",
+  "rows": [
+    {
+      "id": "1",
+      "airline": "LATAM",
+      "price": "850.00",
+      "createdAt": "2026-05-16 14:35:13",
+      "updatedAt": "2026-05-16 14:35:13"
+    },
+    {
+      "id": "2",
+      "airline": "GOL",
+      "price": "780.00",
+      "createdAt": "2026-05-16 14:35:13",
+      "updatedAt": "2026-05-16 14:35:13"
+    },
+    {
+      "id": "3",
+      "airline": "Azul",
+      "price": "720.00",
+      "createdAt": "2026-05-16 14:35:13",
+      "updatedAt": "2026-05-16 14:35:13"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tairline\tprice\tcreatedAt\tupdatedAt\n1\tLATAM\t850.00\t2026-05-16 14:35:13\t2026-05-16 14:35:13\n2\tGOL\t780.00\t2026-05-16 14:35:13\t2026-05-16 14:35:13\n3\tAzul\t720.00\t2026-05-16 14:35:13\t2026-05-16 14:35:13\n",
+  "stderr": "",
+  "execution_time_ms": 266
+}
