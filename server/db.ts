@@ -1,3 +1,4 @@
+import crypto from "crypto";
 import { and, desc, eq, gt, lt } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import {
@@ -15,6 +16,9 @@ import {
   notificationSettings,
   notificationLogs,
   InsertNotificationLog,
+  flightQuotes,
+  InsertFlightQuote,
+  apiUsageTracker,
 } from "../drizzle/schema";
 import { ENV } from "./_core/env";
 
@@ -270,9 +274,7 @@ export async function createAuthSession(email: string): Promise<string> {
   if (!db) throw new Error("Database not available");
 
   // Gerar token único
-  const token = Array.from(crypto.getRandomValues(new Uint8Array(32)))
-    .map(b => b.toString(16).padStart(2, "0"))
-    .join("");
+  const token = crypto.randomBytes(32).toString("hex");
 
   // Sessão expira em 8 horas
   const expiresAt = new Date(Date.now() + 8 * 60 * 60 * 1000);
@@ -384,22 +386,40 @@ export async function getPushSubscriptionByEndpoint(endpoint: string) {
 // Notification Settings
 // =====================
 
-export async function getNotificationSettings() {
-  const db = await getDb();
-  if (!db) return { aviso1Minutes: 1440, aviso2Minutes: 0 };
+let cachedSettingsPromise: Promise<{
+  aviso1Minutes: number;
+  aviso2Minutes: number;
+}> | null = null;
 
-  const rows = await db.select().from(notificationSettings).limit(1);
-  if (rows.length === 0) {
-    // Criar registro padrão se não existir
-    await db
-      .insert(notificationSettings)
-      .values({ aviso1Minutes: 1440, aviso2Minutes: 0 });
-    return { aviso1Minutes: 1440, aviso2Minutes: 0 };
+export async function getNotificationSettings() {
+  if (cachedSettingsPromise) {
+    return cachedSettingsPromise;
   }
-  return {
-    aviso1Minutes: rows[0].aviso1Minutes,
-    aviso2Minutes: rows[0].aviso2Minutes,
-  };
+
+  cachedSettingsPromise = (async () => {
+    const db = await getDb();
+    if (!db) return { aviso1Minutes: 1440, aviso2Minutes: 0 };
+
+    const rows = await db.select().from(notificationSettings).limit(1);
+    if (rows.length === 0) {
+      // Criar registro padrão se não existir
+      await db
+        .insert(notificationSettings)
+        .values({ aviso1Minutes: 1440, aviso2Minutes: 0 });
+      return { aviso1Minutes: 1440, aviso2Minutes: 0 };
+    }
+    return {
+      aviso1Minutes: rows[0].aviso1Minutes,
+      aviso2Minutes: rows[0].aviso2Minutes,
+    };
+  })();
+
+  try {
+    return await cachedSettingsPromise;
+  } catch (error) {
+    cachedSettingsPromise = null;
+    throw error;
+  }
 }
 
 export async function updateNotificationSettings(
@@ -420,6 +440,9 @@ export async function updateNotificationSettings(
       .set({ aviso1Minutes, aviso2Minutes })
       .where(eq(notificationSettings.id, rows[0].id));
   }
+
+  // Invalidate cache
+  cachedSettingsPromise = Promise.resolve({ aviso1Minutes, aviso2Minutes });
 }
 
 // =====================
@@ -459,5 +482,90 @@ export async function deleteOldNotificationLogs(daysOld = 90): Promise<number> {
   } catch (error) {
     console.error("[Cleanup] Erro ao deletar logs antigos:", error);
     return 0;
+  }
+}
+
+// =====================
+// Flight Quotes
+// =====================
+
+export async function getAllFlightQuotes() {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(flightQuotes).orderBy(desc(flightQuotes.quotedAt));
+}
+
+export async function getFlightQuotesByWeek(weekNumber: number) {
+  const db = await getDb();
+  if (!db) return [];
+  return db
+    .select()
+    .from(flightQuotes)
+    .where(eq(flightQuotes.weekNumber, weekNumber))
+    .orderBy(desc(flightQuotes.quotedAt));
+}
+
+export async function insertFlightQuote(data: InsertFlightQuote) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const result = await db.insert(flightQuotes).values(data);
+  return result;
+}
+
+export async function deleteFlightQuote(id: number) {
+  const db = await getDb();
+  if (!db) return;
+  await db.delete(flightQuotes).where(eq(flightQuotes.id, id));
+}
+
+// =====================
+// API Usage Tracker
+// =====================
+
+export async function getApiUsage(yearMonth: string) {
+  const db = await getDb();
+  if (!db) return { requestsUsed: 0, requestsLimit: 20 };
+
+  const rows = await db
+    .select()
+    .from(apiUsageTracker)
+    .where(eq(apiUsageTracker.yearMonth, yearMonth))
+    .limit(1);
+
+  if (rows.length === 0) {
+    return { requestsUsed: 0, requestsLimit: 20 };
+  }
+  return {
+    requestsUsed: rows[0].requestsUsed,
+    requestsLimit: rows[0].requestsLimit,
+  };
+}
+
+export async function incrementApiUsage(
+  yearMonth: string
+): Promise<{ requestsUsed: number; requestsLimit: number }> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const rows = await db
+    .select()
+    .from(apiUsageTracker)
+    .where(eq(apiUsageTracker.yearMonth, yearMonth))
+    .limit(1);
+
+  if (rows.length === 0) {
+    await db.insert(apiUsageTracker).values({
+      yearMonth,
+      requestsUsed: 1,
+      requestsLimit: 20,
+    });
+    return { requestsUsed: 1, requestsLimit: 20 };
+  } else {
+    const newCount = rows[0].requestsUsed + 1;
+    await db
+      .update(apiUsageTracker)
+      .set({ requestsUsed: newCount })
+      .where(eq(apiUsageTracker.yearMonth, yearMonth));
+    return { requestsUsed: newCount, requestsLimit: rows[0].requestsLimit };
   }
 }

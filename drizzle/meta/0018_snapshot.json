@@ -1,9 +1,68 @@
 {
   "version": "5",
   "dialect": "mysql",
-  "id": "80ae69bd-ad1c-49eb-b8fe-d19df8e05b89",
-  "prevId": "33f1d9a9-d421-4ca1-bd57-d76380911b37",
+  "id": "336028a8-17af-4e2d-b660-3396f0e2fef0",
+  "prevId": "e3a25db1-ae5c-4ed9-bf66-64924fdac075",
   "tables": {
+    "api_usage_tracker": {
+      "name": "api_usage_tracker",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "yearMonth": {
+          "name": "yearMonth",
+          "type": "varchar(7)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "requestsUsed": {
+          "name": "requestsUsed",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "requestsLimit": {
+          "name": "requestsLimit",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 20
+        },
+        "updatedAt": {
+          "name": "updatedAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "onUpdate": true,
+          "default": "(now())"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "api_usage_tracker_id": {
+          "name": "api_usage_tracker_id",
+          "columns": ["id"]
+        }
+      },
+      "uniqueConstraints": {
+        "api_usage_tracker_yearMonth_unique": {
+          "name": "api_usage_tracker_yearMonth_unique",
+          "columns": ["yearMonth"]
+        }
+      },
+      "checkConstraint": {}
+    },
     "auth_sessions": {
       "name": "auth_sessions",
       "columns": {
@@ -120,6 +179,171 @@
       "uniqueConstraints": {},
       "checkConstraint": {}
     },
+    "flight_quotes": {
+      "name": "flight_quotes",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "weekNumber": {
+          "name": "weekNumber",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "departureDate": {
+          "name": "departureDate",
+          "type": "varchar(20)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "returnDate": {
+          "name": "returnDate",
+          "type": "varchar(20)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "lowestPrice": {
+          "name": "lowestPrice",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "currency": {
+          "name": "currency",
+          "type": "varchar(10)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'BRL'"
+        },
+        "source": {
+          "name": "source",
+          "type": "enum('api','manual')",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "airline": {
+          "name": "airline",
+          "type": "varchar(100)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "outboundAirline": {
+          "name": "outboundAirline",
+          "type": "varchar(100)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "returnAirline": {
+          "name": "returnAirline",
+          "type": "varchar(100)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "outboundDeparture": {
+          "name": "outboundDeparture",
+          "type": "varchar(30)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "outboundArrival": {
+          "name": "outboundArrival",
+          "type": "varchar(30)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "returnDeparture": {
+          "name": "returnDeparture",
+          "type": "varchar(30)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "returnArrival": {
+          "name": "returnArrival",
+          "type": "varchar(30)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "apiRequestsUsed": {
+          "name": "apiRequestsUsed",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "rawResponse": {
+          "name": "rawResponse",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "quotedAt": {
+          "name": "quotedAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(now())"
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(now())"
+        },
+        "updatedAt": {
+          "name": "updatedAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "onUpdate": true,
+          "default": "(now())"
+        }
+      },
+      "indexes": {
+        "idx_flight_quotes_weekNumber": {
+          "name": "idx_flight_quotes_weekNumber",
+          "columns": ["weekNumber"],
+          "isUnique": false
+        },
+        "idx_flight_quotes_quotedAt": {
+          "name": "idx_flight_quotes_quotedAt",
+          "columns": ["quotedAt"],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "flight_quotes_id": {
+          "name": "flight_quotes_id",
+          "columns": ["id"]
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraint": {}
+    },
     "flight_weeks": {
       "name": "flight_weeks",
       "columns": {
@@ -129,14 +353,6 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": true
-        },
-        "year": {
-          "name": "year",
-          "type": "int",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": 2026
         },
         "weekNumber": {
           "name": "weekNumber",
@@ -300,7 +516,28 @@
           "default": "(now())"
         }
       },
-      "indexes": {},
+      "indexes": {
+        "idx_flight_weeks_weekNumber": {
+          "name": "idx_flight_weeks_weekNumber",
+          "columns": ["weekNumber"],
+          "isUnique": false
+        },
+        "idx_flight_weeks_isTicketIssued": {
+          "name": "idx_flight_weeks_isTicketIssued",
+          "columns": ["isTicketIssued"],
+          "isUnique": false
+        },
+        "idx_flight_weeks_isDeleted": {
+          "name": "idx_flight_weeks_isDeleted",
+          "columns": ["isDeleted"],
+          "isUnique": false
+        },
+        "idx_flight_weeks_active_issued": {
+          "name": "idx_flight_weeks_active_issued",
+          "columns": ["isDeleted", "isTicketIssued"],
+          "isUnique": false
+        }
+      },
       "foreignKeys": {},
       "compositePrimaryKeys": {
         "flight_weeks_id": {

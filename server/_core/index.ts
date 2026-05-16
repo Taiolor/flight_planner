@@ -45,7 +45,10 @@ const authLimiter = rateLimit({
   max: 20,
   standardHeaders: true,
   legacyHeaders: false,
-  message: { error: "Muitas tentativas de autenticação. Tente novamente em alguns minutos." },
+  message: {
+    error:
+      "Muitas tentativas de autenticação. Tente novamente em alguns minutos.",
+  },
 });
 
 async function startServer() {

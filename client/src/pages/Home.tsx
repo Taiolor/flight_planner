@@ -80,6 +80,7 @@ import {
   ShieldCheck,
   Sun,
   Moon,
+  DollarSign,
 } from "lucide-react";
 import { Link } from "wouter";
 import {
@@ -1046,31 +1047,28 @@ export default function Home() {
           const depDate = toInputDate(week.departureDate);
           const retDate = toInputDate(week.returnDate);
 
-          // Para o campo de IDA: usar data+hora do banco se existir e tiver horário,
-          // caso contrário usar a data da semana com horário fixo 00:00
+          // Para o campo de IDA: usar a data do date-picker inline (depDate).
+          // Se já existir horário salvo no banco, preservá-lo; caso contrário, usar 00:00.
           const savedDep = week.departureFlightDatetime ?? "";
-          const hasSavedDepTime =
-            savedDep.includes("T") && savedDep.length > 10;
+          const savedDepTime =
+            savedDep.includes("T") && savedDep.length > 10
+              ? savedDep.split("T")[1]
+              : "00:00";
           setTempDepartureDatetime(prev => ({
             ...prev,
-            [weekNumber]: hasSavedDepTime
-              ? savedDep
-              : depDate
-                ? `${depDate}T00:00`
-                : "",
+            [weekNumber]: depDate ? `${depDate}T${savedDepTime}` : "",
           }));
 
-          // Para o campo de VOLTA: mesma lógica
+          // Para o campo de VOLTA: usar a data do date-picker inline (retDate).
+          // Se já existir horário salvo no banco, preservá-lo; caso contrário, usar 00:00.
           const savedRet = week.returnFlightDatetime ?? "";
-          const hasSavedRetTime =
-            savedRet.includes("T") && savedRet.length > 10;
+          const savedRetTime =
+            savedRet.includes("T") && savedRet.length > 10
+              ? savedRet.split("T")[1]
+              : "00:00";
           setTempReturnDatetime(prev => ({
             ...prev,
-            [weekNumber]: hasSavedRetTime
-              ? savedRet
-              : retDate
-                ? `${retDate}T00:00`
-                : "",
+            [weekNumber]: retDate ? `${retDate}T${savedRetTime}` : "",
           }));
         }
       }
@@ -1339,6 +1337,16 @@ export default function Home() {
                   className="bg-white bg-opacity-10 border-white text-white hover:bg-white hover:text-blue-700"
                 >
                   <CalendarDays className="w-4 h-4 mr-1" /> Calendário
+                </Button>
+              </Link>
+              <Link href="/cotacoes">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="bg-white bg-opacity-10 border-white text-white hover:bg-white hover:text-blue-700"
+                  title="Cotações de Passagens"
+                >
+                  <DollarSign className="w-4 h-4 mr-1" /> Cotações
                 </Button>
               </Link>
               {isAuthenticated && (
@@ -2296,6 +2304,7 @@ export default function Home() {
                                                       <Input
                                                         type="number"
                                                         placeholder="R$ 0,00"
+                                                        aria-label={`Preço ${airline.name}`}
                                                         defaultValue={
                                                           currentPrice
                                                         }
@@ -2333,6 +2342,7 @@ export default function Home() {
                                                       target="_blank"
                                                       rel="noopener noreferrer"
                                                       title={`Buscar na ${airline.name}`}
+                                                      aria-label={`Buscar na ${airline.name}`}
                                                     >
                                                       <ExternalLink className="w-3.5 h-3.5" />
                                                     </a>

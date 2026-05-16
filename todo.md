@@ -70,12 +70,14 @@
 - [x] Botão "Testar Notificação" visível apenas quando push está ativo, envia notificação de teste via endpoint push.sendTest
 
 ## Bugs (sessão atual)
+
 - [x] Bug: ao trocar companhia no combo, o localizador com 2 chars (sigla anterior) não é atualizado para a nova sigla
 - [x] Bug: campo datetime com apenas data (sem horário) exibe "Invalid Date" no badge do dia da semana
 - [x] Remover botão "Testar Notificação" do header (funcionalidade validada)
 - [x] Bug: campos datetime de ida e volta não herdam os valores já gravados no banco ao abrir o card de bilhete
 
 ## Sessão atual
+
 - [x] Bug: ao clicar em "Não Emitido" os campos datetime não herdam os valores do banco (data de ida/volta da semana)
 - [x] Exportar para PDF: botão no cabeçalho, layout visual colorido A4, quebra de páginas por mês
 - [x] Job agendado no servidor: enviar notificação push 24h antes do voo
@@ -96,7 +98,7 @@
 - [x] Bug: números de voo de ida e volta não aparecem nos cards das semanas (campo preenchido mas não exibido) — causa: Service Worker com cache antigo do app quebrado; solução: desregistrar SW e recarregar
 - [ ] Bug: erro ao gerar PDF (botão PDF no cabeçalho não funciona)
 - [x] Substituir botão lápis + popup de edição de datas por date pickers inline no card (data ida + data volta com label do dia da semana ao lado)
-- [ ] Ao clicar em "Não Emitido" para expandir o card, copiar automaticamente as datas dos date-pickers (Ida e Retorno) para os campos de data/hora do bilhete (datetime-local Ida e Volta)
+- [x] Ao clicar em "Não Emitido" para expandir o card, copiar automaticamente as datas dos date-pickers (Ida e Retorno) para os campos de data/hora do bilhete (datetime-local Ida e Volta)
 - [x] Alterar título do frame de preços de "GRU → NVT • Preços" para "Consulta de Preços"
 - [x] Bug: ícone do site (favicon) aparece em branco
 - [x] Bug: logotipo no cabeçalho do site aparece em branco
@@ -147,6 +149,7 @@
 - [x] Performance: Otimizar getLowestPrice com useMemo/lowestPriceMap O(1) (PR #2)
 
 ## Merges e Correções dos PRs (27/04/2026)
+
 - [x] Sincronizar main local com GitHub (PRs #19, #21, #22, #23, #26, #28)
 - [x] Merge PR #14 (ARIA accordion toggle)
 - [x] Merge PR #18 (single-pass loops chartData)
@@ -154,3 +157,32 @@
 - [x] Aplicar PR #20 manualmente (sameSite lax CSRF fix) e fechar #27
 - [x] Fechar PRs redundantes #16 e #24
 - [x] Performance: Adicionar índices no banco para weekNumber, isTicketIssued e isDeleted
+
+## Módulo de Cotações (Sky Scrapper API + Kayak)
+
+- [x] Configurar secret RAPIDAPI_KEY com chave da Sky Scrapper API
+- [x] Adicionar tabelas flight_quotes e api_usage_tracker ao schema do banco (drizzle/schema.ts)
+- [x] Executar pnpm db:push para criar as novas tabelas
+- [x] Criar helpers de banco de dados em server/db.ts (getAllFlightQuotes, getFlightQuotesByWeek, insertFlightQuote, deleteFlightQuote, getApiUsage, incrementApiUsage)
+- [x] Criar router de cotações em server/routers/quotes.ts (getAll, getByWeek, getApiUsage, fetchFromApi, saveManual, delete)
+- [x] Integrar quotesRouter ao appRouter em server/routers.ts
+- [x] Criar página FlightQuotes.tsx com cards por semana, botão API, botão Kayak, campo manual e badges de fonte
+- [x] Adicionar rota /cotacoes no App.tsx com lazy loading
+- [x] Adicionar botão "Cotações" no menu de navegação do header (Home.tsx)
+- [x] Criar testes unitários para o módulo de cotações (server/quotes.test.ts)
+- [x] Resolver conflitos de merge em Home.tsx (marcadores de conflito removidos)
+- [x] Verificar 0 erros TypeScript e 52 testes passando
+- [x] Semanas passadas exibidas em cinza escuro (opacidade reduzida, interações desabilitadas, aviso informativo)
+- [x] Semana corrente destacada com borda azul e badge "● atual"
+- [x] Semanas futuras mantêm cor normal e são totalmente interativas
+- [x] Resumo de semanas (atual/futuras/passadas) exibido no header da página de cotações
+
+## Dados detalhados da cotação via API
+
+- [x] Capturar companhia aérea de ida e volta do voo mais barato
+- [x] Capturar data e hora de partida de ida e volta
+- [x] Adicionar colunas no schema do banco (outboundAirline, returnAirline, outboundDeparture, returnDeparture)
+- [x] Executar pnpm db:push para aplicar as novas colunas
+- [x] Atualizar helpers de DB para persistir os novos campos
+- [x] Atualizar router de cotações para extrair e salvar os novos campos da resposta da API
+- [x] Exibir companhia aérea e data/hora de ida e volta na página de cotações
