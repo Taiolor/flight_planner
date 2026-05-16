@@ -97,6 +97,20 @@ export type FlightPrice = typeof flightPrices.$inferSelect;
 export type InsertFlightPrice = typeof flightPrices.$inferInsert;
 
 /**
+ * Tabela para armazenar preços públicos
+ */
+export const public_prices = mysqlTable("public_prices", {
+  id: int("id").autoincrement().primaryKey(),
+  airline: varchar("airline", { length: 50 }).notNull(),
+  price: varchar("price", { length: 20 }).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type PublicPrice = typeof public_prices.$inferSelect;
+export type InsertPublicPrice = typeof public_prices.$inferInsert;
+
+/**
  * Tabela para armazenar códigos OTP de autenticação por e-mail
  */
 export const otpCodes = mysqlTable("otp_codes", {

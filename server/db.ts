@@ -6,6 +6,7 @@ import {
   users,
   flightWeeks,
   flightPrices,
+  public_prices,
   InsertFlightWeek,
   InsertFlightPrice,
   authSessions,
@@ -208,6 +209,12 @@ export async function getAllFlightPrices() {
   const db = await getDb();
   if (!db) return [];
   return db.select().from(flightPrices);
+}
+
+export async function getPublicPrices() {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(public_prices);
 }
 
 export async function upsertFlightPrice(
