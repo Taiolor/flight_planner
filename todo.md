@@ -238,6 +238,7 @@
 - [x] Adicionar procedures tRPC para CRUD de destinatários e envio de teste
 - [x] Integrar disparo de e-mail na mutation updateWeekStatus (criação, alteração, exclusão)
 - [x] Criar seção de gerenciamento de e-mails na tela AdminNotifications
-- [ ] Configurar variáveis de ambiente SMTP (SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, SMTP_FROM)
-- [ ] Testar envio de e-mail de teste
+- [x] Configurar integração com Gmail MCP (taiolor@gmail.com)
+- [x] Refatorar helper de envio de e-mail para usar Gmail MCP
+- [ ] Testar envio de e-mail de teste via AdminNotifications
 - [ ] Testar notificações de alteração de bilhetes

@@ -1,8 +1,9 @@
-import nodemailer from "nodemailer";
+import { execSync } from "child_process";
 
 /**
  * Email notification for ticket changes
  * Supports: creation, update, deletion of tickets
+ * Uses Gmail MCP integration for sending emails
  */
 
 export interface TicketChangeNotification {
@@ -14,34 +15,6 @@ export interface TicketChangeNotification {
     after?: Record<string, any>;
   };
   timestamp: Date;
-}
-
-/**
- * Create a transporter for sending emails
- * Uses environment variables for SMTP configuration
- */
-function getTransporter() {
-  // For development/testing, use a mock transporter
-  // In production, configure SMTP credentials via environment variables
-  const smtpHost = process.env.SMTP_HOST || "localhost";
-  const smtpPort = parseInt(process.env.SMTP_PORT || "587");
-  const smtpUser = process.env.SMTP_USER || "";
-  const smtpPass = process.env.SMTP_PASS || "";
-  const smtpFrom = process.env.SMTP_FROM || "noreply@flightplanner.local";
-
-  return nodemailer.createTransport({
-    host: smtpHost,
-    port: smtpPort,
-    secure: smtpPort === 465, // true for 465, false for other ports
-    auth:
-      smtpUser && smtpPass
-        ? {
-            user: smtpUser,
-            pass: smtpPass,
-          }
-        : undefined,
-    from: smtpFrom,
-  });
 }
 
 /**
@@ -85,7 +58,7 @@ function formatTicketDetails(
       ...Object.keys(changes.after || {}),
     ]);
 
-    for (const key of allKeys) {
+    for (const key of Array.from(allKeys)) {
       const before = changes.before?.[key] ?? "—";
       const after = changes.after?.[key] ?? "—";
 
@@ -115,6 +88,51 @@ function formatTicketDetails(
 }
 
 /**
+ * Send email using Gmail MCP integration
+ */
+async function sendEmailViaGmail(
+  to: string[],
+  subject: string,
+  htmlContent: string,
+  textContent: string
+): Promise<boolean> {
+  try {
+    const gmailFromEmail = "taiolor@gmail.com";
+
+    // Prepare message for Gmail MCP
+    const message = {
+      to: to,
+      subject: subject,
+      bodyHtml: htmlContent,
+      bodyPlain: textContent,
+    };
+
+    // Call Gmail MCP tool via CLI
+    const messagePayload = {
+      messages: [message],
+      save_as_draft: false,
+    };
+
+    const inputJson = JSON.stringify(messagePayload);
+    const escapedInput = inputJson.replace(/"/g, '\\"');
+
+    const result = execSync(
+      `manus-mcp-cli tool call gmail_send_messages --server gmail --input "${escapedInput}"`,
+      { encoding: "utf-8" }
+    );
+
+    console.log(
+      `[Email] Ticket notification sent successfully via Gmail. Result:`,
+      result
+    );
+    return true;
+  } catch (error) {
+    console.error("[Email] Failed to send email via Gmail:", error);
+    return false;
+  }
+}
+
+/**
  * Send ticket change notification email to recipients
  */
 export async function sendTicketNotificationEmail(
@@ -127,25 +145,12 @@ export async function sendTicketNotificationEmail(
   }
 
   try {
-    const transporter = getTransporter();
-
     const subject = `[Bilhete ${notification.type === "created" ? "Criado" : notification.type === "updated" ? "Alterado" : "Deletado"}] Semana ${notification.weekNumber} - ${notification.ticketType === "departure" ? "Ida" : "Volta"}`;
 
     const htmlContent = formatTicketDetails(notification);
+    const textContent = `Notificação de alteração de bilhete - Semana ${notification.weekNumber} (${notification.ticketType === "departure" ? "Ida" : "Volta"})`;
 
-    const mailOptions = {
-      to: recipients.join(", "),
-      subject,
-      html: htmlContent,
-      text: `Notificação de alteração de bilhete - Semana ${notification.weekNumber} (${notification.ticketType === "departure" ? "Ida" : "Volta"})`,
-    };
-
-    const info = await transporter.sendMail(mailOptions);
-
-    console.log(
-      `[Email] Ticket notification sent successfully. Message ID: ${info.messageId}`
-    );
-    return true;
+    return await sendEmailViaGmail(recipients, subject, htmlContent, textContent);
   } catch (error) {
     console.error("[Email] Failed to send ticket notification:", error);
     return false;
@@ -153,31 +158,30 @@ export async function sendTicketNotificationEmail(
 }
 
 /**
- * Send a test email to verify SMTP configuration
+ * Send a test email to verify Gmail configuration
  */
 export async function sendTestEmail(testEmail: string): Promise<boolean> {
   try {
-    const transporter = getTransporter();
+    const subject = "Teste de Configuração de E-mail";
+    const htmlContent = `
+      <div style="font-family: Arial, sans-serif; color: #333;">
+        <h2 style="color: #1e40af;">✅ Configuração de E-mail Funcionando</h2>
+        <p>Este é um e-mail de teste para verificar se a integração com Gmail está correta.</p>
+        <p><strong>Data/Hora:</strong> ${new Date().toLocaleString("pt-BR")}</p>
+        <p style="margin-top: 20px; font-size: 12px; color: #666;">
+          Planejador de Passagens Aéreas 2026
+        </p>
+      </div>
+    `;
+    const textContent =
+      "E-mail de teste - Configuração Gmail funcionando corretamente";
 
-    const mailOptions = {
-      to: testEmail,
-      subject: "Teste de Configuração de E-mail",
-      html: `
-        <div style="font-family: Arial, sans-serif; color: #333;">
-          <h2 style="color: #1e40af;">✅ Configuração de E-mail Funcionando</h2>
-          <p>Este é um e-mail de teste para verificar se a configuração SMTP está correta.</p>
-          <p><strong>Data/Hora:</strong> ${new Date().toLocaleString("pt-BR")}</p>
-        </div>
-      `,
-      text: "E-mail de teste - Configuração SMTP funcionando corretamente",
-    };
-
-    const info = await transporter.sendMail(mailOptions);
-
-    console.log(
-      `[Email] Test email sent successfully. Message ID: ${info.messageId}`
+    return await sendEmailViaGmail(
+      [testEmail],
+      subject,
+      htmlContent,
+      textContent
     );
-    return true;
   } catch (error) {
     console.error("[Email] Failed to send test email:", error);
     return false;
