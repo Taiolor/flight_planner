@@ -186,3 +186,9 @@
 - [x] Atualizar helpers de DB para persistir os novos campos
 - [x] Atualizar router de cotações para extrair e salvar os novos campos da resposta da API
 - [x] Exibir companhia aérea e data/hora de ida e volta na página de cotações
+
+## Painel Copa 2026 na Semana Vigente
+
+- [x] Exibir painel com próximos jogos do Brasil (1ª fase) na semana vigente do planejador
+- [x] Mostrar data, adversário, cidade e dias restantes para cada jogo
+- [x] Destacar visualmente jogos que já passaram vs. próximos

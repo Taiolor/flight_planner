@@ -81,6 +81,7 @@ import {
   Sun,
   Moon,
   DollarSign,
+  MapPin,
 } from "lucide-react";
 import { Link } from "wouter";
 import {
@@ -2292,6 +2293,75 @@ export default function Home() {
                                 {/* Conteúdo expansível da semana */}
                                 {expandedWeekCards.has(week.weekNumber) && (
                                   <div className="mt-3 sm:mt-4">
+                                    {/* Painel Copa 2026 — apenas na semana vigente */}
+                                    {week.weekNumber === currentWeekNumber && (() => {
+                                      const jogosDosBrasil = [
+                                        { data: "2026-06-13", adversario: "Marrocos", cidade: "Nova York/NJ", bandeira: "🇲🇦" },
+                                        { data: "2026-06-19", adversario: "Haiti",    cidade: "Filadélfia",   bandeira: "🇭🇹" },
+                                        { data: "2026-06-24", adversario: "Escócia",  cidade: "Miami",        bandeira: "🏴󠁧󠁢󠁳󠁣󠁴󠁿" },
+                                      ];
+                                      const hoje = new Date();
+                                      hoje.setHours(0, 0, 0, 0);
+                                      return (
+                                        <div className="mb-4 rounded-xl border border-green-300 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950/30 dark:to-emerald-950/30 dark:border-green-700 overflow-hidden">
+                                          <div className="bg-green-700 dark:bg-green-800 px-3 py-2 flex items-center gap-2">
+                                            <span className="text-base">⚽</span>
+                                            <span className="text-xs font-bold text-white uppercase tracking-wider">Brasil na Copa do Mundo 2026 — 1ª Fase</span>
+                                          </div>
+                                          <div className="p-3 grid grid-cols-1 sm:grid-cols-3 gap-2">
+                                            {jogosDosBrasil.map(jogo => {
+                                              const [y, m, d] = jogo.data.split("-").map(Number);
+                                              const dataJogo = new Date(y, m - 1, d);
+                                              const diffMs = dataJogo.getTime() - hoje.getTime();
+                                              const diffDias = Math.round(diffMs / (1000 * 60 * 60 * 24));
+                                              const passou = diffDias < 0;
+                                              const hoje2 = diffDias === 0;
+                                              const diasLabel = passou
+                                                ? "Já realizado"
+                                                : hoje2
+                                                ? "🔴 HOJE!"
+                                                : `em ${diffDias} dia${diffDias === 1 ? "" : "s"}`;
+                                              const [, mm, dd] = jogo.data.split("-");
+                                              const diasSemana = ["Dom","Seg","Ter","Qua","Qui","Sex","Sáb"];
+                                              const diaSemana = diasSemana[dataJogo.getDay()];
+                                              return (
+                                                <div
+                                                  key={jogo.data}
+                                                  className={`rounded-lg p-3 border flex flex-col gap-1 ${
+                                                    passou
+                                                      ? "bg-slate-100 border-slate-200 dark:bg-slate-800/40 dark:border-slate-700 opacity-60"
+                                                      : hoje2
+                                                      ? "bg-yellow-50 border-yellow-400 dark:bg-yellow-900/30 dark:border-yellow-500 ring-2 ring-yellow-400"
+                                                      : "bg-white border-green-200 dark:bg-green-950/20 dark:border-green-700"
+                                                  }`}
+                                                >
+                                                  <div className="flex items-center gap-1.5">
+                                                    <span className="text-lg">🇧🇷</span>
+                                                    <span className="text-xs font-bold text-slate-700 dark:text-slate-200">Brasil</span>
+                                                    <span className="text-xs text-slate-400">vs</span>
+                                                    <span className="text-lg">{jogo.bandeira}</span>
+                                                    <span className="text-xs font-bold text-slate-700 dark:text-slate-200">{jogo.adversario}</span>
+                                                  </div>
+                                                  <div className="flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400">
+                                                    <Calendar className="w-3 h-3" />
+                                                    <span>{diaSemana}, {dd}/{mm}/2026</span>
+                                                  </div>
+                                                  <div className="flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400">
+                                                    <MapPin className="w-3 h-3" />
+                                                    <span>{jogo.cidade}</span>
+                                                  </div>
+                                                  <div className={`text-xs font-semibold mt-0.5 ${
+                                                    passou ? "text-slate-400" : hoje2 ? "text-yellow-600 dark:text-yellow-400" : "text-green-700 dark:text-green-400"
+                                                  }`}>
+                                                    {diasLabel}
+                                                  </div>
+                                                </div>
+                                              );
+                                            })}
+                                          </div>
+                                        </div>
+                                      );
+                                    })()}
                                     {/* Buscadores de preços + Cards Ida/Volta lado a lado */}
                                     <div className="flex flex-col lg:flex-row gap-3 sm:gap-4 mt-2">
                                       {/* Coluna esquerda: Buscadores de preços */}
