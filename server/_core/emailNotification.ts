@@ -1,4 +1,4 @@
-import { spawnSync } from "child_process";
+import { execSync } from "child_process";
 
 /**
  * Email notification for ticket changes
@@ -90,12 +90,14 @@ function formatTicketDetails(
 /**
  * Send email using Gmail MCP integration
  */
-export async function sendEmailViaGmail(
+async function sendEmailViaGmail(
   to: string[],
   subject: string,
   htmlContent: string
-): Promise<{ success: boolean; error?: string }> {
+): Promise<boolean> {
   try {
+    const gmailFromEmail = "taiolor@gmail.com";
+
     // Prepare message for Gmail MCP
     const message = {
       to: to,
@@ -103,52 +105,28 @@ export async function sendEmailViaGmail(
       content: htmlContent,
     };
 
-    // Call Gmail MCP tool via CLI using spawnSync to avoid shell escaping issues
+    // Call Gmail MCP tool via CLI
     const messagePayload = {
       messages: [message],
       save_as_draft: false,
     };
 
     const inputJson = JSON.stringify(messagePayload);
+    const escapedInput = inputJson.replace(/"/g, '\\"');
 
-    const result = spawnSync("/usr/local/bin/manus-mcp-cli", [
-      "tool",
-      "call",
-      "gmail_send_messages",
-      "--server",
-      "gmail",
-      "--input",
-      inputJson,
-    ]);
+    const result = execSync(
+      `manus-mcp-cli tool call gmail_send_messages --server gmail --input "${escapedInput}"`,
+      { encoding: "utf-8" }
+    );
 
-    if (result.error) {
-      console.error("[Email] spawnSync error:", result.error);
-      return {
-        success: false,
-        error: `Erro ao executar comando: ${result.error.message}`,
-      };
-    }
-
-    if (result.status !== 0) {
-      const stderr = result.stderr?.toString() || "Erro desconhecido";
-      const stdout = result.stdout?.toString() || "";
-      console.error("[Email] Gmail MCP error:", stderr, stdout);
-      return {
-        success: false,
-        error: `Gmail MCP falhou: ${stderr || stdout}`,
-      };
-    }
-
-    const output = result.stdout?.toString() || "";
-    console.log("[Email] Email sent successfully via Gmail:", output);
-    return { success: true };
+    console.log(
+      `[Email] Ticket notification sent successfully via Gmail. Result:`,
+      result
+    );
+    return true;
   } catch (error) {
-    const errorMsg = error instanceof Error ? error.message : String(error);
-    console.error("[Email] Failed to send email via Gmail:", errorMsg);
-    return {
-      success: false,
-      error: `Exceção ao enviar e-mail: ${errorMsg}`,
-    };
+    console.error("[Email] Failed to send email via Gmail:", error);
+    return false;
   }
 }
 
@@ -158,38 +136,29 @@ export async function sendEmailViaGmail(
 export async function sendTicketNotificationEmail(
   recipients: string[],
   notification: TicketChangeNotification
-): Promise<{ success: boolean; error?: string }> {
+): Promise<boolean> {
   if (!recipients || recipients.length === 0) {
     console.warn("[Email] No recipients provided for ticket notification");
-    return {
-      success: false,
-      error: "Nenhum destinatário fornecido",
-    };
+    return false;
   }
 
   try {
     const subject = `[Bilhete ${notification.type === "created" ? "Criado" : notification.type === "updated" ? "Alterado" : "Deletado"}] Semana ${notification.weekNumber} - ${notification.ticketType === "departure" ? "Ida" : "Volta"}`;
 
     const htmlContent = formatTicketDetails(notification);
+    const textContent = `Notificação de alteração de bilhete - Semana ${notification.weekNumber} (${notification.ticketType === "departure" ? "Ida" : "Volta"})`;
 
     return await sendEmailViaGmail(recipients, subject, htmlContent);
   } catch (error) {
-    const errorMsg = error instanceof Error ? error.message : String(error);
-    console.error("[Email] Failed to send ticket notification:", errorMsg);
-    return {
-      success: false,
-      error: `Falha ao enviar notificação: ${errorMsg}`,
-    };
+    console.error("[Email] Failed to send ticket notification:", error);
+    return false;
   }
 }
 
 /**
  * Send a test email to verify Gmail configuration
  */
-export async function sendTestEmail(testEmail: string): Promise<{
-  success: boolean;
-  error?: string;
-}> {
+export async function sendTestEmail(testEmail: string): Promise<boolean> {
   try {
     const subject = "Teste de Configuração de E-mail";
     const htmlContent = `
@@ -202,14 +171,16 @@ export async function sendTestEmail(testEmail: string): Promise<{
         </p>
       </div>
     `;
+    const textContent =
+      "E-mail de teste - Configuração Gmail funcionando corretamente";
 
-    return await sendEmailViaGmail([testEmail], subject, htmlContent);
+    return await sendEmailViaGmail(
+      [testEmail],
+      subject,
+      htmlContent
+    );
   } catch (error) {
-    const errorMsg = error instanceof Error ? error.message : String(error);
-    console.error("[Email] Failed to send test email:", errorMsg);
-    return {
-      success: false,
-      error: `Falha ao enviar e-mail de teste: ${errorMsg}`,
-    };
+    console.error("[Email] Failed to send test email:", error);
+    return false;
   }
 }
