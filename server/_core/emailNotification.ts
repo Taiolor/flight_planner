@@ -111,7 +111,7 @@ export async function sendEmailViaGmail(
 
     const inputJson = JSON.stringify(messagePayload);
 
-    const result = spawnSync("manus-mcp-cli", [
+    const result = spawnSync("/usr/local/bin/manus-mcp-cli", [
       "tool",
       "call",
       "gmail_send_messages",

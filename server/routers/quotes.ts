@@ -17,7 +17,7 @@ import {
   deleteFlightQuote,
   getApiUsage,
   incrementApiUsage,
-} from "../db";
+} from "../db.ts";
 
 // Constantes da rota GRU → NVT
 const GRU_SKY_ID = "GRU";
