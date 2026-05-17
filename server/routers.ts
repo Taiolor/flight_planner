@@ -35,6 +35,7 @@ import {
 import {
   sendTicketNotificationEmail,
   sendTestEmail,
+  sendEmailViaGmail,
   type TicketChangeNotification,
 } from "./_core/emailNotification";
 import {
@@ -1040,11 +1041,11 @@ export const appRouter = router({
     sendTestEmail: publicProcedure
       .input(z.object({ testEmail: z.string().email() }))
       .mutation(async ({ input }) => {
-        const success = await sendTestEmail(input.testEmail);
-        if (!success) {
+        const result = await sendTestEmail(input.testEmail);
+        if (!result.success) {
           throw new TRPCError({
             code: "INTERNAL_SERVER_ERROR",
-            message: "Falha ao enviar e-mail de teste",
+            message: result.error || "Falha ao enviar e-mail de teste",
           });
         }
         return { success: true };
@@ -1078,6 +1079,9 @@ export const appRouter = router({
           });
         }
 
+        // Enviar e-mail para todos os destinatários
+        const emailAddresses = emails.map((e) => e.email);
+
         // Construir HTML do e-mail similar ao WhatsApp
         const emailHtml = `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
@@ -1110,11 +1114,20 @@ export const appRouter = router({
           </div>
         `;
 
-        return await sendTicketNotificationEmail(
-          emails,
+        const result = await sendEmailViaGmail(
+          emailAddresses,
           `Compartilhamento de Bilhetes - ${input.weekLabel}`,
           emailHtml
         );
+
+        if (!result.success) {
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: result.error || "Falha ao compartilhar bilhetes por e-mail",
+          });
+        }
+
+        return { success: true, message: `E-mail enviado para ${emailAddresses.length} destinatário(s)` };
       }),
 
     // Calendar integration
