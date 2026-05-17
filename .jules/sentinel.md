@@ -29,6 +29,7 @@
 **Prevention:** Always explicitly `import crypto from "crypto";` in Node.js applications and use the standard `crypto.randomBytes(32).toString('hex')` to generate secure, cryptographically random hex strings.
 
 ## 2024-05-28 - Insecure Hardcoded Fallback for JWT Secret
+
 **Vulnerability:** The environment configuration was providing a hardcoded string ("dev-secret-do-not-use-in-production") as a fallback for `JWT_SECRET` when running in non-production environments.
 **Learning:** Hardcoding cryptographic secrets, even for development, encourages bad practices and can lead to accidental production use if the environment detection fails or is misconfigured. Secrets should always be managed externally via environment variables.
 **Prevention:** Always enforce the presence of security-critical environment variables like `JWT_SECRET` at application startup across all environments. Throw a clear error if they are missing to ensure developers configure their local environments correctly and securely.

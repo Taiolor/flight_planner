@@ -1677,6 +1677,7 @@ export default function Home() {
                 value={pricePercentile}
                 onChange={e => setPricePercentile(parseInt(e.target.value))}
                 className="w-full"
+                aria-label="Percentil de preço"
               />
               <p className="text-xs text-slate-500 mt-2">
                 Ajuste para mostrar voos mais ou menos baratos
@@ -1909,8 +1910,14 @@ export default function Home() {
                                           </span>
                                         )}
                                         {/* Jogos da Copa do Mundo no intervalo da semana */}
-                                        {getFeriadosPorIntervalo(week.weekNumber, week.departureDate, week.returnDate)
-                                          .filter(f => f.feriado.tipo === "copa")
+                                        {getFeriadosPorIntervalo(
+                                          week.weekNumber,
+                                          week.departureDate,
+                                          week.returnDate
+                                        )
+                                          .filter(
+                                            f => f.feriado.tipo === "copa"
+                                          )
                                           .map(f => (
                                             <span
                                               key={f.feriado.data + f.tipo}
@@ -2089,6 +2096,7 @@ export default function Home() {
                                                   )
                                                 }
                                                 className="h-7 text-sm border border-slate-200 dark:border-slate-600 rounded-md px-2 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-400 dark:focus:ring-blue-500 focus:border-blue-400 dark:focus:border-blue-500"
+                                                aria-label="Data de ida"
                                               />
                                               {depIso && (
                                                 <span className="text-xs font-semibold text-blue-700 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded-full">
@@ -2101,12 +2109,15 @@ export default function Home() {
                                                   className={`text-xs px-2 py-0.5 rounded-full font-semibold ${
                                                     f.feriado.tipo === "copa"
                                                       ? "bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-200"
-                                                      : f.feriado.tipo === "nacional"
-                                                      ? "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-200"
-                                                      : "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-200"
+                                                      : f.feriado.tipo ===
+                                                          "nacional"
+                                                        ? "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-200"
+                                                        : "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-200"
                                                   }`}
                                                 >
-                                                  {f.feriado.tipo === "copa" ? f.feriado.nome : `🎉 ${f.feriado.nome}`}
+                                                  {f.feriado.tipo === "copa"
+                                                    ? f.feriado.nome
+                                                    : `🎉 ${f.feriado.nome}`}
                                                 </span>
                                               ))}
                                             </div>
@@ -2127,6 +2138,7 @@ export default function Home() {
                                                   )
                                                 }
                                                 className="h-7 text-sm border border-slate-200 dark:border-slate-600 rounded-md px-2 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-400 dark:focus:ring-blue-500 focus:border-blue-400 dark:focus:border-blue-500"
+                                                aria-label="Data de retorno"
                                               />
                                               {retIso && (
                                                 <span className="text-xs font-semibold text-green-700 bg-green-50 border border-green-200 px-2 py-0.5 rounded-full">
@@ -2139,49 +2151,73 @@ export default function Home() {
                                                   className={`text-xs px-2 py-0.5 rounded-full font-semibold ${
                                                     f.feriado.tipo === "copa"
                                                       ? "bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-200"
-                                                      : f.feriado.tipo === "nacional"
-                                                      ? "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-200"
-                                                      : "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-200"
+                                                      : f.feriado.tipo ===
+                                                          "nacional"
+                                                        ? "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-200"
+                                                        : "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-200"
                                                   }`}
                                                 >
-                                                  {f.feriado.tipo === "copa" ? f.feriado.nome : `🎉 ${f.feriado.nome}`}
+                                                  {f.feriado.tipo === "copa"
+                                                    ? f.feriado.nome
+                                                    : `🎉 ${f.feriado.nome}`}
                                                 </span>
                                               ))}
                                             </div>
-                                            {feriadosIntervalo.filter(f => f.feriado.tipo !== "copa").length > 0 && (
+                                            {feriadosIntervalo.filter(
+                                              f => f.feriado.tipo !== "copa"
+                                            ).length > 0 && (
                                               <p className="text-xs text-slate-500 flex items-center gap-1 flex-wrap pl-5">
                                                 <span className="text-orange-600 dark:text-orange-300 font-semibold">
                                                   ⚠️ Feriados no período:
                                                 </span>
-                                                {feriadosIntervalo.filter(f => f.feriado.tipo !== "copa").map(f => (
-                                                  <span
-                                                    key={f.feriado.data}
-                                                    className={`px-2 py-0.5 rounded-full ${
-                                                      f.feriado.tipo === "nacional"
-                                                        ? "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-200"
-                                                        : "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-200"
-                                                    }`}
-                                                  >
-                                                    {f.feriado.data.slice(0, 5)}{" "}
-                                                    – {f.feriado.nome}
-                                                  </span>
-                                                ))}
+                                                {feriadosIntervalo
+                                                  .filter(
+                                                    f =>
+                                                      f.feriado.tipo !== "copa"
+                                                  )
+                                                  .map(f => (
+                                                    <span
+                                                      key={f.feriado.data}
+                                                      className={`px-2 py-0.5 rounded-full ${
+                                                        f.feriado.tipo ===
+                                                        "nacional"
+                                                          ? "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-200"
+                                                          : "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-200"
+                                                      }`}
+                                                    >
+                                                      {f.feriado.data.slice(
+                                                        0,
+                                                        5
+                                                      )}{" "}
+                                                      – {f.feriado.nome}
+                                                    </span>
+                                                  ))}
                                               </p>
                                             )}
-                                            {feriadosIntervalo.filter(f => f.feriado.tipo === "copa").length > 0 && (
+                                            {feriadosIntervalo.filter(
+                                              f => f.feriado.tipo === "copa"
+                                            ).length > 0 && (
                                               <p className="text-xs text-slate-500 flex items-center gap-1 flex-wrap pl-5">
                                                 <span className="text-green-700 dark:text-green-300 font-semibold">
                                                   ⚽ Copa 2026 no período:
                                                 </span>
-                                                {feriadosIntervalo.filter(f => f.feriado.tipo === "copa").map(f => (
-                                                  <span
-                                                    key={f.feriado.data}
-                                                    className="px-2 py-0.5 rounded-full bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-200 font-semibold"
-                                                  >
-                                                    {f.feriado.data.slice(0, 5)}{" "}
-                                                    – {f.feriado.nome}
-                                                  </span>
-                                                ))}
+                                                {feriadosIntervalo
+                                                  .filter(
+                                                    f =>
+                                                      f.feriado.tipo === "copa"
+                                                  )
+                                                  .map(f => (
+                                                    <span
+                                                      key={f.feriado.data}
+                                                      className="px-2 py-0.5 rounded-full bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-200 font-semibold"
+                                                    >
+                                                      {f.feriado.data.slice(
+                                                        0,
+                                                        5
+                                                      )}{" "}
+                                                      – {f.feriado.nome}
+                                                    </span>
+                                                  ))}
                                               </p>
                                             )}
                                           </div>
@@ -2749,6 +2785,7 @@ export default function Home() {
                                                         ? "border border-amber-300 focus:ring-amber-400"
                                                         : "border border-blue-200 focus:ring-blue-400"
                                                     }`}
+                                                    aria-label="Número do voo de ida"
                                                     value={
                                                       tempDepartureFlightNumber[
                                                         week.weekNumber
@@ -2779,6 +2816,7 @@ export default function Home() {
                                                   <input
                                                     type="datetime-local"
                                                     className="h-8 text-xs border border-blue-200 dark:border-blue-600 rounded-md px-2 bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-400 dark:focus:ring-blue-500 w-full"
+                                                    aria-label="Data e hora do voo de ida"
                                                     value={
                                                       tempDepartureDatetime[
                                                         week.weekNumber
@@ -2903,6 +2941,7 @@ export default function Home() {
                                                     maxLength={20}
                                                     placeholder="Ex: ABC123"
                                                     className="h-8 text-xs border border-blue-200 rounded-md px-2 bg-white text-slate-700 uppercase font-mono focus:outline-none focus:ring-2 focus:ring-blue-400 w-full"
+                                                    aria-label="Localizador do voo de ida"
                                                     value={
                                                       tempDepartureLocator[
                                                         week.weekNumber
@@ -3180,6 +3219,7 @@ export default function Home() {
                                                           ? "border border-amber-300 focus:ring-amber-400"
                                                           : "border border-orange-200 focus:ring-orange-400"
                                                       }`}
+                                                      aria-label="Número do voo de retorno"
                                                       value={
                                                         tempReturnFlightNumber[
                                                           week.weekNumber
@@ -3210,6 +3250,7 @@ export default function Home() {
                                                     <input
                                                       type="datetime-local"
                                                       className="h-8 text-xs border border-orange-200 rounded-md px-2 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-orange-400 w-full"
+                                                      aria-label="Data e hora do voo de retorno"
                                                       value={
                                                         tempReturnDatetime[
                                                           week.weekNumber
@@ -3307,6 +3348,7 @@ export default function Home() {
                                                       maxLength={20}
                                                       placeholder="Ex: XYZ456"
                                                       className="h-8 text-xs border border-orange-200 dark:border-orange-600 rounded-md px-2 bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-100 uppercase font-mono focus:outline-none focus:ring-2 focus:ring-orange-400 dark:focus:ring-orange-500 w-full"
+                                                      aria-label="Localizador do voo de retorno"
                                                       value={
                                                         tempReturnLocator[
                                                           week.weekNumber

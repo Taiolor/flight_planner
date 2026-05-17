@@ -17,7 +17,9 @@ describe("generateBookingLink", () => {
       "GRU",
       "NVT"
     );
-    expect(link).toBe("https://www.kayak.com.br/flights/GRU-NVT/2026-03-01/2026-03-06?ucs=p1nu6v&sort=bestflight_a");
+    expect(link).toBe(
+      "https://www.kayak.com.br/flights/GRU-NVT/2026-03-01/2026-03-06?ucs=p1nu6v&sort=bestflight_a"
+    );
   });
 
   it("generates correct link for LATAM", () => {
@@ -30,7 +32,9 @@ describe("generateBookingLink", () => {
       "GRU",
       "NVT"
     );
-    expect(link).toBe("https://www.latam.com/pt_br/?origin=GRU&destination=NVT&outbound=01MAR26&inbound=06MAR26&adults=1&cabin=economy");
+    expect(link).toBe(
+      "https://www.latam.com/pt_br/?origin=GRU&destination=NVT&outbound=01MAR26&inbound=06MAR26&adults=1&cabin=economy"
+    );
   });
 
   it("generates correct link for Gol", () => {
@@ -43,7 +47,9 @@ describe("generateBookingLink", () => {
       "GRU",
       "NVT"
     );
-    expect(link).toBe("https://www.voegol.com.br/?origin=GRU&destination=NVT&outbound=10MAY26&inbound=15MAY26&adults=1&cabin=economy");
+    expect(link).toBe(
+      "https://www.voegol.com.br/?origin=GRU&destination=NVT&outbound=10MAY26&inbound=15MAY26&adults=1&cabin=economy"
+    );
   });
 
   it("falls back to LATAM for unknown airline", () => {
