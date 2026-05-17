@@ -24,6 +24,7 @@ import {
   WifiOff,
   FlaskConical,
   Plane,
+  ChevronDown,
 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -37,6 +38,19 @@ import { AlertRow } from "@/components/admin-notifications/AlertRow";
 
 export default function AdminNotifications() {
   const [autoRefresh, setAutoRefresh] = useState(false);
+  const [expandedSections, setExpandedSections] = useState<Set<string>>(
+    new Set(["alerts", "devices", "history"])
+  );
+
+  const toggleSection = (section: string) => {
+    const newSet = new Set(expandedSections);
+    if (newSet.has(section)) {
+      newSet.delete(section);
+    } else {
+      newSet.add(section);
+    }
+    setExpandedSections(newSet);
+  };
 
   const { data, isLoading, error, refetch, isFetching } =
     trpc.adminNotifications.getStatus.useQuery(undefined, {
@@ -261,27 +275,39 @@ export default function AdminNotifications() {
 
         {/* Tabela de alertas agendados */}
         <div>
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide">
-              Alertas Agendados ({data?.scheduledAlerts.length ?? 0})
-            </h2>
-            <div className="flex gap-2 text-xs text-gray-400">
-              <span className="flex items-center gap-1">
-                <span className="w-2 h-2 rounded-full bg-blue-400 inline-block" />{" "}
-                Pendente
-              </span>
-              <span className="flex items-center gap-1">
-                <span className="w-2 h-2 rounded-full bg-green-400 inline-block" />{" "}
-                Enviando
-              </span>
-              <span className="flex items-center gap-1">
-                <span className="w-2 h-2 rounded-full bg-gray-300 inline-block" />{" "}
-                Passado
-              </span>
+          <button
+            type="button"
+            onClick={() => toggleSection("alerts")}
+            className="w-full flex items-center justify-between p-4 bg-white hover:bg-gray-50 transition-colors border border-gray-200 rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+          >
+            <div className="flex items-center justify-between flex-1 gap-4">
+              <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide">
+                Alertas Agendados ({data?.scheduledAlerts.length ?? 0})
+              </h2>
+              <div className="flex gap-2 text-xs text-gray-400">
+                <span className="flex items-center gap-1">
+                  <span className="w-2 h-2 rounded-full bg-blue-400 inline-block" />{" "}
+                  Pendente
+                </span>
+                <span className="flex items-center gap-1">
+                  <span className="w-2 h-2 rounded-full bg-green-400 inline-block" />{" "}
+                  Enviando
+                </span>
+                <span className="flex items-center gap-1">
+                  <span className="w-2 h-2 rounded-full bg-gray-300 inline-block" />{" "}
+                  Passado
+                </span>
+              </div>
             </div>
-          </div>
+            <ChevronDown
+              className={`w-5 h-5 text-slate-400 transition-transform duration-200 flex-shrink-0 ${
+                expandedSections.has("alerts") ? "rotate-180" : ""
+              }`}
+            />
+          </button>
 
-          <Card className="overflow-hidden">
+          {expandedSections.has("alerts") && (
+            <Card className="overflow-hidden mt-3">
             {data?.scheduledAlerts.length === 0 ? (
               <div className="p-8 text-center">
                 <Bell className="w-10 h-10 text-gray-300 mx-auto mb-3" />
@@ -336,14 +362,28 @@ export default function AdminNotifications() {
               </div>
             )}
           </Card>
+          )}
         </div>
 
         {/* Dispositivos registrados */}
         <div>
-          <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">
-            Dispositivos Registrados ({data?.totalSubscriptions ?? 0})
-          </h2>
-          <Card className="overflow-hidden">
+          <button
+            type="button"
+            onClick={() => toggleSection("devices")}
+            className="w-full flex items-center justify-between p-4 bg-white hover:bg-gray-50 transition-colors border border-gray-200 rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+          >
+            <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide">
+              Dispositivos Registrados ({data?.totalSubscriptions ?? 0})
+            </h2>
+            <ChevronDown
+              className={`w-5 h-5 text-slate-400 transition-transform duration-200 flex-shrink-0 ${
+                expandedSections.has("devices") ? "rotate-180" : ""
+              }`}
+            />
+          </button>
+
+          {expandedSections.has("devices") && (
+            <Card className="overflow-hidden mt-3">
             {!data?.subscriptions || data.subscriptions.length === 0 ? (
               <div className="p-8 text-center">
                 <Smartphone className="w-10 h-10 text-gray-300 mx-auto mb-3" />
@@ -377,22 +417,39 @@ export default function AdminNotifications() {
               </div>
             )}
           </Card>
+          )}
         </div>
 
         {/* Histórico Persistente de Envios */}
         <div>
-          <div className="flex items-center justify-between mb-3">
+          <button
+            type="button"
+            onClick={() => toggleSection("history")}
+            className="w-full flex items-center justify-between p-4 bg-white hover:bg-gray-50 transition-colors border border-gray-200 rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+          >
             <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide">
               Histórico de Envios ({logs?.length ?? 0})
             </h2>
-            <button
-              onClick={() => refetchLogs()}
-              className="text-xs text-gray-400 hover:text-gray-600 flex items-center gap-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm"
-            >
-              <RefreshCw className="w-3 h-3" /> Atualizar
-            </button>
-          </div>
-          <Card className="overflow-hidden">
+            <div className="flex items-center gap-2">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  refetchLogs();
+                }}
+                className="text-xs text-gray-400 hover:text-gray-600 flex items-center gap-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm"
+              >
+                <RefreshCw className="w-3 h-3" /> Atualizar
+              </button>
+              <ChevronDown
+                className={`w-5 h-5 text-slate-400 transition-transform duration-200 flex-shrink-0 ${
+                  expandedSections.has("history") ? "rotate-180" : ""
+                }`}
+              />
+            </div>
+          </button>
+
+          {expandedSections.has("history") && (
+            <Card className="overflow-hidden mt-3">
             {!logs || logs.length === 0 ? (
               <div className="p-8 text-center">
                 <History className="w-10 h-10 text-gray-300 mx-auto mb-3" />
@@ -479,9 +536,10 @@ export default function AdminNotifications() {
               </div>
             )}
           </Card>
+          )}
         </div>
 
-        {/* Ações */}
+        {/* Resumo */}
         <div>
           <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">
             Ações
