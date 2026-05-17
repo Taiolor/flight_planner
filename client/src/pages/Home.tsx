@@ -2347,15 +2347,28 @@ export default function Home() {
                                 {/* Conteúdo expansível da semana */}
                                 {expandedWeekCards.has(week.weekNumber) && (
                                   <div className="mt-3 sm:mt-4">
-                                    {/* Painel Copa 2026 — apenas na semana vigente */}
-                                    {week.weekNumber === currentWeekNumber && (() => {
+                                    {/* Painel Copa 2026 — apenas semanas com jogos/fases no intervalo */}
+                                    {(() => {
                                       const hoje = new Date();
                                       hoje.setHours(0, 0, 0, 0);
 
+                                      // Converte DD/MM/YYYY → Date
+                                      const parseBR = (s: string) => {
+                                        const [d, m, y] = s.split("/").map(Number);
+                                        return new Date(y, m - 1, d);
+                                      };
+                                      // Converte YYYY-MM-DD → Date
+                                      const parseISO = (s: string) => {
+                                        const [y, m, d] = s.split("-").map(Number);
+                                        return new Date(y, m - 1, d);
+                                      };
+
+                                      const semanaInicio = parseBR(week.departureDate);
+                                      const semanaFim = parseBR(week.returnDate);
+
                                       // Helper: calcula dias restantes e labels
                                       const calcDias = (dataStr: string) => {
-                                        const [y, m, d] = dataStr.split("-").map(Number);
-                                        const dataEvento = new Date(y, m - 1, d);
+                                        const dataEvento = parseISO(dataStr);
                                         const diffMs = dataEvento.getTime() - hoje.getTime();
                                         const diffDias = Math.round(diffMs / (1000 * 60 * 60 * 24));
                                         const passou = diffDias < 0;
@@ -2367,14 +2380,21 @@ export default function Home() {
                                         return { passou, ehHoje, label, mm, dd, diaSemana, diffDias };
                                       };
 
-                                      const jogosDosBrasil = [
+                                      // Todos os jogos da 1ª fase
+                                      const todosJogos = [
                                         { data: "2026-06-13", adversario: "Marrocos", cidade: "Nova York/NJ", bandeira: "🇲🇦" },
                                         { data: "2026-06-19", adversario: "Haiti",    cidade: "Filadélfia",   bandeira: "🇭🇹" },
                                         { data: "2026-06-24", adversario: "Escócia",  cidade: "Miami",        bandeira: "🏴󠁧󠁢󠁳󠁣󠁴󠁿" },
                                       ];
 
+                                      // Filtrar jogos que caem dentro do intervalo da semana
+                                      const jogosDosBrasil = todosJogos.filter(jogo => {
+                                        const dataJogo = parseISO(jogo.data);
+                                        return dataJogo >= semanaInicio && dataJogo <= semanaFim;
+                                      });
+
                                       // Fases eliminatórias: janelas de datas (início e fim de cada fase)
-                                      const fasesEliminatorias = [
+                                      const todasFases = [
                                         {
                                           fase: "32-avos de Final",
                                           icone: "🏟️",
@@ -2417,6 +2437,17 @@ export default function Home() {
                                         },
                                       ];
 
+                                      // Filtrar fases eliminatórias que se sobrepõem ao intervalo da semana
+                                      const fasesEliminatorias = todasFases.filter(fase => {
+                                        const faseInicio = parseISO(fase.inicio);
+                                        const faseFim = parseISO(fase.fim);
+                                        // Sobreposição: faseInicio <= semanaFim E faseFim >= semanaInicio
+                                        return faseInicio <= semanaFim && faseFim >= semanaInicio;
+                                      });
+
+                                      // Só renderiza o painel se houver jogos ou fases no intervalo
+                                      if (jogosDosBrasil.length === 0 && fasesEliminatorias.length === 0) return null;
+
                                       return (
                                         <div className="mb-4 rounded-xl border border-green-300 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950/30 dark:to-emerald-950/30 dark:border-green-700 overflow-hidden">
                                           {/* Cabeçalho */}
@@ -2425,7 +2456,8 @@ export default function Home() {
                                             <span className="text-xs font-bold text-white uppercase tracking-wider">Brasil na Copa do Mundo 2026</span>
                                           </div>
 
-                                          {/* 1ª Fase */}
+                                          {/* 1ª Fase — só se houver jogos no intervalo */}
+                                          {jogosDosBrasil.length > 0 && (
                                           <div className="px-3 pt-3 pb-1">
                                             <div className="flex items-center gap-1.5 mb-2">
                                               <span className="text-xs font-bold text-green-800 dark:text-green-300 uppercase tracking-wide">🇧🇷 1ª Fase — Grupo C</span>
@@ -2469,11 +2501,15 @@ export default function Home() {
                                               })}
                                             </div>
                                           </div>
+                                          )}
 
-                                          {/* Divisor */}
-                                          <div className="mx-3 my-2 border-t border-green-200 dark:border-green-800" />
+                                          {/* Divisor — só se houver ambas as seções */}
+                                          {jogosDosBrasil.length > 0 && fasesEliminatorias.length > 0 && (
+                                            <div className="mx-3 my-2 border-t border-green-200 dark:border-green-800" />
+                                          )}
 
-                                          {/* Fases Eliminatórias */}
+                                          {/* Fases Eliminatórias — só se houver fases no intervalo */}
+                                          {fasesEliminatorias.length > 0 && (
                                           <div className="px-3 pb-3">
                                             <div className="flex items-center gap-1.5 mb-2">
                                               <span className="text-xs font-bold text-green-800 dark:text-green-300 uppercase tracking-wide">🏆 Fases Eliminatórias — Possível participação do Brasil</span>
@@ -2545,6 +2581,7 @@ export default function Home() {
                                               })}
                                             </div>
                                           </div>
+                                          )}
                                         </div>
                                       );
                                     })()}

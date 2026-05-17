@@ -200,3 +200,7 @@
 - [x] Adicionar semifinais (14-15/07, Dallas) ao painel da semana vigente
 - [x] Adicionar final (19/07, MetLife Stadium) ao painel da semana vigente
 - [x] Separar visualmente 1ª fase das fases eliminatórias no painel
+
+## Fix: Painel Copa 2026 por Semana
+
+- [x] Corrigir painel Copa para mostrar apenas jogos/fases que coincidem com o intervalo de cada semana (não fixo na semana vigente)
