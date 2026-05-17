@@ -9,6 +9,8 @@ export interface FlightEvent {
   flightNumber: string;
   departureAirport: string;
   arrivalAirport: string;
+  departureAirportAddress?: string;
+  arrivalAirportAddress?: string;
   departureTime: Date;
   arrivalTime: Date;
   locator: string;
@@ -78,8 +80,10 @@ Planejador de Passagens Aéreas 2026
     const tripType = event.isReturn ? "Volta" : "Ida";
     const summary = `✈️ ${event.airline} ${event.flightNumber} (${tripType}) - Semana ${event.weekNumber}`;
 
-    // Build location
-    const location = `${event.departureAirport} → ${event.arrivalAirport}`;
+    // Build location with airport address if available
+    const departureLocation = event.departureAirportAddress || event.departureAirport;
+    const arrivalLocation = event.arrivalAirportAddress || event.arrivalAirport;
+    const location = `${departureLocation} → ${arrivalLocation}`;
 
     // Prepare event for Google Calendar MCP
     const calendarEvent = {
@@ -131,7 +135,9 @@ export async function createRoundTripCalendarEvents(
   returnFlightNumber: string,
   returnTime: Date,
   returnArrivalTime: Date,
-  returnLocator: string
+  returnLocator: string,
+  departureAirportAddress?: string,
+  arrivalAirportAddress?: string
 ): Promise<{ departure: boolean; return: boolean }> {
   const departureEvent: FlightEvent = {
     weekNumber,
@@ -139,6 +145,8 @@ export async function createRoundTripCalendarEvents(
     flightNumber: departureFlightNumber,
     departureAirport,
     arrivalAirport,
+    departureAirportAddress,
+    arrivalAirportAddress,
     departureTime,
     arrivalTime: departureArrivalTime,
     locator: departureLocator,
@@ -151,6 +159,8 @@ export async function createRoundTripCalendarEvents(
     flightNumber: returnFlightNumber,
     departureAirport: arrivalAirport,
     arrivalAirport: departureAirport,
+    departureAirportAddress: arrivalAirportAddress,
+    arrivalAirportAddress: departureAirportAddress,
     departureTime: returnTime,
     arrivalTime: returnArrivalTime,
     locator: returnLocator,

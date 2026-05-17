@@ -260,3 +260,21 @@
 ### 3. Publicar o Site
 - [ ] Clicar em "Publish" no painel de gerenciamento
 - [ ] Validar que o site está disponível em flightplan-hq655wm9.manus.space
+
+## Implementação das 3 Sugestões
+
+### 1. Botões "Adicionar ao Calendário"
+- [x] Adicionar botão "📅 Adicionar ao Calendário" nos dados de bilhete (ida)
+- [x] Integrar com procedures tRPC calendar.createFlightEvent
+- [ ] Adicionar botão para volta
+- [ ] Exibir feedback visual (toast) após criar evento
+
+### 2. Endereço Completo do Aeroporto
+- [x] Criar mapa de endereços de aeroportos (GRU, NVT, CCJ, etc.)
+- [x] Incluir endereço na localização do evento do calendário
+- [x] Atualizar helper calendarIntegration.ts para aceitar endereço do aeroporto
+
+### 3. Publicar o Site
+- [ ] Clicar em "Publish" no painel de gerenciamento
+- [ ] Validar que o site está disponível em flightplan-hq655wm9.manus.space
+- [ ] Testar funcionalidades principais em produção

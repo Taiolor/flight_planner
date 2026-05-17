@@ -3218,8 +3218,80 @@ export default function Home() {
                                                     }
                                                   />
                                                 </div>
-                                              </div>
-                                            </div>
+                                                  </div>
+                                                </div>
+
+                                                {/* Botão Adicionar ao Calendário - IDA */}
+                                                {(tempDepartureAirline[week.weekNumber] ?? "").trim() &&
+                                                  (tempDepartureFlightDatetime[
+                                                    week.weekNumber
+                                                  ] ?? "").trim() &&
+                                                  (tempDepartureFlightNumber[
+                                                    week.weekNumber
+                                                  ] ?? "").trim() && (
+                                                    <button
+                                                      type="button"
+                                                      onClick={async () => {
+                                                        try {
+                                                          const departureDate = new Date(
+                                                            tempDepartureFlightDatetime[
+                                                              week.weekNumber
+                                                            ]
+                                                          );
+                                                          const arrivalDate = new Date(
+                                                            departureDate.getTime() +
+                                                              3 * 60 * 60 * 1000
+                                                          );
+                                                          await trpc.calendar.createFlightEvent.mutate(
+                                                            {
+                                                              weekNumber: week.weekNumber,
+                                                              airline:
+                                                                tempDepartureAirline[
+                                                                  week.weekNumber
+                                                                ] || "",
+                                                              flightNumber:
+                                                                tempDepartureFlightNumber[
+                                                                  week.weekNumber
+                                                                ] || "",
+                                                              departureAirport:
+                                                                tempDepartureAirport[
+                                                                  week.weekNumber
+                                                                ] || "",
+                                                              arrivalAirport:
+                                                                tempReturnAirport[
+                                                                  week.weekNumber
+                                                                ] || "",
+                                                              departureTime:
+                                                                departureDate,
+                                                              arrivalTime: arrivalDate,
+                                                              locator:
+                                                                tempDepartureLocator[
+                                                                  week.weekNumber
+                                                                ] || "",
+                                                              isReturn: false,
+                                                            }
+                                                          );
+                                                          alert(
+                                                            "Evento adicionado ao calendário com sucesso!"
+                                                          );
+                                                        } catch (error) {
+                                                          alert(
+                                                            "Erro ao adicionar evento ao calendário"
+                                                          );
+                                                        }
+                                                      }}
+                                                      className="w-full h-8 text-xs font-medium text-white bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 rounded-md transition-all flex items-center justify-center gap-1.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400"
+                                                    >
+                                                      <svg
+                                                        className="w-3.5 h-3.5"
+                                                        fill="currentColor"
+                                                        viewBox="0 0 24 24"
+                                                      >
+                                                        <path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11z" />
+                                                      </svg>
+                                                      📅 Adicionar ao Calendário
+                                                    </button>
+                                                  )}
 
                                             {/* Card VOLTA — só exibido quando tipo é Ida e Volta */}
                                             {(tempTicketType[week.weekNumber] ??
