@@ -1111,8 +1111,20 @@ export const appRouter = router({
           </div>
         `;
 
+        // Extrair apenas os endereços de e-mail do array de objetos
+        const emailAddresses = emails
+          .filter(e => e.active === 1) // Apenas e-mails ativos
+          .map(e => e.email);
+        
+        if (emailAddresses.length === 0) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "Nenhum e-mail ativo cadastrado",
+          });
+        }
+
         return await sendShareByEmailNotification(
-          emails,
+          emailAddresses,
           `Compartilhamento de Bilhetes - ${input.weekLabel}`,
           emailHtml
         );
