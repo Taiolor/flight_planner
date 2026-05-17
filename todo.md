@@ -278,3 +278,10 @@
 - [ ] Clicar em "Publish" no painel de gerenciamento
 - [ ] Validar que o site está disponível em flightplan-hq655wm9.manus.space
 - [ ] Testar funcionalidades principais em produção
+
+## Feature: Compartilhar por E-Mail
+
+- [x] Criar procedure tRPC para enviar e-mail de compartilhamento de bilhetes
+- [x] Adicionar botão "📧 Compartilhar por E-Mail" abaixo do botão WhatsApp
+- [x] Integrar com lista de e-mails cadastrados para notificações
+- [ ] Testar envio de e-mail com dados formatados

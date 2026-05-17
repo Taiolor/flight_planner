@@ -1050,6 +1050,73 @@ export const appRouter = router({
         return { success: true };
       }),
 
+    shareByEmail: publicProcedure
+      .input(
+        z.object({
+          weekNumber: z.number(),
+          weekLabel: z.string(),
+          departureDate: z.string(),
+          departureTime: z.string(),
+          departureAirport: z.string(),
+          departureAirline: z.string(),
+          departureFlightNumber: z.string(),
+          departureLocator: z.string(),
+          returnDate: z.string(),
+          returnTime: z.string(),
+          returnAirport: z.string(),
+          returnAirline: z.string(),
+          returnFlightNumber: z.string(),
+          returnLocator: z.string(),
+        })
+      )
+      .mutation(async ({ input }) => {
+        const emails = await getTicketNotificationEmails();
+        if (emails.length === 0) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "Nenhum e-mail cadastrado",
+          });
+        }
+
+        // Construir HTML do e-mail similar ao WhatsApp
+        const emailHtml = `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+            <h2 style="color: #1f2937; margin-bottom: 20px;">Compartilhamento de Bilhetes ✈️</h2>
+            <p style="color: #4b5563; margin-bottom: 20px;"><strong>${input.weekLabel}</strong></p>
+            
+            <div style="background-color: #f3f4f6; border-radius: 8px; padding: 16px; margin-bottom: 20px;">
+              <h3 style="color: #1f2937; margin-top: 0;">Voo de Ida 🛫</h3>
+              <p style="margin: 8px 0;"><strong>Data:</strong> ${input.departureDate} às ${input.departureTime}</p>
+              <p style="margin: 8px 0;"><strong>Rota:</strong> ${input.departureAirport} → ${input.returnAirport}</p>
+              <p style="margin: 8px 0;"><strong>Companhia:</strong> ${input.departureAirline}</p>
+              <p style="margin: 8px 0;"><strong>Voo:</strong> ${input.departureFlightNumber}</p>
+              <p style="margin: 8px 0;"><strong>Localizador:</strong> <code style="background-color: #e5e7eb; padding: 2px 6px; border-radius: 3px;">${input.departureLocator}</code></p>
+              ${input.departureFlightNumber ? `<p style="margin: 8px 0;"><a href="https://www.google.com/search?q=${input.departureAirline.slice(0, 2)}+flight+${input.departureFlightNumber}" style="color: #3b82f6;">Ver rastreio do voo 🔍</a></p>` : ""}
+            </div>
+            
+            <div style="background-color: #f3f4f6; border-radius: 8px; padding: 16px; margin-bottom: 20px;">
+              <h3 style="color: #1f2937; margin-top: 0;">Voo de Volta 🛬</h3>
+              <p style="margin: 8px 0;"><strong>Data:</strong> ${input.returnDate} às ${input.returnTime}</p>
+              <p style="margin: 8px 0;"><strong>Rota:</strong> ${input.returnAirport} → ${input.departureAirport}</p>
+              <p style="margin: 8px 0;"><strong>Companhia:</strong> ${input.returnAirline}</p>
+              <p style="margin: 8px 0;"><strong>Voo:</strong> ${input.returnFlightNumber}</p>
+              <p style="margin: 8px 0;"><strong>Localizador:</strong> <code style="background-color: #e5e7eb; padding: 2px 6px; border-radius: 3px;">${input.returnLocator}</code></p>
+              ${input.returnFlightNumber ? `<p style="margin: 8px 0;"><a href="https://www.google.com/search?q=${input.returnAirline.slice(0, 2)}+flight+${input.returnFlightNumber}" style="color: #3b82f6;">Ver rastreio do voo 🔍</a></p>` : ""}
+            </div>
+            
+            <p style="color: #6b7280; font-size: 12px; margin-top: 30px; border-top: 1px solid #e5e7eb; padding-top: 20px;">
+              Compartilhado via Smart Fly - Planejador de Passagens Aéreas 2026
+            </p>
+          </div>
+        `;
+
+        return await sendTicketNotificationEmail(
+          emails,
+          `Compartilhamento de Bilhetes - ${input.weekLabel}`,
+          emailHtml
+        );
+      }),
+
     // Calendar integration
     calendar: router({
       createFlightEvent: publicProcedure
