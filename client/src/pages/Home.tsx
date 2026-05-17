@@ -4241,7 +4241,7 @@ export default function Home() {
                                                             onClick={async () => {
                                                               try {
                                                                 // Buscar lista de e-mails cadastrados
-                                                                const emailList = await trpc.ticketNotifications.getEmails.query();
+                                                                const emailList = await trpc.ticketNotifications.getRecipients.query();
                                                                 if (emailList.length === 0) {
                                                                   toast.error("Nenhum e-mail cadastrado para notificações.");
                                                                   return;
