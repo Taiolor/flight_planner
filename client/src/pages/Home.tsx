@@ -85,6 +85,7 @@ import {
   MapPin,
 } from "lucide-react";
 import { Link } from "wouter";
+import { ShareByEmailButton } from "@/components/ShareByEmailButton";
 import {
   getGoogleCalendarLink,
   getOutlookLink,
@@ -4236,7 +4237,21 @@ export default function Home() {
                                                             Compartilhar no
                                                             WhatsApp
                                                           </a>
-
+                                                          <ShareByEmailButton
+                                                            weekNumber={week.weekNumber}
+                                                            departureAirport={week.departureAirport || 'GRU'}
+                                                            returnAirport={week.returnAirport || 'NVT'}
+                                                            departureDate={week.departureDate}
+                                                            returnDate={week.returnDate}
+                                                            departureFlightNumber={week.departureFlightNumber || ''}
+                                                            returnFlightNumber={week.returnFlightNumber || ''}
+                                                            departureAirline={week.departureAirline || ''}
+                                                            returnAirline={week.returnAirline || ''}
+                                                            departurePNR={tempDepartureLocator[week.weekNumber] ?? week.departureLocator ?? ''}
+                                                            returnPNR={tempReturnLocator[week.weekNumber] ?? week.returnLocator ?? ''}
+                                                            departureDatetime={tempDepartureDatetime[week.weekNumber] || week.departureFlightDatetime || ''}
+                                                            returnDatetime={tempReturnDatetime[week.weekNumber] || week.returnFlightDatetime || ''}
+                                                          />
                                                         </>
                                                       );
                                                     })()}
