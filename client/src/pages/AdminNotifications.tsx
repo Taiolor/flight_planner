@@ -39,7 +39,7 @@ import { AlertRow } from "@/components/admin-notifications/AlertRow";
 export default function AdminNotifications() {
   const [autoRefresh, setAutoRefresh] = useState(false);
   const [expandedSections, setExpandedSections] = useState<Set<string>>(
-    new Set(["alerts", "devices", "history"])
+    new Set()
   );
 
   const toggleSection = (section: string) => {
