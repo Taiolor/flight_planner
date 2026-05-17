@@ -3223,7 +3223,7 @@ export default function Home() {
 
                                                 {/* Botão Adicionar ao Calendário - IDA */}
                                                 {(tempDepartureAirline[week.weekNumber] ?? "").trim() &&
-                                                  (tempDepartureFlightDatetime[
+                                                  (tempDepartureDatetime[
                                                     week.weekNumber
                                                   ] ?? "").trim() &&
                                                   (tempDepartureFlightNumber[
@@ -3234,7 +3234,7 @@ export default function Home() {
                                                       onClick={async () => {
                                                         try {
                                                           const departureDate = new Date(
-                                                            tempDepartureFlightDatetime[
+                                                            tempDepartureDatetime[
                                                               week.weekNumber
                                                             ]
                                                           );
