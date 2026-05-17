@@ -35,3 +35,8 @@
 
 **Learning:** When multiple requests fetch the exact same data from the database concurrently (e.g., in a "thundering herd" scenario during server startup or traffic spikes), relying on just standard await without caching causes redundant database connections and queries for the same un-resolved outcome.
 **Action:** Implement a "single-flight" caching mechanism by caching the Promise of the database operation itself in a module-level variable, returning the ongoing promise if one exists, and ensuring to clear it in a `finally` block once the operation completes.
+
+## 2024-05-16 - Date Parsing Memoization in Single-Pass Iterations
+
+**Learning:** When matching candidates across multiple specificities (e.g. day of week, hour), using chained `.filter().map()` causes both heavy array allocations and repeated execution of expensive pure functions like `new Date()` parsing on the same string for each pass.
+**Action:** Replace multi-pass chains with a single-pass `for` loop that categorizes matches into maps/records simultaneously, and use a cache (`new Map()`) inside the loop to ensure strings are parsed into Dates exactly once per render operation.

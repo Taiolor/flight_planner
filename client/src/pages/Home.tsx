@@ -123,80 +123,101 @@ function suggestFlightNumber(
   direction: "departure" | "return",
   allWeeks: WeekData[]
 ): string | null {
-  if (!airline) return null;
+  if (!airline || allWeeks.length === 0) return null;
 
-  // Coletar todos os voos já salvos com número de voo preenchido
-  const candidates = allWeeks
-    .filter(w => {
-      const a =
-        direction === "departure" ? w.departureAirline : w.returnAirline;
-      const fn =
-        direction === "departure"
-          ? w.departureFlightNumber
-          : w.returnFlightNumber;
-      return a === airline && fn && fn.trim();
-    })
-    .map(w => {
-      const fn =
-        (direction === "departure"
-          ? w.departureFlightNumber
-          : w.returnFlightNumber) ?? "";
-      const dt =
-        direction === "departure"
-          ? w.departureFlightDatetime
-          : w.returnFlightDatetime;
-      return { flightNumber: fn.trim().toUpperCase(), datetime: dt ?? "" };
-    });
+  const isDep = direction === "departure";
 
-  if (candidates.length === 0) return null;
-
-  // Extrair dia da semana e hora do datetime fornecido
   let targetDow: number | null = null;
   let targetHour: number | null = null;
   if (datetime) {
     const d = new Date(datetime);
     if (!isNaN(d.getTime())) {
-      targetDow = d.getDay(); // 0=Dom, 1=Seg, ..., 6=Sáb
+      targetDow = d.getDay();
       targetHour = d.getHours();
     }
   }
 
-  // Função auxiliar: retorna o número de voo mais frequente em uma lista
-  function mostFrequent(items: string[]): string | null {
-    if (items.length === 0) return null;
-    const freq: Record<string, number> = {};
-    for (const item of items) freq[item] = (freq[item] ?? 0) + 1;
-    return Object.entries(freq).sort((a, b) => b[1] - a[1])[0][0];
+  let maxFreq1 = 0,
+    maxItem1: string | null = null;
+  let maxFreq2 = 0,
+    maxItem2: string | null = null;
+  let maxFreq3 = 0,
+    maxItem3: string | null = null;
+
+  const freqs1: Record<string, number> = {};
+  const freqs2: Record<string, number> = {};
+  const freqs3: Record<string, number> = {};
+
+  // ⚡ Bolt: Use a map to avoid re-parsing dates that appear repeatedly
+  const dtCache = new Map<string, { dow: number; hour: number } | null>();
+
+  for (let i = 0; i < allWeeks.length; i++) {
+    const w = allWeeks[i];
+    const a = isDep ? w.departureAirline : w.returnAirline;
+
+    if (a !== airline) continue;
+
+    const fn = isDep ? w.departureFlightNumber : w.returnFlightNumber;
+    if (!fn) continue;
+    const trimmedFn = fn.trim();
+    if (!trimmedFn) continue;
+
+    const flightNum = trimmedFn.toUpperCase();
+
+    // Nível 3: qualquer voo da mesma companhia na mesma direção
+    const f3 = (freqs3[flightNum] || 0) + 1;
+    freqs3[flightNum] = f3;
+    if (f3 > maxFreq3) {
+      maxFreq3 = f3;
+      maxItem3 = flightNum;
+    }
+
+    if (targetDow !== null) {
+      const dt = isDep ? w.departureFlightDatetime : w.returnFlightDatetime;
+      if (dt) {
+        let parsed = dtCache.get(dt);
+        if (parsed === undefined) {
+          const d = new Date(dt);
+          if (!isNaN(d.getTime())) {
+            parsed = { dow: d.getDay(), hour: d.getHours() };
+          } else {
+            parsed = null;
+          }
+          dtCache.set(dt, parsed);
+        }
+
+        if (parsed !== null) {
+          if (parsed.dow === targetDow) {
+            // Nível 2: mesmo dia da semana
+            const f2 = (freqs2[flightNum] || 0) + 1;
+            freqs2[flightNum] = f2;
+            if (f2 > maxFreq2) {
+              maxFreq2 = f2;
+              maxItem2 = flightNum;
+            }
+
+            if (
+              targetHour !== null &&
+              Math.abs(parsed.hour - targetHour) <= 1
+            ) {
+              // Nível 1: mesmo dia da semana + faixa de horário (±1h)
+              const f1 = (freqs1[flightNum] || 0) + 1;
+              freqs1[flightNum] = f1;
+              if (f1 > maxFreq1) {
+                maxFreq1 = f1;
+                maxItem1 = flightNum;
+              }
+            }
+          }
+        }
+      }
+    }
   }
 
-  // Nível 1: mesmo dia da semana + faixa de horário (±1h)
-  if (targetDow !== null && targetHour !== null) {
-    const level1 = candidates.filter(c => {
-      if (!c.datetime) return false;
-      const d = new Date(c.datetime);
-      if (isNaN(d.getTime())) return false;
-      return (
-        d.getDay() === targetDow && Math.abs(d.getHours() - targetHour!) <= 1
-      );
-    });
-    const result1 = mostFrequent(level1.map(c => c.flightNumber));
-    if (result1) return result1;
-  }
-
-  // Nível 2: mesmo dia da semana
-  if (targetDow !== null) {
-    const level2 = candidates.filter(c => {
-      if (!c.datetime) return false;
-      const d = new Date(c.datetime);
-      if (isNaN(d.getTime())) return false;
-      return d.getDay() === targetDow;
-    });
-    const result2 = mostFrequent(level2.map(c => c.flightNumber));
-    if (result2) return result2;
-  }
-
-  // Nível 3: qualquer voo da mesma companhia na mesma direção
-  return mostFrequent(candidates.map(c => c.flightNumber));
+  if (targetDow !== null && targetHour !== null && maxItem1 !== null)
+    return maxItem1;
+  if (targetDow !== null && maxItem2 !== null) return maxItem2;
+  return maxItem3;
 }
 
 interface WeekData {
@@ -1909,8 +1930,14 @@ export default function Home() {
                                           </span>
                                         )}
                                         {/* Jogos da Copa do Mundo no intervalo da semana */}
-                                        {getFeriadosPorIntervalo(week.weekNumber, week.departureDate, week.returnDate)
-                                          .filter(f => f.feriado.tipo === "copa")
+                                        {getFeriadosPorIntervalo(
+                                          week.weekNumber,
+                                          week.departureDate,
+                                          week.returnDate
+                                        )
+                                          .filter(
+                                            f => f.feriado.tipo === "copa"
+                                          )
                                           .map(f => (
                                             <span
                                               key={f.feriado.data + f.tipo}
@@ -2101,12 +2128,15 @@ export default function Home() {
                                                   className={`text-xs px-2 py-0.5 rounded-full font-semibold ${
                                                     f.feriado.tipo === "copa"
                                                       ? "bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-200"
-                                                      : f.feriado.tipo === "nacional"
-                                                      ? "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-200"
-                                                      : "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-200"
+                                                      : f.feriado.tipo ===
+                                                          "nacional"
+                                                        ? "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-200"
+                                                        : "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-200"
                                                   }`}
                                                 >
-                                                  {f.feriado.tipo === "copa" ? f.feriado.nome : `🎉 ${f.feriado.nome}`}
+                                                  {f.feriado.tipo === "copa"
+                                                    ? f.feriado.nome
+                                                    : `🎉 ${f.feriado.nome}`}
                                                 </span>
                                               ))}
                                             </div>
@@ -2139,49 +2169,73 @@ export default function Home() {
                                                   className={`text-xs px-2 py-0.5 rounded-full font-semibold ${
                                                     f.feriado.tipo === "copa"
                                                       ? "bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-200"
-                                                      : f.feriado.tipo === "nacional"
-                                                      ? "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-200"
-                                                      : "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-200"
+                                                      : f.feriado.tipo ===
+                                                          "nacional"
+                                                        ? "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-200"
+                                                        : "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-200"
                                                   }`}
                                                 >
-                                                  {f.feriado.tipo === "copa" ? f.feriado.nome : `🎉 ${f.feriado.nome}`}
+                                                  {f.feriado.tipo === "copa"
+                                                    ? f.feriado.nome
+                                                    : `🎉 ${f.feriado.nome}`}
                                                 </span>
                                               ))}
                                             </div>
-                                            {feriadosIntervalo.filter(f => f.feriado.tipo !== "copa").length > 0 && (
+                                            {feriadosIntervalo.filter(
+                                              f => f.feriado.tipo !== "copa"
+                                            ).length > 0 && (
                                               <p className="text-xs text-slate-500 flex items-center gap-1 flex-wrap pl-5">
                                                 <span className="text-orange-600 dark:text-orange-300 font-semibold">
                                                   ⚠️ Feriados no período:
                                                 </span>
-                                                {feriadosIntervalo.filter(f => f.feriado.tipo !== "copa").map(f => (
-                                                  <span
-                                                    key={f.feriado.data}
-                                                    className={`px-2 py-0.5 rounded-full ${
-                                                      f.feriado.tipo === "nacional"
-                                                        ? "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-200"
-                                                        : "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-200"
-                                                    }`}
-                                                  >
-                                                    {f.feriado.data.slice(0, 5)}{" "}
-                                                    – {f.feriado.nome}
-                                                  </span>
-                                                ))}
+                                                {feriadosIntervalo
+                                                  .filter(
+                                                    f =>
+                                                      f.feriado.tipo !== "copa"
+                                                  )
+                                                  .map(f => (
+                                                    <span
+                                                      key={f.feriado.data}
+                                                      className={`px-2 py-0.5 rounded-full ${
+                                                        f.feriado.tipo ===
+                                                        "nacional"
+                                                          ? "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-200"
+                                                          : "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-200"
+                                                      }`}
+                                                    >
+                                                      {f.feriado.data.slice(
+                                                        0,
+                                                        5
+                                                      )}{" "}
+                                                      – {f.feriado.nome}
+                                                    </span>
+                                                  ))}
                                               </p>
                                             )}
-                                            {feriadosIntervalo.filter(f => f.feriado.tipo === "copa").length > 0 && (
+                                            {feriadosIntervalo.filter(
+                                              f => f.feriado.tipo === "copa"
+                                            ).length > 0 && (
                                               <p className="text-xs text-slate-500 flex items-center gap-1 flex-wrap pl-5">
                                                 <span className="text-green-700 dark:text-green-300 font-semibold">
                                                   ⚽ Copa 2026 no período:
                                                 </span>
-                                                {feriadosIntervalo.filter(f => f.feriado.tipo === "copa").map(f => (
-                                                  <span
-                                                    key={f.feriado.data}
-                                                    className="px-2 py-0.5 rounded-full bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-200 font-semibold"
-                                                  >
-                                                    {f.feriado.data.slice(0, 5)}{" "}
-                                                    – {f.feriado.nome}
-                                                  </span>
-                                                ))}
+                                                {feriadosIntervalo
+                                                  .filter(
+                                                    f =>
+                                                      f.feriado.tipo === "copa"
+                                                  )
+                                                  .map(f => (
+                                                    <span
+                                                      key={f.feriado.data}
+                                                      className="px-2 py-0.5 rounded-full bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-200 font-semibold"
+                                                    >
+                                                      {f.feriado.data.slice(
+                                                        0,
+                                                        5
+                                                      )}{" "}
+                                                      – {f.feriado.nome}
+                                                    </span>
+                                                  ))}
                                               </p>
                                             )}
                                           </div>
