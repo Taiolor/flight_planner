@@ -20,6 +20,9 @@ import {
   flightQuotes,
   InsertFlightQuote,
   apiUsageTracker,
+  ticketNotificationEmails,
+  InsertTicketNotificationEmail,
+  TicketNotificationEmail,
 } from "../drizzle/schema";
 import { ENV } from "./_core/env";
 
@@ -600,5 +603,137 @@ export async function incrementApiUsage(
       .set({ requestsUsed: newCount })
       .where(eq(apiUsageTracker.yearMonth, yearMonth));
     return { requestsUsed: newCount, requestsLimit: rows[0].requestsLimit };
+  }
+}
+
+
+// ============================================================================
+// Ticket Notification Emails - CRUD helpers
+// ============================================================================
+
+/**
+ * Get all ticket notification email recipients
+ */
+export async function getTicketNotificationEmails(): Promise<
+  TicketNotificationEmail[]
+> {
+  const db = await getDb();
+  if (!db) {
+    console.warn(
+      "[Database] Cannot get ticket notification emails: database not available"
+    );
+    return [];
+  }
+
+  try {
+    const rows = await db
+      .select()
+      .from(ticketNotificationEmails)
+      .orderBy(desc(ticketNotificationEmails.createdAt));
+    return rows;
+  } catch (error) {
+    console.error("[Database] Error fetching ticket notification emails:", error);
+    return [];
+  }
+}
+
+/**
+ * Add a new ticket notification email recipient
+ */
+export async function addTicketNotificationEmail(
+  email: string,
+  name?: string
+): Promise<TicketNotificationEmail | null> {
+  const db = await getDb();
+  if (!db) {
+    console.warn(
+      "[Database] Cannot add ticket notification email: database not available"
+    );
+    return null;
+  }
+
+  try {
+    const result = await db.insert(ticketNotificationEmails).values({
+      email: email.toLowerCase().trim(),
+      name: name?.trim() || null,
+    });
+
+    // Fetch and return the inserted row
+    const rows = await db
+      .select()
+      .from(ticketNotificationEmails)
+      .where(eq(ticketNotificationEmails.email, email.toLowerCase().trim()));
+
+    return rows[0] || null;
+  } catch (error) {
+    console.error("[Database] Error adding ticket notification email:", error);
+    return null;
+  }
+}
+
+/**
+ * Remove a ticket notification email recipient by ID
+ */
+export async function removeTicketNotificationEmail(
+  emailId: number
+): Promise<boolean> {
+  const db = await getDb();
+  if (!db) {
+    console.warn(
+      "[Database] Cannot remove ticket notification email: database not available"
+    );
+    return false;
+  }
+
+  try {
+    await db
+      .delete(ticketNotificationEmails)
+      .where(eq(ticketNotificationEmails.id, emailId));
+    return true;
+  } catch (error) {
+    console.error(
+      "[Database] Error removing ticket notification email:",
+      error
+    );
+    return false;
+  }
+}
+
+/**
+ * Update a ticket notification email recipient
+ */
+export async function updateTicketNotificationEmail(
+  emailId: number,
+  updates: { name?: string }
+): Promise<TicketNotificationEmail | null> {
+  const db = await getDb();
+  if (!db) {
+    console.warn(
+      "[Database] Cannot update ticket notification email: database not available"
+    );
+    return null;
+  }
+
+  try {
+    await db
+      .update(ticketNotificationEmails)
+      .set({
+        name: updates.name?.trim() || null,
+      })
+      .where(eq(ticketNotificationEmails.id, emailId));
+
+    // Fetch and return the updated row
+    const rows = await db
+      .select()
+      .from(ticketNotificationEmails)
+      .where(eq(ticketNotificationEmails.id, emailId));
+
+    return rows[0] || null;
+  } catch (error) {
+    console.error(
+      "[Database] Error updating ticket notification email:",
+      error
+    );
+    return null;
   }
 }

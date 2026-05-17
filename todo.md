@@ -224,3 +224,20 @@
 ## Fix: Ordem dos campos no formulário de bilhete
 
 - [x] Inverter ordem: data/hora do voo primeiro, número do voo depois (ida e volta)
+
+## Feature: Botões de Cópia (Ida → Volta)
+
+- [x] Adicionar botão para copiar companhia aérea da ida para a volta
+- [x] Adicionar botão para copiar localizador da ida para a volta
+
+## Feature: Notificação por E-mail de Alterações de Bilhetes
+
+- [x] Criar tabela de destinatários de e-mail (ticketNotificationEmails)
+- [x] Implementar helpers CRUD para gerenciar destinatários
+- [x] Criar helper de envio de e-mail (nodemailer)
+- [x] Adicionar procedures tRPC para CRUD de destinatários e envio de teste
+- [x] Integrar disparo de e-mail na mutation updateWeekStatus (criação, alteração, exclusão)
+- [x] Criar seção de gerenciamento de e-mails na tela AdminNotifications
+- [ ] Configurar variáveis de ambiente SMTP (SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, SMTP_FROM)
+- [ ] Testar envio de e-mail de teste
+- [ ] Testar notificações de alteração de bilhetes

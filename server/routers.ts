@@ -27,7 +27,16 @@ import {
   updateNotificationSettings,
   insertNotificationLog,
   getNotificationLogs,
+  getTicketNotificationEmails,
+  addTicketNotificationEmail,
+  removeTicketNotificationEmail,
+  updateTicketNotificationEmail,
 } from "./db";
+import {
+  sendTicketNotificationEmail,
+  sendTestEmail,
+  type TicketChangeNotification,
+} from "./_core/emailNotification";
 import { ENV } from "./_core/env";
 import { parse as parseCookie } from "cookie";
 
@@ -352,6 +361,11 @@ export const appRouter = router({
             message: "Faça login para editar.",
           });
         }
+
+        // Get the week before update to detect changes
+        const weeks = await getAllFlightWeeks();
+        const weekBefore = weeks.find(w => w.weekNumber === input.weekNumber);
+
         await updateFlightWeekStatus(input.weekNumber, {
           isDeleted: input.isDeleted,
           isTicketIssued: input.isTicketIssued,
@@ -368,6 +382,132 @@ export const appRouter = router({
           returnFlightNumber: input.returnFlightNumber,
           ticketType: input.ticketType,
         });
+
+        // Send email notifications if ticket was issued or modified
+        if (input.isTicketIssued !== undefined && weekBefore) {
+          const wasIssued = weekBefore.isTicketIssued === 1;
+          const nowIssued = input.isTicketIssued === 1;
+
+          if (!wasIssued && nowIssued) {
+            // Ticket was just created
+            const recipients = await getTicketNotificationEmails();
+            if (recipients.length > 0) {
+              const recipientEmails = recipients.map(r => r.email);
+
+              // Send for departure ticket
+              if (input.departureFlightNumber) {
+                await sendTicketNotificationEmail(recipientEmails, {
+                  type: "created",
+                  weekNumber: input.weekNumber,
+                  ticketType: "departure",
+                  timestamp: new Date(),
+                });
+              }
+
+              // Send for return ticket
+              if (input.returnFlightNumber) {
+                await sendTicketNotificationEmail(recipientEmails, {
+                  type: "created",
+                  weekNumber: input.weekNumber,
+                  ticketType: "return",
+                  timestamp: new Date(),
+                });
+              }
+            }
+          } else if (wasIssued && !nowIssued) {
+            // Ticket was deleted
+            const recipients = await getTicketNotificationEmails();
+            if (recipients.length > 0) {
+              const recipientEmails = recipients.map(r => r.email);
+
+              // Send for departure ticket
+              if (weekBefore.departureFlightNumber) {
+                await sendTicketNotificationEmail(recipientEmails, {
+                  type: "deleted",
+                  weekNumber: input.weekNumber,
+                  ticketType: "departure",
+                  timestamp: new Date(),
+                });
+              }
+
+              // Send for return ticket
+              if (weekBefore.returnFlightNumber) {
+                await sendTicketNotificationEmail(recipientEmails, {
+                  type: "deleted",
+                  weekNumber: input.weekNumber,
+                  ticketType: "return",
+                  timestamp: new Date(),
+                });
+              }
+            }
+          } else if (wasIssued && nowIssued) {
+            // Ticket was updated - detect changes
+            const recipients = await getTicketNotificationEmails();
+            if (recipients.length > 0) {
+              const recipientEmails = recipients.map(r => r.email);
+              const changes: Record<string, any> = {};
+
+              // Check departure changes
+              if (
+                weekBefore.departureFlightNumber !== input.departureFlightNumber ||
+                weekBefore.departureFlightDatetime !== input.departureFlightDatetime ||
+                weekBefore.departureAirline !== input.departureAirline ||
+                weekBefore.departureLocator !== input.departureLocator
+              ) {
+                await sendTicketNotificationEmail(recipientEmails, {
+                  type: "updated",
+                  weekNumber: input.weekNumber,
+                  ticketType: "departure",
+                  changes: {
+                    before: {
+                      flightNumber: weekBefore.departureFlightNumber,
+                      datetime: weekBefore.departureFlightDatetime,
+                      airline: weekBefore.departureAirline,
+                      locator: weekBefore.departureLocator,
+                    },
+                    after: {
+                      flightNumber: input.departureFlightNumber,
+                      datetime: input.departureFlightDatetime,
+                      airline: input.departureAirline,
+                      locator: input.departureLocator,
+                    },
+                  },
+                  timestamp: new Date(),
+                });
+              }
+
+              // Check return changes
+              if (
+                weekBefore.returnFlightNumber !== input.returnFlightNumber ||
+                weekBefore.returnFlightDatetime !== input.returnFlightDatetime ||
+                weekBefore.returnAirline !== input.returnAirline ||
+                weekBefore.returnLocator !== input.returnLocator
+              ) {
+                await sendTicketNotificationEmail(recipientEmails, {
+                  type: "updated",
+                  weekNumber: input.weekNumber,
+                  ticketType: "return",
+                  changes: {
+                    before: {
+                      flightNumber: weekBefore.returnFlightNumber,
+                      datetime: weekBefore.returnFlightDatetime,
+                      airline: weekBefore.returnAirline,
+                      locator: weekBefore.returnLocator,
+                    },
+                    after: {
+                      flightNumber: input.returnFlightNumber,
+                      datetime: input.returnFlightDatetime,
+                      airline: input.returnAirline,
+                      locator: input.returnLocator,
+                    },
+                  },
+                  timestamp: new Date(),
+                });
+              }
+            }
+          }
+        }
+
         return { success: true };
       }),
 
@@ -817,6 +957,94 @@ export const appRouter = router({
   // Cotações de Passagens (Sky Scrapper API + Kayak manual)
   // =====================
   quotes: quotesRouter,
+
+  // =====================
+  // Ticket Notification Emails
+  // =====================
+  ticketNotifications: router({
+    /**
+     * Get all ticket notification email recipients
+     */
+    getRecipients: publicProcedure.query(async () => {
+      return await getTicketNotificationEmails();
+    }),
+
+    /**
+     * Add a new ticket notification email recipient
+     */
+    addRecipient: publicProcedure
+      .input(
+        z.object({
+          email: z.string().email("E-mail inválido"),
+          name: z.string().optional(),
+        })
+      )
+      .mutation(async ({ input }) => {
+        const result = await addTicketNotificationEmail(input.email, input.name);
+        if (!result) {
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Falha ao adicionar e-mail de notificação",
+          });
+        }
+        return result;
+      }),
+
+    /**
+     * Remove a ticket notification email recipient
+     */
+    removeRecipient: publicProcedure
+      .input(z.object({ emailId: z.number() }))
+      .mutation(async ({ input }) => {
+        const success = await removeTicketNotificationEmail(input.emailId);
+        if (!success) {
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Falha ao remover e-mail de notificação",
+          });
+        }
+        return { success: true };
+      }),
+
+    /**
+     * Update a ticket notification email recipient
+     */
+    updateRecipient: publicProcedure
+      .input(
+        z.object({
+          emailId: z.number(),
+          name: z.string().optional(),
+        })
+      )
+      .mutation(async ({ input }) => {
+        const result = await updateTicketNotificationEmail(input.emailId, {
+          name: input.name,
+        });
+        if (!result) {
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Falha ao atualizar e-mail de notificação",
+          });
+        }
+        return result;
+      }),
+
+    /**
+     * Send test email to verify SMTP configuration
+     */
+    sendTestEmail: publicProcedure
+      .input(z.object({ testEmail: z.string().email() }))
+      .mutation(async ({ input }) => {
+        const success = await sendTestEmail(input.testEmail);
+        if (!success) {
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Falha ao enviar e-mail de teste",
+          });
+        }
+        return { success: true };
+      }),
+  }),
 });
 
 export type AppRouter = typeof appRouter;

@@ -534,6 +534,204 @@ export default function AdminNotifications() {
           </p>
         </div>
       </div>
+
+      {/* Seção: Notificações por E-mail de Bilhetes */}
+      <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+        <div className="bg-gradient-to-r from-purple-50 to-pink-50 border-b border-gray-200 px-5 py-4">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-lg bg-purple-600 flex items-center justify-center flex-shrink-0">
+              <AlertCircle className="w-4 h-4 text-white" />
+            </div>
+            <div>
+              <h2 className="font-semibold text-gray-800">Notificações por E-mail</h2>
+              <p className="text-xs text-gray-500 mt-0.5">Gerenciar destinatários de alertas de alteração de bilhetes</p>
+            </div>
+          </div>
+        </div>
+        <TicketNotificationEmailsSection />
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Seção de gerenciamento de e-mails de notificação de bilhetes
+ */
+function TicketNotificationEmailsSection() {
+  const [newEmail, setNewEmail] = useState("");
+  const [newName, setNewName] = useState("");
+  const [testEmail, setTestEmail] = useState("");
+  const [showTestForm, setShowTestForm] = useState(false);
+
+  const { data: recipients, refetch } =
+    trpc.ticketNotifications.getRecipients.useQuery();
+
+  const addRecipientMutation = trpc.ticketNotifications.addRecipient.useMutation({
+    onSuccess: () => {
+      toast.success("E-mail adicionado com sucesso!");
+      setNewEmail("");
+      setNewName("");
+      refetch();
+    },
+    onError: err => {
+      toast.error(err.message || "Erro ao adicionar e-mail.");
+    },
+  });
+
+  const removeRecipientMutation =
+    trpc.ticketNotifications.removeRecipient.useMutation({
+      onSuccess: () => {
+        toast.success("E-mail removido com sucesso!");
+        refetch();
+      },
+      onError: err => {
+        toast.error(err.message || "Erro ao remover e-mail.");
+      },
+    });
+
+  const sendTestEmailMutation =
+    trpc.ticketNotifications.sendTestEmail.useMutation({
+      onSuccess: () => {
+        toast.success("E-mail de teste enviado com sucesso!");
+        setTestEmail("");
+        setShowTestForm(false);
+      },
+      onError: err => {
+        toast.error(err.message || "Erro ao enviar e-mail de teste.");
+      },
+    });
+
+  const handleAddRecipient = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newEmail.trim()) {
+      toast.error("Digite um e-mail válido.");
+      return;
+    }
+    addRecipientMutation.mutate({ email: newEmail, name: newName || undefined });
+  };
+
+  const handleSendTestEmail = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!testEmail.trim()) {
+      toast.error("Digite um e-mail válido.");
+      return;
+    }
+    sendTestEmailMutation.mutate({ testEmail });
+  };
+
+  return (
+    <div className="p-5 space-y-5">
+      {/* Formulário para adicionar novo e-mail */}
+      <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+        <h3 className="font-medium text-gray-800 mb-3 text-sm">Adicionar Novo Destinatário</h3>
+        <form onSubmit={handleAddRecipient} className="space-y-3">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <input
+              type="email"
+              placeholder="E-mail"
+              value={newEmail}
+              onChange={e => setNewEmail(e.target.value)}
+              className="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+              required
+            />
+            <input
+              type="text"
+              placeholder="Nome (opcional)"
+              value={newName}
+              onChange={e => setNewName(e.target.value)}
+              className="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+            />
+            <Button
+              type="submit"
+              disabled={addRecipientMutation.isPending}
+              className="bg-purple-600 hover:bg-purple-700 text-white gap-2"
+            >
+              <span>+</span> Adicionar
+            </Button>
+          </div>
+        </form>
+      </div>
+
+      {/* Lista de destinatários */}
+      <div>
+        <h3 className="font-medium text-gray-800 mb-3 text-sm">
+          Destinatários Cadastrados ({recipients?.length ?? 0})
+        </h3>
+        {recipients && recipients.length > 0 ? (
+          <div className="space-y-2">
+            {recipients.map(recipient => (
+              <div
+                key={recipient.id}
+                className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200 hover:border-gray-300 transition-colors"
+              >
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-gray-800 truncate">
+                    {recipient.email}
+                  </p>
+                  {recipient.name && (
+                    <p className="text-xs text-gray-500 truncate">{recipient.name}</p>
+                  )}
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => removeRecipientMutation.mutate({ emailId: recipient.id })}
+                  disabled={removeRecipientMutation.isPending}
+                  className="text-red-600 hover:text-red-700 hover:bg-red-50 ml-2 flex-shrink-0"
+                >
+                  <XCircle className="w-4 h-4" />
+                </Button>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-6 text-gray-500 text-sm">
+            <p>Nenhum destinatário cadastrado.</p>
+            <p className="text-xs mt-1">Adicione e-mails acima para receber notificações.</p>
+          </div>
+        )}
+      </div>
+
+      {/* Botão para enviar e-mail de teste */}
+      <div className="flex gap-2">
+        <Button
+          variant="outline"
+          onClick={() => setShowTestForm(!showTestForm)}
+          className="gap-2"
+        >
+          <FlaskConical className="w-4 h-4" />
+          {showTestForm ? "Cancelar" : "Enviar E-mail de Teste"}
+        </Button>
+      </div>
+
+      {/* Formulário para enviar e-mail de teste */}
+      {showTestForm && (
+        <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
+          <h3 className="font-medium text-gray-800 mb-3 text-sm">Enviar E-mail de Teste</h3>
+          <form onSubmit={handleSendTestEmail} className="space-y-3">
+            <div className="flex gap-2">
+              <input
+                type="email"
+                placeholder="E-mail para teste"
+                value={testEmail}
+                onChange={e => setTestEmail(e.target.value)}
+                className="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                required
+              />
+              <Button
+                type="submit"
+                disabled={sendTestEmailMutation.isPending}
+                className="bg-blue-600 hover:bg-blue-700 text-white gap-2"
+              >
+                Enviar
+              </Button>
+            </div>
+            <p className="text-xs text-gray-500">
+              Isso enviará um e-mail de teste para verificar se a configuração SMTP está funcionando corretamente.
+            </p>
+          </form>
+        </div>
+      )}
     </div>
   );
 }
