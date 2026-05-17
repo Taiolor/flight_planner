@@ -242,3 +242,25 @@ export const apiUsageTracker = mysqlTable("api_usage_tracker", {
 
 export type ApiUsageTracker = typeof apiUsageTracker.$inferSelect;
 export type InsertApiUsageTracker = typeof apiUsageTracker.$inferInsert;
+
+/**
+ * Tabela para armazenar a lista de e-mails que receberão alertas de
+ * inclusão, alteração e exclusão de bilhetes emitidos.
+ */
+export const ticketNotificationEmails = mysqlTable(
+  "ticket_notification_emails",
+  {
+    id: int("id").autoincrement().primaryKey(),
+    email: varchar("email", { length: 320 }).notNull().unique(),
+    name: varchar("name", { length: 100 }),
+    active: int("active").notNull().default(1), // 1 = ativo, 0 = inativo
+    createdAt: timestamp("createdAt").defaultNow().notNull(),
+    updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+  },
+  table => [
+    index("idx_ticket_notif_emails_active").on(table.active),
+  ]
+);
+
+export type TicketNotificationEmail = typeof ticketNotificationEmails.$inferSelect;
+export type InsertTicketNotificationEmail = typeof ticketNotificationEmails.$inferInsert;

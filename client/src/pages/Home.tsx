@@ -3021,57 +3021,6 @@ export default function Home() {
                                                   </Select>
                                                 </div>
                                                 <div className="flex flex-col gap-1">
-                                                  <div className="flex items-center justify-between">
-                                                    <label className="text-[10px] font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wide">
-                                                      Número do Voo
-                                                    </label>
-                                                    {suggestedDepartureFlightNumber[
-                                                      week.weekNumber
-                                                    ] && (
-                                                      <span
-                                                        title="Sugerido pelo histórico de voos anteriores. Confirme ou edite."
-                                                        className="flex items-center gap-0.5 text-[10px] font-medium text-amber-600 bg-amber-50 border border-amber-200 rounded px-1.5 py-0.5 cursor-default"
-                                                      >
-                                                        <Wand2 className="w-2.5 h-2.5" />
-                                                        Sugerido
-                                                      </span>
-                                                    )}
-                                                  </div>
-                                                  <input
-                                                    type="text"
-                                                    maxLength={10}
-                                                    placeholder="Ex: LA3045"
-                                                    className={`h-8 text-xs rounded-md px-2 bg-white text-slate-700 uppercase font-mono focus:outline-none focus:ring-2 w-full transition-colors ${
-                                                      suggestedDepartureFlightNumber[
-                                                        week.weekNumber
-                                                      ]
-                                                        ? "border border-amber-300 focus:ring-amber-400"
-                                                        : "border border-blue-200 focus:ring-blue-400"
-                                                    }`}
-                                                    value={
-                                                      tempDepartureFlightNumber[
-                                                        week.weekNumber
-                                                      ] ?? ""
-                                                    }
-                                                    onChange={e => {
-                                                      setTempDepartureFlightNumber(
-                                                        prev => ({
-                                                          ...prev,
-                                                          [week.weekNumber]:
-                                                            e.target.value.toUpperCase(),
-                                                        })
-                                                      );
-                                                      // Ao editar manualmente, remover o indicador de sugestão
-                                                      setSuggestedDepartureFlightNumber(
-                                                        prev => ({
-                                                          ...prev,
-                                                          [week.weekNumber]: false,
-                                                        })
-                                                      );
-                                                    }}
-                                                  />
-                                                </div>
-                                                <div className="flex flex-col gap-1">
                                                   <label className="text-[10px] font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wide">
                                                     Data e Hora do Voo
                                                   </label>
@@ -3151,6 +3100,57 @@ export default function Home() {
                                                       </span>
                                                     );
                                                   })()}
+                                                </div>
+                                                <div className="flex flex-col gap-1">
+                                                  <div className="flex items-center justify-between">
+                                                    <label className="text-[10px] font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wide">
+                                                      Número do Voo
+                                                    </label>
+                                                    {suggestedDepartureFlightNumber[
+                                                      week.weekNumber
+                                                    ] && (
+                                                      <span
+                                                        title="Sugerido pelo histórico de voos anteriores. Confirme ou edite."
+                                                        className="flex items-center gap-0.5 text-[10px] font-medium text-amber-600 bg-amber-50 border border-amber-200 rounded px-1.5 py-0.5 cursor-default"
+                                                      >
+                                                        <Wand2 className="w-2.5 h-2.5" />
+                                                        Sugerido
+                                                      </span>
+                                                    )}
+                                                  </div>
+                                                  <input
+                                                    type="text"
+                                                    maxLength={10}
+                                                    placeholder="Ex: LA3045"
+                                                    className={`h-8 text-xs rounded-md px-2 bg-white text-slate-700 uppercase font-mono focus:outline-none focus:ring-2 w-full transition-colors ${
+                                                      suggestedDepartureFlightNumber[
+                                                        week.weekNumber
+                                                      ]
+                                                        ? "border border-amber-300 focus:ring-amber-400"
+                                                        : "border border-blue-200 focus:ring-blue-400"
+                                                    }`}
+                                                    value={
+                                                      tempDepartureFlightNumber[
+                                                        week.weekNumber
+                                                      ] ?? ""
+                                                    }
+                                                    onChange={e => {
+                                                      setTempDepartureFlightNumber(
+                                                        prev => ({
+                                                          ...prev,
+                                                          [week.weekNumber]:
+                                                            e.target.value.toUpperCase(),
+                                                        })
+                                                      );
+                                                      // Ao editar manualmente, remover o indicador de sugestão
+                                                      setSuggestedDepartureFlightNumber(
+                                                        prev => ({
+                                                          ...prev,
+                                                          [week.weekNumber]: false,
+                                                        })
+                                                      );
+                                                    }}
+                                                  />
                                                 </div>
                                                 <div className="flex flex-col gap-1">
                                                   <div className="flex items-center justify-between">
@@ -3452,57 +3452,6 @@ export default function Home() {
                                                     </Select>
                                                   </div>
                                                   <div className="flex flex-col gap-1">
-                                                    <div className="flex items-center justify-between">
-                                                      <label className="text-[10px] font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wide">
-                                                        Número do Voo
-                                                      </label>
-                                                      {suggestedReturnFlightNumber[
-                                                        week.weekNumber
-                                                      ] && (
-                                                        <span
-                                                          title="Sugerido pelo histórico de voos anteriores. Confirme ou edite."
-                                                          className="flex items-center gap-0.5 text-[10px] font-medium text-amber-600 bg-amber-50 border border-amber-200 rounded px-1.5 py-0.5 cursor-default"
-                                                        >
-                                                          <Wand2 className="w-2.5 h-2.5" />
-                                                          Sugerido
-                                                        </span>
-                                                      )}
-                                                    </div>
-                                                    <input
-                                                      type="text"
-                                                      maxLength={10}
-                                                      placeholder="Ex: G31234"
-                                                      className={`h-8 text-xs rounded-md px-2 bg-white text-slate-700 uppercase font-mono focus:outline-none focus:ring-2 w-full transition-colors ${
-                                                        suggestedReturnFlightNumber[
-                                                          week.weekNumber
-                                                        ]
-                                                          ? "border border-amber-300 focus:ring-amber-400"
-                                                          : "border border-orange-200 focus:ring-orange-400"
-                                                      }`}
-                                                      value={
-                                                        tempReturnFlightNumber[
-                                                          week.weekNumber
-                                                        ] ?? ""
-                                                      }
-                                                      onChange={e => {
-                                                        setTempReturnFlightNumber(
-                                                          prev => ({
-                                                            ...prev,
-                                                            [week.weekNumber]:
-                                                              e.target.value.toUpperCase(),
-                                                          })
-                                                        );
-                                                        // Ao editar manualmente, remover o indicador de sugestão
-                                                        setSuggestedReturnFlightNumber(
-                                                          prev => ({
-                                                            ...prev,
-                                                            [week.weekNumber]: false,
-                                                          })
-                                                        );
-                                                      }}
-                                                    />
-                                                  </div>
-                                                  <div className="flex flex-col gap-1">
                                                     <label className="text-[10px] font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wide">
                                                       Data e Hora do Voo
                                                     </label>
@@ -3596,6 +3545,57 @@ export default function Home() {
                                                         </span>
                                                       );
                                                     })()}
+                                                  </div>
+                                                  <div className="flex flex-col gap-1">
+                                                    <div className="flex items-center justify-between">
+                                                      <label className="text-[10px] font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wide">
+                                                        Número do Voo
+                                                      </label>
+                                                      {suggestedReturnFlightNumber[
+                                                        week.weekNumber
+                                                      ] && (
+                                                        <span
+                                                          title="Sugerido pelo histórico de voos anteriores. Confirme ou edite."
+                                                          className="flex items-center gap-0.5 text-[10px] font-medium text-amber-600 bg-amber-50 border border-amber-200 rounded px-1.5 py-0.5 cursor-default"
+                                                        >
+                                                          <Wand2 className="w-2.5 h-2.5" />
+                                                          Sugerido
+                                                        </span>
+                                                      )}
+                                                    </div>
+                                                    <input
+                                                      type="text"
+                                                      maxLength={10}
+                                                      placeholder="Ex: G31234"
+                                                      className={`h-8 text-xs rounded-md px-2 bg-white text-slate-700 uppercase font-mono focus:outline-none focus:ring-2 w-full transition-colors ${
+                                                        suggestedReturnFlightNumber[
+                                                          week.weekNumber
+                                                        ]
+                                                          ? "border border-amber-300 focus:ring-amber-400"
+                                                          : "border border-orange-200 focus:ring-orange-400"
+                                                      }`}
+                                                      value={
+                                                        tempReturnFlightNumber[
+                                                          week.weekNumber
+                                                        ] ?? ""
+                                                      }
+                                                      onChange={e => {
+                                                        setTempReturnFlightNumber(
+                                                          prev => ({
+                                                            ...prev,
+                                                            [week.weekNumber]:
+                                                              e.target.value.toUpperCase(),
+                                                          })
+                                                        );
+                                                        // Ao editar manualmente, remover o indicador de sugestão
+                                                        setSuggestedReturnFlightNumber(
+                                                          prev => ({
+                                                            ...prev,
+                                                            [week.weekNumber]: false,
+                                                          })
+                                                        );
+                                                      }}
+                                                    />
                                                   </div>
                                                   <div className="flex flex-col gap-1">
                                                     <label className="text-[10px] font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wide">

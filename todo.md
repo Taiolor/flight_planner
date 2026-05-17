@@ -208,3 +208,19 @@
 ## Fix: Painel Copa — Semana Calendário Completa
 
 - [x] Ampliar lógica do painel Copa para mostrar jogos que caem na semana calendário (dom-sáb) da viagem, mesmo fora do intervalo exato de ida/volta
+
+## Feature: Notificação por E-mail de Alterações de Bilhetes
+
+- [ ] Criar tabela `ticket_notification_emails` no schema (id, email, name, active, createdAt)
+- [ ] Migrar banco com pnpm db:push
+- [ ] Implementar helper de envio de e-mail (SMTP via nodemailer ou Manus built-in)
+- [ ] Criar procedures tRPC: getNotificationEmails, addNotificationEmail, removeNotificationEmail, toggleNotificationEmail
+- [ ] Integrar disparo de e-mail nas mutations de inclusão de bilhete (com detalhes do novo bilhete)
+- [ ] Integrar disparo de e-mail nas mutations de alteração de bilhete (com antes/depois)
+- [ ] Integrar disparo de e-mail nas mutations de exclusão de bilhete (com detalhes do bilhete excluído)
+- [ ] Criar seção "Destinatários de Alertas de Bilhetes" na tela de Administrador de Notificação
+- [ ] Escrever testes para as procedures de notificação
+
+## Fix: Ordem dos campos no formulário de bilhete
+
+- [x] Inverter ordem: data/hora do voo primeiro, número do voo depois (ida e volta)
