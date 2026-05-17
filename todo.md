@@ -204,3 +204,7 @@
 ## Fix: Painel Copa 2026 por Semana
 
 - [x] Corrigir painel Copa para mostrar apenas jogos/fases que coincidem com o intervalo de cada semana (não fixo na semana vigente)
+
+## Fix: Painel Copa — Semana Calendário Completa
+
+- [x] Ampliar lógica do painel Copa para mostrar jogos que caem na semana calendário (dom-sáb) da viagem, mesmo fora do intervalo exato de ida/volta

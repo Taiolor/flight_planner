@@ -2364,7 +2364,13 @@ export default function Home() {
                                       };
 
                                       const semanaInicio = parseBR(week.departureDate);
-                                      const semanaFim = parseBR(week.returnDate);
+                                      const semanaFimViagem = parseBR(week.returnDate);
+                                      // Ampliar o fim para cobrir a semana calendário completa:
+                                      // a semana começa no domingo (ida) e vai até o sábado seguinte (+6 dias)
+                                      const semanaFim = new Date(semanaInicio);
+                                      semanaFim.setDate(semanaFim.getDate() + 6);
+                                      // Usar o maior dos dois (retorno ou sábado da semana)
+                                      const semanaFimEfetivo = semanaFimViagem > semanaFim ? semanaFimViagem : semanaFim;
 
                                       // Helper: calcula dias restantes e labels
                                       const calcDias = (dataStr: string) => {
@@ -2387,10 +2393,10 @@ export default function Home() {
                                         { data: "2026-06-24", adversario: "Escócia",  cidade: "Miami",        bandeira: "🏴󠁧󠁢󠁳󠁣󠁴󠁿" },
                                       ];
 
-                                      // Filtrar jogos que caem dentro do intervalo da semana
+                                      // Filtrar jogos que caem dentro da semana calendário (dom-sáb)
                                       const jogosDosBrasil = todosJogos.filter(jogo => {
                                         const dataJogo = parseISO(jogo.data);
-                                        return dataJogo >= semanaInicio && dataJogo <= semanaFim;
+                                        return dataJogo >= semanaInicio && dataJogo <= semanaFimEfetivo;
                                       });
 
                                       // Fases eliminatórias: janelas de datas (início e fim de cada fase)
@@ -2437,12 +2443,12 @@ export default function Home() {
                                         },
                                       ];
 
-                                      // Filtrar fases eliminatórias que se sobrepõem ao intervalo da semana
+                                      // Filtrar fases eliminatórias que se sobrepõem à semana calendário
                                       const fasesEliminatorias = todasFases.filter(fase => {
                                         const faseInicio = parseISO(fase.inicio);
                                         const faseFim = parseISO(fase.fim);
-                                        // Sobreposição: faseInicio <= semanaFim E faseFim >= semanaInicio
-                                        return faseInicio <= semanaFim && faseFim >= semanaInicio;
+                                        // Sobreposição: faseInicio <= semanaFimEfetivo E faseFim >= semanaInicio
+                                        return faseInicio <= semanaFimEfetivo && faseFim >= semanaInicio;
                                       });
 
                                       // Só renderiza o painel se houver jogos ou fases no intervalo
