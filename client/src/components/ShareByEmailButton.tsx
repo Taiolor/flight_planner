@@ -62,7 +62,7 @@ export function ShareByEmailButton({
       const departureTime = extractTime(departureDatetime);
       const returnTime = extractTime(returnDatetime);
 
-      await shareByEmailMutation.mutateAsync({
+      const result = await shareByEmailMutation.mutateAsync({
         weekNumber,
         weekLabel,
         departureDate,
@@ -78,10 +78,24 @@ export function ShareByEmailButton({
         returnFlightNumber,
         returnLocator: returnPNR,
       });
-      toast.success('E-mail compartilhado com sucesso!');
+      
+      if (result) {
+        toast.success('✅ E-mail compartilhado com sucesso!', {
+          description: `Bilhetes da ${weekLabel} foram enviados para os e-mails cadastrados.`,
+          duration: 4000,
+        });
+      } else {
+        toast.error('❌ Erro ao enviar e-mail', {
+          description: 'Verifique se há e-mails cadastrados e tente novamente.',
+          duration: 4000,
+        });
+      }
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Erro ao compartilhar por e-mail';
-      toast.error(errorMessage);
+      toast.error('❌ Erro ao enviar e-mail', {
+        description: errorMessage,
+        duration: 5000,
+      });
       console.error('Erro ao compartilhar por e-mail:', error);
     } finally {
       setIsLoading(false);
