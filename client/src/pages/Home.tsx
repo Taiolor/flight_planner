@@ -85,6 +85,7 @@ import {
   MapPin,
 } from "lucide-react";
 import { Link } from "wouter";
+import { ShareByEmailButton } from "@/components/ShareByEmailButton";
 import {
   getGoogleCalendarLink,
   getOutlookLink,
@@ -4236,100 +4237,19 @@ export default function Home() {
                                                             Compartilhar no
                                                             WhatsApp
                                                           </a>
-                                                          <button
-                                                            type="button"
-                                                            onClick={async () => {
-                                                              try {
-                                                                // Buscar lista de e-mails cadastrados
-                                                                const emailList = await trpc.ticketNotifications.getRecipients.query();
-                                                                if (emailList.length === 0) {
-                                                                  toast.error("Nenhum e-mail cadastrado para notificações.");
-                                                                  return;
-                                                                }
-
-                                                                // Preparar dados do bilhete
-                                                                const depDt =
-                                                                  tempDepartureDatetime[
-                                                                    week.weekNumber
-                                                                  ] ||
-                                                                  week.departureFlightDatetime ||
-                                                                  "";
-                                                                const retDt =
-                                                                  tempReturnDatetime[
-                                                                    week.weekNumber
-                                                                  ] ||
-                                                                  week.returnFlightDatetime ||
-                                                                  "";
-
-                                                                // Enviar e-mail para cada destinatário
-                                                                await trpc.ticketNotifications.shareByEmail.mutate(
-                                                                  {
-                                                                    weekNumber: week.weekNumber,
-                                                                    weekLabel: `Semana ${week.weekNumber} — ${week.departureDate} a ${week.returnDate}`,
-                                                                    departureDate: depDt
-                                                                      ? depDt.slice(0, 10)
-                                                                      : "",
-                                                                    departureTime: depDt
-                                                                      ? depDt.slice(11, 16)
-                                                                      : "",
-                                                                    departureAirport:
-                                                                      week.departureAirport ||
-                                                                      "GRU",
-                                                                    departureAirline:
-                                                                      week.departureAirline ||
-                                                                      "",
-                                                                    departureFlightNumber:
-                                                                      week.departureFlightNumber ||
-                                                                      "",
-                                                                    departureLocator:
-                                                                      tempDepartureLocator[
-                                                                        week.weekNumber
-                                                                      ] ??
-                                                                      week.departureLocator ??
-                                                                      "",
-                                                                    returnDate: retDt
-                                                                      ? retDt.slice(0, 10)
-                                                                      : "",
-                                                                    returnTime: retDt
-                                                                      ? retDt.slice(11, 16)
-                                                                      : "",
-                                                                    returnAirport:
-                                                                      week.returnAirport ||
-                                                                      "NVT",
-                                                                    returnAirline:
-                                                                      week.returnAirline ||
-                                                                      "",
-                                                                    returnFlightNumber:
-                                                                      week.returnFlightNumber ||
-                                                                      "",
-                                                                    returnLocator:
-                                                                      tempReturnLocator[
-                                                                        week.weekNumber
-                                                                      ] ??
-                                                                      week.returnLocator ??
-                                                                      "",
-                                                                  }
-                                                                );
-                                                                toast.success(
-                                                                  `E-mail enviado com sucesso para ${emailList.length} destinatário(s)!`
-                                                                );
-                                                              } catch (error) {
-                                                                toast.error(
-                                                                  "Erro ao enviar e-mail"
-                                                                );
-                                                              }
-                                                            }}
-                                                            className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-lg bg-blue-500 hover:bg-blue-600 active:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-700 dark:active:bg-blue-800 transition-colors text-[12px] font-bold text-white shadow-sm"
-                                                          >
-                                                            <svg
-                                                              className="w-4 h-4"
-                                                              fill="currentColor"
-                                                              viewBox="0 0 24 24"
-                                                            >
-                                                              <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z" />
-                                                            </svg>
-                                                            Compartilhar por E-Mail
-                                                          </button>
+                                                          <ShareByEmailButton
+                                                            weekNumber={week.weekNumber}
+                                                            departureDate={tempDepartureDatetime[week.weekNumber] ? tempDepartureDatetime[week.weekNumber].slice(0, 10) : week.departureFlightDatetime ? week.departureFlightDatetime.slice(0, 10) : ""}
+                                                            returnDate={tempReturnDatetime[week.weekNumber] ? tempReturnDatetime[week.weekNumber].slice(0, 10) : week.returnFlightDatetime ? week.returnFlightDatetime.slice(0, 10) : ""}
+                                                            departureFlightNumber={week.departureFlightNumber || ""}
+                                                            returnFlightNumber={week.returnFlightNumber || ""}
+                                                            departureAirline={week.departureAirline || ""}
+                                                            returnAirline={week.returnAirline || ""}
+                                                            departurePNR={tempDepartureLocator[week.weekNumber] ?? week.departureLocator ?? ""}
+                                                            returnPNR={tempReturnLocator[week.weekNumber] ?? week.returnLocator ?? ""}
+                                                            departureDatetime={tempDepartureDatetime[week.weekNumber] || week.departureFlightDatetime || ""}
+                                                            returnDatetime={tempReturnDatetime[week.weekNumber] || week.returnFlightDatetime || ""}
+                                                          />
                                                         </>
                                                       );
                                                     })()}
