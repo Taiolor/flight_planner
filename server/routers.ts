@@ -35,6 +35,7 @@ import {
 import {
   sendTicketNotificationEmail,
   sendTestEmail,
+  sendShareByEmailNotification,
   type TicketChangeNotification,
 } from "./_core/emailNotification";
 import {
@@ -1110,7 +1111,7 @@ export const appRouter = router({
           </div>
         `;
 
-        return await sendTicketNotificationEmail(
+        return await sendShareByEmailNotification(
           emails,
           `Compartilhamento de Bilhetes - ${input.weekLabel}`,
           emailHtml

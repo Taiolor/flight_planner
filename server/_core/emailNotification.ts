@@ -96,13 +96,21 @@ async function sendEmailViaGmail(
   htmlContent: string
 ): Promise<boolean> {
   try {
-    const gmailFromEmail = "taiolor@gmail.com";
+    // Convert HTML to plain text by removing tags and decoding entities
+    const plainText = htmlContent
+      .replace(/<[^>]*>/g, '') // Remove HTML tags
+      .replace(/&nbsp;/g, ' ') // Replace non-breaking spaces
+      .replace(/&lt;/g, '<') // Decode entities
+      .replace(/&gt;/g, '>')
+      .replace(/&amp;/g, '&')
+      .replace(/\n\s+/g, '\n') // Remove extra whitespace
+      .trim();
 
     // Prepare message for Gmail MCP
     const message = {
       to: to,
       subject: subject,
-      content: htmlContent,
+      content: plainText || htmlContent, // Use plain text, fallback to HTML if empty
     };
 
     // Call Gmail MCP tool via CLI
@@ -114,6 +122,8 @@ async function sendEmailViaGmail(
     const inputJson = JSON.stringify(messagePayload);
     const escapedInput = inputJson.replace(/"/g, '\\"');
 
+    console.log(`[Email] Sending email to ${to.join(', ')} with subject: ${subject}`);
+    
     const result = execSync(
       `manus-mcp-cli tool call gmail_send_messages --server gmail --input "${escapedInput}"`,
       { encoding: "utf-8" }
@@ -151,6 +161,27 @@ export async function sendTicketNotificationEmail(
     return await sendEmailViaGmail(recipients, subject, htmlContent);
   } catch (error) {
     console.error("[Email] Failed to send ticket notification:", error);
+    return false;
+  }
+}
+
+/**
+ * Send ticket share notification email (for shareByEmail feature)
+ */
+export async function sendShareByEmailNotification(
+  recipients: string[],
+  subject: string,
+  htmlContent: string
+): Promise<boolean> {
+  if (!recipients || recipients.length === 0) {
+    console.warn("[Email] No recipients provided for share notification");
+    return false;
+  }
+
+  try {
+    return await sendEmailViaGmail(recipients, subject, htmlContent);
+  } catch (error) {
+    console.error("[Email] Failed to send share notification:", error);
     return false;
   }
 }
