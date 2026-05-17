@@ -242,3 +242,21 @@
 - [x] Refatorar helper de envio de e-mail para usar Gmail MCP
 - [ ] Testar envio de e-mail de teste via AdminNotifications
 - [ ] Testar notificações de alteração de bilhetes
+
+## Sugestões de Implementação
+
+### 1. Testar Envio de E-mail
+- [x] Corrigir parâmetros do Gmail MCP no helper de e-mail
+- [x] Validar que o envio de e-mail de teste funciona corretamente
+
+### 2. Integração com Google Calendar
+- [x] Criar helper para integração com Google Calendar via MCP
+- [x] Adicionar procedures tRPC para criar eventos no calendário
+- [x] Implementar criação de evento com 2 horas de antecedencia
+- [x] Incluir URL de rastreamento de voo nas observações
+- [ ] Adicionar botão "Adicionar ao Calendário" na UI (Home.tsx)
+- [ ] Incluir endereço completo do aeroporto na localização do evento
+
+### 3. Publicar o Site
+- [ ] Clicar em "Publish" no painel de gerenciamento
+- [ ] Validar que o site está disponível em flightplan-hq655wm9.manus.space

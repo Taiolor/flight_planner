@@ -37,6 +37,11 @@ import {
   sendTestEmail,
   type TicketChangeNotification,
 } from "./_core/emailNotification";
+import {
+  createFlightCalendarEvent,
+  createRoundTripCalendarEvents,
+  type FlightEvent,
+} from "./_core/calendarIntegration";
 import { ENV } from "./_core/env";
 import { parse as parseCookie } from "cookie";
 
@@ -1044,6 +1049,87 @@ export const appRouter = router({
         }
         return { success: true };
       }),
+
+    // Calendar integration
+    calendar: router({
+      createFlightEvent: publicProcedure
+        .input(
+          z.object({
+            weekNumber: z.number(),
+            airline: z.string(),
+            flightNumber: z.string(),
+            departureAirport: z.string(),
+            arrivalAirport: z.string(),
+            departureTime: z.date(),
+            arrivalTime: z.date(),
+            locator: z.string(),
+            isReturn: z.boolean(),
+          })
+        )
+        .mutation(async ({ input }) => {
+          const success = await createFlightCalendarEvent({
+            weekNumber: input.weekNumber,
+            airline: input.airline,
+            flightNumber: input.flightNumber,
+            departureAirport: input.departureAirport,
+            arrivalAirport: input.arrivalAirport,
+            departureTime: input.departureTime,
+            arrivalTime: input.arrivalTime,
+            locator: input.locator,
+            isReturn: input.isReturn,
+          });
+          if (!success) {
+            throw new TRPCError({
+              code: "INTERNAL_SERVER_ERROR",
+              message: "Falha ao criar evento no calendário",
+            });
+          }
+          return { success: true };
+        }),
+
+      createRoundTrip: publicProcedure
+        .input(
+          z.object({
+            weekNumber: z.number(),
+            departureAirline: z.string(),
+            departureFlightNumber: z.string(),
+            departureAirport: z.string(),
+            arrivalAirport: z.string(),
+            departureTime: z.date(),
+            departureArrivalTime: z.date(),
+            departureLocator: z.string(),
+            returnAirline: z.string(),
+            returnFlightNumber: z.string(),
+            returnTime: z.date(),
+            returnArrivalTime: z.date(),
+            returnLocator: z.string(),
+          })
+        )
+        .mutation(async ({ input }) => {
+          const result = await createRoundTripCalendarEvents(
+            input.weekNumber,
+            input.departureAirline,
+            input.departureFlightNumber,
+            input.departureAirport,
+            input.arrivalAirport,
+            input.departureTime,
+            input.departureArrivalTime,
+            input.departureLocator,
+            input.returnAirline,
+            input.returnFlightNumber,
+            input.returnTime,
+            input.returnArrivalTime,
+            input.returnLocator
+          );
+          if (!result.departure || !result.return) {
+            throw new TRPCError({
+              code: "INTERNAL_SERVER_ERROR",
+              message: "Falha ao criar eventos no calendário",
+            });
+          }
+          return { success: true };
+        }),
+    }),
   }),
 });
 

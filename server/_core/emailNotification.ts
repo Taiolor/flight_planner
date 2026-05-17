@@ -93,8 +93,7 @@ function formatTicketDetails(
 async function sendEmailViaGmail(
   to: string[],
   subject: string,
-  htmlContent: string,
-  textContent: string
+  htmlContent: string
 ): Promise<boolean> {
   try {
     const gmailFromEmail = "taiolor@gmail.com";
@@ -103,8 +102,7 @@ async function sendEmailViaGmail(
     const message = {
       to: to,
       subject: subject,
-      bodyHtml: htmlContent,
-      bodyPlain: textContent,
+      content: htmlContent,
     };
 
     // Call Gmail MCP tool via CLI
@@ -150,7 +148,7 @@ export async function sendTicketNotificationEmail(
     const htmlContent = formatTicketDetails(notification);
     const textContent = `Notificação de alteração de bilhete - Semana ${notification.weekNumber} (${notification.ticketType === "departure" ? "Ida" : "Volta"})`;
 
-    return await sendEmailViaGmail(recipients, subject, htmlContent, textContent);
+    return await sendEmailViaGmail(recipients, subject, htmlContent);
   } catch (error) {
     console.error("[Email] Failed to send ticket notification:", error);
     return false;
@@ -179,8 +177,7 @@ export async function sendTestEmail(testEmail: string): Promise<boolean> {
     return await sendEmailViaGmail(
       [testEmail],
       subject,
-      htmlContent,
-      textContent
+      htmlContent
     );
   } catch (error) {
     console.error("[Email] Failed to send test email:", error);
