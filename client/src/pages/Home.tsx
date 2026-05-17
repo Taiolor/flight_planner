@@ -2295,69 +2295,201 @@ export default function Home() {
                                   <div className="mt-3 sm:mt-4">
                                     {/* Painel Copa 2026 — apenas na semana vigente */}
                                     {week.weekNumber === currentWeekNumber && (() => {
+                                      const hoje = new Date();
+                                      hoje.setHours(0, 0, 0, 0);
+
+                                      // Helper: calcula dias restantes e labels
+                                      const calcDias = (dataStr: string) => {
+                                        const [y, m, d] = dataStr.split("-").map(Number);
+                                        const dataEvento = new Date(y, m - 1, d);
+                                        const diffMs = dataEvento.getTime() - hoje.getTime();
+                                        const diffDias = Math.round(diffMs / (1000 * 60 * 60 * 24));
+                                        const passou = diffDias < 0;
+                                        const ehHoje = diffDias === 0;
+                                        const label = passou ? "Já realizado" : ehHoje ? "🔴 HOJE!" : `em ${diffDias} dia${diffDias === 1 ? "" : "s"}`;
+                                        const [, mm, dd] = dataStr.split("-");
+                                        const diasSemana = ["Dom","Seg","Ter","Qua","Qui","Sex","Sáb"];
+                                        const diaSemana = diasSemana[dataEvento.getDay()];
+                                        return { passou, ehHoje, label, mm, dd, diaSemana, diffDias };
+                                      };
+
                                       const jogosDosBrasil = [
                                         { data: "2026-06-13", adversario: "Marrocos", cidade: "Nova York/NJ", bandeira: "🇲🇦" },
                                         { data: "2026-06-19", adversario: "Haiti",    cidade: "Filadélfia",   bandeira: "🇭🇹" },
                                         { data: "2026-06-24", adversario: "Escócia",  cidade: "Miami",        bandeira: "🏴󠁧󠁢󠁳󠁣󠁴󠁿" },
                                       ];
-                                      const hoje = new Date();
-                                      hoje.setHours(0, 0, 0, 0);
+
+                                      // Fases eliminatórias: janelas de datas (início e fim de cada fase)
+                                      const fasesEliminatorias = [
+                                        {
+                                          fase: "32-avos de Final",
+                                          icone: "🏟️",
+                                          inicio: "2026-06-28",
+                                          fim: "2026-07-03",
+                                          cidades: "Várias cidades",
+                                          cor: "blue",
+                                        },
+                                        {
+                                          fase: "Oitavas de Final",
+                                          icone: "⚡",
+                                          inicio: "2026-07-04",
+                                          fim: "2026-07-07",
+                                          cidades: "Várias cidades",
+                                          cor: "blue",
+                                        },
+                                        {
+                                          fase: "Quartas de Final",
+                                          icone: "🔥",
+                                          inicio: "2026-07-09",
+                                          fim: "2026-07-11",
+                                          cidades: "Várias cidades",
+                                          cor: "orange",
+                                        },
+                                        {
+                                          fase: "Semifinais",
+                                          icone: "🏆",
+                                          inicio: "2026-07-14",
+                                          fim: "2026-07-15",
+                                          cidades: "Dallas, TX",
+                                          cor: "purple",
+                                        },
+                                        {
+                                          fase: "Final",
+                                          icone: "🥇",
+                                          inicio: "2026-07-19",
+                                          fim: "2026-07-19",
+                                          cidades: "MetLife Stadium, NJ",
+                                          cor: "yellow",
+                                        },
+                                      ];
+
                                       return (
                                         <div className="mb-4 rounded-xl border border-green-300 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950/30 dark:to-emerald-950/30 dark:border-green-700 overflow-hidden">
+                                          {/* Cabeçalho */}
                                           <div className="bg-green-700 dark:bg-green-800 px-3 py-2 flex items-center gap-2">
                                             <span className="text-base">⚽</span>
-                                            <span className="text-xs font-bold text-white uppercase tracking-wider">Brasil na Copa do Mundo 2026 — 1ª Fase</span>
+                                            <span className="text-xs font-bold text-white uppercase tracking-wider">Brasil na Copa do Mundo 2026</span>
                                           </div>
-                                          <div className="p-3 grid grid-cols-1 sm:grid-cols-3 gap-2">
-                                            {jogosDosBrasil.map(jogo => {
-                                              const [y, m, d] = jogo.data.split("-").map(Number);
-                                              const dataJogo = new Date(y, m - 1, d);
-                                              const diffMs = dataJogo.getTime() - hoje.getTime();
-                                              const diffDias = Math.round(diffMs / (1000 * 60 * 60 * 24));
-                                              const passou = diffDias < 0;
-                                              const hoje2 = diffDias === 0;
-                                              const diasLabel = passou
-                                                ? "Já realizado"
-                                                : hoje2
-                                                ? "🔴 HOJE!"
-                                                : `em ${diffDias} dia${diffDias === 1 ? "" : "s"}`;
-                                              const [, mm, dd] = jogo.data.split("-");
-                                              const diasSemana = ["Dom","Seg","Ter","Qua","Qui","Sex","Sáb"];
-                                              const diaSemana = diasSemana[dataJogo.getDay()];
-                                              return (
-                                                <div
-                                                  key={jogo.data}
-                                                  className={`rounded-lg p-3 border flex flex-col gap-1 ${
-                                                    passou
-                                                      ? "bg-slate-100 border-slate-200 dark:bg-slate-800/40 dark:border-slate-700 opacity-60"
-                                                      : hoje2
-                                                      ? "bg-yellow-50 border-yellow-400 dark:bg-yellow-900/30 dark:border-yellow-500 ring-2 ring-yellow-400"
-                                                      : "bg-white border-green-200 dark:bg-green-950/20 dark:border-green-700"
-                                                  }`}
-                                                >
-                                                  <div className="flex items-center gap-1.5">
-                                                    <span className="text-lg">🇧🇷</span>
-                                                    <span className="text-xs font-bold text-slate-700 dark:text-slate-200">Brasil</span>
-                                                    <span className="text-xs text-slate-400">vs</span>
-                                                    <span className="text-lg">{jogo.bandeira}</span>
-                                                    <span className="text-xs font-bold text-slate-700 dark:text-slate-200">{jogo.adversario}</span>
+
+                                          {/* 1ª Fase */}
+                                          <div className="px-3 pt-3 pb-1">
+                                            <div className="flex items-center gap-1.5 mb-2">
+                                              <span className="text-xs font-bold text-green-800 dark:text-green-300 uppercase tracking-wide">🇧🇷 1ª Fase — Grupo C</span>
+                                            </div>
+                                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                                              {jogosDosBrasil.map(jogo => {
+                                                const { passou, ehHoje, label, mm, dd, diaSemana } = calcDias(jogo.data);
+                                                return (
+                                                  <div
+                                                    key={jogo.data}
+                                                    className={`rounded-lg p-3 border flex flex-col gap-1 ${
+                                                      passou
+                                                        ? "bg-slate-100 border-slate-200 dark:bg-slate-800/40 dark:border-slate-700 opacity-60"
+                                                        : ehHoje
+                                                        ? "bg-yellow-50 border-yellow-400 dark:bg-yellow-900/30 dark:border-yellow-500 ring-2 ring-yellow-400"
+                                                        : "bg-white border-green-200 dark:bg-green-950/20 dark:border-green-700"
+                                                    }`}
+                                                  >
+                                                    <div className="flex items-center gap-1.5">
+                                                      <span className="text-lg">🇧🇷</span>
+                                                      <span className="text-xs font-bold text-slate-700 dark:text-slate-200">Brasil</span>
+                                                      <span className="text-xs text-slate-400">vs</span>
+                                                      <span className="text-lg">{jogo.bandeira}</span>
+                                                      <span className="text-xs font-bold text-slate-700 dark:text-slate-200">{jogo.adversario}</span>
+                                                    </div>
+                                                    <div className="flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400">
+                                                      <Calendar className="w-3 h-3" />
+                                                      <span>{diaSemana}, {dd}/{mm}/2026</span>
+                                                    </div>
+                                                    <div className="flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400">
+                                                      <MapPin className="w-3 h-3" />
+                                                      <span>{jogo.cidade}</span>
+                                                    </div>
+                                                    <div className={`text-xs font-semibold mt-0.5 ${
+                                                      passou ? "text-slate-400" : ehHoje ? "text-yellow-600 dark:text-yellow-400" : "text-green-700 dark:text-green-400"
+                                                    }`}>
+                                                      {label}
+                                                    </div>
                                                   </div>
-                                                  <div className="flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400">
-                                                    <Calendar className="w-3 h-3" />
-                                                    <span>{diaSemana}, {dd}/{mm}/2026</span>
+                                                );
+                                              })}
+                                            </div>
+                                          </div>
+
+                                          {/* Divisor */}
+                                          <div className="mx-3 my-2 border-t border-green-200 dark:border-green-800" />
+
+                                          {/* Fases Eliminatórias */}
+                                          <div className="px-3 pb-3">
+                                            <div className="flex items-center gap-1.5 mb-2">
+                                              <span className="text-xs font-bold text-green-800 dark:text-green-300 uppercase tracking-wide">🏆 Fases Eliminatórias — Possível participação do Brasil</span>
+                                            </div>
+                                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-2">
+                                              {fasesEliminatorias.map(fase => {
+                                                const inicio = calcDias(fase.inicio);
+                                                const fim = calcDias(fase.fim);
+                                                // A fase já passou se o fim já passou
+                                                const passou = fim.passou;
+                                                // A fase está acontecendo agora se inicio passou mas fim não
+                                                const emAndamento = inicio.passou && !fim.passou;
+                                                const [, mmI, ddI] = fase.inicio.split("-");
+                                                const [, mmF, ddF] = fase.fim.split("-");
+                                                const mesmoMes = mmI === mmF;
+                                                const periodoLabel = mesmoMes
+                                                  ? `${ddI} a ${ddF}/${mmI}`
+                                                  : `${ddI}/${mmI} a ${ddF}/${mmF}`;
+                                                const diasLabel = passou
+                                                  ? "Já realizado"
+                                                  : emAndamento
+                                                  ? "🔴 Em andamento!"
+                                                  : `em ${inicio.diffDias} dia${inicio.diffDias === 1 ? "" : "s"}`;
+                                                const colorMap: Record<string, string> = {
+                                                  blue:   "bg-blue-50 border-blue-200 dark:bg-blue-950/20 dark:border-blue-700",
+                                                  orange: "bg-orange-50 border-orange-200 dark:bg-orange-950/20 dark:border-orange-700",
+                                                  purple: "bg-purple-50 border-purple-200 dark:bg-purple-950/20 dark:border-purple-700",
+                                                  yellow: "bg-yellow-50 border-yellow-300 dark:bg-yellow-950/20 dark:border-yellow-600",
+                                                };
+                                                const labelColorMap: Record<string, string> = {
+                                                  blue:   "text-blue-700 dark:text-blue-400",
+                                                  orange: "text-orange-700 dark:text-orange-400",
+                                                  purple: "text-purple-700 dark:text-purple-400",
+                                                  yellow: "text-yellow-700 dark:text-yellow-400",
+                                                };
+                                                return (
+                                                  <div
+                                                    key={fase.fase}
+                                                    className={`rounded-lg p-3 border flex flex-col gap-1 ${
+                                                      passou
+                                                        ? "bg-slate-100 border-slate-200 dark:bg-slate-800/40 dark:border-slate-700 opacity-60"
+                                                        : emAndamento
+                                                        ? "bg-yellow-50 border-yellow-400 dark:bg-yellow-900/30 dark:border-yellow-500 ring-2 ring-yellow-400"
+                                                        : colorMap[fase.cor] ?? colorMap.blue
+                                                    }`}
+                                                  >
+                                                    <div className="flex items-center gap-1.5">
+                                                      <span className="text-base">{fase.icone}</span>
+                                                      <span className="text-xs font-bold text-slate-700 dark:text-slate-200">{fase.fase}</span>
+                                                    </div>
+                                                    <div className="flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400">
+                                                      <Calendar className="w-3 h-3" />
+                                                      <span>{periodoLabel}/2026</span>
+                                                    </div>
+                                                    <div className="flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400">
+                                                      <MapPin className="w-3 h-3" />
+                                                      <span>{fase.cidades}</span>
+                                                    </div>
+                                                    <div className={`text-xs font-semibold mt-0.5 ${
+                                                      passou ? "text-slate-400" : emAndamento ? "text-yellow-600 dark:text-yellow-400" : labelColorMap[fase.cor] ?? labelColorMap.blue
+                                                    }`}>
+                                                      {diasLabel}
+                                                    </div>
+                                                    {!passou && (
+                                                      <span className="text-xs text-slate-400 dark:text-slate-500 italic">possível</span>
+                                                    )}
                                                   </div>
-                                                  <div className="flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400">
-                                                    <MapPin className="w-3 h-3" />
-                                                    <span>{jogo.cidade}</span>
-                                                  </div>
-                                                  <div className={`text-xs font-semibold mt-0.5 ${
-                                                    passou ? "text-slate-400" : hoje2 ? "text-yellow-600 dark:text-yellow-400" : "text-green-700 dark:text-green-400"
-                                                  }`}>
-                                                    {diasLabel}
-                                                  </div>
-                                                </div>
-                                              );
-                                            })}
+                                                );
+                                              })}
+                                            </div>
                                           </div>
                                         </div>
                                       );

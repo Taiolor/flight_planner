@@ -192,3 +192,11 @@
 - [x] Exibir painel com próximos jogos do Brasil (1ª fase) na semana vigente do planejador
 - [x] Mostrar data, adversário, cidade e dias restantes para cada jogo
 - [x] Destacar visualmente jogos que já passaram vs. próximos
+
+## Fases Eliminatórias Copa 2026 no Painel
+
+- [x] Adicionar oitavas de final (04-07/07) ao painel da semana vigente com status "possível"
+- [x] Adicionar quartas de final (09-11/07) ao painel da semana vigente
+- [x] Adicionar semifinais (14-15/07, Dallas) ao painel da semana vigente
+- [x] Adicionar final (19/07, MetLife Stadium) ao painel da semana vigente
+- [x] Separar visualmente 1ª fase das fases eliminatórias no painel
