@@ -1180,6 +1180,27 @@ export const appRouter = router({
           leadMinutes: 120,
         };
         
+        // Formatar datas para padrão brasileiro
+        const departureDateBrazilian = formatDateToBrazilian(input.departureDate);
+        const returnDateBrazilian = formatDateToBrazilian(input.returnDate);
+        
+        // Gerar links de rastreamento de voo
+        const depTrackUrl = buildFlightTrackUrl(
+          input.departureAirline,
+          input.departureFlightNumber,
+          input.departureAirport,
+          input.returnAirport,
+          input.departureDate
+        );
+        
+        const retTrackUrl = buildFlightTrackUrl(
+          input.returnAirline,
+          input.returnFlightNumber,
+          input.returnAirport,
+          input.departureAirport,
+          input.returnDate
+        );
+        
         const googleDepLink = getGoogleCalendarLink(depEvent, 120, 75);
         const outlookDepLink = getOutlookLink(depEvent, 120, 75);
         const googleRetLink = getGoogleCalendarLink(retEvent, 120, 75);
@@ -1193,7 +1214,7 @@ export const appRouter = router({
             
             <div style="background-color: #f3f4f6; border-radius: 8px; padding: 16px; margin-bottom: 20px;">
               <h3 style="color: #1f2937; margin-top: 0;">Voo de Ida 🛫</h3>
-              <p style="margin: 8px 0;"><strong>Data:</strong> ${input.departureDate} às ${input.departureTime}</p>
+              <p style="margin: 8px 0;"><strong>Data:</strong> ${departureDateBrazilian} às ${input.departureTime}</p>
               <p style="margin: 8px 0;"><strong>Rota:</strong> ${input.departureAirport} → ${input.returnAirport}</p>
               <p style="margin: 8px 0;"><strong>Companhia:</strong> ${input.departureAirline.toUpperCase()}</p>
               <p style="margin: 8px 0;"><strong>Voo:</strong> ${input.departureFlightNumber}</p>
@@ -1201,12 +1222,13 @@ export const appRouter = router({
               <p style="margin: 8px 0;">
                 <a href="${outlookDepLink}" style="color: #0078d4; margin-right: 10px; text-decoration: none;">📅 Outlook • Ida</a>
                 <a href="${googleDepLink}" style="color: #1f2937; margin-right: 10px; text-decoration: none;">📅 Google • Ida</a>
+                ${depTrackUrl ? `<a href="${depTrackUrl}" style="color: #059669; margin-right: 10px; text-decoration: none;">🔍 Rastrear Ida</a>` : ''}
               </p>
             </div>
             
             <div style="background-color: #f3f4f6; border-radius: 8px; padding: 16px; margin-bottom: 20px;">
               <h3 style="color: #1f2937; margin-top: 0;">Voo de Volta 🛬</h3>
-              <p style="margin: 8px 0;"><strong>Data:</strong> ${input.returnDate} às ${input.returnTime}</p>
+              <p style="margin: 8px 0;"><strong>Data:</strong> ${returnDateBrazilian} às ${input.returnTime}</p>
               <p style="margin: 8px 0;"><strong>Rota:</strong> ${input.returnAirport} → ${input.departureAirport}</p>
               <p style="margin: 8px 0;"><strong>Companhia:</strong> ${input.returnAirline.toUpperCase()}</p>
               <p style="margin: 8px 0;"><strong>Voo:</strong> ${input.returnFlightNumber}</p>
@@ -1214,6 +1236,7 @@ export const appRouter = router({
               <p style="margin: 8px 0;">
                 <a href="${outlookRetLink}" style="color: #0078d4; margin-right: 10px; text-decoration: none;">📅 Outlook • Volta</a>
                 <a href="${googleRetLink}" style="color: #1f2937; margin-right: 10px; text-decoration: none;">📅 Google • Volta</a>
+                ${retTrackUrl ? `<a href="${retTrackUrl}" style="color: #059669; margin-right: 10px; text-decoration: none;">🔍 Rastrear Volta</a>` : ''}
               </p>
             </div>
             
