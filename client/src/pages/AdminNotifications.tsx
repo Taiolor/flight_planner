@@ -279,6 +279,8 @@ export default function AdminNotifications() {
             type="button"
             onClick={() => toggleSection("alerts")}
             className="w-full flex items-center justify-between p-4 bg-white hover:bg-gray-50 transition-colors border border-gray-200 rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+            aria-expanded={expandedSections.has("alerts")}
+            aria-controls="section-alerts"
           >
             <div className="flex items-center justify-between flex-1 gap-4">
               <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide">
@@ -307,7 +309,7 @@ export default function AdminNotifications() {
           </button>
 
           {expandedSections.has("alerts") && (
-            <Card className="overflow-hidden mt-3">
+            <Card id="section-alerts" className="overflow-hidden mt-3">
             {data?.scheduledAlerts.length === 0 ? (
               <div className="p-8 text-center">
                 <Bell className="w-10 h-10 text-gray-300 mx-auto mb-3" />
@@ -371,6 +373,8 @@ export default function AdminNotifications() {
             type="button"
             onClick={() => toggleSection("devices")}
             className="w-full flex items-center justify-between p-4 bg-white hover:bg-gray-50 transition-colors border border-gray-200 rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+            aria-expanded={expandedSections.has("devices")}
+            aria-controls="section-devices"
           >
             <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide">
               Dispositivos Registrados ({data?.totalSubscriptions ?? 0})
@@ -383,7 +387,7 @@ export default function AdminNotifications() {
           </button>
 
           {expandedSections.has("devices") && (
-            <Card className="overflow-hidden mt-3">
+            <Card id="section-devices" className="overflow-hidden mt-3">
             {!data?.subscriptions || data.subscriptions.length === 0 ? (
               <div className="p-8 text-center">
                 <Smartphone className="w-10 h-10 text-gray-300 mx-auto mb-3" />
@@ -426,6 +430,8 @@ export default function AdminNotifications() {
             type="button"
             onClick={() => toggleSection("history")}
             className="w-full flex items-center justify-between p-4 bg-white hover:bg-gray-50 transition-colors border border-gray-200 rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+            aria-expanded={expandedSections.has("history")}
+            aria-controls="section-history"
           >
             <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide">
               Histórico de Envios ({logs?.length ?? 0})
@@ -449,7 +455,7 @@ export default function AdminNotifications() {
           </button>
 
           {expandedSections.has("history") && (
-            <Card className="overflow-hidden mt-3">
+            <Card id="section-history" className="overflow-hidden mt-3">
             {!logs || logs.length === 0 ? (
               <div className="p-8 text-center">
                 <History className="w-10 h-10 text-gray-300 mx-auto mb-3" />
