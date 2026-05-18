@@ -43,14 +43,14 @@ export function ShareByEmailButton({
 
     setIsLoading(true);
     try {
-      // Extrair hora do datetime (formato: "HH:mm" ou "HH:mm:ss")
+      // Extrair hora do datetime (formato: "YYYY-MM-DD HH:mm")
       const extractTime = (datetime: string): string => {
         if (!datetime) return '';
-        // Se for apenas hora (HH:mm ou HH:mm:ss)
-        if (datetime.includes(':') && !datetime.includes('-') && !datetime.includes('/')) {
-          return datetime.split(':').slice(0, 2).join(':');
+        // Formato esperado: YYYY-MM-DD HH:mm (hora está na posição 11-16)
+        if (datetime.length >= 16) {
+          return datetime.slice(11, 16);
         }
-        // Se for datetime completo (YYYY-MM-DD HH:mm ou similar)
+        // Fallback: tentar split por espaço
         const parts = datetime.split(' ');
         if (parts.length > 1) {
           return parts[1].split(':').slice(0, 2).join(':');
