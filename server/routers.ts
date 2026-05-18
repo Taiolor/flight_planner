@@ -43,6 +43,11 @@ import {
   createRoundTripCalendarEvents,
   type FlightEvent,
 } from "./_core/calendarIntegration";
+import {
+  getGoogleCalendarLink,
+  getOutlookLink,
+  airportAddresses,
+} from "./_core/calendarHelper";
 import { ENV } from "./_core/env";
 import { parse as parseCookie } from "cookie";
 
@@ -408,23 +413,68 @@ export const appRouter = router({
                 const returnDate = returnDatetime.toLocaleDateString('pt-BR');
                 const returnTime = returnDatetime.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
 
-                await sendShareByEmailNotification({
-                  emails: recipients.map(r => r.email),
-                  subject: `Compartilhamento de Bilhetes - Semana ${input.weekNumber}`,
-                  weekLabel: `Semana ${input.weekNumber}`,
-                  departureDate,
-                  departureTime,
-                  departureAirport: input.departureAirport || 'N/A',
-                  returnAirport: input.returnAirport || 'N/A',
-                  departureAirline: input.departureAirline || 'N/A',
-                  departureFlightNumber: input.departureFlightNumber,
-                  departureLocator: input.departureLocator || 'N/A',
-                  returnDate,
-                  returnTime,
-                  returnAirline: input.returnAirline || 'N/A',
-                  returnFlightNumber: input.returnFlightNumber,
-                  returnLocator: input.returnLocator || 'N/A',
-                });
+                // Preparar eventos de calendário para envio automático
+                const depEvent = {
+                  title: `✈️ Voo IDA ${input.departureAirline?.toUpperCase() || 'N/A'}${input.departureFlightNumber} — ${input.departureAirport || 'N/A'} → ${input.returnAirport || 'N/A'}`,
+                  flightDatetime: `${departureDate.split('/').reverse().join('-')}T${departureTime.replace(/\s/g, '')}`,
+                  location: airportAddresses[input.departureAirport || 'GRU'] || input.departureAirport || 'N/A',
+                  description: `Localizador: ${input.departureLocator || 'N/A'}\nCompanhia: ${input.departureAirline?.toUpperCase() || 'N/A'}\nNúmero: ${input.departureFlightNumber}`,
+                  leadMinutes: 120,
+                };
+                
+                const retEvent = {
+                  title: `✈️ Voo VOLTA ${input.returnAirline?.toUpperCase() || 'N/A'}${input.returnFlightNumber} — ${input.returnAirport || 'N/A'} → ${input.departureAirport || 'N/A'}`,
+                  flightDatetime: `${returnDate.split('/').reverse().join('-')}T${returnTime.replace(/\s/g, '')}`,
+                  location: airportAddresses[input.returnAirport || 'NVT'] || input.returnAirport || 'N/A',
+                  description: `Localizador: ${input.returnLocator || 'N/A'}\nCompanhia: ${input.returnAirline?.toUpperCase() || 'N/A'}\nNúmero: ${input.returnFlightNumber}`,
+                  leadMinutes: 120,
+                };
+                
+                const googleDepLink = getGoogleCalendarLink(depEvent, 120, 75);
+                const outlookDepLink = getOutlookLink(depEvent, 120, 75);
+                const googleRetLink = getGoogleCalendarLink(retEvent, 120, 75);
+                const outlookRetLink = getOutlookLink(retEvent, 120, 75);
+                
+                // Construir HTML do e-mail
+                const emailHtml = `
+                  <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                    <h2 style="color: #1f2937; margin-bottom: 20px;">Compartilhamento de Bilhetes ✈️</h2>
+                    <p style="color: #4b5563; margin-bottom: 20px;"><strong>Semana ${input.weekNumber}</strong></p>
+                    
+                    <div style="background-color: #f3f4f6; border-radius: 8px; padding: 16px; margin-bottom: 20px;">
+                      <h3 style="color: #1f2937; margin-top: 0;">Voo de Ida 🛫</h3>
+                      <p style="margin: 8px 0;"><strong>Data:</strong> ${departureDate} às ${departureTime}</p>
+                      <p style="margin: 8px 0;"><strong>Rota:</strong> ${input.departureAirport} → ${input.returnAirport}</p>
+                      <p style="margin: 8px 0;"><strong>Companhia:</strong> ${input.departureAirline?.toUpperCase() || 'N/A'}</p>
+                      <p style="margin: 8px 0;"><strong>Voo:</strong> ${input.departureFlightNumber}</p>
+                      <p style="margin: 8px 0;"><strong>Localizador:</strong> <code style="background-color: #e5e7eb; padding: 2px 6px; border-radius: 3px;">${input.departureLocator || 'N/A'}</code></p>
+                      <p style="margin: 8px 0;">
+                        <a href="${outlookDepLink}" style="color: #0078d4; margin-right: 10px; text-decoration: none;">📅 Outlook • Ida</a>
+                        <a href="${googleDepLink}" style="color: #1f2937; margin-right: 10px; text-decoration: none;">📅 Google • Ida</a>
+                      </p>
+                    </div>
+                    
+                    <div style="background-color: #f3f4f6; border-radius: 8px; padding: 16px; margin-bottom: 20px;">
+                      <h3 style="color: #1f2937; margin-top: 0;">Voo de Volta 🛬</h3>
+                      <p style="margin: 8px 0;"><strong>Data:</strong> ${returnDate} às ${returnTime}</p>
+                      <p style="margin: 8px 0;"><strong>Rota:</strong> ${input.returnAirport} → ${input.departureAirport}</p>
+                      <p style="margin: 8px 0;"><strong>Companhia:</strong> ${input.returnAirline?.toUpperCase() || 'N/A'}</p>
+                      <p style="margin: 8px 0;"><strong>Voo:</strong> ${input.returnFlightNumber}</p>
+                      <p style="margin: 8px 0;"><strong>Localizador:</strong> <code style="background-color: #e5e7eb; padding: 2px 6px; border-radius: 3px;">${input.returnLocator || 'N/A'}</code></p>
+                      <p style="margin: 8px 0;">
+                        <a href="${outlookRetLink}" style="color: #0078d4; margin-right: 10px; text-decoration: none;">📅 Outlook • Volta</a>
+                        <a href="${googleRetLink}" style="color: #1f2937; margin-right: 10px; text-decoration: none;">📅 Google • Volta</a>
+                      </p>
+                    </div>
+                    
+                    <p style="color: #6b7280; font-size: 12px; margin-top: 30px; border-top: 1px solid #e5e7eb; padding-top: 20px;">
+                      Compartilhado via Smart Fly - Planejador de Passagens Aéreas 2026
+                    </p>
+                  </div>
+                `;
+                
+                const emailAddresses = recipients.map(r => r.email);
+                await sendShareByEmailNotification(emailAddresses, `Compartilhamento de Bilhetes - Semana ${input.weekNumber}`, emailHtml);
               }
             }
           } else if (wasIssued && !nowIssued) {
@@ -1086,6 +1136,28 @@ export const appRouter = router({
           });
         }
 
+        // Preparar eventos de calendário
+        const depEvent = {
+          title: `✈️ Voo IDA ${input.departureAirline.toUpperCase()}${input.departureFlightNumber} — ${input.departureAirport} → ${input.returnAirport}`,
+          flightDatetime: `${input.departureDate}T${input.departureTime}`,
+          location: airportAddresses[input.departureAirport] || input.departureAirport,
+          description: `Localizador: ${input.departureLocator}\nCompanhia: ${input.departureAirline.toUpperCase()}\nNúmero: ${input.departureFlightNumber}`,
+          leadMinutes: 120,
+        };
+        
+        const retEvent = {
+          title: `✈️ Voo VOLTA ${input.returnAirline.toUpperCase()}${input.returnFlightNumber} — ${input.returnAirport} → ${input.departureAirport}`,
+          flightDatetime: `${input.returnDate}T${input.returnTime}`,
+          location: airportAddresses[input.returnAirport] || input.returnAirport,
+          description: `Localizador: ${input.returnLocator}\nCompanhia: ${input.returnAirline.toUpperCase()}\nNúmero: ${input.returnFlightNumber}`,
+          leadMinutes: 120,
+        };
+        
+        const googleDepLink = getGoogleCalendarLink(depEvent, 120, 75);
+        const outlookDepLink = getOutlookLink(depEvent, 120, 75);
+        const googleRetLink = getGoogleCalendarLink(retEvent, 120, 75);
+        const outlookRetLink = getOutlookLink(retEvent, 120, 75);
+        
         // Construir HTML do e-mail similar ao WhatsApp
         const emailHtml = `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
@@ -1099,10 +1171,9 @@ export const appRouter = router({
               <p style="margin: 8px 0;"><strong>Companhia:</strong> ${input.departureAirline.toUpperCase()}</p>
               <p style="margin: 8px 0;"><strong>Voo:</strong> ${input.departureFlightNumber}</p>
               <p style="margin: 8px 0;"><strong>Localizador:</strong> <code style="background-color: #e5e7eb; padding: 2px 6px; border-radius: 3px;">${input.departureLocator}</code></p>
-              ${input.departureFlightNumber ? `<p style="margin: 8px 0;"><a href="https://www.google.com/search?q=${input.departureAirline.slice(0, 2)}+flight+${input.departureFlightNumber}" style="color: #3b82f6;">Ver rastreio do voo 🔍</a></p>` : ""}
               <p style="margin: 8px 0;">
-                <a href="https://outlook.live.com/calendar/0/deeplink/compose?subject=${encodeURIComponent(`Voo ${input.departureAirline.toUpperCase()} ${input.departureFlightNumber} - ${input.departureAirport} → ${input.returnAirport}`)}&body=${encodeURIComponent(`Voo de Ida\nCompanhia: ${input.departureAirline.toUpperCase()}\nNúmero: ${input.departureFlightNumber}\nLocalizador: ${input.departureLocator}\nData: ${input.departureDate} às ${input.departureTime}`)}&startTime=${encodeURIComponent(`${input.departureDate}T${input.departureTime}:00`)}" style="color: #0078d4; margin-right: 10px;">📅 Outlook • Ida</a>
-                <a href="https://calendar.google.com/calendar/u/0/r/eventedit?text=${encodeURIComponent(`Voo ${input.departureAirline.toUpperCase()} ${input.departureFlightNumber}`)}&details=${encodeURIComponent(`Companhia: ${input.departureAirline.toUpperCase()}\nNúmero: ${input.departureFlightNumber}\nLocalizador: ${input.departureLocator}\nRota: ${input.departureAirport} → ${input.returnAirport}\nHorário: ${input.departureTime}`)}&dates=${encodeURIComponent(`${input.departureDate.replace(/-/g, '')}T${input.departureTime.replace(/:/g, '')}00/${input.departureDate.replace(/-/g, '')}T${input.departureTime.replace(/:/g, '')}00`)}" style="color: #1f2937; margin-right: 10px;">📅 Google • Ida</a>
+                <a href="${outlookDepLink}" style="color: #0078d4; margin-right: 10px; text-decoration: none;">📅 Outlook • Ida</a>
+                <a href="${googleDepLink}" style="color: #1f2937; margin-right: 10px; text-decoration: none;">📅 Google • Ida</a>
               </p>
             </div>
             
@@ -1113,10 +1184,9 @@ export const appRouter = router({
               <p style="margin: 8px 0;"><strong>Companhia:</strong> ${input.returnAirline.toUpperCase()}</p>
               <p style="margin: 8px 0;"><strong>Voo:</strong> ${input.returnFlightNumber}</p>
               <p style="margin: 8px 0;"><strong>Localizador:</strong> <code style="background-color: #e5e7eb; padding: 2px 6px; border-radius: 3px;">${input.returnLocator}</code></p>
-              ${input.returnFlightNumber ? `<p style="margin: 8px 0;"><a href="https://www.google.com/search?q=${input.returnAirline.slice(0, 2)}+flight+${input.returnFlightNumber}" style="color: #3b82f6;">Ver rastreio do voo 🔍</a></p>` : ""}
               <p style="margin: 8px 0;">
-                <a href="https://outlook.live.com/calendar/0/deeplink/compose?subject=${encodeURIComponent(`Voo ${input.returnAirline.toUpperCase()} ${input.returnFlightNumber} - ${input.returnAirport} → ${input.departureAirport}`)}&body=${encodeURIComponent(`Voo de Volta\nCompanhia: ${input.returnAirline.toUpperCase()}\nNúmero: ${input.returnFlightNumber}\nLocalizador: ${input.returnLocator}\nData: ${input.returnDate} às ${input.returnTime}`)}&startTime=${encodeURIComponent(`${input.returnDate}T${input.returnTime}:00`)}" style="color: #0078d4; margin-right: 10px;">📅 Outlook • Volta</a>
-                <a href="https://calendar.google.com/calendar/u/0/r/eventedit?text=${encodeURIComponent(`Voo ${input.returnAirline.toUpperCase()} ${input.returnFlightNumber}`)}&details=${encodeURIComponent(`Companhia: ${input.returnAirline.toUpperCase()}\nNúmero: ${input.returnFlightNumber}\nLocalizador: ${input.returnLocator}\nRota: ${input.returnAirport} → ${input.departureAirport}\nHorário: ${input.returnTime}`)}&dates=${encodeURIComponent(`${input.returnDate.replace(/-/g, '')}T${input.returnTime.replace(/:/g, '')}00/${input.returnDate.replace(/-/g, '')}T${input.returnTime.replace(/:/g, '')}00`)}" style="color: #1f2937; margin-right: 10px;">📅 Google • Volta</a>
+                <a href="${outlookRetLink}" style="color: #0078d4; margin-right: 10px; text-decoration: none;">📅 Outlook • Volta</a>
+                <a href="${googleRetLink}" style="color: #1f2937; margin-right: 10px; text-decoration: none;">📅 Google • Volta</a>
               </p>
             </div>
             
