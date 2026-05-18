@@ -47,6 +47,8 @@ import {
   getGoogleCalendarLink,
   getOutlookLink,
   airportAddresses,
+  buildFlightTrackUrl,
+  formatDateToBrazilian,
 } from "./_core/calendarHelper";
 import { ENV } from "./_core/env";
 import { parse as parseCookie } from "cookie";
@@ -434,6 +436,23 @@ export const appRouter = router({
                   leadMinutes: 120,
                 };
                 
+                // Gerar links de rastreamento de voo
+                const depTrackUrl = buildFlightTrackUrl(
+                  input.departureAirline || '',
+                  input.departureFlightNumber || '',
+                  input.departureAirport || 'GRU',
+                  input.returnAirport || 'NVT',
+                  `${departureDatetime.getFullYear()}-${pad(departureDatetime.getMonth() + 1)}-${pad(departureDatetime.getDate())}`
+                );
+                
+                const retTrackUrl = buildFlightTrackUrl(
+                  input.returnAirline || '',
+                  input.returnFlightNumber || '',
+                  input.returnAirport || 'NVT',
+                  input.departureAirport || 'GRU',
+                  `${returnDatetime.getFullYear()}-${pad(returnDatetime.getMonth() + 1)}-${pad(returnDatetime.getDate())}`
+                );
+                
                 const googleDepLink = getGoogleCalendarLink(depEvent, 120, 75);
                 const outlookDepLink = getOutlookLink(depEvent, 120, 75);
                 const googleRetLink = getGoogleCalendarLink(retEvent, 120, 75);
@@ -455,6 +474,7 @@ export const appRouter = router({
                       <p style="margin: 8px 0;">
                         <a href="${outlookDepLink}" style="color: #0078d4; margin-right: 10px; text-decoration: none;">📅 Outlook • Ida</a>
                         <a href="${googleDepLink}" style="color: #1f2937; margin-right: 10px; text-decoration: none;">📅 Google • Ida</a>
+                        ${depTrackUrl ? `<a href="${depTrackUrl}" style="color: #059669; margin-right: 10px; text-decoration: none;">🔍 Rastrear Ida</a>` : ''}
                       </p>
                     </div>
                     
@@ -468,6 +488,7 @@ export const appRouter = router({
                       <p style="margin: 8px 0;">
                         <a href="${outlookRetLink}" style="color: #0078d4; margin-right: 10px; text-decoration: none;">📅 Outlook • Volta</a>
                         <a href="${googleRetLink}" style="color: #1f2937; margin-right: 10px; text-decoration: none;">📅 Google • Volta</a>
+                        ${retTrackUrl ? `<a href="${retTrackUrl}" style="color: #059669; margin-right: 10px; text-decoration: none;">🔍 Rastrear Volta</a>` : ''}
                       </p>
                     </div>
                     

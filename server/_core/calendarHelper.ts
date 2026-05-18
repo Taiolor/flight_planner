@@ -3,6 +3,43 @@
  * Espelhado do client/src/lib/calendarHelper.ts para uso no servidor.
  */
 
+/** Mapa de códigos IATA das companhias aéreas */
+const airlineIataCodes: Record<string, string> = {
+  latam: "LA",
+  gol: "G3",
+  azul: "AD",
+  voepass: "VP",
+  avianca: "AV",
+  onhappy: "OH",
+};
+
+/** Formata data ISO (YYYY-MM-DD) para o formato brasileiro (DD/MM/YYYY) */
+export function formatDateToBrazilian(isoDate: string): string {
+  if (!isoDate) return "";
+  const [year, month, day] = isoDate.split("-");
+  return `${day}/${month}/${year}`;
+}
+
+/** Constrói URL de rastreamento de voo no Google */
+export function buildFlightTrackUrl(
+  airline: string,
+  flightNumber: string,
+  departureAirport: string,
+  arrivalAirport: string,
+  flightDatetime: string
+): string {
+  const iata =
+    airlineIataCodes[airline.toLowerCase()] ??
+    airline.toUpperCase().slice(0, 2);
+  // Extrair apenas os dígitos do número do voo e pegar os últimos 4
+  const allDigits = flightNumber.replace(/[^0-9]/g, "");
+  const digits = allDigits.slice(-4).padStart(4, "0");
+  // Extrair data no formato YYYY-MM-DD
+  const date = flightDatetime.slice(0, 10);
+  const query = `${iata}+flight+${digits}+from+${departureAirport.toUpperCase()}+to+${arrivalAirport.toUpperCase()},+${date}`;
+  return `https://www.google.com/search?q=${query}`;
+}
+
 export interface CalendarEventParams {
   title: string; // ex: "✈️ Voo IDA LA3045 — LATAM Airlines"
   flightDatetime: string; // ISO local "YYYY-MM-DDTHH:mm"
