@@ -120,12 +120,12 @@ async function sendEmailViaGmail(
     };
 
     const inputJson = JSON.stringify(messagePayload);
-    const escapedInput = inputJson.replace(/"/g, '\\"');
 
     console.log(`[Email] Sending email to ${to.join(', ')} with subject: ${subject}`);
+    console.log(`[Email] Payload: ${inputJson}`);
     
     const result = execSync(
-      `manus-mcp-cli tool call gmail_send_messages --server gmail --input "${escapedInput}"`,
+      `manus-mcp-cli tool call gmail_send_messages --server gmail --input '${inputJson}'`,
       { encoding: "utf-8" }
     );
 

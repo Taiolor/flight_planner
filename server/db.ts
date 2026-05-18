@@ -626,10 +626,13 @@ export async function getTicketNotificationEmails(): Promise<
   }
 
   try {
+    console.log("[Database] Fetching ticket notification emails...");
     const rows = await db
       .select()
       .from(ticketNotificationEmails)
       .orderBy(desc(ticketNotificationEmails.createdAt));
+    console.log("[Database] Found", rows.length, "ticket notification emails");
+    console.log("[Database] Emails:", rows.map(r => ({ email: r.email, active: r.active })));
     return rows;
   } catch (error) {
     console.error("[Database] Error fetching ticket notification emails:", error);
