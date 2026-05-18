@@ -16,6 +16,8 @@ interface ShareByEmailButtonProps {
   returnPNR: string;
   departureDatetime: string;
   returnDatetime: string;
+  departureTerminal?: string;
+  returnTerminal?: string;
 }
 
 export function ShareByEmailButton({
@@ -30,6 +32,8 @@ export function ShareByEmailButton({
   returnPNR,
   departureDatetime,
   returnDatetime,
+  departureTerminal,
+  returnTerminal,
 }: ShareByEmailButtonProps) {
   const [isLoading, setIsLoading] = useState(false);
   const shareByEmailMutation = trpc.ticketNotifications.shareByEmail.useMutation();
@@ -71,12 +75,14 @@ export function ShareByEmailButton({
         departureAirline,
         departureFlightNumber,
         departureLocator: departurePNR,
+        departureTerminal,
         returnDate,
         returnTime,
         returnAirport: 'NVT',
         returnAirline,
         returnFlightNumber,
         returnLocator: returnPNR,
+        returnTerminal,
       });
       
       if (result) {

@@ -59,6 +59,8 @@ export const flightWeeks = mysqlTable(
     returnLocator: varchar("returnLocator", { length: 20 }),
     departureFlightNumber: varchar("departureFlightNumber", { length: 20 }),
     returnFlightNumber: varchar("returnFlightNumber", { length: 20 }),
+    departureTerminal: varchar("departureTerminal", { length: 20 }),
+    returnTerminal: varchar("returnTerminal", { length: 20 }),
     ticketType: varchar("ticketType", { length: 20 }).default("roundtrip"),
     createdAt: timestamp("createdAt").defaultNow().notNull(),
     updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
@@ -80,6 +82,12 @@ export const flightWeeks = mysqlTable(
 
 export type FlightWeek = typeof flightWeeks.$inferSelect;
 export type InsertFlightWeek = typeof flightWeeks.$inferInsert;
+
+/**
+ * Campos adicionados:
+ * - departureTerminal: Terminal de embarque do voo de ida
+ * - returnTerminal: Terminal de embarque do voo de volta
+ */
 
 /**
  * Tabela para persistir preços por semana e companhia aérea

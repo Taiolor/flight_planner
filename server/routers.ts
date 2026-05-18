@@ -418,7 +418,7 @@ export const appRouter = router({
                   title: `✈️ Voo IDA ${input.departureAirline?.toUpperCase() || 'N/A'} ${input.departureFlightNumber} — ${input.departureAirport} → ${input.returnAirport}`,
                   flightDatetime: `${departureDate.split('/').reverse().join('-')}T${departureTime.replace(/\s/g, '')}`,
                   location: airportAddresses[input.departureAirport || 'GRU'] || input.departureAirport || 'N/A',
-                  description: `Localizador: ${input.departureLocator || 'N/A'}\nCompanhia: ${input.departureAirline?.toUpperCase() || 'N/A'}\nNúmero: ${input.departureFlightNumber}`,
+                  description: `Localizador: ${input.departureLocator || 'N/A'}\nCompanhia: ${input.departureAirline?.toUpperCase() || 'N/A'}\nNúmero: ${input.departureFlightNumber}${input.departureTerminal ? `\nTerminal: ${input.departureTerminal}` : ''}`,
                   leadMinutes: 120,
                 };
                 
@@ -426,7 +426,7 @@ export const appRouter = router({
                   title: `✈️ Voo VOLTA ${input.returnAirline?.toUpperCase() || 'N/A'} ${input.returnFlightNumber} — ${input.returnAirport} → ${input.departureAirport}`,
                   flightDatetime: `${returnDate.split('/').reverse().join('-')}T${returnTime.replace(/\s/g, '')}`,
                   location: airportAddresses[input.returnAirport || 'NVT'] || input.returnAirport || 'N/A',
-                  description: `Localizador: ${input.returnLocator || 'N/A'}\nCompanhia: ${input.returnAirline?.toUpperCase() || 'N/A'}\nNúmero: ${input.returnFlightNumber}`,
+                  description: `Localizador: ${input.returnLocator || 'N/A'}\nCompanhia: ${input.returnAirline?.toUpperCase() || 'N/A'}\nNúmero: ${input.returnFlightNumber}${input.returnTerminal ? `\nTerminal: ${input.returnTerminal}` : ''}`,
                   leadMinutes: 120,
                 };
                 
@@ -446,6 +446,7 @@ export const appRouter = router({
                       <p style="margin: 8px 0;"><strong>Data:</strong> ${departureDate} às ${departureTime}</p>
                       <p style="margin: 8px 0;"><strong>Rota:</strong> ${input.departureAirport} → ${input.returnAirport}</p>
                       <p style="margin: 8px 0;"><strong>Companhia:</strong> ${input.departureAirline?.toUpperCase() || 'N/A'} ${input.departureFlightNumber}</p>
+                      ${input.departureTerminal ? `<p style="margin: 8px 0;"><strong>Terminal:</strong> ${input.departureTerminal}</p>` : ''}
                       <p style="margin: 8px 0;"><strong>Localizador:</strong> <code style="background-color: #e5e7eb; padding: 2px 6px; border-radius: 3px;">${input.departureLocator || 'N/A'}</code></p>
                       <p style="margin: 8px 0;">
                         <a href="${outlookDepLink}" style="color: #0078d4; margin-right: 10px; text-decoration: none;">📅 Outlook • Ida</a>
@@ -458,6 +459,7 @@ export const appRouter = router({
                       <p style="margin: 8px 0;"><strong>Data:</strong> ${returnDate} às ${returnTime}</p>
                       <p style="margin: 8px 0;"><strong>Rota:</strong> ${input.returnAirport} → ${input.departureAirport}</p>
                       <p style="margin: 8px 0;"><strong>Companhia:</strong> ${input.returnAirline?.toUpperCase() || 'N/A'} ${input.returnFlightNumber}</p>
+                      ${input.returnTerminal ? `<p style="margin: 8px 0;"><strong>Terminal:</strong> ${input.returnTerminal}</p>` : ''}
                       <p style="margin: 8px 0;"><strong>Localizador:</strong> <code style="background-color: #e5e7eb; padding: 2px 6px; border-radius: 3px;">${input.returnLocator || 'N/A'}</code></p>
                       <p style="margin: 8px 0;">
                         <a href="${outlookRetLink}" style="color: #0078d4; margin-right: 10px; text-decoration: none;">📅 Outlook • Volta</a>
@@ -1117,12 +1119,14 @@ export const appRouter = router({
           departureAirline: z.string(),
           departureFlightNumber: z.string(),
           departureLocator: z.string(),
+          departureTerminal: z.string().optional(),
           returnDate: z.string(),
           returnTime: z.string(),
           returnAirport: z.string(),
           returnAirline: z.string(),
           returnFlightNumber: z.string(),
           returnLocator: z.string(),
+          returnTerminal: z.string().optional(),
         })
       )
       .mutation(async ({ input }) => {
@@ -1139,7 +1143,7 @@ export const appRouter = router({
           title: `✈️ Voo IDA ${input.departureAirline.toUpperCase()} ${input.departureFlightNumber} — ${input.departureAirport} → ${input.returnAirport}`,
           flightDatetime: `${input.departureDate}T${input.departureTime}`,
           location: airportAddresses[input.departureAirport] || input.departureAirport,
-          description: `Localizador: ${input.departureLocator}\nCompanhia: ${input.departureAirline.toUpperCase()}\nNúmero: ${input.departureFlightNumber}`,
+          description: `Localizador: ${input.departureLocator}\nCompanhia: ${input.departureAirline.toUpperCase()}\nNúmero: ${input.departureFlightNumber}${input.departureTerminal ? `\nTerminal: ${input.departureTerminal}` : ''}`,
           leadMinutes: 120,
         };
         
@@ -1147,7 +1151,7 @@ export const appRouter = router({
           title: `✈️ Voo VOLTA ${input.returnAirline.toUpperCase()} ${input.returnFlightNumber} — ${input.returnAirport} → ${input.departureAirport}`,
           flightDatetime: `${input.returnDate}T${input.returnTime}`,
           location: airportAddresses[input.returnAirport] || input.returnAirport,
-          description: `Localizador: ${input.returnLocator}\nCompanhia: ${input.returnAirline.toUpperCase()}\nNúmero: ${input.returnFlightNumber}`,
+          description: `Localizador: ${input.returnLocator}\nCompanhia: ${input.returnAirline.toUpperCase()}\nNúmero: ${input.returnFlightNumber}${input.returnTerminal ? `\nTerminal: ${input.returnTerminal}` : ''}`,
           leadMinutes: 120,
         };
         
