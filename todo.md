@@ -304,3 +304,8 @@
 - [ ] Validar que o site está disponível em flightplan-hq655wm9.manus.space
 - [ ] Testar funcionalidades principais em produção
 - [x] Implementar envio automático de e-mail ao marcar bilhete como 'Emitido'
+
+## Ajustes no E-mail de Compartilhamento
+
+- [x] Adicionar horários do voo (ida e volta) no corpo do e-mail compartilhado
+- [x] Corrigir links de calendário (Outlook e Gmail) para incluir horários corretos dos voos
