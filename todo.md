@@ -303,3 +303,4 @@
 - [ ] Clicar em "Publish" no painel de gerenciamento
 - [ ] Validar que o site está disponível em flightplan-hq655wm9.manus.space
 - [ ] Testar funcionalidades principais em produção
+- [x] Implementar envio automático de e-mail ao marcar bilhete como 'Emitido'

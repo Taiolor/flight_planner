@@ -395,28 +395,35 @@ export const appRouter = router({
           const nowIssued = input.isTicketIssued === 1;
 
           if (!wasIssued && nowIssued) {
-            // Ticket was just created
+            // Ticket was just marked as issued - send email with full details
             const recipients = await getTicketNotificationEmails();
-            if (recipients.length > 0) {
-              const recipientEmails = recipients.map(r => r.email);
+            if (recipients.length > 0 && input.departureFlightNumber && input.returnFlightNumber) {
+              // Parse datetime strings to extract date and time
+              const departureDatetime = input.departureFlightDatetime ? new Date(input.departureFlightDatetime) : null;
+              const returnDatetime = input.returnFlightDatetime ? new Date(input.returnFlightDatetime) : null;
 
-              // Send for departure ticket
-              if (input.departureFlightNumber) {
-                await sendTicketNotificationEmail(recipientEmails, {
-                  type: "created",
-                  weekNumber: input.weekNumber,
-                  ticketType: "departure",
-                  timestamp: new Date(),
-                });
-              }
+              if (departureDatetime && returnDatetime) {
+                const departureDate = departureDatetime.toLocaleDateString('pt-BR');
+                const departureTime = departureDatetime.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+                const returnDate = returnDatetime.toLocaleDateString('pt-BR');
+                const returnTime = returnDatetime.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
 
-              // Send for return ticket
-              if (input.returnFlightNumber) {
-                await sendTicketNotificationEmail(recipientEmails, {
-                  type: "created",
-                  weekNumber: input.weekNumber,
-                  ticketType: "return",
-                  timestamp: new Date(),
+                await sendShareByEmailNotification({
+                  emails: recipients.map(r => r.email),
+                  subject: `Compartilhamento de Bilhetes - Semana ${input.weekNumber}`,
+                  weekLabel: `Semana ${input.weekNumber}`,
+                  departureDate,
+                  departureTime,
+                  departureAirport: input.departureAirport || 'N/A',
+                  returnAirport: input.returnAirport || 'N/A',
+                  departureAirline: input.departureAirline || 'N/A',
+                  departureFlightNumber: input.departureFlightNumber,
+                  departureLocator: input.departureLocator || 'N/A',
+                  returnDate,
+                  returnTime,
+                  returnAirline: input.returnAirline || 'N/A',
+                  returnFlightNumber: input.returnFlightNumber,
+                  returnLocator: input.returnLocator || 'N/A',
                 });
               }
             }
