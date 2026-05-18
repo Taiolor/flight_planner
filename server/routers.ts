@@ -1089,7 +1089,7 @@ export const appRouter = router({
               <h3 style="color: #1f2937; margin-top: 0;">Voo de Ida 🛫</h3>
               <p style="margin: 8px 0;"><strong>Data:</strong> ${input.departureDate} às ${input.departureTime}</p>
               <p style="margin: 8px 0;"><strong>Rota:</strong> ${input.departureAirport} → ${input.returnAirport}</p>
-              <p style="margin: 8px 0;"><strong>Companhia:</strong> ${input.departureAirline}</p>
+              <p style="margin: 8px 0;"><strong>Companhia:</strong> ${input.departureAirline.toUpperCase()}</p>
               <p style="margin: 8px 0;"><strong>Voo:</strong> ${input.departureFlightNumber}</p>
               <p style="margin: 8px 0;"><strong>Localizador:</strong> <code style="background-color: #e5e7eb; padding: 2px 6px; border-radius: 3px;">${input.departureLocator}</code></p>
               ${input.departureFlightNumber ? `<p style="margin: 8px 0;"><a href="https://www.google.com/search?q=${input.departureAirline.slice(0, 2)}+flight+${input.departureFlightNumber}" style="color: #3b82f6;">Ver rastreio do voo 🔍</a></p>` : ""}
@@ -1099,7 +1099,7 @@ export const appRouter = router({
               <h3 style="color: #1f2937; margin-top: 0;">Voo de Volta 🛬</h3>
               <p style="margin: 8px 0;"><strong>Data:</strong> ${input.returnDate} às ${input.returnTime}</p>
               <p style="margin: 8px 0;"><strong>Rota:</strong> ${input.returnAirport} → ${input.departureAirport}</p>
-              <p style="margin: 8px 0;"><strong>Companhia:</strong> ${input.returnAirline}</p>
+              <p style="margin: 8px 0;"><strong>Companhia:</strong> ${input.returnAirline.toUpperCase()}</p>
               <p style="margin: 8px 0;"><strong>Voo:</strong> ${input.returnFlightNumber}</p>
               <p style="margin: 8px 0;"><strong>Localizador:</strong> <code style="background-color: #e5e7eb; padding: 2px 6px; border-radius: 3px;">${input.returnLocator}</code></p>
               ${input.returnFlightNumber ? `<p style="margin: 8px 0;"><a href="https://www.google.com/search?q=${input.returnAirline.slice(0, 2)}+flight+${input.returnFlightNumber}" style="color: #3b82f6;">Ver rastreio do voo 🔍</a></p>` : ""}
