@@ -36,7 +36,7 @@ import { useTheme } from "@/contexts/ThemeContext";
 const toIsoDate = (d: string): string => {
   if (d.includes("-")) return d;
   const [day, month, year] = d.split("/");
-  return `${year}-${month}-${day}`;
+  return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
 };
 
 /** Formata DD/MM/YYYY para exibição (ou converte ISO → BR) */
@@ -59,25 +59,42 @@ const buildKayakUrl = (departureDate: string, returnDate: string): string => {
 };
 
 /**
+ * Helper para converter data DD/MM/YYYY em inteiro YYYYMMDD para comparação rápida.
+ */
+const dateToInt = (dateStr: string): number => {
+  if (dateStr.includes("-")) {
+    // ISO format: YYYY-MM-DD
+    const [year, month, day] = dateStr.split("-");
+    return parseInt(`${year}${month.padStart(2, '0')}${day.padStart(2, '0')}`, 10);
+  }
+  // BR format: DD/MM/YYYY
+  const [day, month, year] = dateStr.split("/");
+  return parseInt(`${year}${month.padStart(2, '0')}${day.padStart(2, '0')}`, 10);
+};
+
+/**
  * Determina se uma semana é passada, corrente ou futura.
  * Usa a data de IDA (domingo) como referência.
  * Considera "corrente" a semana cujo domingo de ida já passou mas o retorno (sexta) ainda não.
  */
 const getWeekStatus = (
   departureDate: string,
-  returnDate: string
+  returnDate: string,
+  todayInt?: number
 ): "past" | "current" | "future" => {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
+  if (!todayInt) {
+    const today = new Date();
+    const y = today.getFullYear();
+    const m = String(today.getMonth() + 1).padStart(2, "0");
+    const d = String(today.getDate()).padStart(2, "0");
+    todayInt = parseInt(`${y}${m}${d}`, 10);
+  }
 
-  const depIso = toIsoDate(departureDate);
-  const retIso = toIsoDate(returnDate);
+  const depInt = dateToInt(departureDate);
+  const retInt = dateToInt(returnDate);
 
-  const dep = new Date(depIso + "T00:00:00");
-  const ret = new Date(retIso + "T00:00:00");
-
-  if (ret < today) return "past";
-  if (dep <= today && ret >= today) return "current";
+  if (retInt < todayInt) return "past";
+  if (depInt <= todayInt && retInt >= todayInt) return "current";
   return "future";
 };
 
@@ -841,8 +858,16 @@ export default function FlightQuotes() {
     let past = 0,
       current = 0,
       future = 0;
+
+    // ⚡ Bolt: Pre-calculate todayInt outside the loop to avoid calling new Date() multiple times
+    const today = new Date();
+    const y = today.getFullYear();
+    const m = String(today.getMonth() + 1).padStart(2, "0");
+    const d = String(today.getDate()).padStart(2, "0");
+    const todayInt = parseInt(`${y}${m}${d}`, 10);
+
     for (const w of flightData) {
-      const s = getWeekStatus(w.ida.data, w.retorno.data);
+      const s = getWeekStatus(w.ida.data, w.retorno.data, todayInt);
       if (s === "past") past++;
       else if (s === "current") current++;
       else future++;
