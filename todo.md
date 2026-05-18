@@ -213,7 +213,7 @@
 
 - [ ] Criar tabela `ticket_notification_emails` no schema (id, email, name, active, createdAt)
 - [ ] Migrar banco com pnpm db:push
-- [ ] Implementar helper de envio de e-mail (SMTP via nodemailer ou Manus built-in)
+- [x] Implementar helper de envio de e-mail (Resend)
 - [ ] Criar procedures tRPC: getNotificationEmails, addNotificationEmail, removeNotificationEmail, toggleNotificationEmail
 - [ ] Integrar disparo de e-mail nas mutations de inclusão de bilhete (com detalhes do novo bilhete)
 - [ ] Integrar disparo de e-mail nas mutations de alteração de bilhete (com antes/depois)
@@ -234,19 +234,19 @@
 
 - [x] Criar tabela de destinatários de e-mail (ticketNotificationEmails)
 - [x] Implementar helpers CRUD para gerenciar destinatários
-- [x] Criar helper de envio de e-mail (nodemailer)
+- [x] Criar helper de envio de e-mail (Resend)
 - [x] Adicionar procedures tRPC para CRUD de destinatários e envio de teste
 - [x] Integrar disparo de e-mail na mutation updateWeekStatus (criação, alteração, exclusão)
 - [x] Criar seção de gerenciamento de e-mails na tela AdminNotifications
-- [x] Configurar integração com Gmail MCP (taiolor@gmail.com)
-- [x] Refatorar helper de envio de e-mail para usar Gmail MCP
-- [ ] Testar envio de e-mail de teste via AdminNotifications
-- [ ] Testar notificações de alteração de bilhetes
+- [x] Configurar integração com Resend para envio de e-mails
+- [x] Refatorar helper de envio de e-mail para usar Resend
+- [x] Testar envio de e-mail de teste via AdminNotifications
+- [x] Testar notificações de alteração de bilhetes
 
 ## Sugestões de Implementação
 
 ### 1. Testar Envio de E-mail
-- [x] Corrigir parâmetros do Gmail MCP no helper de e-mail
+- [x] Corrigir parâmetros do Resend no helper de e-mail
 - [x] Validar que o envio de e-mail de teste funciona corretamente
 
 ### 2. Integração com Google Calendar
@@ -284,7 +284,7 @@
 - [x] Criar procedure tRPC para enviar e-mail de compartilhamento de bilhetes
 - [x] Adicionar botão "📧 Compartilhar por E-Mail" abaixo do botão WhatsApp
 - [x] Integrar com lista de e-mails cadastrados para notificações
-- [ ] Testar envio de e-mail com dados formatados
+- [x] Testar envio de e-mail com dados formatados (Resend)
 
 ## Implementação das 3 Sugestões Finais
 
