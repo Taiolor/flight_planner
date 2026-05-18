@@ -633,7 +633,15 @@ export async function getTicketNotificationEmails(): Promise<
       .where(eq(ticketNotificationEmails.active, 1))
       .orderBy(desc(ticketNotificationEmails.createdAt));
     console.log("[Database] Found", rows.length, "active ticket notification emails");
-    console.log("[Database] Emails:", rows.map(r => ({ email: r.email, active: r.active })));
+    console.log("[Database] Emails:", rows.map(r => ({ email: r.email, active: r.active, type: typeof r.active })));
+    if (rows.length === 0) {
+      console.warn("[Database] WARNING: No active emails found. Checking all emails...");
+      const allRows = await db
+        .select()
+        .from(ticketNotificationEmails)
+        .orderBy(desc(ticketNotificationEmails.createdAt));
+      console.log("[Database] All emails in DB:", allRows.map(r => ({ email: r.email, active: r.active, type: typeof r.active })));
+    }
     return rows;
   } catch (error) {
     console.error("[Database] Error fetching ticket notification emails:", error);

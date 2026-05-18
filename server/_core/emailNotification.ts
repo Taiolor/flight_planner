@@ -112,7 +112,7 @@ async function sendEmailViaResend(
     const resend = getResendClient();
 
     const { data, error } = await resend.emails.send({
-      from: "Smart Fly <onboarding@resend.dev>",
+      from: "Smart Fly <noreply@smartfly.com>",
       to: to,
       subject: subject,
       html: htmlContent,

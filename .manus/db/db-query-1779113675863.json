@@ -1,0 +1,26 @@
+{
+  "query": "SELECT * FROM ticket_notification_emails ORDER BY createdAt DESC;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3hTCxLMFFnvwjKu.root --database HQ655wm9a6bck22hJAwYRc --execute SELECT * FROM ticket_notification_emails ORDER BY createdAt DESC;",
+  "rows": [
+    {
+      "id": "30002",
+      "email": "michelle.tanelli@senior.com.br",
+      "name": "Michelle Tanelli",
+      "active": "1",
+      "createdAt": "2026-05-18 14:12:16",
+      "updatedAt": "2026-05-18 14:12:16"
+    },
+    {
+      "id": "1",
+      "email": "taiolor@gmail.com",
+      "name": "Taiolor Morais",
+      "active": "1",
+      "createdAt": "2026-05-17 16:20:38",
+      "updatedAt": "2026-05-17 16:20:38"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\temail\tname\tactive\tcreatedAt\tupdatedAt\n30002\tmichelle.tanelli@senior.com.br\tMichelle Tanelli\t1\t2026-05-18 14:12:16\t2026-05-18 14:12:16\n1\ttaiolor@gmail.com\tTaiolor Morais\t1\t2026-05-17 16:20:38\t2026-05-17 16:20:38\n",
+  "stderr": "",
+  "execution_time_ms": 318
+}
