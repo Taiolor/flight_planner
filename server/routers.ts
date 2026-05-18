@@ -408,15 +408,19 @@ export const appRouter = router({
               const returnDatetime = input.returnFlightDatetime ? new Date(input.returnFlightDatetime) : null;
 
               if (departureDatetime && returnDatetime) {
-                const departureDate = departureDatetime.toLocaleDateString('pt-BR');
+                // Formatar datas no padrão brasileiro (DD/MM/YYYY)
+                const pad = (n: number) => String(n).padStart(2, '0');
+                const formatBrazilianDate = (date: Date) => `${pad(date.getDate())}/${pad(date.getMonth() + 1)}/${date.getFullYear()}`;
+                
+                const departureDate = formatBrazilianDate(departureDatetime);
                 const departureTime = departureDatetime.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
-                const returnDate = returnDatetime.toLocaleDateString('pt-BR');
+                const returnDate = formatBrazilianDate(returnDatetime);
                 const returnTime = returnDatetime.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
 
                 // Preparar eventos de calendário para envio automático
                 const depEvent = {
                   title: `✈️ Voo IDA ${input.departureAirline?.toUpperCase() || 'N/A'} ${input.departureFlightNumber} — ${input.departureAirport} → ${input.returnAirport}`,
-                  flightDatetime: `${departureDate.split('/').reverse().join('-')}T${departureTime.replace(/\s/g, '')}`,
+                  flightDatetime: `${departureDatetime.getFullYear()}-${pad(departureDatetime.getMonth() + 1)}-${pad(departureDatetime.getDate())}T${departureTime.replace(/\s/g, '')}`,
                   location: airportAddresses[input.departureAirport || 'GRU'] || input.departureAirport || 'N/A',
                   description: `Localizador: ${input.departureLocator || 'N/A'}\nCompanhia: ${input.departureAirline?.toUpperCase() || 'N/A'}\nNúmero: ${input.departureFlightNumber}${input.departureTerminal ? `\nTerminal: ${input.departureTerminal}` : ''}`,
                   leadMinutes: 120,

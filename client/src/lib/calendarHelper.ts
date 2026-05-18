@@ -35,6 +35,13 @@ export const DURATION_OPTIONS: { label: string; minutes: number }[] = [
   { label: "2h de voo", minutes: 120 },
 ];
 
+/** Formata data ISO (YYYY-MM-DD) para o formato brasileiro (DD/MM/YYYY) */
+export function formatDateToBrazilian(isoDate: string): string {
+  if (!isoDate) return "";
+  const [year, month, day] = isoDate.split("-");
+  return `${day}/${month}/${year}`;
+}
+
 /** Formata data para o formato Google/Outlook: YYYYMMDDTHHmmss */
 function toCalendarDate(date: Date): string {
   const pad = (n: number) => String(n).padStart(2, "0");
@@ -332,7 +339,7 @@ export function buildWhatsAppShareUrl(params: {
   );
   if (departureDate)
     lines.push(
-      `   📆 ${depDow ? depDow + ", " : ""}${departureDate}${departureTime ? " às " + departureTime : ""}`
+      `   📆 ${depDow ? depDow + ", " : ""}${formatDateToBrazilian(departureDate)}${departureTime ? " às " + departureTime : ""}`
     );
   if (depAirlineName)
     lines.push(
@@ -346,7 +353,7 @@ export function buildWhatsAppShareUrl(params: {
   );
   if (returnDate)
     lines.push(
-      `   📆 ${retDow ? retDow + ", " : ""}${returnDate}${returnTime ? " às " + returnTime : ""}`
+      `   📆 ${retDow ? retDow + ", " : ""}${formatDateToBrazilian(returnDate)}${returnTime ? " às " + returnTime : ""}`
     );
   if (retAirlineName)
     lines.push(
