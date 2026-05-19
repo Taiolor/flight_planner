@@ -1,0 +1,8 @@
+{
+  "query": "SELECT * FROM ticket_notification_emails WHERE is_active = true;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3hTCxLMFFnvwjKu.root --database HQ655wm9a6bck22hJAwYRc --execute SELECT * FROM ticket_notification_emails WHERE is_active = true;",
+  "returncode": 1,
+  "logs": [
+    "ERROR 1054 (42S22) at line 1: Unknown column 'is_active' in 'where clause'"
+  ]
+}

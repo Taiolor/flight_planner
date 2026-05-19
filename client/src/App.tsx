@@ -1,4 +1,3 @@
-import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/NotFound";
 import { lazy, Suspense } from "react";
@@ -7,6 +6,7 @@ import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import { YearProvider } from "./contexts/YearContext";
 import Home from "./pages/Home";
+import { Toaster } from "sonner";
 
 // Code splitting: carrega CalendarView, AdminNotifications e FlightQuotes apenas quando necessário
 const CalendarView = lazy(() => import("./pages/CalendarView"));
@@ -58,7 +58,7 @@ function App() {
       <YearProvider>
         <ThemeProvider defaultTheme="light">
           <TooltipProvider>
-            <Toaster />
+            <Toaster position="top-right" richColors />
             <Router />
           </TooltipProvider>
         </ThemeProvider>

@@ -186,3 +186,126 @@
 - [x] Atualizar helpers de DB para persistir os novos campos
 - [x] Atualizar router de cotações para extrair e salvar os novos campos da resposta da API
 - [x] Exibir companhia aérea e data/hora de ida e volta na página de cotações
+
+## Painel Copa 2026 na Semana Vigente
+
+- [x] Exibir painel com próximos jogos do Brasil (1ª fase) na semana vigente do planejador
+- [x] Mostrar data, adversário, cidade e dias restantes para cada jogo
+- [x] Destacar visualmente jogos que já passaram vs. próximos
+
+## Fases Eliminatórias Copa 2026 no Painel
+
+- [x] Adicionar oitavas de final (04-07/07) ao painel da semana vigente com status "possível"
+- [x] Adicionar quartas de final (09-11/07) ao painel da semana vigente
+- [x] Adicionar semifinais (14-15/07, Dallas) ao painel da semana vigente
+- [x] Adicionar final (19/07, MetLife Stadium) ao painel da semana vigente
+- [x] Separar visualmente 1ª fase das fases eliminatórias no painel
+
+## Fix: Painel Copa 2026 por Semana
+
+- [x] Corrigir painel Copa para mostrar apenas jogos/fases que coincidem com o intervalo de cada semana (não fixo na semana vigente)
+
+## Fix: Painel Copa — Semana Calendário Completa
+
+- [x] Ampliar lógica do painel Copa para mostrar jogos que caem na semana calendário (dom-sáb) da viagem, mesmo fora do intervalo exato de ida/volta
+
+## Feature: Notificação por E-mail de Alterações de Bilhetes
+
+- [ ] Criar tabela `ticket_notification_emails` no schema (id, email, name, active, createdAt)
+- [ ] Migrar banco com pnpm db:push
+- [x] Implementar helper de envio de e-mail (Resend)
+- [ ] Criar procedures tRPC: getNotificationEmails, addNotificationEmail, removeNotificationEmail, toggleNotificationEmail
+- [ ] Integrar disparo de e-mail nas mutations de inclusão de bilhete (com detalhes do novo bilhete)
+- [ ] Integrar disparo de e-mail nas mutations de alteração de bilhete (com antes/depois)
+- [ ] Integrar disparo de e-mail nas mutations de exclusão de bilhete (com detalhes do bilhete excluído)
+- [ ] Criar seção "Destinatários de Alertas de Bilhetes" na tela de Administrador de Notificação
+- [ ] Escrever testes para as procedures de notificação
+
+## Fix: Ordem dos campos no formulário de bilhete
+
+- [x] Inverter ordem: data/hora do voo primeiro, número do voo depois (ida e volta)
+
+## Feature: Botões de Cópia (Ida → Volta)
+
+- [x] Adicionar botão para copiar companhia aérea da ida para a volta
+- [x] Adicionar botão para copiar localizador da ida para a volta
+
+## Feature: Notificação por E-mail de Alterações de Bilhetes
+
+- [x] Criar tabela de destinatários de e-mail (ticketNotificationEmails)
+- [x] Implementar helpers CRUD para gerenciar destinatários
+- [x] Criar helper de envio de e-mail (Resend)
+- [x] Adicionar procedures tRPC para CRUD de destinatários e envio de teste
+- [x] Integrar disparo de e-mail na mutation updateWeekStatus (criação, alteração, exclusão)
+- [x] Criar seção de gerenciamento de e-mails na tela AdminNotifications
+- [x] Configurar integração com Resend para envio de e-mails
+- [x] Refatorar helper de envio de e-mail para usar Resend
+- [x] Testar envio de e-mail de teste via AdminNotifications
+- [x] Testar notificações de alteração de bilhetes
+
+## Sugestões de Implementação
+
+### 1. Testar Envio de E-mail
+- [x] Corrigir parâmetros do Resend no helper de e-mail
+- [x] Validar que o envio de e-mail de teste funciona corretamente
+
+### 2. Integração com Google Calendar
+- [x] Criar helper para integração com Google Calendar via MCP
+- [x] Adicionar procedures tRPC para criar eventos no calendário
+- [x] Implementar criação de evento com 2 horas de antecedencia
+- [x] Incluir URL de rastreamento de voo nas observações
+- [ ] Adicionar botão "Adicionar ao Calendário" na UI (Home.tsx)
+- [ ] Incluir endereço completo do aeroporto na localização do evento
+
+### 3. Publicar o Site
+- [ ] Clicar em "Publish" no painel de gerenciamento
+- [ ] Validar que o site está disponível em flightplan-hq655wm9.manus.space
+
+## Implementação das 3 Sugestões
+
+### 1. Botões "Adicionar ao Calendário"
+- [x] Adicionar botão "📅 Adicionar ao Calendário" nos dados de bilhete (ida)
+- [x] Integrar com procedures tRPC calendar.createFlightEvent
+- [ ] Adicionar botão para volta
+- [ ] Exibir feedback visual (toast) após criar evento
+
+### 2. Endereço Completo do Aeroporto
+- [x] Criar mapa de endereços de aeroportos (GRU, NVT, CCJ, etc.)
+- [x] Incluir endereço na localização do evento do calendário
+- [x] Atualizar helper calendarIntegration.ts para aceitar endereço do aeroporto
+
+### 3. Publicar o Site
+- [ ] Clicar em "Publish" no painel de gerenciamento
+- [ ] Validar que o site está disponível em flightplan-hq655wm9.manus.space
+- [ ] Testar funcionalidades principais em produção
+
+## Feature: Compartilhar por E-Mail
+
+- [x] Criar procedure tRPC para enviar e-mail de compartilhamento de bilhetes
+- [x] Adicionar botão "📧 Compartilhar por E-Mail" abaixo do botão WhatsApp
+- [x] Integrar com lista de e-mails cadastrados para notificações
+- [x] Testar envio de e-mail com dados formatados (Resend)
+
+## Implementação das 3 Sugestões Finais
+
+### 1. Testar Compartilhamento por E-Mail
+- [x] Adicionar e-mail na seção "Notificações por E-Mail" da tela AdminNotifications
+- [x] Clicar em "Compartilhar por E-Mail" para validar o envio
+- [x] Verificar se o e-mail foi recebido com dados formatados corretamente
+
+### 2. Melhorar Feedback com Toast
+- [x] Instalar biblioteca Sonner para notificações toast
+- [x] Substituir alert() por toast.success() no botão "Compartilhar por E-Mail"
+- [x] Substituir alert() por toast.error() para erros
+- [ ] Adicionar toast nos outros botões (Calendário, etc.)
+
+### 3. Publicar o Site em Produção
+- [ ] Clicar em "Publish" no painel de gerenciamento
+- [ ] Validar que o site está disponível em flightplan-hq655wm9.manus.space
+- [ ] Testar funcionalidades principais em produção
+- [x] Implementar envio automático de e-mail ao marcar bilhete como 'Emitido'
+
+## Ajustes no E-mail de Compartilhamento
+
+- [x] Adicionar horários do voo (ida e volta) no corpo do e-mail compartilhado
+- [x] Corrigir links de calendário (Outlook e Gmail) para incluir horários corretos dos voos

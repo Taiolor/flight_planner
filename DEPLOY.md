@@ -42,6 +42,9 @@ VITE_FRONTEND_FORGE_API_URL=https://forge.manus.im
 VAPID_PUBLIC_KEY=sua_chave_publica_vapid
 VAPID_PRIVATE_KEY=sua_chave_privada_vapid
 
+# ── E-mail (Resend) ───────────────────────────────────────────────────────────
+RESEND_API_KEY=sua_chave_resend
+
 # ── Opcional ──────────────────────────────────────────────────────────────────
 PORT=3000
 NODE_ENV=production
@@ -162,6 +165,7 @@ curl -s -o /dev/null -w "%{http_code}" http://localhost:3000/
 | Página em branco após deploy  | Build desatualizado    | Rodar `pnpm build` novamente                           |
 | Push notifications não chegam | Chaves VAPID inválidas | Regenerar com `pnpm exec web-push generate-vapid-keys` |
 | Erro de CORS no OAuth         | URL de callback errada | Verificar `VITE_OAUTH_PORTAL_URL` e `OAUTH_SERVER_URL` |
+| E-mail não enviado            | RESEND_API_KEY inválida | Verificar chave em https://resend.com/api-keys         |
 
 ---
 
@@ -169,6 +173,7 @@ curl -s -o /dev/null -w "%{http_code}" http://localhost:3000/
 
 - **Domínio publicado:** https://flightplan-hq655wm9.manus.space
 - **Banco de dados:** MySQL/TiDB com 14 migrations aplicadas
-- **Autenticação:** Manus OAuth (e-mail: taiolor@gmail.com)
+- **Autenticação:** Manus OAuth
+- **E-mail:** Resend (plano gratuito: 3.000 e-mails/mês)
 - **PWA:** Manifesto configurado, Service Worker ativo, ícones em CDN
 - **Push Notifications:** VAPID configurado, job agendado a cada hora

@@ -27,7 +27,29 @@ import {
   updateNotificationSettings,
   insertNotificationLog,
   getNotificationLogs,
+  getTicketNotificationEmails,
+  addTicketNotificationEmail,
+  removeTicketNotificationEmail,
+  updateTicketNotificationEmail,
 } from "./db";
+import {
+  sendTicketNotificationEmail,
+  sendTestEmail,
+  sendShareByEmailNotification,
+  type TicketChangeNotification,
+} from "./_core/emailNotification";
+import {
+  createFlightCalendarEvent,
+  createRoundTripCalendarEvents,
+  type FlightEvent,
+} from "./_core/calendarIntegration";
+import {
+  getGoogleCalendarLink,
+  getOutlookLink,
+  airportAddresses,
+  buildFlightTrackUrl,
+  formatDateToBrazilian,
+} from "./_core/calendarHelper";
 import { ENV } from "./_core/env";
 import { parse as parseCookie } from "cookie";
 
@@ -55,6 +77,22 @@ async function getSessionFromCookie(
   if (!sessionToken) return null;
   return validateAuthSession(sessionToken);
 }
+
+const flightProtectedProcedure = publicProcedure.use(async ({ ctx, next }) => {
+  const session = await getSessionFromCookie(ctx.req);
+  if (!session) {
+    throw new TRPCError({
+      code: "UNAUTHORIZED",
+      message: "Faça login para acessar.",
+    });
+  }
+  return next({
+    ctx: {
+      ...ctx,
+      flightSession: session,
+    },
+  });
+});
 
 export const appRouter = router({
   system: systemRouter,
@@ -352,6 +390,11 @@ export const appRouter = router({
             message: "Faça login para editar.",
           });
         }
+
+        // Get the week before update to detect changes
+        const weeks = await getAllFlightWeeks();
+        const weekBefore = weeks.find(w => w.weekNumber === input.weekNumber);
+
         await updateFlightWeekStatus(input.weekNumber, {
           isDeleted: input.isDeleted,
           isTicketIssued: input.isTicketIssued,
@@ -368,6 +411,207 @@ export const appRouter = router({
           returnFlightNumber: input.returnFlightNumber,
           ticketType: input.ticketType,
         });
+
+        // Send email notifications if ticket was issued or modified
+        if (input.isTicketIssued !== undefined && weekBefore) {
+          const wasIssued = weekBefore.isTicketIssued === 1;
+          const nowIssued = input.isTicketIssued === 1;
+
+          if (!wasIssued && nowIssued) {
+            // Ticket was just marked as issued - send email with full details
+            const recipients = await getTicketNotificationEmails();
+            if (recipients.length > 0 && input.departureFlightNumber && input.returnFlightNumber) {
+              // Parse datetime strings to extract date and time
+              const departureDatetime = input.departureFlightDatetime ? new Date(input.departureFlightDatetime) : null;
+              const returnDatetime = input.returnFlightDatetime ? new Date(input.returnFlightDatetime) : null;
+
+              if (departureDatetime && returnDatetime) {
+                // Formatar datas no padrão brasileiro (DD/MM/YYYY)
+                const pad = (n: number) => String(n).padStart(2, '0');
+                const formatBrazilianDate = (date: Date) => `${pad(date.getDate())}/${pad(date.getMonth() + 1)}/${date.getFullYear()}`;
+                
+                const departureDate = formatBrazilianDate(departureDatetime);
+                const departureTime = departureDatetime.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+                const returnDate = formatBrazilianDate(returnDatetime);
+                const returnTime = returnDatetime.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+
+                // Preparar eventos de calendário para envio automático
+                const depEvent = {
+                  title: `✈️ Voo IDA ${input.departureAirline?.toUpperCase() || 'N/A'} ${input.departureFlightNumber} — ${input.departureAirport} → ${input.returnAirport}`,
+                  flightDatetime: `${departureDatetime.getFullYear()}-${pad(departureDatetime.getMonth() + 1)}-${pad(departureDatetime.getDate())}T${departureTime.replace(/\s/g, '')}`,
+                  location: airportAddresses[input.departureAirport || 'GRU'] || input.departureAirport || 'N/A',
+                  description: `Localizador: ${input.departureLocator || 'N/A'}\nCompanhia: ${input.departureAirline?.toUpperCase() || 'N/A'}\nNúmero: ${input.departureFlightNumber}${input.departureTerminal ? `\nTerminal: ${input.departureTerminal}` : ''}`,
+                  leadMinutes: 120,
+                };
+                
+                const retEvent = {
+                  title: `✈️ Voo VOLTA ${input.returnAirline?.toUpperCase() || 'N/A'} ${input.returnFlightNumber} — ${input.returnAirport} → ${input.departureAirport}`,
+                  flightDatetime: `${returnDate.split('/').reverse().join('-')}T${returnTime.replace(/\s/g, '')}`,
+                  location: airportAddresses[input.returnAirport || 'NVT'] || input.returnAirport || 'N/A',
+                  description: `Localizador: ${input.returnLocator || 'N/A'}\nCompanhia: ${input.returnAirline?.toUpperCase() || 'N/A'}\nNúmero: ${input.returnFlightNumber}${input.returnTerminal ? `\nTerminal: ${input.returnTerminal}` : ''}`,
+                  leadMinutes: 120,
+                };
+                
+                // Gerar links de rastreamento de voo
+                const depTrackUrl = buildFlightTrackUrl(
+                  input.departureAirline || '',
+                  input.departureFlightNumber || '',
+                  input.departureAirport || 'GRU',
+                  input.returnAirport || 'NVT',
+                  `${departureDatetime.getFullYear()}-${pad(departureDatetime.getMonth() + 1)}-${pad(departureDatetime.getDate())}`
+                );
+                
+                const retTrackUrl = buildFlightTrackUrl(
+                  input.returnAirline || '',
+                  input.returnFlightNumber || '',
+                  input.returnAirport || 'NVT',
+                  input.departureAirport || 'GRU',
+                  `${returnDatetime.getFullYear()}-${pad(returnDatetime.getMonth() + 1)}-${pad(returnDatetime.getDate())}`
+                );
+                
+                const googleDepLink = getGoogleCalendarLink(depEvent, 120, 75);
+                const outlookDepLink = getOutlookLink(depEvent, 120, 75);
+                const googleRetLink = getGoogleCalendarLink(retEvent, 120, 75);
+                const outlookRetLink = getOutlookLink(retEvent, 120, 75);
+                
+                // Construir HTML do e-mail
+                const emailHtml = `
+                  <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                    <h2 style="color: #1f2937; margin-bottom: 20px;">Compartilhamento de Bilhetes ✈️</h2>
+                    <p style="color: #4b5563; margin-bottom: 20px;"><strong>Semana ${input.weekNumber}</strong></p>
+                    
+                    <div style="background-color: #f3f4f6; border-radius: 8px; padding: 16px; margin-bottom: 20px;">
+                      <h3 style="color: #1f2937; margin-top: 0;">Voo de Ida 🛫</h3>
+                      <p style="margin: 8px 0;"><strong>Data:</strong> ${departureDate} às ${departureTime}</p>
+                      <p style="margin: 8px 0;"><strong>Rota:</strong> ${input.departureAirport} → ${input.returnAirport}</p>
+                      <p style="margin: 8px 0;"><strong>Companhia:</strong> ${input.departureAirline?.toUpperCase() || 'N/A'} ${input.departureFlightNumber}</p>
+                      ${input.departureTerminal ? `<p style="margin: 8px 0;"><strong>Terminal:</strong> ${input.departureTerminal}</p>` : ''}
+                      <p style="margin: 8px 0;"><strong>Localizador:</strong> <code style="background-color: #e5e7eb; padding: 2px 6px; border-radius: 3px;">${input.departureLocator || 'N/A'}</code></p>
+                      <p style="margin: 8px 0;">
+                        <a href="${outlookDepLink}" style="color: #0078d4; margin-right: 10px; text-decoration: none;">📅 Outlook • Ida</a>
+                        <a href="${googleDepLink}" style="color: #1f2937; margin-right: 10px; text-decoration: none;">📅 Google • Ida</a>
+                        ${depTrackUrl ? `<a href="${depTrackUrl}" style="color: #059669; margin-right: 10px; text-decoration: none;">🔍 Rastrear Ida</a>` : ''}
+                      </p>
+                    </div>
+                    
+                    <div style="background-color: #f3f4f6; border-radius: 8px; padding: 16px; margin-bottom: 20px;">
+                      <h3 style="color: #1f2937; margin-top: 0;">Voo de Volta 🛬</h3>
+                      <p style="margin: 8px 0;"><strong>Data:</strong> ${returnDate} às ${returnTime}</p>
+                      <p style="margin: 8px 0;"><strong>Rota:</strong> ${input.returnAirport} → ${input.departureAirport}</p>
+                      <p style="margin: 8px 0;"><strong>Companhia:</strong> ${input.returnAirline?.toUpperCase() || 'N/A'} ${input.returnFlightNumber}</p>
+                      ${input.returnTerminal ? `<p style="margin: 8px 0;"><strong>Terminal:</strong> ${input.returnTerminal}</p>` : ''}
+                      <p style="margin: 8px 0;"><strong>Localizador:</strong> <code style="background-color: #e5e7eb; padding: 2px 6px; border-radius: 3px;">${input.returnLocator || 'N/A'}</code></p>
+                      <p style="margin: 8px 0;">
+                        <a href="${outlookRetLink}" style="color: #0078d4; margin-right: 10px; text-decoration: none;">📅 Outlook • Volta</a>
+                        <a href="${googleRetLink}" style="color: #1f2937; margin-right: 10px; text-decoration: none;">📅 Google • Volta</a>
+                        ${retTrackUrl ? `<a href="${retTrackUrl}" style="color: #059669; margin-right: 10px; text-decoration: none;">🔍 Rastrear Volta</a>` : ''}
+                      </p>
+                    </div>
+                    
+                    <p style="color: #6b7280; font-size: 12px; margin-top: 30px; border-top: 1px solid #e5e7eb; padding-top: 20px;">
+                      Compartilhado via Smart Fly - Planejador de Passagens Aéreas 2026
+                    </p>
+                  </div>
+                `;
+                
+                const emailAddresses = recipients.map(r => r.email);
+                await sendShareByEmailNotification(emailAddresses, `Compartilhamento de Bilhetes - Semana ${input.weekNumber}`, emailHtml);
+              }
+            }
+          } else if (wasIssued && !nowIssued) {
+            // Ticket was deleted
+            const recipients = await getTicketNotificationEmails();
+            if (recipients.length > 0) {
+              const recipientEmails = recipients.map(r => r.email);
+
+              // Send for departure ticket
+              if (weekBefore.departureFlightNumber) {
+                await sendTicketNotificationEmail(recipientEmails, {
+                  type: "deleted",
+                  weekNumber: input.weekNumber,
+                  ticketType: "departure",
+                  timestamp: new Date(),
+                });
+              }
+
+              // Send for return ticket
+              if (weekBefore.returnFlightNumber) {
+                await sendTicketNotificationEmail(recipientEmails, {
+                  type: "deleted",
+                  weekNumber: input.weekNumber,
+                  ticketType: "return",
+                  timestamp: new Date(),
+                });
+              }
+            }
+          } else if (wasIssued && nowIssued) {
+            // Ticket was updated - detect changes
+            const recipients = await getTicketNotificationEmails();
+            if (recipients.length > 0) {
+              const recipientEmails = recipients.map(r => r.email);
+              const changes: Record<string, any> = {};
+
+              // Check departure changes
+              if (
+                weekBefore.departureFlightNumber !== input.departureFlightNumber ||
+                weekBefore.departureFlightDatetime !== input.departureFlightDatetime ||
+                weekBefore.departureAirline !== input.departureAirline ||
+                weekBefore.departureLocator !== input.departureLocator
+              ) {
+                await sendTicketNotificationEmail(recipientEmails, {
+                  type: "updated",
+                  weekNumber: input.weekNumber,
+                  ticketType: "departure",
+                  changes: {
+                    before: {
+                      flightNumber: weekBefore.departureFlightNumber,
+                      datetime: weekBefore.departureFlightDatetime,
+                      airline: weekBefore.departureAirline,
+                      locator: weekBefore.departureLocator,
+                    },
+                    after: {
+                      flightNumber: input.departureFlightNumber,
+                      datetime: input.departureFlightDatetime,
+                      airline: input.departureAirline,
+                      locator: input.departureLocator,
+                    },
+                  },
+                  timestamp: new Date(),
+                });
+              }
+
+              // Check return changes
+              if (
+                weekBefore.returnFlightNumber !== input.returnFlightNumber ||
+                weekBefore.returnFlightDatetime !== input.returnFlightDatetime ||
+                weekBefore.returnAirline !== input.returnAirline ||
+                weekBefore.returnLocator !== input.returnLocator
+              ) {
+                await sendTicketNotificationEmail(recipientEmails, {
+                  type: "updated",
+                  weekNumber: input.weekNumber,
+                  ticketType: "return",
+                  changes: {
+                    before: {
+                      flightNumber: weekBefore.returnFlightNumber,
+                      datetime: weekBefore.returnFlightDatetime,
+                      airline: weekBefore.returnAirline,
+                      locator: weekBefore.returnLocator,
+                    },
+                    after: {
+                      flightNumber: input.returnFlightNumber,
+                      datetime: input.returnFlightDatetime,
+                      airline: input.returnAirline,
+                      locator: input.returnLocator,
+                    },
+                  },
+                  timestamp: new Date(),
+                });
+              }
+            }
+          }
+        }
+
         return { success: true };
       }),
 
@@ -817,6 +1061,307 @@ export const appRouter = router({
   // Cotações de Passagens (Sky Scrapper API + Kayak manual)
   // =====================
   quotes: quotesRouter,
+
+  // =====================
+  // Ticket Notification Emails
+  // =====================
+  ticketNotifications: router({
+    /**
+     * Get all ticket notification email recipients
+     */
+    getRecipients: flightProtectedProcedure.query(async () => {
+      return await getTicketNotificationEmails();
+    }),
+
+    /**
+     * Add a new ticket notification email recipient
+     */
+    addRecipient: flightProtectedProcedure
+      .input(
+        z.object({
+          email: z.string().email("E-mail inválido"),
+          name: z.string().optional(),
+        })
+      )
+      .mutation(async ({ input }) => {
+        const result = await addTicketNotificationEmail(input.email, input.name);
+        if (!result) {
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Falha ao adicionar e-mail de notificação",
+          });
+        }
+        return result;
+      }),
+
+    /**
+     * Remove a ticket notification email recipient
+     */
+    removeRecipient: flightProtectedProcedure
+      .input(z.object({ emailId: z.number() }))
+      .mutation(async ({ input }) => {
+        const success = await removeTicketNotificationEmail(input.emailId);
+        if (!success) {
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Falha ao remover e-mail de notificação",
+          });
+        }
+        return { success: true };
+      }),
+
+    /**
+     * Update a ticket notification email recipient
+     */
+    updateRecipient: flightProtectedProcedure
+      .input(
+        z.object({
+          emailId: z.number(),
+          name: z.string().optional(),
+        })
+      )
+      .mutation(async ({ input }) => {
+        const result = await updateTicketNotificationEmail(input.emailId, {
+          name: input.name,
+        });
+        if (!result) {
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Falha ao atualizar e-mail de notificação",
+          });
+        }
+        return result;
+      }),
+
+    /**
+     * Send test email to verify SMTP configuration
+     */
+    sendTestEmail: flightProtectedProcedure
+      .input(z.object({ testEmail: z.string().email() }))
+      .mutation(async ({ input }) => {
+        const success = await sendTestEmail(input.testEmail);
+        if (!success) {
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Falha ao enviar e-mail de teste",
+          });
+        }
+        return { success: true };
+      }),
+
+    shareByEmail: flightProtectedProcedure
+      .input(
+        z.object({
+          weekNumber: z.number(),
+          weekLabel: z.string(),
+          departureDate: z.string(),
+          departureTime: z.string(),
+          departureAirport: z.string(),
+          departureAirline: z.string(),
+          departureFlightNumber: z.string(),
+          departureLocator: z.string(),
+          departureTerminal: z.string().optional(),
+          returnDate: z.string(),
+          returnTime: z.string(),
+          returnAirport: z.string(),
+          returnAirline: z.string(),
+          returnFlightNumber: z.string(),
+          returnLocator: z.string(),
+          returnTerminal: z.string().optional(),
+        })
+      )
+      .mutation(async ({ input }) => {
+        const emails = await getTicketNotificationEmails();
+        if (emails.length === 0) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "Nenhum e-mail cadastrado",
+          });
+        }
+
+        // Preparar eventos de calendário
+        const depEvent = {
+          title: `✈️ Voo IDA ${input.departureAirline.toUpperCase()} ${input.departureFlightNumber} — ${input.departureAirport} → ${input.returnAirport}`,
+          flightDatetime: `${input.departureDate}T${input.departureTime}`,
+          location: airportAddresses[input.departureAirport] || input.departureAirport,
+          description: `Localizador: ${input.departureLocator}\nCompanhia: ${input.departureAirline.toUpperCase()}\nNúmero: ${input.departureFlightNumber}${input.departureTerminal ? `\nTerminal: ${input.departureTerminal}` : ''}`,
+          leadMinutes: 120,
+        };
+        
+        const retEvent = {
+          title: `✈️ Voo VOLTA ${input.returnAirline.toUpperCase()} ${input.returnFlightNumber} — ${input.returnAirport} → ${input.departureAirport}`,
+          flightDatetime: `${input.returnDate}T${input.returnTime}`,
+          location: airportAddresses[input.returnAirport] || input.returnAirport,
+          description: `Localizador: ${input.returnLocator}\nCompanhia: ${input.returnAirline.toUpperCase()}\nNúmero: ${input.returnFlightNumber}${input.returnTerminal ? `\nTerminal: ${input.returnTerminal}` : ''}`,
+          leadMinutes: 120,
+        };
+        
+        // Formatar datas para padrão brasileiro
+        const departureDateBrazilian = formatDateToBrazilian(input.departureDate);
+        const returnDateBrazilian = formatDateToBrazilian(input.returnDate);
+        
+        // Gerar links de rastreamento de voo
+        const depTrackUrl = buildFlightTrackUrl(
+          input.departureAirline,
+          input.departureFlightNumber,
+          input.departureAirport,
+          input.returnAirport,
+          input.departureDate
+        );
+        
+        const retTrackUrl = buildFlightTrackUrl(
+          input.returnAirline,
+          input.returnFlightNumber,
+          input.returnAirport,
+          input.departureAirport,
+          input.returnDate
+        );
+        
+        const googleDepLink = getGoogleCalendarLink(depEvent, 120, 75);
+        const outlookDepLink = getOutlookLink(depEvent, 120, 75);
+        const googleRetLink = getGoogleCalendarLink(retEvent, 120, 75);
+        const outlookRetLink = getOutlookLink(retEvent, 120, 75);
+        
+        // Construir HTML do e-mail similar ao WhatsApp
+        const emailHtml = `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+            <h2 style="color: #1f2937; margin-bottom: 20px;">Compartilhamento de Bilhetes ✈️</h2>
+            <p style="color: #4b5563; margin-bottom: 20px;"><strong>${input.weekLabel}</strong></p>
+            
+            <div style="background-color: #f3f4f6; border-radius: 8px; padding: 16px; margin-bottom: 20px;">
+              <h3 style="color: #1f2937; margin-top: 0;">Voo de Ida 🛫</h3>
+              <p style="margin: 8px 0;"><strong>Data:</strong> ${departureDateBrazilian} às ${input.departureTime}</p>
+              <p style="margin: 8px 0;"><strong>Rota:</strong> ${input.departureAirport} → ${input.returnAirport}</p>
+              <p style="margin: 8px 0;"><strong>Companhia:</strong> ${input.departureAirline.toUpperCase()}</p>
+              <p style="margin: 8px 0;"><strong>Voo:</strong> ${input.departureFlightNumber}</p>
+              <p style="margin: 8px 0;"><strong>Localizador:</strong> <code style="background-color: #e5e7eb; padding: 2px 6px; border-radius: 3px;">${input.departureLocator}</code></p>
+              <p style="margin: 8px 0;">
+                <a href="${outlookDepLink}" style="color: #0078d4; margin-right: 10px; text-decoration: none;">📅 Outlook • Ida</a>
+                <a href="${googleDepLink}" style="color: #1f2937; margin-right: 10px; text-decoration: none;">📅 Google • Ida</a>
+                ${depTrackUrl ? `<a href="${depTrackUrl}" style="color: #059669; margin-right: 10px; text-decoration: none;">🔍 Rastrear Ida</a>` : ''}
+              </p>
+            </div>
+            
+            <div style="background-color: #f3f4f6; border-radius: 8px; padding: 16px; margin-bottom: 20px;">
+              <h3 style="color: #1f2937; margin-top: 0;">Voo de Volta 🛬</h3>
+              <p style="margin: 8px 0;"><strong>Data:</strong> ${returnDateBrazilian} às ${input.returnTime}</p>
+              <p style="margin: 8px 0;"><strong>Rota:</strong> ${input.returnAirport} → ${input.departureAirport}</p>
+              <p style="margin: 8px 0;"><strong>Companhia:</strong> ${input.returnAirline.toUpperCase()}</p>
+              <p style="margin: 8px 0;"><strong>Voo:</strong> ${input.returnFlightNumber}</p>
+              <p style="margin: 8px 0;"><strong>Localizador:</strong> <code style="background-color: #e5e7eb; padding: 2px 6px; border-radius: 3px;">${input.returnLocator}</code></p>
+              <p style="margin: 8px 0;">
+                <a href="${outlookRetLink}" style="color: #0078d4; margin-right: 10px; text-decoration: none;">📅 Outlook • Volta</a>
+                <a href="${googleRetLink}" style="color: #1f2937; margin-right: 10px; text-decoration: none;">📅 Google • Volta</a>
+                ${retTrackUrl ? `<a href="${retTrackUrl}" style="color: #059669; margin-right: 10px; text-decoration: none;">🔍 Rastrear Volta</a>` : ''}
+              </p>
+            </div>
+            
+            <p style="color: #6b7280; font-size: 12px; margin-top: 30px; border-top: 1px solid #e5e7eb; padding-top: 20px;">
+              Compartilhado via Smart Fly - Planejador de Passagens Aéreas 2026
+            </p>
+          </div>
+        `;
+
+        // Extrair apenas os endereços de e-mail do array de objetos
+        const emailAddresses = emails
+          .filter(e => e.active === 1) // Apenas e-mails ativos
+          .map(e => e.email);
+        
+        if (emailAddresses.length === 0) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "Nenhum e-mail ativo cadastrado",
+          });
+        }
+
+        return await sendShareByEmailNotification(
+          emailAddresses,
+          `Compartilhamento de Bilhetes - ${input.weekLabel}`,
+          emailHtml
+        );
+      }),
+
+    // Calendar integration
+    calendar: router({
+      createFlightEvent: flightProtectedProcedure
+        .input(
+          z.object({
+            weekNumber: z.number(),
+            airline: z.string(),
+            flightNumber: z.string(),
+            departureAirport: z.string(),
+            arrivalAirport: z.string(),
+            departureTime: z.date(),
+            arrivalTime: z.date(),
+            locator: z.string(),
+            isReturn: z.boolean(),
+          })
+        )
+        .mutation(async ({ input }) => {
+          const success = await createFlightCalendarEvent({
+            weekNumber: input.weekNumber,
+            airline: input.airline,
+            flightNumber: input.flightNumber,
+            departureAirport: input.departureAirport,
+            arrivalAirport: input.arrivalAirport,
+            departureTime: input.departureTime,
+            arrivalTime: input.arrivalTime,
+            locator: input.locator,
+            isReturn: input.isReturn,
+          });
+          if (!success) {
+            throw new TRPCError({
+              code: "INTERNAL_SERVER_ERROR",
+              message: "Falha ao criar evento no calendário",
+            });
+          }
+          return { success: true };
+        }),
+
+      createRoundTrip: flightProtectedProcedure
+        .input(
+          z.object({
+            weekNumber: z.number(),
+            departureAirline: z.string(),
+            departureFlightNumber: z.string(),
+            departureAirport: z.string(),
+            arrivalAirport: z.string(),
+            departureTime: z.date(),
+            departureArrivalTime: z.date(),
+            departureLocator: z.string(),
+            returnAirline: z.string(),
+            returnFlightNumber: z.string(),
+            returnTime: z.date(),
+            returnArrivalTime: z.date(),
+            returnLocator: z.string(),
+          })
+        )
+        .mutation(async ({ input }) => {
+          const result = await createRoundTripCalendarEvents(
+            input.weekNumber,
+            input.departureAirline,
+            input.departureFlightNumber,
+            input.departureAirport,
+            input.arrivalAirport,
+            input.departureTime,
+            input.departureArrivalTime,
+            input.departureLocator,
+            input.returnAirline,
+            input.returnFlightNumber,
+            input.returnTime,
+            input.returnArrivalTime,
+            input.returnLocator
+          );
+          if (!result.departure || !result.return) {
+            throw new TRPCError({
+              code: "INTERNAL_SERVER_ERROR",
+              message: "Falha ao criar eventos no calendário",
+            });
+          }
+          return { success: true };
+        }),
+    }),
+  }),
 });
 
 export type AppRouter = typeof appRouter;

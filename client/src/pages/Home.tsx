@@ -11,6 +11,7 @@ import {
   Line,
   ResponsiveContainer,
 } from "recharts";
+import { toast } from "sonner";
 import {
   flightData,
   airlines,
@@ -81,8 +82,10 @@ import {
   Sun,
   Moon,
   DollarSign,
+  MapPin,
 } from "lucide-react";
 import { Link } from "wouter";
+import { ShareByEmailButton } from "@/components/ShareByEmailButton";
 import {
   getGoogleCalendarLink,
   getOutlookLink,
@@ -102,7 +105,6 @@ import { usePushNotifications } from "@/hooks/usePushNotifications";
 import { ExportPdfButton } from "@/components/FlightPdfExport";
 import { NotificationSettingsPopup } from "@/components/NotificationSettingsPopup";
 import { trpc } from "@/lib/trpc";
-import { toast } from "sonner";
 import { LoginModal } from "@/components/auth/LoginModal";
 import { useTheme, COLOR_PRESETS } from "@/contexts/ThemeContext";
 import type { ColorPreset } from "@/contexts/ThemeContext";
@@ -123,80 +125,101 @@ function suggestFlightNumber(
   direction: "departure" | "return",
   allWeeks: WeekData[]
 ): string | null {
-  if (!airline) return null;
+  if (!airline || allWeeks.length === 0) return null;
 
-  // Coletar todos os voos já salvos com número de voo preenchido
-  const candidates = allWeeks
-    .filter(w => {
-      const a =
-        direction === "departure" ? w.departureAirline : w.returnAirline;
-      const fn =
-        direction === "departure"
-          ? w.departureFlightNumber
-          : w.returnFlightNumber;
-      return a === airline && fn && fn.trim();
-    })
-    .map(w => {
-      const fn =
-        (direction === "departure"
-          ? w.departureFlightNumber
-          : w.returnFlightNumber) ?? "";
-      const dt =
-        direction === "departure"
-          ? w.departureFlightDatetime
-          : w.returnFlightDatetime;
-      return { flightNumber: fn.trim().toUpperCase(), datetime: dt ?? "" };
-    });
+  const isDep = direction === "departure";
 
-  if (candidates.length === 0) return null;
-
-  // Extrair dia da semana e hora do datetime fornecido
   let targetDow: number | null = null;
   let targetHour: number | null = null;
   if (datetime) {
     const d = new Date(datetime);
     if (!isNaN(d.getTime())) {
-      targetDow = d.getDay(); // 0=Dom, 1=Seg, ..., 6=Sáb
+      targetDow = d.getDay();
       targetHour = d.getHours();
     }
   }
 
-  // Função auxiliar: retorna o número de voo mais frequente em uma lista
-  function mostFrequent(items: string[]): string | null {
-    if (items.length === 0) return null;
-    const freq: Record<string, number> = {};
-    for (const item of items) freq[item] = (freq[item] ?? 0) + 1;
-    return Object.entries(freq).sort((a, b) => b[1] - a[1])[0][0];
+  let maxFreq1 = 0,
+    maxItem1: string | null = null;
+  let maxFreq2 = 0,
+    maxItem2: string | null = null;
+  let maxFreq3 = 0,
+    maxItem3: string | null = null;
+
+  const freqs1: Record<string, number> = {};
+  const freqs2: Record<string, number> = {};
+  const freqs3: Record<string, number> = {};
+
+  // ⚡ Bolt: Use a map to avoid re-parsing dates that appear repeatedly
+  const dtCache = new Map<string, { dow: number; hour: number } | null>();
+
+  for (let i = 0; i < allWeeks.length; i++) {
+    const w = allWeeks[i];
+    const a = isDep ? w.departureAirline : w.returnAirline;
+
+    if (a !== airline) continue;
+
+    const fn = isDep ? w.departureFlightNumber : w.returnFlightNumber;
+    if (!fn) continue;
+    const trimmedFn = fn.trim();
+    if (!trimmedFn) continue;
+
+    const flightNum = trimmedFn.toUpperCase();
+
+    // Nível 3: qualquer voo da mesma companhia na mesma direção
+    const f3 = (freqs3[flightNum] || 0) + 1;
+    freqs3[flightNum] = f3;
+    if (f3 > maxFreq3) {
+      maxFreq3 = f3;
+      maxItem3 = flightNum;
+    }
+
+    if (targetDow !== null) {
+      const dt = isDep ? w.departureFlightDatetime : w.returnFlightDatetime;
+      if (dt) {
+        let parsed = dtCache.get(dt);
+        if (parsed === undefined) {
+          const d = new Date(dt);
+          if (!isNaN(d.getTime())) {
+            parsed = { dow: d.getDay(), hour: d.getHours() };
+          } else {
+            parsed = null;
+          }
+          dtCache.set(dt, parsed);
+        }
+
+        if (parsed !== null) {
+          if (parsed.dow === targetDow) {
+            // Nível 2: mesmo dia da semana
+            const f2 = (freqs2[flightNum] || 0) + 1;
+            freqs2[flightNum] = f2;
+            if (f2 > maxFreq2) {
+              maxFreq2 = f2;
+              maxItem2 = flightNum;
+            }
+
+            if (
+              targetHour !== null &&
+              Math.abs(parsed.hour - targetHour) <= 1
+            ) {
+              // Nível 1: mesmo dia da semana + faixa de horário (±1h)
+              const f1 = (freqs1[flightNum] || 0) + 1;
+              freqs1[flightNum] = f1;
+              if (f1 > maxFreq1) {
+                maxFreq1 = f1;
+                maxItem1 = flightNum;
+              }
+            }
+          }
+        }
+      }
+    }
   }
 
-  // Nível 1: mesmo dia da semana + faixa de horário (±1h)
-  if (targetDow !== null && targetHour !== null) {
-    const level1 = candidates.filter(c => {
-      if (!c.datetime) return false;
-      const d = new Date(c.datetime);
-      if (isNaN(d.getTime())) return false;
-      return (
-        d.getDay() === targetDow && Math.abs(d.getHours() - targetHour!) <= 1
-      );
-    });
-    const result1 = mostFrequent(level1.map(c => c.flightNumber));
-    if (result1) return result1;
-  }
-
-  // Nível 2: mesmo dia da semana
-  if (targetDow !== null) {
-    const level2 = candidates.filter(c => {
-      if (!c.datetime) return false;
-      const d = new Date(c.datetime);
-      if (isNaN(d.getTime())) return false;
-      return d.getDay() === targetDow;
-    });
-    const result2 = mostFrequent(level2.map(c => c.flightNumber));
-    if (result2) return result2;
-  }
-
-  // Nível 3: qualquer voo da mesma companhia na mesma direção
-  return mostFrequent(candidates.map(c => c.flightNumber));
+  if (targetDow !== null && targetHour !== null && maxItem1 !== null)
+    return maxItem1;
+  if (targetDow !== null && maxItem2 !== null) return maxItem2;
+  return maxItem3;
 }
 
 interface WeekData {
@@ -1677,7 +1700,6 @@ export default function Home() {
                 value={pricePercentile}
                 onChange={e => setPricePercentile(parseInt(e.target.value))}
                 className="w-full"
-                aria-label="Percentil de preço"
               />
               <p className="text-xs text-slate-500 mt-2">
                 Ajuste para mostrar voos mais ou menos baratos
@@ -2096,7 +2118,6 @@ export default function Home() {
                                                   )
                                                 }
                                                 className="h-7 text-sm border border-slate-200 dark:border-slate-600 rounded-md px-2 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-400 dark:focus:ring-blue-500 focus:border-blue-400 dark:focus:border-blue-500"
-                                                aria-label="Data de ida"
                                               />
                                               {depIso && (
                                                 <span className="text-xs font-semibold text-blue-700 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded-full">
@@ -2138,7 +2159,6 @@ export default function Home() {
                                                   )
                                                 }
                                                 className="h-7 text-sm border border-slate-200 dark:border-slate-600 rounded-md px-2 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-400 dark:focus:ring-blue-500 focus:border-blue-400 dark:focus:border-blue-500"
-                                                aria-label="Data de retorno"
                                               />
                                               {retIso && (
                                                 <span className="text-xs font-semibold text-green-700 bg-green-50 border border-green-200 px-2 py-0.5 rounded-full">
@@ -2328,6 +2348,250 @@ export default function Home() {
                                 {/* Conteúdo expansível da semana */}
                                 {expandedWeekCards.has(week.weekNumber) && (
                                   <div className="mt-3 sm:mt-4">
+                                    {/* Painel Copa 2026 — apenas semanas com jogos/fases no intervalo */}
+                                    {(() => {
+                                      const hoje = new Date();
+                                      hoje.setHours(0, 0, 0, 0);
+
+                                      // Converte DD/MM/YYYY → Date
+                                      const parseBR = (s: string) => {
+                                        const [d, m, y] = s.split("/").map(Number);
+                                        return new Date(y, m - 1, d);
+                                      };
+                                      // Converte YYYY-MM-DD → Date
+                                      const parseISO = (s: string) => {
+                                        const [y, m, d] = s.split("-").map(Number);
+                                        return new Date(y, m - 1, d);
+                                      };
+
+                                      const semanaInicio = parseBR(week.departureDate);
+                                      const semanaFimViagem = parseBR(week.returnDate);
+                                      // Ampliar o fim para cobrir a semana calendário completa:
+                                      // a semana começa no domingo (ida) e vai até o sábado seguinte (+6 dias)
+                                      const semanaFim = new Date(semanaInicio);
+                                      semanaFim.setDate(semanaFim.getDate() + 6);
+                                      // Usar o maior dos dois (retorno ou sábado da semana)
+                                      const semanaFimEfetivo = semanaFimViagem > semanaFim ? semanaFimViagem : semanaFim;
+
+                                      // Helper: calcula dias restantes e labels
+                                      const calcDias = (dataStr: string) => {
+                                        const dataEvento = parseISO(dataStr);
+                                        const diffMs = dataEvento.getTime() - hoje.getTime();
+                                        const diffDias = Math.round(diffMs / (1000 * 60 * 60 * 24));
+                                        const passou = diffDias < 0;
+                                        const ehHoje = diffDias === 0;
+                                        const label = passou ? "Já realizado" : ehHoje ? "🔴 HOJE!" : `em ${diffDias} dia${diffDias === 1 ? "" : "s"}`;
+                                        const [, mm, dd] = dataStr.split("-");
+                                        const diasSemana = ["Dom","Seg","Ter","Qua","Qui","Sex","Sáb"];
+                                        const diaSemana = diasSemana[dataEvento.getDay()];
+                                        return { passou, ehHoje, label, mm, dd, diaSemana, diffDias };
+                                      };
+
+                                      // Todos os jogos da 1ª fase
+                                      const todosJogos = [
+                                        { data: "2026-06-13", adversario: "Marrocos", cidade: "Nova York/NJ", bandeira: "🇲🇦" },
+                                        { data: "2026-06-19", adversario: "Haiti",    cidade: "Filadélfia",   bandeira: "🇭🇹" },
+                                        { data: "2026-06-24", adversario: "Escócia",  cidade: "Miami",        bandeira: "🏴󠁧󠁢󠁳󠁣󠁴󠁿" },
+                                      ];
+
+                                      // Filtrar jogos que caem dentro da semana calendário (dom-sáb)
+                                      const jogosDosBrasil = todosJogos.filter(jogo => {
+                                        const dataJogo = parseISO(jogo.data);
+                                        return dataJogo >= semanaInicio && dataJogo <= semanaFimEfetivo;
+                                      });
+
+                                      // Fases eliminatórias: janelas de datas (início e fim de cada fase)
+                                      const todasFases = [
+                                        {
+                                          fase: "32-avos de Final",
+                                          icone: "🏟️",
+                                          inicio: "2026-06-28",
+                                          fim: "2026-07-03",
+                                          cidades: "Várias cidades",
+                                          cor: "blue",
+                                        },
+                                        {
+                                          fase: "Oitavas de Final",
+                                          icone: "⚡",
+                                          inicio: "2026-07-04",
+                                          fim: "2026-07-07",
+                                          cidades: "Várias cidades",
+                                          cor: "blue",
+                                        },
+                                        {
+                                          fase: "Quartas de Final",
+                                          icone: "🔥",
+                                          inicio: "2026-07-09",
+                                          fim: "2026-07-11",
+                                          cidades: "Várias cidades",
+                                          cor: "orange",
+                                        },
+                                        {
+                                          fase: "Semifinais",
+                                          icone: "🏆",
+                                          inicio: "2026-07-14",
+                                          fim: "2026-07-15",
+                                          cidades: "Dallas, TX",
+                                          cor: "purple",
+                                        },
+                                        {
+                                          fase: "Final",
+                                          icone: "🥇",
+                                          inicio: "2026-07-19",
+                                          fim: "2026-07-19",
+                                          cidades: "MetLife Stadium, NJ",
+                                          cor: "yellow",
+                                        },
+                                      ];
+
+                                      // Filtrar fases eliminatórias que se sobrepõem à semana calendário
+                                      const fasesEliminatorias = todasFases.filter(fase => {
+                                        const faseInicio = parseISO(fase.inicio);
+                                        const faseFim = parseISO(fase.fim);
+                                        // Sobreposição: faseInicio <= semanaFimEfetivo E faseFim >= semanaInicio
+                                        return faseInicio <= semanaFimEfetivo && faseFim >= semanaInicio;
+                                      });
+
+                                      // Só renderiza o painel se houver jogos ou fases no intervalo
+                                      if (jogosDosBrasil.length === 0 && fasesEliminatorias.length === 0) return null;
+
+                                      return (
+                                        <div className="mb-4 rounded-xl border border-green-300 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950/30 dark:to-emerald-950/30 dark:border-green-700 overflow-hidden">
+                                          {/* Cabeçalho */}
+                                          <div className="bg-green-700 dark:bg-green-800 px-3 py-2 flex items-center gap-2">
+                                            <span className="text-base">⚽</span>
+                                            <span className="text-xs font-bold text-white uppercase tracking-wider">Brasil na Copa do Mundo 2026</span>
+                                          </div>
+
+                                          {/* 1ª Fase — só se houver jogos no intervalo */}
+                                          {jogosDosBrasil.length > 0 && (
+                                          <div className="px-3 pt-3 pb-1">
+                                            <div className="flex items-center gap-1.5 mb-2">
+                                              <span className="text-xs font-bold text-green-800 dark:text-green-300 uppercase tracking-wide">🇧🇷 1ª Fase — Grupo C</span>
+                                            </div>
+                                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                                              {jogosDosBrasil.map(jogo => {
+                                                const { passou, ehHoje, label, mm, dd, diaSemana } = calcDias(jogo.data);
+                                                return (
+                                                  <div
+                                                    key={jogo.data}
+                                                    className={`rounded-lg p-3 border flex flex-col gap-1 ${
+                                                      passou
+                                                        ? "bg-slate-100 border-slate-200 dark:bg-slate-800/40 dark:border-slate-700 opacity-60"
+                                                        : ehHoje
+                                                        ? "bg-yellow-50 border-yellow-400 dark:bg-yellow-900/30 dark:border-yellow-500 ring-2 ring-yellow-400"
+                                                        : "bg-white border-green-200 dark:bg-green-950/20 dark:border-green-700"
+                                                    }`}
+                                                  >
+                                                    <div className="flex items-center gap-1.5">
+                                                      <span className="text-lg">🇧🇷</span>
+                                                      <span className="text-xs font-bold text-slate-700 dark:text-slate-200">Brasil</span>
+                                                      <span className="text-xs text-slate-400">vs</span>
+                                                      <span className="text-lg">{jogo.bandeira}</span>
+                                                      <span className="text-xs font-bold text-slate-700 dark:text-slate-200">{jogo.adversario}</span>
+                                                    </div>
+                                                    <div className="flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400">
+                                                      <Calendar className="w-3 h-3" />
+                                                      <span>{diaSemana}, {dd}/{mm}/2026</span>
+                                                    </div>
+                                                    <div className="flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400">
+                                                      <MapPin className="w-3 h-3" />
+                                                      <span>{jogo.cidade}</span>
+                                                    </div>
+                                                    <div className={`text-xs font-semibold mt-0.5 ${
+                                                      passou ? "text-slate-400" : ehHoje ? "text-yellow-600 dark:text-yellow-400" : "text-green-700 dark:text-green-400"
+                                                    }`}>
+                                                      {label}
+                                                    </div>
+                                                  </div>
+                                                );
+                                              })}
+                                            </div>
+                                          </div>
+                                          )}
+
+                                          {/* Divisor — só se houver ambas as seções */}
+                                          {jogosDosBrasil.length > 0 && fasesEliminatorias.length > 0 && (
+                                            <div className="mx-3 my-2 border-t border-green-200 dark:border-green-800" />
+                                          )}
+
+                                          {/* Fases Eliminatórias — só se houver fases no intervalo */}
+                                          {fasesEliminatorias.length > 0 && (
+                                          <div className="px-3 pb-3">
+                                            <div className="flex items-center gap-1.5 mb-2">
+                                              <span className="text-xs font-bold text-green-800 dark:text-green-300 uppercase tracking-wide">🏆 Fases Eliminatórias — Possível participação do Brasil</span>
+                                            </div>
+                                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-2">
+                                              {fasesEliminatorias.map(fase => {
+                                                const inicio = calcDias(fase.inicio);
+                                                const fim = calcDias(fase.fim);
+                                                // A fase já passou se o fim já passou
+                                                const passou = fim.passou;
+                                                // A fase está acontecendo agora se inicio passou mas fim não
+                                                const emAndamento = inicio.passou && !fim.passou;
+                                                const [, mmI, ddI] = fase.inicio.split("-");
+                                                const [, mmF, ddF] = fase.fim.split("-");
+                                                const mesmoMes = mmI === mmF;
+                                                const periodoLabel = mesmoMes
+                                                  ? `${ddI} a ${ddF}/${mmI}`
+                                                  : `${ddI}/${mmI} a ${ddF}/${mmF}`;
+                                                const diasLabel = passou
+                                                  ? "Já realizado"
+                                                  : emAndamento
+                                                  ? "🔴 Em andamento!"
+                                                  : `em ${inicio.diffDias} dia${inicio.diffDias === 1 ? "" : "s"}`;
+                                                const colorMap: Record<string, string> = {
+                                                  blue:   "bg-blue-50 border-blue-200 dark:bg-blue-950/20 dark:border-blue-700",
+                                                  orange: "bg-orange-50 border-orange-200 dark:bg-orange-950/20 dark:border-orange-700",
+                                                  purple: "bg-purple-50 border-purple-200 dark:bg-purple-950/20 dark:border-purple-700",
+                                                  yellow: "bg-yellow-50 border-yellow-300 dark:bg-yellow-950/20 dark:border-yellow-600",
+                                                };
+                                                const labelColorMap: Record<string, string> = {
+                                                  blue:   "text-blue-700 dark:text-blue-400",
+                                                  orange: "text-orange-700 dark:text-orange-400",
+                                                  purple: "text-purple-700 dark:text-purple-400",
+                                                  yellow: "text-yellow-700 dark:text-yellow-400",
+                                                };
+                                                return (
+                                                  <div
+                                                    key={fase.fase}
+                                                    className={`rounded-lg p-3 border flex flex-col gap-1 ${
+                                                      passou
+                                                        ? "bg-slate-100 border-slate-200 dark:bg-slate-800/40 dark:border-slate-700 opacity-60"
+                                                        : emAndamento
+                                                        ? "bg-yellow-50 border-yellow-400 dark:bg-yellow-900/30 dark:border-yellow-500 ring-2 ring-yellow-400"
+                                                        : colorMap[fase.cor] ?? colorMap.blue
+                                                    }`}
+                                                  >
+                                                    <div className="flex items-center gap-1.5">
+                                                      <span className="text-base">{fase.icone}</span>
+                                                      <span className="text-xs font-bold text-slate-700 dark:text-slate-200">{fase.fase}</span>
+                                                    </div>
+                                                    <div className="flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400">
+                                                      <Calendar className="w-3 h-3" />
+                                                      <span>{periodoLabel}/2026</span>
+                                                    </div>
+                                                    <div className="flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400">
+                                                      <MapPin className="w-3 h-3" />
+                                                      <span>{fase.cidades}</span>
+                                                    </div>
+                                                    <div className={`text-xs font-semibold mt-0.5 ${
+                                                      passou ? "text-slate-400" : emAndamento ? "text-yellow-600 dark:text-yellow-400" : labelColorMap[fase.cor] ?? labelColorMap.blue
+                                                    }`}>
+                                                      {diasLabel}
+                                                    </div>
+                                                    {!passou && (
+                                                      <span className="text-xs text-slate-400 dark:text-slate-500 italic">possível</span>
+                                                    )}
+                                                  </div>
+                                                );
+                                              })}
+                                            </div>
+                                          </div>
+                                          )}
+                                        </div>
+                                      );
+                                    })()}
                                     {/* Buscadores de preços + Cards Ida/Volta lado a lado */}
                                     <div className="flex flex-col lg:flex-row gap-3 sm:gap-4 mt-2">
                                       {/* Coluna esquerda: Buscadores de preços */}
@@ -2758,65 +3022,12 @@ export default function Home() {
                                                   </Select>
                                                 </div>
                                                 <div className="flex flex-col gap-1">
-                                                  <div className="flex items-center justify-between">
-                                                    <label className="text-[10px] font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wide">
-                                                      Número do Voo
-                                                    </label>
-                                                    {suggestedDepartureFlightNumber[
-                                                      week.weekNumber
-                                                    ] && (
-                                                      <span
-                                                        title="Sugerido pelo histórico de voos anteriores. Confirme ou edite."
-                                                        className="flex items-center gap-0.5 text-[10px] font-medium text-amber-600 bg-amber-50 border border-amber-200 rounded px-1.5 py-0.5 cursor-default"
-                                                      >
-                                                        <Wand2 className="w-2.5 h-2.5" />
-                                                        Sugerido
-                                                      </span>
-                                                    )}
-                                                  </div>
-                                                  <input
-                                                    type="text"
-                                                    maxLength={10}
-                                                    placeholder="Ex: LA3045"
-                                                    className={`h-8 text-xs rounded-md px-2 bg-white text-slate-700 uppercase font-mono focus:outline-none focus:ring-2 w-full transition-colors ${
-                                                      suggestedDepartureFlightNumber[
-                                                        week.weekNumber
-                                                      ]
-                                                        ? "border border-amber-300 focus:ring-amber-400"
-                                                        : "border border-blue-200 focus:ring-blue-400"
-                                                    }`}
-                                                    aria-label="Número do voo de ida"
-                                                    value={
-                                                      tempDepartureFlightNumber[
-                                                        week.weekNumber
-                                                      ] ?? ""
-                                                    }
-                                                    onChange={e => {
-                                                      setTempDepartureFlightNumber(
-                                                        prev => ({
-                                                          ...prev,
-                                                          [week.weekNumber]:
-                                                            e.target.value.toUpperCase(),
-                                                        })
-                                                      );
-                                                      // Ao editar manualmente, remover o indicador de sugestão
-                                                      setSuggestedDepartureFlightNumber(
-                                                        prev => ({
-                                                          ...prev,
-                                                          [week.weekNumber]: false,
-                                                        })
-                                                      );
-                                                    }}
-                                                  />
-                                                </div>
-                                                <div className="flex flex-col gap-1">
                                                   <label className="text-[10px] font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wide">
                                                     Data e Hora do Voo
                                                   </label>
                                                   <input
                                                     type="datetime-local"
                                                     className="h-8 text-xs border border-blue-200 dark:border-blue-600 rounded-md px-2 bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-400 dark:focus:ring-blue-500 w-full"
-                                                    aria-label="Data e hora do voo de ida"
                                                     value={
                                                       tempDepartureDatetime[
                                                         week.weekNumber
@@ -2894,6 +3105,57 @@ export default function Home() {
                                                 <div className="flex flex-col gap-1">
                                                   <div className="flex items-center justify-between">
                                                     <label className="text-[10px] font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wide">
+                                                      Número do Voo
+                                                    </label>
+                                                    {suggestedDepartureFlightNumber[
+                                                      week.weekNumber
+                                                    ] && (
+                                                      <span
+                                                        title="Sugerido pelo histórico de voos anteriores. Confirme ou edite."
+                                                        className="flex items-center gap-0.5 text-[10px] font-medium text-amber-600 bg-amber-50 border border-amber-200 rounded px-1.5 py-0.5 cursor-default"
+                                                      >
+                                                        <Wand2 className="w-2.5 h-2.5" />
+                                                        Sugerido
+                                                      </span>
+                                                    )}
+                                                  </div>
+                                                  <input
+                                                    type="text"
+                                                    maxLength={10}
+                                                    placeholder="Ex: LA3045"
+                                                    className={`h-8 text-xs rounded-md px-2 bg-white text-slate-700 uppercase font-mono focus:outline-none focus:ring-2 w-full transition-colors ${
+                                                      suggestedDepartureFlightNumber[
+                                                        week.weekNumber
+                                                      ]
+                                                        ? "border border-amber-300 focus:ring-amber-400"
+                                                        : "border border-blue-200 focus:ring-blue-400"
+                                                    }`}
+                                                    value={
+                                                      tempDepartureFlightNumber[
+                                                        week.weekNumber
+                                                      ] ?? ""
+                                                    }
+                                                    onChange={e => {
+                                                      setTempDepartureFlightNumber(
+                                                        prev => ({
+                                                          ...prev,
+                                                          [week.weekNumber]:
+                                                            e.target.value.toUpperCase(),
+                                                        })
+                                                      );
+                                                      // Ao editar manualmente, remover o indicador de sugestão
+                                                      setSuggestedDepartureFlightNumber(
+                                                        prev => ({
+                                                          ...prev,
+                                                          [week.weekNumber]: false,
+                                                        })
+                                                      );
+                                                    }}
+                                                  />
+                                                </div>
+                                                <div className="flex flex-col gap-1">
+                                                  <div className="flex items-center justify-between">
+                                                    <label className="text-[10px] font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wide">
                                                       Localizador (PNR)
                                                     </label>
                                                     {(
@@ -2941,7 +3203,6 @@ export default function Home() {
                                                     maxLength={20}
                                                     placeholder="Ex: ABC123"
                                                     className="h-8 text-xs border border-blue-200 rounded-md px-2 bg-white text-slate-700 uppercase font-mono focus:outline-none focus:ring-2 focus:ring-blue-400 w-full"
-                                                    aria-label="Localizador do voo de ida"
                                                     value={
                                                       tempDepartureLocator[
                                                         week.weekNumber
@@ -2958,8 +3219,10 @@ export default function Home() {
                                                     }
                                                   />
                                                 </div>
-                                              </div>
-                                            </div>
+                                                  </div>
+                                                </div>
+
+
 
                                             {/* Card VOLTA — só exibido quando tipo é Ida e Volta */}
                                             {(tempTicketType[week.weekNumber] ??
@@ -3192,65 +3455,12 @@ export default function Home() {
                                                     </Select>
                                                   </div>
                                                   <div className="flex flex-col gap-1">
-                                                    <div className="flex items-center justify-between">
-                                                      <label className="text-[10px] font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wide">
-                                                        Número do Voo
-                                                      </label>
-                                                      {suggestedReturnFlightNumber[
-                                                        week.weekNumber
-                                                      ] && (
-                                                        <span
-                                                          title="Sugerido pelo histórico de voos anteriores. Confirme ou edite."
-                                                          className="flex items-center gap-0.5 text-[10px] font-medium text-amber-600 bg-amber-50 border border-amber-200 rounded px-1.5 py-0.5 cursor-default"
-                                                        >
-                                                          <Wand2 className="w-2.5 h-2.5" />
-                                                          Sugerido
-                                                        </span>
-                                                      )}
-                                                    </div>
-                                                    <input
-                                                      type="text"
-                                                      maxLength={10}
-                                                      placeholder="Ex: G31234"
-                                                      className={`h-8 text-xs rounded-md px-2 bg-white text-slate-700 uppercase font-mono focus:outline-none focus:ring-2 w-full transition-colors ${
-                                                        suggestedReturnFlightNumber[
-                                                          week.weekNumber
-                                                        ]
-                                                          ? "border border-amber-300 focus:ring-amber-400"
-                                                          : "border border-orange-200 focus:ring-orange-400"
-                                                      }`}
-                                                      aria-label="Número do voo de retorno"
-                                                      value={
-                                                        tempReturnFlightNumber[
-                                                          week.weekNumber
-                                                        ] ?? ""
-                                                      }
-                                                      onChange={e => {
-                                                        setTempReturnFlightNumber(
-                                                          prev => ({
-                                                            ...prev,
-                                                            [week.weekNumber]:
-                                                              e.target.value.toUpperCase(),
-                                                          })
-                                                        );
-                                                        // Ao editar manualmente, remover o indicador de sugestão
-                                                        setSuggestedReturnFlightNumber(
-                                                          prev => ({
-                                                            ...prev,
-                                                            [week.weekNumber]: false,
-                                                          })
-                                                        );
-                                                      }}
-                                                    />
-                                                  </div>
-                                                  <div className="flex flex-col gap-1">
                                                     <label className="text-[10px] font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wide">
                                                       Data e Hora do Voo
                                                     </label>
                                                     <input
                                                       type="datetime-local"
                                                       className="h-8 text-xs border border-orange-200 rounded-md px-2 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-orange-400 w-full"
-                                                      aria-label="Data e hora do voo de retorno"
                                                       value={
                                                         tempReturnDatetime[
                                                           week.weekNumber
@@ -3340,6 +3550,57 @@ export default function Home() {
                                                     })()}
                                                   </div>
                                                   <div className="flex flex-col gap-1">
+                                                    <div className="flex items-center justify-between">
+                                                      <label className="text-[10px] font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wide">
+                                                        Número do Voo
+                                                      </label>
+                                                      {suggestedReturnFlightNumber[
+                                                        week.weekNumber
+                                                      ] && (
+                                                        <span
+                                                          title="Sugerido pelo histórico de voos anteriores. Confirme ou edite."
+                                                          className="flex items-center gap-0.5 text-[10px] font-medium text-amber-600 bg-amber-50 border border-amber-200 rounded px-1.5 py-0.5 cursor-default"
+                                                        >
+                                                          <Wand2 className="w-2.5 h-2.5" />
+                                                          Sugerido
+                                                        </span>
+                                                      )}
+                                                    </div>
+                                                    <input
+                                                      type="text"
+                                                      maxLength={10}
+                                                      placeholder="Ex: G31234"
+                                                      className={`h-8 text-xs rounded-md px-2 bg-white text-slate-700 uppercase font-mono focus:outline-none focus:ring-2 w-full transition-colors ${
+                                                        suggestedReturnFlightNumber[
+                                                          week.weekNumber
+                                                        ]
+                                                          ? "border border-amber-300 focus:ring-amber-400"
+                                                          : "border border-orange-200 focus:ring-orange-400"
+                                                      }`}
+                                                      value={
+                                                        tempReturnFlightNumber[
+                                                          week.weekNumber
+                                                        ] ?? ""
+                                                      }
+                                                      onChange={e => {
+                                                        setTempReturnFlightNumber(
+                                                          prev => ({
+                                                            ...prev,
+                                                            [week.weekNumber]:
+                                                              e.target.value.toUpperCase(),
+                                                          })
+                                                        );
+                                                        // Ao editar manualmente, remover o indicador de sugestão
+                                                        setSuggestedReturnFlightNumber(
+                                                          prev => ({
+                                                            ...prev,
+                                                            [week.weekNumber]: false,
+                                                          })
+                                                        );
+                                                      }}
+                                                    />
+                                                  </div>
+                                                  <div className="flex flex-col gap-1">
                                                     <label className="text-[10px] font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wide">
                                                       Localizador (PNR)
                                                     </label>
@@ -3348,7 +3609,6 @@ export default function Home() {
                                                       maxLength={20}
                                                       placeholder="Ex: XYZ456"
                                                       className="h-8 text-xs border border-orange-200 dark:border-orange-600 rounded-md px-2 bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-100 uppercase font-mono focus:outline-none focus:ring-2 focus:ring-orange-400 dark:focus:ring-orange-500 w-full"
-                                                      aria-label="Localizador do voo de retorno"
                                                       value={
                                                         tempReturnLocator[
                                                           week.weekNumber
@@ -3977,6 +4237,19 @@ export default function Home() {
                                                             Compartilhar no
                                                             WhatsApp
                                                           </a>
+                                                          <ShareByEmailButton
+                                                            weekNumber={week.weekNumber}
+                                                            departureDate={tempDepartureDatetime[week.weekNumber] ? tempDepartureDatetime[week.weekNumber].slice(0, 10) : week.departureFlightDatetime ? week.departureFlightDatetime.slice(0, 10) : ""}
+                                                            returnDate={tempReturnDatetime[week.weekNumber] ? tempReturnDatetime[week.weekNumber].slice(0, 10) : week.returnFlightDatetime ? week.returnFlightDatetime.slice(0, 10) : ""}
+                                                            departureFlightNumber={week.departureFlightNumber || ""}
+                                                            returnFlightNumber={week.returnFlightNumber || ""}
+                                                            departureAirline={week.departureAirline || ""}
+                                                            returnAirline={week.returnAirline || ""}
+                                                            departurePNR={tempDepartureLocator[week.weekNumber] ?? week.departureLocator ?? ""}
+                                                            returnPNR={tempReturnLocator[week.weekNumber] ?? week.returnLocator ?? ""}
+                                                            departureDatetime={tempDepartureDatetime[week.weekNumber] || week.departureFlightDatetime || ""}
+                                                            returnDatetime={tempReturnDatetime[week.weekNumber] || week.returnFlightDatetime || ""}
+                                                          />
                                                         </>
                                                       );
                                                     })()}

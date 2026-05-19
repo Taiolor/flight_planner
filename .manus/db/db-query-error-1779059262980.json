@@ -1,0 +1,8 @@
+{
+  "query": "SELECT * FROM ticketNotificationEmails;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3hTCxLMFFnvwjKu.root --database HQ655wm9a6bck22hJAwYRc --execute SELECT * FROM ticketNotificationEmails;",
+  "returncode": 1,
+  "logs": [
+    "ERROR 1146 (42S02) at line 1: Table 'hq655wm9a6bck22hjawyrc.ticketNotificationEmails' doesn't exist"
+  ]
+}

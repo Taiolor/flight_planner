@@ -33,3 +33,8 @@
 **Vulnerability:** The environment configuration was providing a hardcoded string ("dev-secret-do-not-use-in-production") as a fallback for `JWT_SECRET` when running in non-production environments.
 **Learning:** Hardcoding cryptographic secrets, even for development, encourages bad practices and can lead to accidental production use if the environment detection fails or is misconfigured. Secrets should always be managed externally via environment variables.
 **Prevention:** Always enforce the presence of security-critical environment variables like `JWT_SECRET` at application startup across all environments. Throw a clear error if they are missing to ensure developers configure their local environments correctly and securely.
+
+## 2025-02-28 - Missing Authentication on Sensitive tRPC Endpoints
+**Vulnerability:** The `ticketNotifications` tRPC router exposed 8 sensitive endpoints (including `addRecipient`, `shareByEmail`, `calendar.createRoundTrip`) as `publicProcedure`s, allowing any unauthenticated user to access and manipulate notification configurations and calendar events.
+**Learning:** Legacy tRPC endpoints outside the primary `auth` module often slip past authentication audits if developers default to `publicProcedure` without considering the endpoint's sensitivity.
+**Prevention:** Always verify that administrative or user-specific endpoints use protected procedures (`protectedProcedure` or `flightProtectedProcedure`). Introduce centralized middlewares rather than repeating inline session checks to ensure consistency and maintainability.
