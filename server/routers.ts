@@ -78,6 +78,22 @@ async function getSessionFromCookie(
   return validateAuthSession(sessionToken);
 }
 
+const flightProtectedProcedure = publicProcedure.use(async ({ ctx, next }) => {
+  const session = await getSessionFromCookie(ctx.req);
+  if (!session) {
+    throw new TRPCError({
+      code: "UNAUTHORIZED",
+      message: "Faça login para acessar.",
+    });
+  }
+  return next({
+    ctx: {
+      ...ctx,
+      flightSession: session,
+    },
+  });
+});
+
 export const appRouter = router({
   system: systemRouter,
   auth: router({
@@ -1053,14 +1069,14 @@ export const appRouter = router({
     /**
      * Get all ticket notification email recipients
      */
-    getRecipients: publicProcedure.query(async () => {
+    getRecipients: flightProtectedProcedure.query(async () => {
       return await getTicketNotificationEmails();
     }),
 
     /**
      * Add a new ticket notification email recipient
      */
-    addRecipient: publicProcedure
+    addRecipient: flightProtectedProcedure
       .input(
         z.object({
           email: z.string().email("E-mail inválido"),
@@ -1081,7 +1097,7 @@ export const appRouter = router({
     /**
      * Remove a ticket notification email recipient
      */
-    removeRecipient: publicProcedure
+    removeRecipient: flightProtectedProcedure
       .input(z.object({ emailId: z.number() }))
       .mutation(async ({ input }) => {
         const success = await removeTicketNotificationEmail(input.emailId);
@@ -1097,7 +1113,7 @@ export const appRouter = router({
     /**
      * Update a ticket notification email recipient
      */
-    updateRecipient: publicProcedure
+    updateRecipient: flightProtectedProcedure
       .input(
         z.object({
           emailId: z.number(),
@@ -1120,7 +1136,7 @@ export const appRouter = router({
     /**
      * Send test email to verify SMTP configuration
      */
-    sendTestEmail: publicProcedure
+    sendTestEmail: flightProtectedProcedure
       .input(z.object({ testEmail: z.string().email() }))
       .mutation(async ({ input }) => {
         const success = await sendTestEmail(input.testEmail);
@@ -1133,7 +1149,7 @@ export const appRouter = router({
         return { success: true };
       }),
 
-    shareByEmail: publicProcedure
+    shareByEmail: flightProtectedProcedure
       .input(
         z.object({
           weekNumber: z.number(),
@@ -1267,7 +1283,7 @@ export const appRouter = router({
 
     // Calendar integration
     calendar: router({
-      createFlightEvent: publicProcedure
+      createFlightEvent: flightProtectedProcedure
         .input(
           z.object({
             weekNumber: z.number(),
@@ -1302,7 +1318,7 @@ export const appRouter = router({
           return { success: true };
         }),
 
-      createRoundTrip: publicProcedure
+      createRoundTrip: flightProtectedProcedure
         .input(
           z.object({
             weekNumber: z.number(),
