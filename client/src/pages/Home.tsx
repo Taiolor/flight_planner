@@ -56,6 +56,7 @@ import {
   ChevronDown,
   Plane,
   Calendar,
+  Clock,
   ExternalLink,
   AlertCircle,
   Trash2,
@@ -2389,9 +2390,9 @@ export default function Home() {
 
                                       // Todos os jogos da 1ª fase
                                       const todosJogos = [
-                                        { data: "2026-06-13", adversario: "Marrocos", cidade: "Nova York/NJ", bandeira: "🇲🇦" },
-                                        { data: "2026-06-19", adversario: "Haiti",    cidade: "Filadélfia",   bandeira: "🇭🇹" },
-                                        { data: "2026-06-24", adversario: "Escócia",  cidade: "Miami",        bandeira: "🏴󠁧󠁢󠁳󠁣󠁴󠁿" },
+                                        { data: "2026-06-13", adversario: "Marrocos", cidade: "Nova York/NJ", bandeira: "🇲🇦", horario: "16h" },
+                                        { data: "2026-06-19", adversario: "Haiti",    cidade: "Filadélfia",   bandeira: "🇭🇹", horario: "21h" },
+                                        { data: "2026-06-24", adversario: "Escócia",  cidade: "Miami",        bandeira: "🏴󠁧󠁢󠁳󠁣󠁴󠁿", horario: "20h" },
                                       ];
 
                                       // Filtrar jogos que caem dentro da semana calendário (dom-sáb)
@@ -2493,6 +2494,10 @@ export default function Home() {
                                                     <div className="flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400">
                                                       <Calendar className="w-3 h-3" />
                                                       <span>{diaSemana}, {dd}/{mm}/2026</span>
+                                                    </div>
+                                                    <div className="flex items-center gap-1 text-xs font-semibold text-slate-700 dark:text-slate-300">
+                                                      <Clock className="w-3 h-3" />
+                                                      <span>{jogo.horario} (Brasília)</span>
                                                     </div>
                                                     <div className="flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400">
                                                       <MapPin className="w-3 h-3" />
