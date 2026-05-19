@@ -1004,69 +1004,69 @@ export const feriados2026: Feriado[] = [
   // ⚽ Copa do Mundo 2026 — Jogos do Brasil (Fase de Grupos)
   {
     data: "13/06/2026",
-    nome: "⚽ Brasil x Marrocos (Copa 2026 — Grupo C)",
+    nome: "⚽ Brasil x Marrocos (Copa 2026 — Grupo C) — 16h (Brasília)",
     tipo: "copa",
   },
   {
     data: "19/06/2026",
-    nome: "⚽ Brasil x Haiti (Copa 2026 — Grupo C)",
+    nome: "⚽ Brasil x Haiti (Copa 2026 — Grupo C) — 21h (Brasília)",
     tipo: "copa",
   },
   {
     data: "24/06/2026",
-    nome: "⚽ Escócia x Brasil (Copa 2026 — Grupo C)",
+    nome: "⚽ Escócia x Brasil (Copa 2026 — Grupo C) — 20h (Brasília)",
     tipo: "copa",
   },
 
   // ⚽ Copa do Mundo 2026 — Fase Eliminatória (possível participação do Brasil)
   {
     data: "28/06/2026",
-    nome: "⚽ Copa 2026 — 32-avos de Final (início)",
+    nome: "⚽ Copa 2026 — 32-avos de Final (início) — Múltiplos horários",
     tipo: "copa",
   },
   {
     data: "03/07/2026",
-    nome: "⚽ Copa 2026 — 32-avos de Final (fim)",
+    nome: "⚽ Copa 2026 — 32-avos de Final (fim) — Múltiplos horários",
     tipo: "copa",
   },
   {
     data: "04/07/2026",
-    nome: "⚽ Copa 2026 — Oitavas de Final (início)",
+    nome: "⚽ Copa 2026 — Oitavas de Final (início) — Múltiplos horários",
     tipo: "copa",
   },
   {
     data: "07/07/2026",
-    nome: "⚽ Copa 2026 — Oitavas de Final (fim)",
+    nome: "⚽ Copa 2026 — Oitavas de Final (fim) — Múltiplos horários",
     tipo: "copa",
   },
   {
     data: "09/07/2026",
-    nome: "⚽ Copa 2026 — Quartas de Final (início)",
+    nome: "⚽ Copa 2026 — Quartas de Final (início) — Múltiplos horários",
     tipo: "copa",
   },
   {
     data: "11/07/2026",
-    nome: "⚽ Copa 2026 — Quartas de Final (fim)",
+    nome: "⚽ Copa 2026 — Quartas de Final (fim) — Múltiplos horários",
     tipo: "copa",
   },
   {
     data: "14/07/2026",
-    nome: "⚽ Copa 2026 — Semifinal 1 (Dallas)",
+    nome: "⚽ Copa 2026 — Semifinal 1 (Dallas) — 22h (Brasília)",
     tipo: "copa",
   },
   {
     data: "15/07/2026",
-    nome: "⚽ Copa 2026 — Semifinal 2 (Dallas)",
+    nome: "⚽ Copa 2026 — Semifinal 2 (Dallas) — 22h (Brasília)",
     tipo: "copa",
   },
   {
     data: "18/07/2026",
-    nome: "⚽ Copa 2026 — Disputa 3º Lugar (Miami)",
+    nome: "⚽ Copa 2026 — Disputa 3º Lugar (Miami) — 20h (Brasília)",
     tipo: "copa",
   },
   {
     data: "19/07/2026",
-    nome: "⚽ Copa 2026 — FINAL (Nova Jersey)",
+    nome: "⚽ Copa 2026 — FINAL (Nova Jersey) — 20h (Brasília)",
     tipo: "copa",
   },
 ];
