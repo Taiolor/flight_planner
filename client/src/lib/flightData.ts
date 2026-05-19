@@ -1002,21 +1002,73 @@ export const feriados2026: Feriado[] = [
   { data: "01/01/2027", nome: "Confraternização Universal", tipo: "nacional" },
 
   // ⚽ Copa do Mundo 2026 — Jogos do Brasil (Fase de Grupos)
-  { data: "13/06/2026", nome: "⚽ Brasil x Marrocos (Copa 2026 — Grupo C)", tipo: "copa" },
-  { data: "19/06/2026", nome: "⚽ Brasil x Haiti (Copa 2026 — Grupo C)", tipo: "copa" },
-  { data: "24/06/2026", nome: "⚽ Escócia x Brasil (Copa 2026 — Grupo C)", tipo: "copa" },
+  {
+    data: "13/06/2026",
+    nome: "⚽ Brasil x Marrocos (Copa 2026 — Grupo C)",
+    tipo: "copa",
+  },
+  {
+    data: "19/06/2026",
+    nome: "⚽ Brasil x Haiti (Copa 2026 — Grupo C)",
+    tipo: "copa",
+  },
+  {
+    data: "24/06/2026",
+    nome: "⚽ Escócia x Brasil (Copa 2026 — Grupo C)",
+    tipo: "copa",
+  },
 
   // ⚽ Copa do Mundo 2026 — Fase Eliminatória (possível participação do Brasil)
-  { data: "28/06/2026", nome: "⚽ Copa 2026 — 32-avos de Final (início)", tipo: "copa" },
-  { data: "03/07/2026", nome: "⚽ Copa 2026 — 32-avos de Final (fim)", tipo: "copa" },
-  { data: "04/07/2026", nome: "⚽ Copa 2026 — Oitavas de Final (início)", tipo: "copa" },
-  { data: "07/07/2026", nome: "⚽ Copa 2026 — Oitavas de Final (fim)", tipo: "copa" },
-  { data: "09/07/2026", nome: "⚽ Copa 2026 — Quartas de Final (início)", tipo: "copa" },
-  { data: "11/07/2026", nome: "⚽ Copa 2026 — Quartas de Final (fim)", tipo: "copa" },
-  { data: "14/07/2026", nome: "⚽ Copa 2026 — Semifinal 1 (Dallas)", tipo: "copa" },
-  { data: "15/07/2026", nome: "⚽ Copa 2026 — Semifinal 2 (Dallas)", tipo: "copa" },
-  { data: "18/07/2026", nome: "⚽ Copa 2026 — Disputa 3º Lugar (Miami)", tipo: "copa" },
-  { data: "19/07/2026", nome: "⚽ Copa 2026 — FINAL (Nova Jersey)", tipo: "copa" },
+  {
+    data: "28/06/2026",
+    nome: "⚽ Copa 2026 — 32-avos de Final (início)",
+    tipo: "copa",
+  },
+  {
+    data: "03/07/2026",
+    nome: "⚽ Copa 2026 — 32-avos de Final (fim)",
+    tipo: "copa",
+  },
+  {
+    data: "04/07/2026",
+    nome: "⚽ Copa 2026 — Oitavas de Final (início)",
+    tipo: "copa",
+  },
+  {
+    data: "07/07/2026",
+    nome: "⚽ Copa 2026 — Oitavas de Final (fim)",
+    tipo: "copa",
+  },
+  {
+    data: "09/07/2026",
+    nome: "⚽ Copa 2026 — Quartas de Final (início)",
+    tipo: "copa",
+  },
+  {
+    data: "11/07/2026",
+    nome: "⚽ Copa 2026 — Quartas de Final (fim)",
+    tipo: "copa",
+  },
+  {
+    data: "14/07/2026",
+    nome: "⚽ Copa 2026 — Semifinal 1 (Dallas)",
+    tipo: "copa",
+  },
+  {
+    data: "15/07/2026",
+    nome: "⚽ Copa 2026 — Semifinal 2 (Dallas)",
+    tipo: "copa",
+  },
+  {
+    data: "18/07/2026",
+    nome: "⚽ Copa 2026 — Disputa 3º Lugar (Miami)",
+    tipo: "copa",
+  },
+  {
+    data: "19/07/2026",
+    nome: "⚽ Copa 2026 — FINAL (Nova Jersey)",
+    tipo: "copa",
+  },
 ];
 
 // ⚡ Bolt Optimization:
