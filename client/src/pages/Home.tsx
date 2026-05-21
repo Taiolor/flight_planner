@@ -1897,7 +1897,9 @@ export default function Home() {
                               >
                                 {/* Cabeçalho da semana - sempre visível, clicável para expandir/recolher */}
                                 <div
-                                  className="flex items-start justify-between gap-2 sm:gap-4 cursor-pointer select-none"
+                                  className="flex items-start justify-between gap-2 sm:gap-4 cursor-pointer select-none focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded-lg"
+                                  role="button"
+                                  tabIndex={0}
                                   onClick={e => {
                                     // Não toggle se clicou em botão, checkbox ou input
                                     const target = e.target as HTMLElement;
@@ -1909,6 +1911,20 @@ export default function Home() {
                                     )
                                       return;
                                     toggleWeekCard(week.weekNumber);
+                                  }}
+                                  onKeyDown={e => {
+                                    if (e.key === "Enter" || e.key === " ") {
+                                      e.preventDefault();
+                                      const target = e.target as HTMLElement;
+                                      if (
+                                        target.closest("button") ||
+                                        target.closest("input") ||
+                                        target.closest('[role="checkbox"]') ||
+                                        target.closest("label")
+                                      )
+                                        return;
+                                      toggleWeekCard(week.weekNumber);
+                                    }
                                   }}
                                 >
                                   <div className="flex items-start gap-2 sm:gap-4 flex-1">

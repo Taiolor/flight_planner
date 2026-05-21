@@ -440,7 +440,7 @@ export const appRouter = router({
                   title: `✈️ Voo IDA ${input.departureAirline?.toUpperCase() || 'N/A'} ${input.departureFlightNumber} — ${input.departureAirport} → ${input.returnAirport}`,
                   flightDatetime: `${departureDatetime.getFullYear()}-${pad(departureDatetime.getMonth() + 1)}-${pad(departureDatetime.getDate())}T${departureTime.replace(/\s/g, '')}`,
                   location: airportAddresses[input.departureAirport || 'GRU'] || input.departureAirport || 'N/A',
-                  description: `Localizador: ${input.departureLocator || 'N/A'}\nCompanhia: ${input.departureAirline?.toUpperCase() || 'N/A'}\nNúmero: ${input.departureFlightNumber}${input.departureTerminal ? `\nTerminal: ${input.departureTerminal}` : ''}`,
+                  description: `Localizador: ${input.departureLocator || 'N/A'}\nCompanhia: ${input.departureAirline?.toUpperCase() || 'N/A'}\nNúmero: ${input.departureFlightNumber}${(input as any).departureTerminal ? `\nTerminal: ${(input as any).departureTerminal}` : ''}`,
                   leadMinutes: 120,
                 };
                 
@@ -448,7 +448,7 @@ export const appRouter = router({
                   title: `✈️ Voo VOLTA ${input.returnAirline?.toUpperCase() || 'N/A'} ${input.returnFlightNumber} — ${input.returnAirport} → ${input.departureAirport}`,
                   flightDatetime: `${returnDate.split('/').reverse().join('-')}T${returnTime.replace(/\s/g, '')}`,
                   location: airportAddresses[input.returnAirport || 'NVT'] || input.returnAirport || 'N/A',
-                  description: `Localizador: ${input.returnLocator || 'N/A'}\nCompanhia: ${input.returnAirline?.toUpperCase() || 'N/A'}\nNúmero: ${input.returnFlightNumber}${input.returnTerminal ? `\nTerminal: ${input.returnTerminal}` : ''}`,
+                  description: `Localizador: ${input.returnLocator || 'N/A'}\nCompanhia: ${input.returnAirline?.toUpperCase() || 'N/A'}\nNúmero: ${input.returnFlightNumber}${(input as any).returnTerminal ? `\nTerminal: ${(input as any).returnTerminal}` : ''}`,
                   leadMinutes: 120,
                 };
                 
@@ -485,7 +485,7 @@ export const appRouter = router({
                       <p style="margin: 8px 0;"><strong>Data:</strong> ${departureDate} às ${departureTime}</p>
                       <p style="margin: 8px 0;"><strong>Rota:</strong> ${input.departureAirport} → ${input.returnAirport}</p>
                       <p style="margin: 8px 0;"><strong>Companhia:</strong> ${input.departureAirline?.toUpperCase() || 'N/A'} ${input.departureFlightNumber}</p>
-                      ${input.departureTerminal ? `<p style="margin: 8px 0;"><strong>Terminal:</strong> ${input.departureTerminal}</p>` : ''}
+                      ${(input as any).departureTerminal ? `<p style="margin: 8px 0;"><strong>Terminal:</strong> ${(input as any).departureTerminal}</p>` : ''}
                       <p style="margin: 8px 0;"><strong>Localizador:</strong> <code style="background-color: #e5e7eb; padding: 2px 6px; border-radius: 3px;">${input.departureLocator || 'N/A'}</code></p>
                       <p style="margin: 8px 0;">
                         <a href="${outlookDepLink}" style="color: #0078d4; margin-right: 10px; text-decoration: none;">📅 Outlook • Ida</a>
@@ -499,7 +499,7 @@ export const appRouter = router({
                       <p style="margin: 8px 0;"><strong>Data:</strong> ${returnDate} às ${returnTime}</p>
                       <p style="margin: 8px 0;"><strong>Rota:</strong> ${input.returnAirport} → ${input.departureAirport}</p>
                       <p style="margin: 8px 0;"><strong>Companhia:</strong> ${input.returnAirline?.toUpperCase() || 'N/A'} ${input.returnFlightNumber}</p>
-                      ${input.returnTerminal ? `<p style="margin: 8px 0;"><strong>Terminal:</strong> ${input.returnTerminal}</p>` : ''}
+                      ${(input as any).returnTerminal ? `<p style="margin: 8px 0;"><strong>Terminal:</strong> ${(input as any).returnTerminal}</p>` : ''}
                       <p style="margin: 8px 0;"><strong>Localizador:</strong> <code style="background-color: #e5e7eb; padding: 2px 6px; border-radius: 3px;">${input.returnLocator || 'N/A'}</code></p>
                       <p style="margin: 8px 0;">
                         <a href="${outlookRetLink}" style="color: #0078d4; margin-right: 10px; text-decoration: none;">📅 Outlook • Volta</a>
