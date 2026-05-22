@@ -516,9 +516,9 @@ export default function Home() {
           next[w.weekNumber] = saved;
         } else if (!(w.weekNumber in next) || !next[w.weekNumber]) {
           // Sem valor salvo e sem valor local: pré-preencher com a data de ida da semana
-          const parts = w.departureDate.split("/");
-          if (parts.length === 3) {
-            next[w.weekNumber] = `${parts[2]}-${parts[1]}-${parts[0]}`;
+          if (w.departureDate && w.departureDate.length === 10) {
+            next[w.weekNumber] =
+              `${w.departureDate.substring(6, 10)}-${w.departureDate.substring(3, 5)}-${w.departureDate.substring(0, 2)}`;
           } else {
             next[w.weekNumber] = "";
           }
@@ -536,9 +536,9 @@ export default function Home() {
           next[w.weekNumber] = saved;
         } else if (!(w.weekNumber in next) || !next[w.weekNumber]) {
           // Sem valor salvo e sem valor local: pré-preencher com a data de retorno da semana
-          const parts = w.returnDate.split("/");
-          if (parts.length === 3) {
-            next[w.weekNumber] = `${parts[2]}-${parts[1]}-${parts[0]}`;
+          if (w.returnDate && w.returnDate.length === 10) {
+            next[w.weekNumber] =
+              `${w.returnDate.substring(6, 10)}-${w.returnDate.substring(3, 5)}-${w.returnDate.substring(0, 2)}`;
           } else {
             next[w.weekNumber] = "";
           }
@@ -676,7 +676,7 @@ export default function Home() {
     return weeksData.filter(w => {
       if (w.isDeleted) return false;
       if (filterMonth !== "all") {
-        const month = w.departureDate.split("/")[1];
+        const month = w.departureDate.substring(3, 5);
         if (month !== filterMonth) return false;
       }
       if (showCheapestOnly && priceThreshold) {
@@ -745,7 +745,7 @@ export default function Home() {
 
     const seen = new Set<string>();
     for (const week of sortedWeeks) {
-      const monthKey = week.departureDate.split("/")[1];
+      const monthKey = week.departureDate.substring(3, 5);
       if (!seen.has(monthKey)) {
         seen.add(monthKey);
         groups.push({
@@ -818,11 +818,17 @@ export default function Home() {
   const currentWeekNumber = useMemo(() => {
     const now = new Date();
     for (const w of weeksData) {
-      const depParts = w.departureDate.split("/");
-      const retParts = w.returnDate.split("/");
-      if (depParts.length === 3 && retParts.length === 3) {
-        const dep = new Date(+depParts[2], +depParts[1] - 1, +depParts[0]);
-        const ret = new Date(+retParts[2], +retParts[1] - 1, +retParts[0]);
+      if (w.departureDate.length === 10 && w.returnDate.length === 10) {
+        const dep = new Date(
+          +w.departureDate.substring(6, 10),
+          +w.departureDate.substring(3, 5) - 1,
+          +w.departureDate.substring(0, 2)
+        );
+        const ret = new Date(
+          +w.returnDate.substring(6, 10),
+          +w.returnDate.substring(3, 5) - 1,
+          +w.returnDate.substring(0, 2)
+        );
         // Expandir janela: 3 dias antes da ida até 1 dia depois da volta
         dep.setDate(dep.getDate() - 3);
         ret.setDate(ret.getDate() + 1);
@@ -831,9 +837,12 @@ export default function Home() {
     }
     // Fallback: próxima semana futura
     for (const w of weeksData) {
-      const depParts = w.departureDate.split("/");
-      if (depParts.length === 3) {
-        const dep = new Date(+depParts[2], +depParts[1] - 1, +depParts[0]);
+      if (w.departureDate.length === 10) {
+        const dep = new Date(
+          +w.departureDate.substring(6, 10),
+          +w.departureDate.substring(3, 5) - 1,
+          +w.departureDate.substring(0, 2)
+        );
         if (dep >= now) return w.weekNumber;
       }
     }
@@ -898,8 +907,7 @@ export default function Home() {
     ];
     return MONTHS.map(({ num, label }) => {
       const monthWeeks = weeksData.filter(w => {
-        const parts = w.departureDate.split("/");
-        return parts[1] === num && !w.isDeleted;
+        return w.departureDate.substring(3, 5) === num && !w.isDeleted;
       });
       const entry: Record<string, string | number> = { mes: label };
       // ⚡ Otimização: Evitar map().filter().reduce()
@@ -972,8 +980,7 @@ export default function Home() {
     for (let i = 0; i < weeksData.length; i++) {
       const w = weeksData[i];
       if (!w.isDeleted && w.isTicketIssued) {
-        const parts = w.departureDate.split("/");
-        const monthNum = parts[1];
+        const monthNum = w.departureDate.substring(3, 5);
         if (summaryMap[monthNum]) {
           summaryMap[monthNum].total += getLowestPrice(w.weekNumber) ?? 0;
           summaryMap[monthNum].count += 1;
@@ -1058,10 +1065,8 @@ export default function Home() {
 
   // Converte DD/MM/YYYY para YYYY-MM-DD (formato aceito pelo input datetime-local)
   const toInputDate = (dateStr: string): string => {
-    const parts = dateStr.split("/");
-    if (parts.length !== 3) return "";
-    const [day, month, year] = parts;
-    return `${year}-${month}-${day}`;
+    if (!dateStr || dateStr.length !== 10) return "";
+    return `${dateStr.substring(6, 10)}-${dateStr.substring(3, 5)}-${dateStr.substring(0, 2)}`;
   };
 
   const handleToggleTicket = (weekNumber: number, current: number) => {
@@ -1985,15 +1990,13 @@ export default function Home() {
 
                                         // Converte DD/MM/YYYY → YYYY-MM-DD para o input type=date
                                         const toInputDate = (d: string) => {
-                                          const parts = d.split("/");
-                                          if (parts.length !== 3) return "";
-                                          return `${parts[2]}-${parts[1]}-${parts[0]}`;
+                                          if (!d || d.length !== 10) return "";
+                                          return `${d.substring(6, 10)}-${d.substring(3, 5)}-${d.substring(0, 2)}`;
                                         };
                                         // Converte YYYY-MM-DD → DD/MM/YYYY para exibição e persistência
                                         const toDisplayDate = (d: string) => {
-                                          const parts = d.split("-");
-                                          if (parts.length !== 3) return d;
-                                          return `${parts[2]}/${parts[1]}/${parts[0]}`;
+                                          if (!d || d.length !== 10) return d;
+                                          return `${d.substring(8, 10)}/${d.substring(5, 7)}/${d.substring(0, 4)}`;
                                         };
                                         // Calcula dia da semana a partir de YYYY-MM-DD
                                         const getDayLabel = (
@@ -2001,9 +2004,9 @@ export default function Home() {
                                         ) => {
                                           if (!isoDate || isoDate.length < 10)
                                             return "";
-                                          const [y, m, d] = isoDate
-                                            .split("-")
-                                            .map(Number);
+                                          const y = +isoDate.substring(0, 4);
+                                          const m = +isoDate.substring(5, 7);
+                                          const d = +isoDate.substring(8, 10);
                                           if (!y || !m || !d) return "";
                                           const date = new Date(y, m - 1, d);
                                           const days = [
@@ -2026,9 +2029,9 @@ export default function Home() {
                                             return;
                                           const displayDate =
                                             toDisplayDate(isoValue);
-                                          const [y, m, d] = isoValue
-                                            .split("-")
-                                            .map(Number);
+                                          const y = +isoValue.substring(0, 4);
+                                          const m = +isoValue.substring(5, 7);
+                                          const d = +isoValue.substring(8, 10);
                                           const date = new Date(y, m - 1, d);
                                           const days = [
                                             "Domingo",
@@ -2356,50 +2359,117 @@ export default function Home() {
 
                                       // Converte DD/MM/YYYY → Date
                                       const parseBR = (s: string) => {
-                                        const [d, m, y] = s.split("/").map(Number);
-                                        return new Date(y, m - 1, d);
+                                        if (!s || s.length !== 10)
+                                          return new Date(NaN);
+                                        return new Date(
+                                          +s.substring(6, 10),
+                                          +s.substring(3, 5) - 1,
+                                          +s.substring(0, 2)
+                                        );
                                       };
                                       // Converte YYYY-MM-DD → Date
                                       const parseISO = (s: string) => {
-                                        const [y, m, d] = s.split("-").map(Number);
-                                        return new Date(y, m - 1, d);
+                                        if (!s || s.length !== 10)
+                                          return new Date(NaN);
+                                        return new Date(
+                                          +s.substring(0, 4),
+                                          +s.substring(5, 7) - 1,
+                                          +s.substring(8, 10)
+                                        );
                                       };
 
-                                      const semanaInicio = parseBR(week.departureDate);
-                                      const semanaFimViagem = parseBR(week.returnDate);
+                                      const semanaInicio = parseBR(
+                                        week.departureDate
+                                      );
+                                      const semanaFimViagem = parseBR(
+                                        week.returnDate
+                                      );
                                       // Ampliar o fim para cobrir a semana calendário completa:
                                       // a semana começa no domingo (ida) e vai até o sábado seguinte (+6 dias)
                                       const semanaFim = new Date(semanaInicio);
-                                      semanaFim.setDate(semanaFim.getDate() + 6);
+                                      semanaFim.setDate(
+                                        semanaFim.getDate() + 6
+                                      );
                                       // Usar o maior dos dois (retorno ou sábado da semana)
-                                      const semanaFimEfetivo = semanaFimViagem > semanaFim ? semanaFimViagem : semanaFim;
+                                      const semanaFimEfetivo =
+                                        semanaFimViagem > semanaFim
+                                          ? semanaFimViagem
+                                          : semanaFim;
 
                                       // Helper: calcula dias restantes e labels
                                       const calcDias = (dataStr: string) => {
                                         const dataEvento = parseISO(dataStr);
-                                        const diffMs = dataEvento.getTime() - hoje.getTime();
-                                        const diffDias = Math.round(diffMs / (1000 * 60 * 60 * 24));
+                                        const diffMs =
+                                          dataEvento.getTime() - hoje.getTime();
+                                        const diffDias = Math.round(
+                                          diffMs / (1000 * 60 * 60 * 24)
+                                        );
                                         const passou = diffDias < 0;
                                         const ehHoje = diffDias === 0;
-                                        const label = passou ? "Já realizado" : ehHoje ? "🔴 HOJE!" : `em ${diffDias} dia${diffDias === 1 ? "" : "s"}`;
-                                        const [, mm, dd] = dataStr.split("-");
-                                        const diasSemana = ["Dom","Seg","Ter","Qua","Qui","Sex","Sáb"];
-                                        const diaSemana = diasSemana[dataEvento.getDay()];
-                                        return { passou, ehHoje, label, mm, dd, diaSemana, diffDias };
+                                        const label = passou
+                                          ? "Já realizado"
+                                          : ehHoje
+                                            ? "🔴 HOJE!"
+                                            : `em ${diffDias} dia${diffDias === 1 ? "" : "s"}`;
+                                        const mm = dataStr.substring(5, 7);
+                                        const dd = dataStr.substring(8, 10);
+                                        const diasSemana = [
+                                          "Dom",
+                                          "Seg",
+                                          "Ter",
+                                          "Qua",
+                                          "Qui",
+                                          "Sex",
+                                          "Sáb",
+                                        ];
+                                        const diaSemana =
+                                          diasSemana[dataEvento.getDay()];
+                                        return {
+                                          passou,
+                                          ehHoje,
+                                          label,
+                                          mm,
+                                          dd,
+                                          diaSemana,
+                                          diffDias,
+                                        };
                                       };
 
                                       // Todos os jogos da 1ª fase
                                       const todosJogos = [
-                                        { data: "2026-06-13", adversario: "Marrocos", cidade: "Nova York/NJ", bandeira: "🇲🇦", horario: "16h" },
-                                        { data: "2026-06-19", adversario: "Haiti",    cidade: "Filadélfia",   bandeira: "🇭🇹", horario: "21h" },
-                                        { data: "2026-06-24", adversario: "Escócia",  cidade: "Miami",        bandeira: "🏴󠁧󠁢󠁳󠁣󠁴󠁿", horario: "20h" },
+                                        {
+                                          data: "2026-06-13",
+                                          adversario: "Marrocos",
+                                          cidade: "Nova York/NJ",
+                                          bandeira: "🇲🇦",
+                                          horario: "16h",
+                                        },
+                                        {
+                                          data: "2026-06-19",
+                                          adversario: "Haiti",
+                                          cidade: "Filadélfia",
+                                          bandeira: "🇭🇹",
+                                          horario: "21h",
+                                        },
+                                        {
+                                          data: "2026-06-24",
+                                          adversario: "Escócia",
+                                          cidade: "Miami",
+                                          bandeira: "🏴󠁧󠁢󠁳󠁣󠁴󠁿",
+                                          horario: "20h",
+                                        },
                                       ];
 
                                       // Filtrar jogos que caem dentro da semana calendário (dom-sáb)
-                                      const jogosDosBrasil = todosJogos.filter(jogo => {
-                                        const dataJogo = parseISO(jogo.data);
-                                        return dataJogo >= semanaInicio && dataJogo <= semanaFimEfetivo;
-                                      });
+                                      const jogosDosBrasil = todosJogos.filter(
+                                        jogo => {
+                                          const dataJogo = parseISO(jogo.data);
+                                          return (
+                                            dataJogo >= semanaInicio &&
+                                            dataJogo <= semanaFimEfetivo
+                                          );
+                                        }
+                                      );
 
                                       // Fases eliminatórias: janelas de datas (início e fim de cada fase)
                                       const todasFases = [
@@ -2446,153 +2516,261 @@ export default function Home() {
                                       ];
 
                                       // Filtrar fases eliminatórias que se sobrepõem à semana calendário
-                                      const fasesEliminatorias = todasFases.filter(fase => {
-                                        const faseInicio = parseISO(fase.inicio);
-                                        const faseFim = parseISO(fase.fim);
-                                        // Sobreposição: faseInicio <= semanaFimEfetivo E faseFim >= semanaInicio
-                                        return faseInicio <= semanaFimEfetivo && faseFim >= semanaInicio;
-                                      });
+                                      const fasesEliminatorias =
+                                        todasFases.filter(fase => {
+                                          const faseInicio = parseISO(
+                                            fase.inicio
+                                          );
+                                          const faseFim = parseISO(fase.fim);
+                                          // Sobreposição: faseInicio <= semanaFimEfetivo E faseFim >= semanaInicio
+                                          return (
+                                            faseInicio <= semanaFimEfetivo &&
+                                            faseFim >= semanaInicio
+                                          );
+                                        });
 
                                       // Só renderiza o painel se houver jogos ou fases no intervalo
-                                      if (jogosDosBrasil.length === 0 && fasesEliminatorias.length === 0) return null;
+                                      if (
+                                        jogosDosBrasil.length === 0 &&
+                                        fasesEliminatorias.length === 0
+                                      )
+                                        return null;
 
                                       return (
                                         <div className="mb-4 rounded-xl border border-green-300 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950/30 dark:to-emerald-950/30 dark:border-green-700 overflow-hidden">
                                           {/* Cabeçalho */}
                                           <div className="bg-green-700 dark:bg-green-800 px-3 py-2 flex items-center gap-2">
-                                            <span className="text-base">⚽</span>
-                                            <span className="text-xs font-bold text-white uppercase tracking-wider">Brasil na Copa do Mundo 2026</span>
+                                            <span className="text-base">
+                                              ⚽
+                                            </span>
+                                            <span className="text-xs font-bold text-white uppercase tracking-wider">
+                                              Brasil na Copa do Mundo 2026
+                                            </span>
                                           </div>
 
                                           {/* 1ª Fase — só se houver jogos no intervalo */}
                                           {jogosDosBrasil.length > 0 && (
-                                          <div className="px-3 pt-3 pb-1">
-                                            <div className="flex items-center gap-1.5 mb-2">
-                                              <span className="text-xs font-bold text-green-800 dark:text-green-300 uppercase tracking-wide">🇧🇷 1ª Fase — Grupo C</span>
+                                            <div className="px-3 pt-3 pb-1">
+                                              <div className="flex items-center gap-1.5 mb-2">
+                                                <span className="text-xs font-bold text-green-800 dark:text-green-300 uppercase tracking-wide">
+                                                  🇧🇷 1ª Fase — Grupo C
+                                                </span>
+                                              </div>
+                                              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                                                {jogosDosBrasil.map(jogo => {
+                                                  const {
+                                                    passou,
+                                                    ehHoje,
+                                                    label,
+                                                    mm,
+                                                    dd,
+                                                    diaSemana,
+                                                  } = calcDias(jogo.data);
+                                                  return (
+                                                    <div
+                                                      key={jogo.data}
+                                                      className={`rounded-lg p-3 border flex flex-col gap-1 ${
+                                                        passou
+                                                          ? "bg-slate-100 border-slate-200 dark:bg-slate-800/40 dark:border-slate-700 opacity-60"
+                                                          : ehHoje
+                                                            ? "bg-yellow-50 border-yellow-400 dark:bg-yellow-900/30 dark:border-yellow-500 ring-2 ring-yellow-400"
+                                                            : "bg-white border-green-200 dark:bg-green-950/20 dark:border-green-700"
+                                                      }`}
+                                                    >
+                                                      <div className="flex items-center gap-1.5">
+                                                        <span className="text-lg">
+                                                          🇧🇷
+                                                        </span>
+                                                        <span className="text-xs font-bold text-slate-700 dark:text-slate-200">
+                                                          Brasil
+                                                        </span>
+                                                        <span className="text-xs text-slate-400">
+                                                          vs
+                                                        </span>
+                                                        <span className="text-lg">
+                                                          {jogo.bandeira}
+                                                        </span>
+                                                        <span className="text-xs font-bold text-slate-700 dark:text-slate-200">
+                                                          {jogo.adversario}
+                                                        </span>
+                                                      </div>
+                                                      <div className="flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400">
+                                                        <Calendar className="w-3 h-3" />
+                                                        <span>
+                                                          {diaSemana}, {dd}/{mm}
+                                                          /2026
+                                                        </span>
+                                                      </div>
+                                                      <div className="flex items-center gap-1 text-xs font-semibold text-slate-700 dark:text-slate-300">
+                                                        <Clock className="w-3 h-3" />
+                                                        <span>
+                                                          {jogo.horario}{" "}
+                                                          (Brasília)
+                                                        </span>
+                                                      </div>
+                                                      <div className="flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400">
+                                                        <MapPin className="w-3 h-3" />
+                                                        <span>
+                                                          {jogo.cidade}
+                                                        </span>
+                                                      </div>
+                                                      <div
+                                                        className={`text-xs font-semibold mt-0.5 ${
+                                                          passou
+                                                            ? "text-slate-400"
+                                                            : ehHoje
+                                                              ? "text-yellow-600 dark:text-yellow-400"
+                                                              : "text-green-700 dark:text-green-400"
+                                                        }`}
+                                                      >
+                                                        {label}
+                                                      </div>
+                                                    </div>
+                                                  );
+                                                })}
+                                              </div>
                                             </div>
-                                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                                              {jogosDosBrasil.map(jogo => {
-                                                const { passou, ehHoje, label, mm, dd, diaSemana } = calcDias(jogo.data);
-                                                return (
-                                                  <div
-                                                    key={jogo.data}
-                                                    className={`rounded-lg p-3 border flex flex-col gap-1 ${
-                                                      passou
-                                                        ? "bg-slate-100 border-slate-200 dark:bg-slate-800/40 dark:border-slate-700 opacity-60"
-                                                        : ehHoje
-                                                        ? "bg-yellow-50 border-yellow-400 dark:bg-yellow-900/30 dark:border-yellow-500 ring-2 ring-yellow-400"
-                                                        : "bg-white border-green-200 dark:bg-green-950/20 dark:border-green-700"
-                                                    }`}
-                                                  >
-                                                    <div className="flex items-center gap-1.5">
-                                                      <span className="text-lg">🇧🇷</span>
-                                                      <span className="text-xs font-bold text-slate-700 dark:text-slate-200">Brasil</span>
-                                                      <span className="text-xs text-slate-400">vs</span>
-                                                      <span className="text-lg">{jogo.bandeira}</span>
-                                                      <span className="text-xs font-bold text-slate-700 dark:text-slate-200">{jogo.adversario}</span>
-                                                    </div>
-                                                    <div className="flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400">
-                                                      <Calendar className="w-3 h-3" />
-                                                      <span>{diaSemana}, {dd}/{mm}/2026</span>
-                                                    </div>
-                                                    <div className="flex items-center gap-1 text-xs font-semibold text-slate-700 dark:text-slate-300">
-                                                      <Clock className="w-3 h-3" />
-                                                      <span>{jogo.horario} (Brasília)</span>
-                                                    </div>
-                                                    <div className="flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400">
-                                                      <MapPin className="w-3 h-3" />
-                                                      <span>{jogo.cidade}</span>
-                                                    </div>
-                                                    <div className={`text-xs font-semibold mt-0.5 ${
-                                                      passou ? "text-slate-400" : ehHoje ? "text-yellow-600 dark:text-yellow-400" : "text-green-700 dark:text-green-400"
-                                                    }`}>
-                                                      {label}
-                                                    </div>
-                                                  </div>
-                                                );
-                                              })}
-                                            </div>
-                                          </div>
                                           )}
 
                                           {/* Divisor — só se houver ambas as seções */}
-                                          {jogosDosBrasil.length > 0 && fasesEliminatorias.length > 0 && (
-                                            <div className="mx-3 my-2 border-t border-green-200 dark:border-green-800" />
-                                          )}
+                                          {jogosDosBrasil.length > 0 &&
+                                            fasesEliminatorias.length > 0 && (
+                                              <div className="mx-3 my-2 border-t border-green-200 dark:border-green-800" />
+                                            )}
 
                                           {/* Fases Eliminatórias — só se houver fases no intervalo */}
                                           {fasesEliminatorias.length > 0 && (
-                                          <div className="px-3 pb-3">
-                                            <div className="flex items-center gap-1.5 mb-2">
-                                              <span className="text-xs font-bold text-green-800 dark:text-green-300 uppercase tracking-wide">🏆 Fases Eliminatórias — Possível participação do Brasil</span>
+                                            <div className="px-3 pb-3">
+                                              <div className="flex items-center gap-1.5 mb-2">
+                                                <span className="text-xs font-bold text-green-800 dark:text-green-300 uppercase tracking-wide">
+                                                  🏆 Fases Eliminatórias —
+                                                  Possível participação do
+                                                  Brasil
+                                                </span>
+                                              </div>
+                                              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-2">
+                                                {fasesEliminatorias.map(
+                                                  fase => {
+                                                    const inicio = calcDias(
+                                                      fase.inicio
+                                                    );
+                                                    const fim = calcDias(
+                                                      fase.fim
+                                                    );
+                                                    // A fase já passou se o fim já passou
+                                                    const passou = fim.passou;
+                                                    // A fase está acontecendo agora se inicio passou mas fim não
+                                                    const emAndamento =
+                                                      inicio.passou &&
+                                                      !fim.passou;
+                                                    const mmI =
+                                                      fase.inicio.substring(
+                                                        5,
+                                                        7
+                                                      );
+                                                    const ddI =
+                                                      fase.inicio.substring(
+                                                        8,
+                                                        10
+                                                      );
+                                                    const mmF =
+                                                      fase.fim.substring(5, 7);
+                                                    const ddF =
+                                                      fase.fim.substring(8, 10);
+                                                    const mesmoMes =
+                                                      mmI === mmF;
+                                                    const periodoLabel =
+                                                      mesmoMes
+                                                        ? `${ddI} a ${ddF}/${mmI}`
+                                                        : `${ddI}/${mmI} a ${ddF}/${mmF}`;
+                                                    const diasLabel = passou
+                                                      ? "Já realizado"
+                                                      : emAndamento
+                                                        ? "🔴 Em andamento!"
+                                                        : `em ${inicio.diffDias} dia${inicio.diffDias === 1 ? "" : "s"}`;
+                                                    const colorMap: Record<
+                                                      string,
+                                                      string
+                                                    > = {
+                                                      blue: "bg-blue-50 border-blue-200 dark:bg-blue-950/20 dark:border-blue-700",
+                                                      orange:
+                                                        "bg-orange-50 border-orange-200 dark:bg-orange-950/20 dark:border-orange-700",
+                                                      purple:
+                                                        "bg-purple-50 border-purple-200 dark:bg-purple-950/20 dark:border-purple-700",
+                                                      yellow:
+                                                        "bg-yellow-50 border-yellow-300 dark:bg-yellow-950/20 dark:border-yellow-600",
+                                                    };
+                                                    const labelColorMap: Record<
+                                                      string,
+                                                      string
+                                                    > = {
+                                                      blue: "text-blue-700 dark:text-blue-400",
+                                                      orange:
+                                                        "text-orange-700 dark:text-orange-400",
+                                                      purple:
+                                                        "text-purple-700 dark:text-purple-400",
+                                                      yellow:
+                                                        "text-yellow-700 dark:text-yellow-400",
+                                                    };
+                                                    return (
+                                                      <div
+                                                        key={fase.fase}
+                                                        className={`rounded-lg p-3 border flex flex-col gap-1 ${
+                                                          passou
+                                                            ? "bg-slate-100 border-slate-200 dark:bg-slate-800/40 dark:border-slate-700 opacity-60"
+                                                            : emAndamento
+                                                              ? "bg-yellow-50 border-yellow-400 dark:bg-yellow-900/30 dark:border-yellow-500 ring-2 ring-yellow-400"
+                                                              : (colorMap[
+                                                                  fase.cor
+                                                                ] ??
+                                                                colorMap.blue)
+                                                        }`}
+                                                      >
+                                                        <div className="flex items-center gap-1.5">
+                                                          <span className="text-base">
+                                                            {fase.icone}
+                                                          </span>
+                                                          <span className="text-xs font-bold text-slate-700 dark:text-slate-200">
+                                                            {fase.fase}
+                                                          </span>
+                                                        </div>
+                                                        <div className="flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400">
+                                                          <Calendar className="w-3 h-3" />
+                                                          <span>
+                                                            {periodoLabel}/2026
+                                                          </span>
+                                                        </div>
+                                                        <div className="flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400">
+                                                          <MapPin className="w-3 h-3" />
+                                                          <span>
+                                                            {fase.cidades}
+                                                          </span>
+                                                        </div>
+                                                        <div
+                                                          className={`text-xs font-semibold mt-0.5 ${
+                                                            passou
+                                                              ? "text-slate-400"
+                                                              : emAndamento
+                                                                ? "text-yellow-600 dark:text-yellow-400"
+                                                                : (labelColorMap[
+                                                                    fase.cor
+                                                                  ] ??
+                                                                  labelColorMap.blue)
+                                                          }`}
+                                                        >
+                                                          {diasLabel}
+                                                        </div>
+                                                        {!passou && (
+                                                          <span className="text-xs text-slate-400 dark:text-slate-500 italic">
+                                                            possível
+                                                          </span>
+                                                        )}
+                                                      </div>
+                                                    );
+                                                  }
+                                                )}
+                                              </div>
                                             </div>
-                                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-2">
-                                              {fasesEliminatorias.map(fase => {
-                                                const inicio = calcDias(fase.inicio);
-                                                const fim = calcDias(fase.fim);
-                                                // A fase já passou se o fim já passou
-                                                const passou = fim.passou;
-                                                // A fase está acontecendo agora se inicio passou mas fim não
-                                                const emAndamento = inicio.passou && !fim.passou;
-                                                const [, mmI, ddI] = fase.inicio.split("-");
-                                                const [, mmF, ddF] = fase.fim.split("-");
-                                                const mesmoMes = mmI === mmF;
-                                                const periodoLabel = mesmoMes
-                                                  ? `${ddI} a ${ddF}/${mmI}`
-                                                  : `${ddI}/${mmI} a ${ddF}/${mmF}`;
-                                                const diasLabel = passou
-                                                  ? "Já realizado"
-                                                  : emAndamento
-                                                  ? "🔴 Em andamento!"
-                                                  : `em ${inicio.diffDias} dia${inicio.diffDias === 1 ? "" : "s"}`;
-                                                const colorMap: Record<string, string> = {
-                                                  blue:   "bg-blue-50 border-blue-200 dark:bg-blue-950/20 dark:border-blue-700",
-                                                  orange: "bg-orange-50 border-orange-200 dark:bg-orange-950/20 dark:border-orange-700",
-                                                  purple: "bg-purple-50 border-purple-200 dark:bg-purple-950/20 dark:border-purple-700",
-                                                  yellow: "bg-yellow-50 border-yellow-300 dark:bg-yellow-950/20 dark:border-yellow-600",
-                                                };
-                                                const labelColorMap: Record<string, string> = {
-                                                  blue:   "text-blue-700 dark:text-blue-400",
-                                                  orange: "text-orange-700 dark:text-orange-400",
-                                                  purple: "text-purple-700 dark:text-purple-400",
-                                                  yellow: "text-yellow-700 dark:text-yellow-400",
-                                                };
-                                                return (
-                                                  <div
-                                                    key={fase.fase}
-                                                    className={`rounded-lg p-3 border flex flex-col gap-1 ${
-                                                      passou
-                                                        ? "bg-slate-100 border-slate-200 dark:bg-slate-800/40 dark:border-slate-700 opacity-60"
-                                                        : emAndamento
-                                                        ? "bg-yellow-50 border-yellow-400 dark:bg-yellow-900/30 dark:border-yellow-500 ring-2 ring-yellow-400"
-                                                        : colorMap[fase.cor] ?? colorMap.blue
-                                                    }`}
-                                                  >
-                                                    <div className="flex items-center gap-1.5">
-                                                      <span className="text-base">{fase.icone}</span>
-                                                      <span className="text-xs font-bold text-slate-700 dark:text-slate-200">{fase.fase}</span>
-                                                    </div>
-                                                    <div className="flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400">
-                                                      <Calendar className="w-3 h-3" />
-                                                      <span>{periodoLabel}/2026</span>
-                                                    </div>
-                                                    <div className="flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400">
-                                                      <MapPin className="w-3 h-3" />
-                                                      <span>{fase.cidades}</span>
-                                                    </div>
-                                                    <div className={`text-xs font-semibold mt-0.5 ${
-                                                      passou ? "text-slate-400" : emAndamento ? "text-yellow-600 dark:text-yellow-400" : labelColorMap[fase.cor] ?? labelColorMap.blue
-                                                    }`}>
-                                                      {diasLabel}
-                                                    </div>
-                                                    {!passou && (
-                                                      <span className="text-xs text-slate-400 dark:text-slate-500 italic">possível</span>
-                                                    )}
-                                                  </div>
-                                                );
-                                              })}
-                                            </div>
-                                          </div>
                                           )}
                                         </div>
                                       );
@@ -3043,13 +3221,10 @@ export default function Home() {
                                                           week.departureFlightDatetime ??
                                                           "";
                                                         if (saved) return saved;
-                                                        const parts =
-                                                          week.departureDate.split(
-                                                            "/"
-                                                          );
-                                                        return parts.length ===
-                                                          3
-                                                          ? `${parts[2]}-${parts[1]}-${parts[0]}T00:00`
+                                                        return week.departureDate &&
+                                                          week.departureDate
+                                                            .length === 10
+                                                          ? `${week.departureDate.substring(6, 10)}-${week.departureDate.substring(3, 5)}-${week.departureDate.substring(0, 2)}T00:00`
                                                           : "";
                                                       })()
                                                     }
@@ -3074,13 +3249,10 @@ export default function Home() {
                                                           week.departureFlightDatetime ??
                                                           "";
                                                         if (saved) return saved;
-                                                        const parts =
-                                                          week.departureDate.split(
-                                                            "/"
-                                                          );
-                                                        return parts.length ===
-                                                          3
-                                                          ? `${parts[2]}-${parts[1]}-${parts[0]}T00:00`
+                                                        return week.departureDate &&
+                                                          week.departureDate
+                                                            .length === 10
+                                                          ? `${week.departureDate.substring(6, 10)}-${week.departureDate.substring(3, 5)}-${week.departureDate.substring(0, 2)}T00:00`
                                                           : "";
                                                       })();
                                                     if (!raw) return null;
@@ -3224,10 +3396,8 @@ export default function Home() {
                                                     }
                                                   />
                                                 </div>
-                                                  </div>
-                                                </div>
-
-
+                                              </div>
+                                            </div>
 
                                             {/* Card VOLTA — só exibido quando tipo é Ida e Volta */}
                                             {(tempTicketType[week.weekNumber] ??
@@ -3477,13 +3647,10 @@ export default function Home() {
                                                             "";
                                                           if (saved)
                                                             return saved;
-                                                          const parts =
-                                                            week.returnDate.split(
-                                                              "/"
-                                                            );
-                                                          return parts.length ===
-                                                            3
-                                                            ? `${parts[2]}-${parts[1]}-${parts[0]}T00:00`
+                                                          return week.returnDate &&
+                                                            week.returnDate
+                                                              .length === 10
+                                                            ? `${week.returnDate.substring(6, 10)}-${week.returnDate.substring(3, 5)}-${week.returnDate.substring(0, 2)}T00:00`
                                                             : "";
                                                         })()
                                                       }
@@ -3508,13 +3675,10 @@ export default function Home() {
                                                             "";
                                                           if (saved)
                                                             return saved;
-                                                          const parts =
-                                                            week.returnDate.split(
-                                                              "/"
-                                                            );
-                                                          return parts.length ===
-                                                            3
-                                                            ? `${parts[2]}-${parts[1]}-${parts[0]}T00:00`
+                                                          return week.returnDate &&
+                                                            week.returnDate
+                                                              .length === 10
+                                                            ? `${week.returnDate.substring(6, 10)}-${week.returnDate.substring(3, 5)}-${week.returnDate.substring(0, 2)}T00:00`
                                                             : "";
                                                         })();
                                                       if (!rawRet) return null;
@@ -4243,17 +4407,83 @@ export default function Home() {
                                                             WhatsApp
                                                           </a>
                                                           <ShareByEmailButton
-                                                            weekNumber={week.weekNumber}
-                                                            departureDate={tempDepartureDatetime[week.weekNumber] ? tempDepartureDatetime[week.weekNumber].slice(0, 10) : week.departureFlightDatetime ? week.departureFlightDatetime.slice(0, 10) : ""}
-                                                            returnDate={tempReturnDatetime[week.weekNumber] ? tempReturnDatetime[week.weekNumber].slice(0, 10) : week.returnFlightDatetime ? week.returnFlightDatetime.slice(0, 10) : ""}
-                                                            departureFlightNumber={week.departureFlightNumber || ""}
-                                                            returnFlightNumber={week.returnFlightNumber || ""}
-                                                            departureAirline={week.departureAirline || ""}
-                                                            returnAirline={week.returnAirline || ""}
-                                                            departurePNR={tempDepartureLocator[week.weekNumber] ?? week.departureLocator ?? ""}
-                                                            returnPNR={tempReturnLocator[week.weekNumber] ?? week.returnLocator ?? ""}
-                                                            departureDatetime={tempDepartureDatetime[week.weekNumber] || week.departureFlightDatetime || ""}
-                                                            returnDatetime={tempReturnDatetime[week.weekNumber] || week.returnFlightDatetime || ""}
+                                                            weekNumber={
+                                                              week.weekNumber
+                                                            }
+                                                            departureDate={
+                                                              tempDepartureDatetime[
+                                                                week.weekNumber
+                                                              ]
+                                                                ? tempDepartureDatetime[
+                                                                    week
+                                                                      .weekNumber
+                                                                  ].slice(0, 10)
+                                                                : week.departureFlightDatetime
+                                                                  ? week.departureFlightDatetime.slice(
+                                                                      0,
+                                                                      10
+                                                                    )
+                                                                  : ""
+                                                            }
+                                                            returnDate={
+                                                              tempReturnDatetime[
+                                                                week.weekNumber
+                                                              ]
+                                                                ? tempReturnDatetime[
+                                                                    week
+                                                                      .weekNumber
+                                                                  ].slice(0, 10)
+                                                                : week.returnFlightDatetime
+                                                                  ? week.returnFlightDatetime.slice(
+                                                                      0,
+                                                                      10
+                                                                    )
+                                                                  : ""
+                                                            }
+                                                            departureFlightNumber={
+                                                              week.departureFlightNumber ||
+                                                              ""
+                                                            }
+                                                            returnFlightNumber={
+                                                              week.returnFlightNumber ||
+                                                              ""
+                                                            }
+                                                            departureAirline={
+                                                              week.departureAirline ||
+                                                              ""
+                                                            }
+                                                            returnAirline={
+                                                              week.returnAirline ||
+                                                              ""
+                                                            }
+                                                            departurePNR={
+                                                              tempDepartureLocator[
+                                                                week.weekNumber
+                                                              ] ??
+                                                              week.departureLocator ??
+                                                              ""
+                                                            }
+                                                            returnPNR={
+                                                              tempReturnLocator[
+                                                                week.weekNumber
+                                                              ] ??
+                                                              week.returnLocator ??
+                                                              ""
+                                                            }
+                                                            departureDatetime={
+                                                              tempDepartureDatetime[
+                                                                week.weekNumber
+                                                              ] ||
+                                                              week.departureFlightDatetime ||
+                                                              ""
+                                                            }
+                                                            returnDatetime={
+                                                              tempReturnDatetime[
+                                                                week.weekNumber
+                                                              ] ||
+                                                              week.returnFlightDatetime ||
+                                                              ""
+                                                            }
                                                           />
                                                         </>
                                                       );
