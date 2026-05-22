@@ -1,5 +1,3 @@
-## 2026-04-22 - Add ARIA label to AI Chat Box Send Button\n**Learning:** Icon-only buttons often lack accessible names when they use an icon component (like `<Send />`) inside a `<Button>` wrapper, rendering them inaccessible to screen readers. This pattern is common in the current app, particularly in `AIChatBox.tsx` and `DashboardLayout.tsx`.\n**Action:** Add `aria-label` attributes to any `<Button size="icon">` or generic `<button>` that only contains icons to improve screen reader accessibility.
-
-## 2026-05-18 - Add aria-expanded to manually created accordion sections
-**Learning:** When creating custom accordion or collapsible sections (like the ones in `AdminNotifications.tsx`), developers often forget to add the `aria-expanded` and `aria-controls` attributes to the toggle button. This leaves screen reader users without context about the section's state or relationship to the content.
-**Action:** Always ensure that custom toggle buttons controlling collapsible sections have `aria-expanded` bound to the state variable and `aria-controls` pointing to the ID of the collapsible content container.
+## 2024-10-24 - Custom Accordion/Card Toggles Lack Keyboard Accessibility
+**Learning:** Custom clickable `div` elements used as card toggles or accordions in this app often rely solely on `onClick` handlers, rendering them completely inaccessible to keyboard users (no tab order, no `Enter`/`Space` activation, no focus ring).
+**Action:** When identifying such patterns, always add `role="button"`, `tabIndex={0}`, an `onKeyDown` handler (that checks for `e.key === 'Enter' || e.key === ' '` and calls `e.preventDefault()` for space to prevent scrolling), and `focus-visible:ring-2` to restore baseline accessibility.
