@@ -1649,12 +1649,16 @@ export default function Home() {
               </label>
               <div className="flex items-center gap-2 mt-1">
                 <Checkbox
+                  id="filter-cheapest-only"
                   checked={showCheapestOnly}
                   onCheckedChange={c => setShowCheapestOnly(c as boolean)}
                 />
-                <span className="text-sm text-slate-600">
+                <label
+                  htmlFor="filter-cheapest-only"
+                  className="text-sm text-slate-600 cursor-pointer select-none"
+                >
                   Apenas os mais baratos
-                </span>
+                </label>
               </div>
             </div>
 
@@ -1934,6 +1938,8 @@ export default function Home() {
                                 >
                                   <div className="flex items-start gap-2 sm:gap-4 flex-1">
                                     <Checkbox
+                                      id={`select-week-${week.weekNumber}`}
+                                      aria-label={`Selecionar semana ${week.weekNumber}`}
                                       checked={!!week.isSelected}
                                       onCheckedChange={() =>
                                         handleToggleSelect(

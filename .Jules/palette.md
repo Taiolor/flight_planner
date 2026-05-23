@@ -1,3 +1,6 @@
 ## 2024-10-24 - Custom Accordion/Card Toggles Lack Keyboard Accessibility
 **Learning:** Custom clickable `div` elements used as card toggles or accordions in this app often rely solely on `onClick` handlers, rendering them completely inaccessible to keyboard users (no tab order, no `Enter`/`Space` activation, no focus ring).
 **Action:** When identifying such patterns, always add `role="button"`, `tabIndex={0}`, an `onKeyDown` handler (that checks for `e.key === 'Enter' || e.key === ' '` and calls `e.preventDefault()` for space to prevent scrolling), and `focus-visible:ring-2` to restore baseline accessibility.
+## 2024-05-23 - Checkbox Accessibility Pattern
+**Learning:** In Shadcn/Radix UI, `<Checkbox>` components used within complex flex containers (like week selection headers) often lack direct programmatic label associations, causing screen readers to just announce "checkbox" without context. Additionally, adjacent descriptive text (like "Apenas os mais baratos") isn't clickable by default unless properly wrapped in a `<label>`.
+**Action:** When adding or fixing checkboxes, always ensure standalone checkboxes (e.g., in lists) have an explicit `aria-label`, and checkboxes with adjacent text use a `<label>` with `htmlFor` matching the checkbox's `id`. Add `cursor-pointer select-none` to the label for better mouse UX.
