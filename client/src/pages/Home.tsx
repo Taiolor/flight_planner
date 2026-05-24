@@ -1649,12 +1649,13 @@ export default function Home() {
               </label>
               <div className="flex items-center gap-2 mt-1">
                 <Checkbox
+                  id="cheap-filter"
                   checked={showCheapestOnly}
                   onCheckedChange={c => setShowCheapestOnly(c as boolean)}
                 />
-                <span className="text-sm text-slate-600">
+                <label htmlFor="cheap-filter" className="text-sm text-slate-600 cursor-pointer">
                   Apenas os mais baratos
-                </span>
+                </label>
               </div>
             </div>
 
@@ -1942,6 +1943,7 @@ export default function Home() {
                                         )
                                       }
                                       className="mt-1"
+                                      aria-label={`Selecionar semana ${week.weekNumber}`}
                                     />
                                     <div className="flex-1">
                                       <div className="flex flex-wrap items-center gap-2 mb-2">
