@@ -3885,6 +3885,7 @@ export default function Home() {
                                                     tempTicketType[
                                                       week.weekNumber
                                                     ] ?? "roundtrip",
+                                                  isTicketIssued: week.isTicketIssued,
                                                 },
                                                 {
                                                   onSuccess: () => {

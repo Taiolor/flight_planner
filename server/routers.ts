@@ -413,9 +413,9 @@ export const appRouter = router({
         });
 
         // Send email notifications if ticket was issued or modified
-        if (input.isTicketIssued !== undefined && weekBefore) {
+        if (weekBefore) {
           const wasIssued = weekBefore.isTicketIssued === 1;
-          const nowIssued = input.isTicketIssued === 1;
+          const nowIssued = input.isTicketIssued !== undefined ? input.isTicketIssued === 1 : wasIssued;
 
           if (!wasIssued && nowIssued) {
             // Ticket was just marked as issued - send email with full details
