@@ -2241,7 +2241,7 @@ export default function Home() {
                                               </span>
                                               <input
                                                 type="date"
-                                                defaultValue={depIso}
+                                                aria-label="Data de Ida" defaultValue={depIso}
                                                 key={`dep-${week.weekNumber}-${depIso}`}
                                                 onBlur={e =>
                                                   handleDateBlur(
@@ -2282,7 +2282,7 @@ export default function Home() {
                                               </span>
                                               <input
                                                 type="date"
-                                                defaultValue={retIso}
+                                                aria-label="Data de Retorno" defaultValue={retIso}
                                                 key={`ret-${week.weekNumber}-${retIso}`}
                                                 onBlur={e =>
                                                   handleDateBlur(
@@ -3264,6 +3264,7 @@ export default function Home() {
                                                   </label>
                                                   <input
                                                     type="datetime-local"
+                                                    aria-label="Data e Hora do Voo de Ida"
                                                     className="h-8 text-xs border border-blue-200 dark:border-blue-600 rounded-md px-2 bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-400 dark:focus:ring-blue-500 w-full"
                                                     value={
                                                       tempDepartureDatetime[
@@ -3353,6 +3354,7 @@ export default function Home() {
                                                   <input
                                                     type="text"
                                                     maxLength={10}
+                                                    aria-label="Número do Voo de Ida"
                                                     placeholder="Ex: LA3045"
                                                     className={`h-8 text-xs rounded-md px-2 bg-white text-slate-700 uppercase font-mono focus:outline-none focus:ring-2 w-full transition-colors ${
                                                       suggestedDepartureFlightNumber[
@@ -3432,6 +3434,7 @@ export default function Home() {
                                                   <input
                                                     type="text"
                                                     maxLength={20}
+                                                    aria-label="Localizador (PNR) de Ida"
                                                     placeholder="Ex: ABC123"
                                                     className="h-8 text-xs border border-blue-200 rounded-md px-2 bg-white text-slate-700 uppercase font-mono focus:outline-none focus:ring-2 focus:ring-blue-400 w-full"
                                                     value={
@@ -3689,6 +3692,7 @@ export default function Home() {
                                                     </label>
                                                     <input
                                                       type="datetime-local"
+                                                      aria-label="Data e Hora do Voo de Retorno"
                                                       className="h-8 text-xs border border-orange-200 rounded-md px-2 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-orange-400 w-full"
                                                       value={
                                                         tempReturnDatetime[
@@ -3792,6 +3796,7 @@ export default function Home() {
                                                     <input
                                                       type="text"
                                                       maxLength={10}
+                                                      aria-label="Número do Voo de Retorno"
                                                       placeholder="Ex: G31234"
                                                       className={`h-8 text-xs rounded-md px-2 bg-white text-slate-700 uppercase font-mono focus:outline-none focus:ring-2 w-full transition-colors ${
                                                         suggestedReturnFlightNumber[
@@ -3830,6 +3835,7 @@ export default function Home() {
                                                     <input
                                                       type="text"
                                                       maxLength={20}
+                                                      aria-label="Localizador (PNR) de Retorno"
                                                       placeholder="Ex: XYZ456"
                                                       className="h-8 text-xs border border-orange-200 dark:border-orange-600 rounded-md px-2 bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-100 uppercase font-mono focus:outline-none focus:ring-2 focus:ring-orange-400 dark:focus:ring-orange-500 w-full"
                                                       value={
