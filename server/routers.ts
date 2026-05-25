@@ -168,13 +168,10 @@ export const appRouter = router({
         const token = await createAuthSession(input.email);
 
         // Definir cookie de sessão (8 horas)
+        const cookieOptions = getSessionCookieOptions(ctx.req);
         ctx.res.cookie(SESSION_COOKIE, token, {
-          httpOnly: true,
-          secure: process.env.NODE_ENV === "production",
-          // Security: Use lax to mitigate CSRF attacks
-          sameSite: "lax",
+          ...cookieOptions,
           maxAge: 8 * 60 * 60 * 1000,
-          path: "/",
         });
 
         return { success: true, email: input.email };
@@ -413,9 +410,9 @@ export const appRouter = router({
         });
 
         // Send email notifications if ticket was issued or modified
-        if (input.isTicketIssued !== undefined && weekBefore) {
+        if (weekBefore) {
           const wasIssued = weekBefore.isTicketIssued === 1;
-          const nowIssued = input.isTicketIssued === 1;
+          const nowIssued = input.isTicketIssued !== undefined ? input.isTicketIssued === 1 : wasIssued;
 
           if (!wasIssued && nowIssued) {
             // Ticket was just marked as issued - send email with full details
