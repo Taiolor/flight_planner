@@ -31,9 +31,7 @@ function getResendClient(): Resend {
 /**
  * Format ticket change details for email body
  */
-function formatTicketDetails(
-  notification: TicketChangeNotification
-): string {
+function formatTicketDetails(notification: TicketChangeNotification): string {
   const { type, weekNumber, ticketType, changes, timestamp } = notification;
 
   let html = `
@@ -107,7 +105,9 @@ async function sendEmailViaResend(
   htmlContent: string
 ): Promise<boolean> {
   try {
-    console.log(`[Email] Sending email to ${to.join(", ")} with subject: ${subject}`);
+    console.log(
+      `[Email] Sending email to ${to.join(", ")} with subject: ${subject}`
+    );
 
     const resend = getResendClient();
 

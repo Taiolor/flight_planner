@@ -310,60 +310,62 @@ export default function AdminNotifications() {
 
           {expandedSections.has("alerts") && (
             <Card id="section-alerts" className="overflow-hidden mt-3">
-            {data?.scheduledAlerts.length === 0 ? (
-              <div className="p-8 text-center">
-                <Bell className="w-10 h-10 text-gray-300 mx-auto mb-3" />
-                <p className="text-gray-500 text-sm">Nenhum alerta agendado.</p>
-                <p className="text-gray-400 text-xs mt-1">
-                  Configure os avisos no popup de Notificações.
-                </p>
-              </div>
-            ) : (
-              <div className="divide-y divide-gray-100">
-                {/* Pendentes primeiro */}
-                {pendingAlerts.length > 0 && (
-                  <>
-                    <div className="px-4 py-2 bg-blue-50">
-                      <p className="text-xs font-semibold text-blue-600 uppercase tracking-wide">
-                        Aguardando envio ({pendingAlerts.length})
-                      </p>
-                    </div>
-                    {pendingAlerts.map((alert, i) => (
-                      <AlertRow key={`pending-${i}`} alert={alert} />
-                    ))}
-                  </>
-                )}
+              {data?.scheduledAlerts.length === 0 ? (
+                <div className="p-8 text-center">
+                  <Bell className="w-10 h-10 text-gray-300 mx-auto mb-3" />
+                  <p className="text-gray-500 text-sm">
+                    Nenhum alerta agendado.
+                  </p>
+                  <p className="text-gray-400 text-xs mt-1">
+                    Configure os avisos no popup de Notificações.
+                  </p>
+                </div>
+              ) : (
+                <div className="divide-y divide-gray-100">
+                  {/* Pendentes primeiro */}
+                  {pendingAlerts.length > 0 && (
+                    <>
+                      <div className="px-4 py-2 bg-blue-50">
+                        <p className="text-xs font-semibold text-blue-600 uppercase tracking-wide">
+                          Aguardando envio ({pendingAlerts.length})
+                        </p>
+                      </div>
+                      {pendingAlerts.map((alert, i) => (
+                        <AlertRow key={`pending-${i}`} alert={alert} />
+                      ))}
+                    </>
+                  )}
 
-                {/* Enviando agora */}
-                {sentAlerts.length > 0 && (
-                  <>
-                    <div className="px-4 py-2 bg-green-50">
-                      <p className="text-xs font-semibold text-green-600 uppercase tracking-wide">
-                        Enviando agora ({sentAlerts.length})
-                      </p>
-                    </div>
-                    {sentAlerts.map((alert, i) => (
-                      <AlertRow key={`sent-${i}`} alert={alert} />
-                    ))}
-                  </>
-                )}
+                  {/* Enviando agora */}
+                  {sentAlerts.length > 0 && (
+                    <>
+                      <div className="px-4 py-2 bg-green-50">
+                        <p className="text-xs font-semibold text-green-600 uppercase tracking-wide">
+                          Enviando agora ({sentAlerts.length})
+                        </p>
+                      </div>
+                      {sentAlerts.map((alert, i) => (
+                        <AlertRow key={`sent-${i}`} alert={alert} />
+                      ))}
+                    </>
+                  )}
 
-                {/* Passados */}
-                {pastAlerts.length > 0 && (
-                  <>
-                    <div className="px-4 py-2 bg-gray-50">
-                      <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide">
-                        Voos passados ({pastAlerts.length})
-                      </p>
-                    </div>
-                    {pastAlerts.map((alert, i) => (
-                      <AlertRow key={`past-${i}`} alert={alert} />
-                    ))}
-                  </>
-                )}
-              </div>
-            )}
-          </Card>
+                  {/* Passados */}
+                  {pastAlerts.length > 0 && (
+                    <>
+                      <div className="px-4 py-2 bg-gray-50">
+                        <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide">
+                          Voos passados ({pastAlerts.length})
+                        </p>
+                      </div>
+                      {pastAlerts.map((alert, i) => (
+                        <AlertRow key={`past-${i}`} alert={alert} />
+                      ))}
+                    </>
+                  )}
+                </div>
+              )}
+            </Card>
           )}
         </div>
 
@@ -388,39 +390,39 @@ export default function AdminNotifications() {
 
           {expandedSections.has("devices") && (
             <Card id="section-devices" className="overflow-hidden mt-3">
-            {!data?.subscriptions || data.subscriptions.length === 0 ? (
-              <div className="p-8 text-center">
-                <Smartphone className="w-10 h-10 text-gray-300 mx-auto mb-3" />
-                <p className="text-gray-500 text-sm">
-                  Nenhum dispositivo registrado.
-                </p>
-                <p className="text-gray-400 text-xs mt-1">
-                  Ative as notificações no botão "Notificações" do cabeçalho.
-                </p>
-              </div>
-            ) : (
-              <div className="divide-y divide-gray-100">
-                {data.subscriptions.map((sub, i) => (
-                  <div key={i} className="px-4 py-3 flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0">
-                      <Smartphone className="w-4 h-4 text-gray-500" />
+              {!data?.subscriptions || data.subscriptions.length === 0 ? (
+                <div className="p-8 text-center">
+                  <Smartphone className="w-10 h-10 text-gray-300 mx-auto mb-3" />
+                  <p className="text-gray-500 text-sm">
+                    Nenhum dispositivo registrado.
+                  </p>
+                  <p className="text-gray-400 text-xs mt-1">
+                    Ative as notificações no botão "Notificações" do cabeçalho.
+                  </p>
+                </div>
+              ) : (
+                <div className="divide-y divide-gray-100">
+                  {data.subscriptions.map((sub, i) => (
+                    <div key={i} className="px-4 py-3 flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0">
+                        <Smartphone className="w-4 h-4 text-gray-500" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-sm text-gray-700 font-medium truncate">
+                          {sub.userAgent}
+                        </p>
+                        <p className="text-xs text-gray-400 font-mono truncate">
+                          {sub.endpoint}
+                        </p>
+                      </div>
+                      <Badge className="bg-green-100 text-green-700 border-green-200 flex-shrink-0">
+                        Ativo
+                      </Badge>
                     </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="text-sm text-gray-700 font-medium truncate">
-                        {sub.userAgent}
-                      </p>
-                      <p className="text-xs text-gray-400 font-mono truncate">
-                        {sub.endpoint}
-                      </p>
-                    </div>
-                    <Badge className="bg-green-100 text-green-700 border-green-200 flex-shrink-0">
-                      Ativo
-                    </Badge>
-                  </div>
-                ))}
-              </div>
-            )}
-          </Card>
+                  ))}
+                </div>
+              )}
+            </Card>
           )}
         </div>
 
@@ -438,7 +440,7 @@ export default function AdminNotifications() {
             </h2>
             <div className="flex items-center gap-2">
               <button
-                onClick={(e) => {
+                onClick={e => {
                   e.stopPropagation();
                   refetchLogs();
                 }}
@@ -456,92 +458,94 @@ export default function AdminNotifications() {
 
           {expandedSections.has("history") && (
             <Card id="section-history" className="overflow-hidden mt-3">
-            {!logs || logs.length === 0 ? (
-              <div className="p-8 text-center">
-                <History className="w-10 h-10 text-gray-300 mx-auto mb-3" />
-                <p className="text-gray-500 text-sm">
-                  Nenhum envio registrado ainda.
-                </p>
-                <p className="text-gray-400 text-xs mt-1">
-                  Os próximos envios automáticos e testes aparecerão aqui.
-                </p>
-              </div>
-            ) : (
-              <div className="divide-y divide-gray-100">
-                <div className="grid grid-cols-[auto_1fr_auto_auto] gap-x-3 px-4 py-2 bg-gray-50 text-xs font-semibold text-gray-400 uppercase tracking-wide">
-                  <span>Status</span>
-                  <span>Voo</span>
-                  <span className="text-right">Dispositivos</span>
-                  <span className="text-right">Enviado em</span>
+              {!logs || logs.length === 0 ? (
+                <div className="p-8 text-center">
+                  <History className="w-10 h-10 text-gray-300 mx-auto mb-3" />
+                  <p className="text-gray-500 text-sm">
+                    Nenhum envio registrado ainda.
+                  </p>
+                  <p className="text-gray-400 text-xs mt-1">
+                    Os próximos envios automáticos e testes aparecerão aqui.
+                  </p>
                 </div>
-                {logs.map(log => (
-                  <div
-                    key={log.id}
-                    className="grid grid-cols-[auto_1fr_auto_auto] gap-x-3 items-center px-4 py-3"
-                  >
-                    {/* Status */}
-                    <div className="flex-shrink-0">
-                      {log.status === "success" ? (
-                        <CheckCircle2 className="w-4 h-4 text-green-500" />
-                      ) : log.status === "partial" ? (
-                        <AlertCircle className="w-4 h-4 text-amber-500" />
-                      ) : (
-                        <XCircle className="w-4 h-4 text-red-400" />
-                      )}
-                    </div>
-                    {/* Descrição */}
-                    <div className="min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        {log.isTest ? (
-                          <span className="flex items-center gap-1 text-sm font-medium text-purple-700">
-                            <FlaskConical className="w-3 h-3" /> Teste Manual
-                          </span>
-                        ) : (
-                          <span className="text-sm font-medium text-gray-800">
-                            Semana {log.weekNumber} —{" "}
-                            {log.direction === "ida" ? "✈️ Ida" : "🏠 Volta"}
-                          </span>
-                        )}
-                        <Badge className="text-xs bg-indigo-50 text-indigo-600 border-indigo-100">
-                          {log.avisoLabel}
-                        </Badge>
-                      </div>
-                      {!log.isTest && (
-                        <p className="text-xs text-gray-400 mt-0.5">
-                          {log.airline ? formatAirline(log.airline) : ""}
-                          {log.flightNumber ? ` ${log.flightNumber}` : ""}
-                          {log.errorMessage
-                            ? ` · Erro: ${log.errorMessage}`
-                            : ""}
-                        </p>
-                      )}
-                    </div>
-                    {/* Dispositivos */}
-                    <div className="text-right text-sm text-gray-600 flex-shrink-0">
-                      <span
-                        className={
-                          log.devicesReached === 0
-                            ? "text-red-400"
-                            : "text-green-600"
-                        }
-                      >
-                        {log.devicesReached}
-                      </span>
-                      <span className="text-gray-400">/{log.totalDevices}</span>
-                    </div>
-                    {/* Timestamp */}
-                    <div className="text-right text-xs text-gray-400 flex-shrink-0">
-                      {formatDatetimeBRT(
-                        log.sentAt instanceof Date
-                          ? log.sentAt.toISOString()
-                          : String(log.sentAt)
-                      )}
-                    </div>
+              ) : (
+                <div className="divide-y divide-gray-100">
+                  <div className="grid grid-cols-[auto_1fr_auto_auto] gap-x-3 px-4 py-2 bg-gray-50 text-xs font-semibold text-gray-400 uppercase tracking-wide">
+                    <span>Status</span>
+                    <span>Voo</span>
+                    <span className="text-right">Dispositivos</span>
+                    <span className="text-right">Enviado em</span>
                   </div>
-                ))}
-              </div>
-            )}
-          </Card>
+                  {logs.map(log => (
+                    <div
+                      key={log.id}
+                      className="grid grid-cols-[auto_1fr_auto_auto] gap-x-3 items-center px-4 py-3"
+                    >
+                      {/* Status */}
+                      <div className="flex-shrink-0">
+                        {log.status === "success" ? (
+                          <CheckCircle2 className="w-4 h-4 text-green-500" />
+                        ) : log.status === "partial" ? (
+                          <AlertCircle className="w-4 h-4 text-amber-500" />
+                        ) : (
+                          <XCircle className="w-4 h-4 text-red-400" />
+                        )}
+                      </div>
+                      {/* Descrição */}
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          {log.isTest ? (
+                            <span className="flex items-center gap-1 text-sm font-medium text-purple-700">
+                              <FlaskConical className="w-3 h-3" /> Teste Manual
+                            </span>
+                          ) : (
+                            <span className="text-sm font-medium text-gray-800">
+                              Semana {log.weekNumber} —{" "}
+                              {log.direction === "ida" ? "✈️ Ida" : "🏠 Volta"}
+                            </span>
+                          )}
+                          <Badge className="text-xs bg-indigo-50 text-indigo-600 border-indigo-100">
+                            {log.avisoLabel}
+                          </Badge>
+                        </div>
+                        {!log.isTest && (
+                          <p className="text-xs text-gray-400 mt-0.5">
+                            {log.airline ? formatAirline(log.airline) : ""}
+                            {log.flightNumber ? ` ${log.flightNumber}` : ""}
+                            {log.errorMessage
+                              ? ` · Erro: ${log.errorMessage}`
+                              : ""}
+                          </p>
+                        )}
+                      </div>
+                      {/* Dispositivos */}
+                      <div className="text-right text-sm text-gray-600 flex-shrink-0">
+                        <span
+                          className={
+                            log.devicesReached === 0
+                              ? "text-red-400"
+                              : "text-green-600"
+                          }
+                        >
+                          {log.devicesReached}
+                        </span>
+                        <span className="text-gray-400">
+                          /{log.totalDevices}
+                        </span>
+                      </div>
+                      {/* Timestamp */}
+                      <div className="text-right text-xs text-gray-400 flex-shrink-0">
+                        {formatDatetimeBRT(
+                          log.sentAt instanceof Date
+                            ? log.sentAt.toISOString()
+                            : String(log.sentAt)
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </Card>
           )}
         </div>
 
@@ -607,8 +611,12 @@ export default function AdminNotifications() {
               <AlertCircle className="w-4 h-4 text-white" />
             </div>
             <div>
-              <h2 className="font-semibold text-gray-800">Notificações por E-mail</h2>
-              <p className="text-xs text-gray-500 mt-0.5">Gerenciar destinatários de alertas de alteração de bilhetes</p>
+              <h2 className="font-semibold text-gray-800">
+                Notificações por E-mail
+              </h2>
+              <p className="text-xs text-gray-500 mt-0.5">
+                Gerenciar destinatários de alertas de alteração de bilhetes
+              </p>
             </div>
           </div>
         </div>
@@ -630,17 +638,18 @@ function TicketNotificationEmailsSection() {
   const { data: recipients, refetch } =
     trpc.ticketNotifications.getRecipients.useQuery();
 
-  const addRecipientMutation = trpc.ticketNotifications.addRecipient.useMutation({
-    onSuccess: () => {
-      toast.success("E-mail adicionado com sucesso!");
-      setNewEmail("");
-      setNewName("");
-      refetch();
-    },
-    onError: err => {
-      toast.error(err.message || "Erro ao adicionar e-mail.");
-    },
-  });
+  const addRecipientMutation =
+    trpc.ticketNotifications.addRecipient.useMutation({
+      onSuccess: () => {
+        toast.success("E-mail adicionado com sucesso!");
+        setNewEmail("");
+        setNewName("");
+        refetch();
+      },
+      onError: err => {
+        toast.error(err.message || "Erro ao adicionar e-mail.");
+      },
+    });
 
   const removeRecipientMutation =
     trpc.ticketNotifications.removeRecipient.useMutation({
@@ -671,7 +680,10 @@ function TicketNotificationEmailsSection() {
       toast.error("Digite um e-mail válido.");
       return;
     }
-    addRecipientMutation.mutate({ email: newEmail, name: newName || undefined });
+    addRecipientMutation.mutate({
+      email: newEmail,
+      name: newName || undefined,
+    });
   };
 
   const handleSendTestEmail = (e: React.FormEvent) => {
@@ -687,7 +699,9 @@ function TicketNotificationEmailsSection() {
     <div className="p-5 space-y-5">
       {/* Formulário para adicionar novo e-mail */}
       <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
-        <h3 className="font-medium text-gray-800 mb-3 text-sm">Adicionar Novo Destinatário</h3>
+        <h3 className="font-medium text-gray-800 mb-3 text-sm">
+          Adicionar Novo Destinatário
+        </h3>
         <form onSubmit={handleAddRecipient} className="space-y-3">
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <input
@@ -733,13 +747,17 @@ function TicketNotificationEmailsSection() {
                     {recipient.email}
                   </p>
                   {recipient.name && (
-                    <p className="text-xs text-gray-500 truncate">{recipient.name}</p>
+                    <p className="text-xs text-gray-500 truncate">
+                      {recipient.name}
+                    </p>
                   )}
                 </div>
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => removeRecipientMutation.mutate({ emailId: recipient.id })}
+                  onClick={() =>
+                    removeRecipientMutation.mutate({ emailId: recipient.id })
+                  }
                   disabled={removeRecipientMutation.isPending}
                   className="text-red-600 hover:text-red-700 hover:bg-red-50 ml-2 flex-shrink-0"
                 >
@@ -751,7 +769,9 @@ function TicketNotificationEmailsSection() {
         ) : (
           <div className="text-center py-6 text-gray-500 text-sm">
             <p>Nenhum destinatário cadastrado.</p>
-            <p className="text-xs mt-1">Adicione e-mails acima para receber notificações.</p>
+            <p className="text-xs mt-1">
+              Adicione e-mails acima para receber notificações.
+            </p>
           </div>
         )}
       </div>
@@ -771,7 +791,9 @@ function TicketNotificationEmailsSection() {
       {/* Formulário para enviar e-mail de teste */}
       {showTestForm && (
         <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
-          <h3 className="font-medium text-gray-800 mb-3 text-sm">Enviar E-mail de Teste</h3>
+          <h3 className="font-medium text-gray-800 mb-3 text-sm">
+            Enviar E-mail de Teste
+          </h3>
           <form onSubmit={handleSendTestEmail} className="space-y-3">
             <div className="flex gap-2">
               <input
@@ -791,7 +813,8 @@ function TicketNotificationEmailsSection() {
               </Button>
             </div>
             <p className="text-xs text-gray-500">
-              Isso enviará um e-mail de teste para verificar se a configuração SMTP está funcionando corretamente.
+              Isso enviará um e-mail de teste para verificar se a configuração
+              SMTP está funcionando corretamente.
             </p>
           </form>
         </div>

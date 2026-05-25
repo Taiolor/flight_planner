@@ -246,10 +246,12 @@
 ## Sugestões de Implementação
 
 ### 1. Testar Envio de E-mail
+
 - [x] Corrigir parâmetros do Resend no helper de e-mail
 - [x] Validar que o envio de e-mail de teste funciona corretamente
 
 ### 2. Integração com Google Calendar
+
 - [x] Criar helper para integração com Google Calendar via MCP
 - [x] Adicionar procedures tRPC para criar eventos no calendário
 - [x] Implementar criação de evento com 2 horas de antecedencia
@@ -258,23 +260,27 @@
 - [ ] Incluir endereço completo do aeroporto na localização do evento
 
 ### 3. Publicar o Site
+
 - [ ] Clicar em "Publish" no painel de gerenciamento
 - [ ] Validar que o site está disponível em flightplan-hq655wm9.manus.space
 
 ## Implementação das 3 Sugestões
 
 ### 1. Botões "Adicionar ao Calendário"
+
 - [x] Adicionar botão "📅 Adicionar ao Calendário" nos dados de bilhete (ida)
 - [x] Integrar com procedures tRPC calendar.createFlightEvent
 - [ ] Adicionar botão para volta
 - [ ] Exibir feedback visual (toast) após criar evento
 
 ### 2. Endereço Completo do Aeroporto
+
 - [x] Criar mapa de endereços de aeroportos (GRU, NVT, CCJ, etc.)
 - [x] Incluir endereço na localização do evento do calendário
 - [x] Atualizar helper calendarIntegration.ts para aceitar endereço do aeroporto
 
 ### 3. Publicar o Site
+
 - [ ] Clicar em "Publish" no painel de gerenciamento
 - [ ] Validar que o site está disponível em flightplan-hq655wm9.manus.space
 - [ ] Testar funcionalidades principais em produção
@@ -289,17 +295,20 @@
 ## Implementação das 3 Sugestões Finais
 
 ### 1. Testar Compartilhamento por E-Mail
+
 - [x] Adicionar e-mail na seção "Notificações por E-Mail" da tela AdminNotifications
 - [x] Clicar em "Compartilhar por E-Mail" para validar o envio
 - [x] Verificar se o e-mail foi recebido com dados formatados corretamente
 
 ### 2. Melhorar Feedback com Toast
+
 - [x] Instalar biblioteca Sonner para notificações toast
 - [x] Substituir alert() por toast.success() no botão "Compartilhar por E-Mail"
 - [x] Substituir alert() por toast.error() para erros
 - [ ] Adicionar toast nos outros botões (Calendário, etc.)
 
 ### 3. Publicar o Site em Produção
+
 - [ ] Clicar em "Publish" no painel de gerenciamento
 - [ ] Validar que o site está disponível em flightplan-hq655wm9.manus.space
 - [ ] Testar funcionalidades principais em produção
