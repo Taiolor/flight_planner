@@ -1,115 +1,5 @@
 import { useState, useMemo, useEffect, useCallback, useRef } from "react";
 import {
-
-
-// ⚡ Bolt Optimization:
-// Hoisted static data and pre-calculated Dates for the 2026 World Cup logic.
-// This prevents multiple array allocations and date instantiations per expanded week.
-const parseISO = (s: string) => {
-  if (!s || s.length !== 10) return new Date(NaN);
-  return new Date(+s.substring(0, 4), +s.substring(5, 7) - 1, +s.substring(8, 10));
-};
-
-const TODOS_JOGOS = [
-  { data: "2026-06-13", adversario: "Marrocos", cidade: "Nova York/NJ", bandeira: "🇲🇦", horario: "16h" },
-  { data: "2026-06-19", adversario: "Haiti", cidade: "Filadélfia", bandeira: "🇭🇹", horario: "21h" },
-  { data: "2026-06-24", adversario: "Escócia", cidade: "Miami", bandeira: "🏴󠁧󠁢󠁳󠁣󠁴󠁿", horario: "20h" },
-].map(jogo => ({ ...jogo, parsedDate: parseISO(jogo.data) }));
-
-const TODAS_FASES = [
-  { fase: "32-avos de Final", icone: "🏟️", inicio: "2026-06-28", fim: "2026-07-03", cidades: "Várias cidades", cor: "blue" },
-  { fase: "Oitavas de Final", icone: "⚡", inicio: "2026-07-04", fim: "2026-07-07", cidades: "Várias cidades", cor: "blue" },
-  { fase: "Quartas de Final", icone: "🔥", inicio: "2026-07-09", fim: "2026-07-11", cidades: "Várias cidades", cor: "orange" },
-  { fase: "Semifinais", icone: "🏆", inicio: "2026-07-14", fim: "2026-07-15", cidades: "Dallas, TX", cor: "purple" },
-  { fase: "Final", icone: "🥇", inicio: "2026-07-19", fim: "2026-07-19", cidades: "MetLife Stadium, NJ", cor: "yellow" },
-].map(fase => ({ ...fase, parsedInicio: parseISO(fase.inicio), parsedFim: parseISO(fase.fim) }));
-
-
-// ⚡ Bolt Optimization:
-// Hoisted static data and pre-calculated Dates for the 2026 World Cup logic.
-// This prevents multiple array allocations and date instantiations per expanded week.
-const parseISO = (s: string) => {
-  if (!s || s.length !== 10) return new Date(NaN);
-  return new Date(
-    +s.substring(0, 4),
-    +s.substring(5, 7) - 1,
-    +s.substring(8, 10)
-  );
-};
-
-const TODOS_JOGOS = [
-  {
-    data: "2026-06-13",
-    adversario: "Marrocos",
-    cidade: "Nova York/NJ",
-    bandeira: "🇲🇦",
-    horario: "16h",
-  },
-  {
-    data: "2026-06-19",
-    adversario: "Haiti",
-    cidade: "Filadélfia",
-    bandeira: "🇭🇹",
-    horario: "21h",
-  },
-  {
-    data: "2026-06-24",
-    adversario: "Escócia",
-    cidade: "Miami",
-    bandeira: "🏴󠁧󠁢󠁳󠁣󠁴󠁿",
-    horario: "20h",
-  },
-].map(jogo => ({ ...jogo, parsedDate: parseISO(jogo.data) }));
-
-const TODAS_FASES = [
-  {
-    fase: "32-avos de Final",
-    icone: "🏟️",
-    inicio: "2026-06-28",
-    fim: "2026-07-03",
-    cidades: "Várias cidades",
-    cor: "blue",
-  },
-  {
-    fase: "Oitavas de Final",
-    icone: "⚡",
-    inicio: "2026-07-04",
-    fim: "2026-07-07",
-    cidades: "Várias cidades",
-    cor: "blue",
-  },
-  {
-    fase: "Quartas de Final",
-    icone: "🔥",
-    inicio: "2026-07-09",
-    fim: "2026-07-11",
-    cidades: "Várias cidades",
-    cor: "orange",
-  },
-  {
-    fase: "Semifinais",
-    icone: "🏆",
-    inicio: "2026-07-14",
-    fim: "2026-07-15",
-    cidades: "Dallas, TX",
-    cor: "purple",
-  },
-  {
-    fase: "Final",
-    icone: "🥇",
-    inicio: "2026-07-19",
-    fim: "2026-07-19",
-    cidades: "MetLife Stadium, NJ",
-    cor: "yellow",
-  },
-].map(fase => ({
-  ...fase,
-  parsedInicio: parseISO(fase.inicio),
-  parsedFim: parseISO(fase.fim),
-}));
-
-import { useState, useMemo, useEffect, useCallback, useRef } from "react";
-import {
   BarChart,
   Bar,
   XAxis,
@@ -1763,7 +1653,10 @@ export default function Home() {
                   checked={showCheapestOnly}
                   onCheckedChange={c => setShowCheapestOnly(c as boolean)}
                 />
-                <label htmlFor="cheap-filter" className="text-sm text-slate-600 cursor-pointer">
+                <label
+                  htmlFor="cheap-filter"
+                  className="text-sm text-slate-600 cursor-pointer select-none"
+                >
                   Apenas os mais baratos
                 </label>
               </div>
@@ -2045,6 +1938,8 @@ export default function Home() {
                                 >
                                   <div className="flex items-start gap-2 sm:gap-4 flex-1">
                                     <Checkbox
+                                      id={`select-week-${week.weekNumber}`}
+                                      aria-label={`Selecionar semana ${week.weekNumber}`}
                                       checked={!!week.isSelected}
                                       onCheckedChange={() =>
                                         handleToggleSelect(
@@ -2053,7 +1948,6 @@ export default function Home() {
                                         )
                                       }
                                       className="mt-1"
-                                      aria-label={`Selecionar semana ${week.weekNumber}`}
                                     />
                                     <div className="flex-1">
                                       <div className="flex flex-wrap items-center gap-2 mb-2">
@@ -2241,7 +2135,7 @@ export default function Home() {
                                               </span>
                                               <input
                                                 type="date"
-                                                aria-label="Data de Ida" defaultValue={depIso}
+                                                defaultValue={depIso}
                                                 key={`dep-${week.weekNumber}-${depIso}`}
                                                 onBlur={e =>
                                                   handleDateBlur(
@@ -2282,7 +2176,7 @@ export default function Home() {
                                               </span>
                                               <input
                                                 type="date"
-                                                aria-label="Data de Retorno" defaultValue={retIso}
+                                                defaultValue={retIso}
                                                 key={`ret-${week.weekNumber}-${retIso}`}
                                                 onBlur={e =>
                                                   handleDateBlur(
@@ -2481,11 +2375,9 @@ export default function Home() {
                                 {expandedWeekCards.has(week.weekNumber) && (
                                   <div className="mt-3 sm:mt-4">
                                     {/* Painel Copa 2026 — apenas semanas com jogos/fases no intervalo */}
-
                                     {(() => {
                                       const hoje = new Date();
                                       hoje.setHours(0, 0, 0, 0);
-                                      const hojeTempo = hoje.getTime();
 
                                       // Converte DD/MM/YYYY → Date
                                       const parseBR = (s: string) => {
@@ -2495,6 +2387,16 @@ export default function Home() {
                                           +s.substring(6, 10),
                                           +s.substring(3, 5) - 1,
                                           +s.substring(0, 2)
+                                        );
+                                      };
+                                      // Converte YYYY-MM-DD → Date
+                                      const parseISO = (s: string) => {
+                                        if (!s || s.length !== 10)
+                                          return new Date(NaN);
+                                        return new Date(
+                                          +s.substring(0, 4),
+                                          +s.substring(5, 7) - 1,
+                                          +s.substring(8, 10)
                                         );
                                       };
 
@@ -2517,12 +2419,10 @@ export default function Home() {
                                           : semanaFim;
 
                                       // Helper: calcula dias restantes e labels
-                                      const calcDias = (
-                                        parsedDate: Date,
-                                        dataStr: string
-                                      ) => {
+                                      const calcDias = (dataStr: string) => {
+                                        const dataEvento = parseISO(dataStr);
                                         const diffMs =
-                                          parsedDate.getTime() - hojeTempo;
+                                          dataEvento.getTime() - hoje.getTime();
                                         const diffDias = Math.round(
                                           diffMs / (1000 * 60 * 60 * 24)
                                         );
@@ -2545,7 +2445,7 @@ export default function Home() {
                                           "Sáb",
                                         ];
                                         const diaSemana =
-                                          diasSemana[parsedDate.getDay()];
+                                          diasSemana[dataEvento.getDay()];
                                         return {
                                           passou,
                                           ehHoje,
@@ -2557,24 +2457,97 @@ export default function Home() {
                                         };
                                       };
 
+                                      // Todos os jogos da 1ª fase
+                                      const todosJogos = [
+                                        {
+                                          data: "2026-06-13",
+                                          adversario: "Marrocos",
+                                          cidade: "Nova York/NJ",
+                                          bandeira: "🇲🇦",
+                                          horario: "16h",
+                                        },
+                                        {
+                                          data: "2026-06-19",
+                                          adversario: "Haiti",
+                                          cidade: "Filadélfia",
+                                          bandeira: "🇭🇹",
+                                          horario: "21h",
+                                        },
+                                        {
+                                          data: "2026-06-24",
+                                          adversario: "Escócia",
+                                          cidade: "Miami",
+                                          bandeira: "🏴󠁧󠁢󠁳󠁣󠁴󠁿",
+                                          horario: "20h",
+                                        },
+                                      ];
+
                                       // Filtrar jogos que caem dentro da semana calendário (dom-sáb)
-                                      const jogosDosBrasil = TODOS_JOGOS.filter(
+                                      const jogosDosBrasil = todosJogos.filter(
                                         jogo => {
+                                          const dataJogo = parseISO(jogo.data);
                                           return (
-                                            jogo.parsedDate >= semanaInicio &&
-                                            jogo.parsedDate <= semanaFimEfetivo
+                                            dataJogo >= semanaInicio &&
+                                            dataJogo <= semanaFimEfetivo
                                           );
                                         }
                                       );
 
+                                      // Fases eliminatórias: janelas de datas (início e fim de cada fase)
+                                      const todasFases = [
+                                        {
+                                          fase: "32-avos de Final",
+                                          icone: "🏟️",
+                                          inicio: "2026-06-28",
+                                          fim: "2026-07-03",
+                                          cidades: "Várias cidades",
+                                          cor: "blue",
+                                        },
+                                        {
+                                          fase: "Oitavas de Final",
+                                          icone: "⚡",
+                                          inicio: "2026-07-04",
+                                          fim: "2026-07-07",
+                                          cidades: "Várias cidades",
+                                          cor: "blue",
+                                        },
+                                        {
+                                          fase: "Quartas de Final",
+                                          icone: "🔥",
+                                          inicio: "2026-07-09",
+                                          fim: "2026-07-11",
+                                          cidades: "Várias cidades",
+                                          cor: "orange",
+                                        },
+                                        {
+                                          fase: "Semifinais",
+                                          icone: "🏆",
+                                          inicio: "2026-07-14",
+                                          fim: "2026-07-15",
+                                          cidades: "Dallas, TX",
+                                          cor: "purple",
+                                        },
+                                        {
+                                          fase: "Final",
+                                          icone: "🥇",
+                                          inicio: "2026-07-19",
+                                          fim: "2026-07-19",
+                                          cidades: "MetLife Stadium, NJ",
+                                          cor: "yellow",
+                                        },
+                                      ];
+
                                       // Filtrar fases eliminatórias que se sobrepõem à semana calendário
                                       const fasesEliminatorias =
-                                        TODAS_FASES.filter(fase => {
+                                        todasFases.filter(fase => {
+                                          const faseInicio = parseISO(
+                                            fase.inicio
+                                          );
+                                          const faseFim = parseISO(fase.fim);
                                           // Sobreposição: faseInicio <= semanaFimEfetivo E faseFim >= semanaInicio
                                           return (
-                                            fase.parsedInicio <=
-                                              semanaFimEfetivo &&
-                                            fase.parsedFim >= semanaInicio
+                                            faseInicio <= semanaFimEfetivo &&
+                                            faseFim >= semanaInicio
                                           );
                                         });
 
@@ -2614,10 +2587,7 @@ export default function Home() {
                                                     mm,
                                                     dd,
                                                     diaSemana,
-                                                  } = calcDias(
-                                                    jogo.parsedDate,
-                                                    jogo.data
-                                                  );
+                                                  } = calcDias(jogo.data);
                                                   return (
                                                     <div
                                                       key={jogo.data}
@@ -2704,11 +2674,9 @@ export default function Home() {
                                                 {fasesEliminatorias.map(
                                                   fase => {
                                                     const inicio = calcDias(
-                                                      fase.parsedInicio,
                                                       fase.inicio
                                                     );
                                                     const fim = calcDias(
-                                                      fase.parsedFim,
                                                       fase.fim
                                                     );
                                                     // A fase já passou se o fim já passou
@@ -3264,7 +3232,6 @@ export default function Home() {
                                                   </label>
                                                   <input
                                                     type="datetime-local"
-                                                    aria-label="Data e Hora do Voo de Ida"
                                                     className="h-8 text-xs border border-blue-200 dark:border-blue-600 rounded-md px-2 bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-400 dark:focus:ring-blue-500 w-full"
                                                     value={
                                                       tempDepartureDatetime[
@@ -3354,7 +3321,6 @@ export default function Home() {
                                                   <input
                                                     type="text"
                                                     maxLength={10}
-                                                    aria-label="Número do Voo de Ida"
                                                     placeholder="Ex: LA3045"
                                                     className={`h-8 text-xs rounded-md px-2 bg-white text-slate-700 uppercase font-mono focus:outline-none focus:ring-2 w-full transition-colors ${
                                                       suggestedDepartureFlightNumber[
@@ -3434,7 +3400,6 @@ export default function Home() {
                                                   <input
                                                     type="text"
                                                     maxLength={20}
-                                                    aria-label="Localizador (PNR) de Ida"
                                                     placeholder="Ex: ABC123"
                                                     className="h-8 text-xs border border-blue-200 rounded-md px-2 bg-white text-slate-700 uppercase font-mono focus:outline-none focus:ring-2 focus:ring-blue-400 w-full"
                                                     value={
@@ -3692,7 +3657,6 @@ export default function Home() {
                                                     </label>
                                                     <input
                                                       type="datetime-local"
-                                                      aria-label="Data e Hora do Voo de Retorno"
                                                       className="h-8 text-xs border border-orange-200 rounded-md px-2 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-orange-400 w-full"
                                                       value={
                                                         tempReturnDatetime[
@@ -3796,7 +3760,6 @@ export default function Home() {
                                                     <input
                                                       type="text"
                                                       maxLength={10}
-                                                      aria-label="Número do Voo de Retorno"
                                                       placeholder="Ex: G31234"
                                                       className={`h-8 text-xs rounded-md px-2 bg-white text-slate-700 uppercase font-mono focus:outline-none focus:ring-2 w-full transition-colors ${
                                                         suggestedReturnFlightNumber[
@@ -3835,7 +3798,6 @@ export default function Home() {
                                                     <input
                                                       type="text"
                                                       maxLength={20}
-                                                      aria-label="Localizador (PNR) de Retorno"
                                                       placeholder="Ex: XYZ456"
                                                       className="h-8 text-xs border border-orange-200 dark:border-orange-600 rounded-md px-2 bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-100 uppercase font-mono focus:outline-none focus:ring-2 focus:ring-orange-400 dark:focus:ring-orange-500 w-full"
                                                       value={
