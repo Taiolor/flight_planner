@@ -2361,6 +2361,7 @@ export default function Home() {
                                       aria-expanded={expandedWeekCards.has(
                                         week.weekNumber
                                       )}
+                                      aria-controls={`week-content-${week.weekNumber}`}
                                     >
                                       <ChevronDown
                                         className={`w-5 h-5 text-slate-400 transition-transform duration-200 ${expandedWeekCards.has(week.weekNumber) ? "rotate-180" : ""}`}
@@ -2371,7 +2372,10 @@ export default function Home() {
 
                                 {/* Conteúdo expansível da semana */}
                                 {expandedWeekCards.has(week.weekNumber) && (
-                                  <div className="mt-3 sm:mt-4">
+                                  <div
+                                    id={`week-content-${week.weekNumber}`}
+                                    className="mt-3 sm:mt-4"
+                                  >
                                     {/* Painel Copa 2026 — apenas semanas com jogos/fases no intervalo */}
                                     {(() => {
                                       const hoje = new Date();
