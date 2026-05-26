@@ -42,7 +42,13 @@
 
 **Learning:** When matching candidates across multiple specificities (e.g. day of week, hour), using chained `.filter().map()` causes both heavy array allocations and repeated execution of expensive pure functions like `new Date()` parsing on the same string for each pass.
 **Action:** Replace multi-pass chains with a single-pass `for` loop that categorizes matches into maps/records simultaneously, and use a cache (`new Map()`) inside the loop to ensure strings are parsed into Dates exactly once per render operation.
+
 ## 2024-05-19 - Substring over Split for Date Parsing
 
 **Learning:** When parsing known-length, standardized date strings (like `DD/MM/YYYY`) inside tight loops or frequently called utility functions, using `.split("/")` causes unnecessary intermediate array allocations and garbage collection overhead.
 **Action:** Use `.substring()` with fixed offsets to extract date components and construct new strings to reduce memory allocations and improve string parsing performance.
+
+## 2024-05-25 - Redundant Calculations in Map Functions
+
+**Learning:** When using `.map()` over large arrays to render UI (like weeks in a month), calling utility functions multiple times per element (e.g., `getFeriadosPorIntervalo`) that execute array `.filter()` or loops internally causes excessive redundant processing and intermediate array allocations, significantly degrading render performance.
+**Action:** Always extract these utility calls into a single scoped variable at the top of the `.map()` callback function, caching the result so that subsequent usages within that iteration only reference the already computed value.

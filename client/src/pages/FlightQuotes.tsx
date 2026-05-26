@@ -36,7 +36,7 @@ import { useTheme } from "@/contexts/ThemeContext";
 const toIsoDate = (d: string): string => {
   if (d.includes("-")) return d;
   const [day, month, year] = d.split("/");
-  return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+  return `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;
 };
 
 /** Formata DD/MM/YYYY para exibição (ou converte ISO → BR) */
@@ -65,11 +65,17 @@ const dateToInt = (dateStr: string): number => {
   if (dateStr.includes("-")) {
     // ISO format: YYYY-MM-DD
     const [year, month, day] = dateStr.split("-");
-    return parseInt(`${year}${month.padStart(2, '0')}${day.padStart(2, '0')}`, 10);
+    return parseInt(
+      `${year}${month.padStart(2, "0")}${day.padStart(2, "0")}`,
+      10
+    );
   }
   // BR format: DD/MM/YYYY
   const [day, month, year] = dateStr.split("/");
-  return parseInt(`${year}${month.padStart(2, '0')}${day.padStart(2, '0')}`, 10);
+  return parseInt(
+    `${year}${month.padStart(2, "0")}${day.padStart(2, "0")}`,
+    10
+  );
 };
 
 /**

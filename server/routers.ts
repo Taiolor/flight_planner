@@ -412,65 +412,89 @@ export const appRouter = router({
         // Send email notifications if ticket was issued or modified
         if (weekBefore) {
           const wasIssued = weekBefore.isTicketIssued === 1;
-          const nowIssued = input.isTicketIssued !== undefined ? input.isTicketIssued === 1 : wasIssued;
+          const nowIssued =
+            input.isTicketIssued !== undefined
+              ? input.isTicketIssued === 1
+              : wasIssued;
 
           if (!wasIssued && nowIssued) {
             // Ticket was just marked as issued - send email with full details
             const recipients = await getTicketNotificationEmails();
-            if (recipients.length > 0 && input.departureFlightNumber && input.returnFlightNumber) {
+            if (
+              recipients.length > 0 &&
+              input.departureFlightNumber &&
+              input.returnFlightNumber
+            ) {
               // Parse datetime strings to extract date and time
-              const departureDatetime = input.departureFlightDatetime ? new Date(input.departureFlightDatetime) : null;
-              const returnDatetime = input.returnFlightDatetime ? new Date(input.returnFlightDatetime) : null;
+              const departureDatetime = input.departureFlightDatetime
+                ? new Date(input.departureFlightDatetime)
+                : null;
+              const returnDatetime = input.returnFlightDatetime
+                ? new Date(input.returnFlightDatetime)
+                : null;
 
               if (departureDatetime && returnDatetime) {
                 // Formatar datas no padrão brasileiro (DD/MM/YYYY)
-                const pad = (n: number) => String(n).padStart(2, '0');
-                const formatBrazilianDate = (date: Date) => `${pad(date.getDate())}/${pad(date.getMonth() + 1)}/${date.getFullYear()}`;
-                
+                const pad = (n: number) => String(n).padStart(2, "0");
+                const formatBrazilianDate = (date: Date) =>
+                  `${pad(date.getDate())}/${pad(date.getMonth() + 1)}/${date.getFullYear()}`;
+
                 const departureDate = formatBrazilianDate(departureDatetime);
-                const departureTime = departureDatetime.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+                const departureTime = departureDatetime.toLocaleTimeString(
+                  "pt-BR",
+                  { hour: "2-digit", minute: "2-digit" }
+                );
                 const returnDate = formatBrazilianDate(returnDatetime);
-                const returnTime = returnDatetime.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+                const returnTime = returnDatetime.toLocaleTimeString("pt-BR", {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                });
 
                 // Preparar eventos de calendário para envio automático
                 const depEvent = {
-                  title: `✈️ Voo IDA ${input.departureAirline?.toUpperCase() || 'N/A'} ${input.departureFlightNumber} — ${input.departureAirport} → ${input.returnAirport}`,
-                  flightDatetime: `${departureDatetime.getFullYear()}-${pad(departureDatetime.getMonth() + 1)}-${pad(departureDatetime.getDate())}T${departureTime.replace(/\s/g, '')}`,
-                  location: airportAddresses[input.departureAirport || 'GRU'] || input.departureAirport || 'N/A',
-                  description: `Localizador: ${input.departureLocator || 'N/A'}\nCompanhia: ${input.departureAirline?.toUpperCase() || 'N/A'}\nNúmero: ${input.departureFlightNumber}${(input as any).departureTerminal ? `\nTerminal: ${(input as any).departureTerminal}` : ''}`,
+                  title: `✈️ Voo IDA ${input.departureAirline?.toUpperCase() || "N/A"} ${input.departureFlightNumber} — ${input.departureAirport} → ${input.returnAirport}`,
+                  flightDatetime: `${departureDatetime.getFullYear()}-${pad(departureDatetime.getMonth() + 1)}-${pad(departureDatetime.getDate())}T${departureTime.replace(/\s/g, "")}`,
+                  location:
+                    airportAddresses[input.departureAirport || "GRU"] ||
+                    input.departureAirport ||
+                    "N/A",
+                  description: `Localizador: ${input.departureLocator || "N/A"}\nCompanhia: ${input.departureAirline?.toUpperCase() || "N/A"}\nNúmero: ${input.departureFlightNumber}${(input as any).departureTerminal ? `\nTerminal: ${(input as any).departureTerminal}` : ""}`,
                   leadMinutes: 120,
                 };
-                
+
                 const retEvent = {
-                  title: `✈️ Voo VOLTA ${input.returnAirline?.toUpperCase() || 'N/A'} ${input.returnFlightNumber} — ${input.returnAirport} → ${input.departureAirport}`,
-                  flightDatetime: `${returnDate.split('/').reverse().join('-')}T${returnTime.replace(/\s/g, '')}`,
-                  location: airportAddresses[input.returnAirport || 'NVT'] || input.returnAirport || 'N/A',
-                  description: `Localizador: ${input.returnLocator || 'N/A'}\nCompanhia: ${input.returnAirline?.toUpperCase() || 'N/A'}\nNúmero: ${input.returnFlightNumber}${(input as any).returnTerminal ? `\nTerminal: ${(input as any).returnTerminal}` : ''}`,
+                  title: `✈️ Voo VOLTA ${input.returnAirline?.toUpperCase() || "N/A"} ${input.returnFlightNumber} — ${input.returnAirport} → ${input.departureAirport}`,
+                  flightDatetime: `${returnDate.split("/").reverse().join("-")}T${returnTime.replace(/\s/g, "")}`,
+                  location:
+                    airportAddresses[input.returnAirport || "NVT"] ||
+                    input.returnAirport ||
+                    "N/A",
+                  description: `Localizador: ${input.returnLocator || "N/A"}\nCompanhia: ${input.returnAirline?.toUpperCase() || "N/A"}\nNúmero: ${input.returnFlightNumber}${(input as any).returnTerminal ? `\nTerminal: ${(input as any).returnTerminal}` : ""}`,
                   leadMinutes: 120,
                 };
-                
+
                 // Gerar links de rastreamento de voo
                 const depTrackUrl = buildFlightTrackUrl(
-                  input.departureAirline || '',
-                  input.departureFlightNumber || '',
-                  input.departureAirport || 'GRU',
-                  input.returnAirport || 'NVT',
+                  input.departureAirline || "",
+                  input.departureFlightNumber || "",
+                  input.departureAirport || "GRU",
+                  input.returnAirport || "NVT",
                   `${departureDatetime.getFullYear()}-${pad(departureDatetime.getMonth() + 1)}-${pad(departureDatetime.getDate())}`
                 );
-                
+
                 const retTrackUrl = buildFlightTrackUrl(
-                  input.returnAirline || '',
-                  input.returnFlightNumber || '',
-                  input.returnAirport || 'NVT',
-                  input.departureAirport || 'GRU',
+                  input.returnAirline || "",
+                  input.returnFlightNumber || "",
+                  input.returnAirport || "NVT",
+                  input.departureAirport || "GRU",
                   `${returnDatetime.getFullYear()}-${pad(returnDatetime.getMonth() + 1)}-${pad(returnDatetime.getDate())}`
                 );
-                
+
                 const googleDepLink = getGoogleCalendarLink(depEvent, 120, 75);
                 const outlookDepLink = getOutlookLink(depEvent, 120, 75);
                 const googleRetLink = getGoogleCalendarLink(retEvent, 120, 75);
                 const outlookRetLink = getOutlookLink(retEvent, 120, 75);
-                
+
                 // Construir HTML do e-mail
                 const emailHtml = `
                   <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
@@ -481,13 +505,13 @@ export const appRouter = router({
                       <h3 style="color: #1f2937; margin-top: 0;">Voo de Ida 🛫</h3>
                       <p style="margin: 8px 0;"><strong>Data:</strong> ${departureDate} às ${departureTime}</p>
                       <p style="margin: 8px 0;"><strong>Rota:</strong> ${input.departureAirport} → ${input.returnAirport}</p>
-                      <p style="margin: 8px 0;"><strong>Companhia:</strong> ${input.departureAirline?.toUpperCase() || 'N/A'} ${input.departureFlightNumber}</p>
-                      ${(input as any).departureTerminal ? `<p style="margin: 8px 0;"><strong>Terminal:</strong> ${(input as any).departureTerminal}</p>` : ''}
-                      <p style="margin: 8px 0;"><strong>Localizador:</strong> <code style="background-color: #e5e7eb; padding: 2px 6px; border-radius: 3px;">${input.departureLocator || 'N/A'}</code></p>
+                      <p style="margin: 8px 0;"><strong>Companhia:</strong> ${input.departureAirline?.toUpperCase() || "N/A"} ${input.departureFlightNumber}</p>
+                      ${(input as any).departureTerminal ? `<p style="margin: 8px 0;"><strong>Terminal:</strong> ${(input as any).departureTerminal}</p>` : ""}
+                      <p style="margin: 8px 0;"><strong>Localizador:</strong> <code style="background-color: #e5e7eb; padding: 2px 6px; border-radius: 3px;">${input.departureLocator || "N/A"}</code></p>
                       <p style="margin: 8px 0;">
                         <a href="${outlookDepLink}" style="color: #0078d4; margin-right: 10px; text-decoration: none;">📅 Outlook • Ida</a>
                         <a href="${googleDepLink}" style="color: #1f2937; margin-right: 10px; text-decoration: none;">📅 Google • Ida</a>
-                        ${depTrackUrl ? `<a href="${depTrackUrl}" style="color: #059669; margin-right: 10px; text-decoration: none;">🔍 Rastrear Ida</a>` : ''}
+                        ${depTrackUrl ? `<a href="${depTrackUrl}" style="color: #059669; margin-right: 10px; text-decoration: none;">🔍 Rastrear Ida</a>` : ""}
                       </p>
                     </div>
                     
@@ -495,13 +519,13 @@ export const appRouter = router({
                       <h3 style="color: #1f2937; margin-top: 0;">Voo de Volta 🛬</h3>
                       <p style="margin: 8px 0;"><strong>Data:</strong> ${returnDate} às ${returnTime}</p>
                       <p style="margin: 8px 0;"><strong>Rota:</strong> ${input.returnAirport} → ${input.departureAirport}</p>
-                      <p style="margin: 8px 0;"><strong>Companhia:</strong> ${input.returnAirline?.toUpperCase() || 'N/A'} ${input.returnFlightNumber}</p>
-                      ${(input as any).returnTerminal ? `<p style="margin: 8px 0;"><strong>Terminal:</strong> ${(input as any).returnTerminal}</p>` : ''}
-                      <p style="margin: 8px 0;"><strong>Localizador:</strong> <code style="background-color: #e5e7eb; padding: 2px 6px; border-radius: 3px;">${input.returnLocator || 'N/A'}</code></p>
+                      <p style="margin: 8px 0;"><strong>Companhia:</strong> ${input.returnAirline?.toUpperCase() || "N/A"} ${input.returnFlightNumber}</p>
+                      ${(input as any).returnTerminal ? `<p style="margin: 8px 0;"><strong>Terminal:</strong> ${(input as any).returnTerminal}</p>` : ""}
+                      <p style="margin: 8px 0;"><strong>Localizador:</strong> <code style="background-color: #e5e7eb; padding: 2px 6px; border-radius: 3px;">${input.returnLocator || "N/A"}</code></p>
                       <p style="margin: 8px 0;">
                         <a href="${outlookRetLink}" style="color: #0078d4; margin-right: 10px; text-decoration: none;">📅 Outlook • Volta</a>
                         <a href="${googleRetLink}" style="color: #1f2937; margin-right: 10px; text-decoration: none;">📅 Google • Volta</a>
-                        ${retTrackUrl ? `<a href="${retTrackUrl}" style="color: #059669; margin-right: 10px; text-decoration: none;">🔍 Rastrear Volta</a>` : ''}
+                        ${retTrackUrl ? `<a href="${retTrackUrl}" style="color: #059669; margin-right: 10px; text-decoration: none;">🔍 Rastrear Volta</a>` : ""}
                       </p>
                     </div>
                     
@@ -510,9 +534,13 @@ export const appRouter = router({
                     </p>
                   </div>
                 `;
-                
+
                 const emailAddresses = recipients.map(r => r.email);
-                await sendShareByEmailNotification(emailAddresses, `Compartilhamento de Bilhetes - Semana ${input.weekNumber}`, emailHtml);
+                await sendShareByEmailNotification(
+                  emailAddresses,
+                  `Compartilhamento de Bilhetes - Semana ${input.weekNumber}`,
+                  emailHtml
+                );
               }
             }
           } else if (wasIssued && !nowIssued) {
@@ -550,8 +578,10 @@ export const appRouter = router({
 
               // Check departure changes
               if (
-                weekBefore.departureFlightNumber !== input.departureFlightNumber ||
-                weekBefore.departureFlightDatetime !== input.departureFlightDatetime ||
+                weekBefore.departureFlightNumber !==
+                  input.departureFlightNumber ||
+                weekBefore.departureFlightDatetime !==
+                  input.departureFlightDatetime ||
                 weekBefore.departureAirline !== input.departureAirline ||
                 weekBefore.departureLocator !== input.departureLocator
               ) {
@@ -580,7 +610,8 @@ export const appRouter = router({
               // Check return changes
               if (
                 weekBefore.returnFlightNumber !== input.returnFlightNumber ||
-                weekBefore.returnFlightDatetime !== input.returnFlightDatetime ||
+                weekBefore.returnFlightDatetime !==
+                  input.returnFlightDatetime ||
                 weekBefore.returnAirline !== input.returnAirline ||
                 weekBefore.returnLocator !== input.returnLocator
               ) {
@@ -1081,7 +1112,10 @@ export const appRouter = router({
         })
       )
       .mutation(async ({ input }) => {
-        const result = await addTicketNotificationEmail(input.email, input.name);
+        const result = await addTicketNotificationEmail(
+          input.email,
+          input.name
+        );
         if (!result) {
           throw new TRPCError({
             code: "INTERNAL_SERVER_ERROR",
@@ -1180,23 +1214,27 @@ export const appRouter = router({
         const depEvent = {
           title: `✈️ Voo IDA ${input.departureAirline.toUpperCase()} ${input.departureFlightNumber} — ${input.departureAirport} → ${input.returnAirport}`,
           flightDatetime: `${input.departureDate}T${input.departureTime}`,
-          location: airportAddresses[input.departureAirport] || input.departureAirport,
-          description: `Localizador: ${input.departureLocator}\nCompanhia: ${input.departureAirline.toUpperCase()}\nNúmero: ${input.departureFlightNumber}${input.departureTerminal ? `\nTerminal: ${input.departureTerminal}` : ''}`,
+          location:
+            airportAddresses[input.departureAirport] || input.departureAirport,
+          description: `Localizador: ${input.departureLocator}\nCompanhia: ${input.departureAirline.toUpperCase()}\nNúmero: ${input.departureFlightNumber}${input.departureTerminal ? `\nTerminal: ${input.departureTerminal}` : ""}`,
           leadMinutes: 120,
         };
-        
+
         const retEvent = {
           title: `✈️ Voo VOLTA ${input.returnAirline.toUpperCase()} ${input.returnFlightNumber} — ${input.returnAirport} → ${input.departureAirport}`,
           flightDatetime: `${input.returnDate}T${input.returnTime}`,
-          location: airportAddresses[input.returnAirport] || input.returnAirport,
-          description: `Localizador: ${input.returnLocator}\nCompanhia: ${input.returnAirline.toUpperCase()}\nNúmero: ${input.returnFlightNumber}${input.returnTerminal ? `\nTerminal: ${input.returnTerminal}` : ''}`,
+          location:
+            airportAddresses[input.returnAirport] || input.returnAirport,
+          description: `Localizador: ${input.returnLocator}\nCompanhia: ${input.returnAirline.toUpperCase()}\nNúmero: ${input.returnFlightNumber}${input.returnTerminal ? `\nTerminal: ${input.returnTerminal}` : ""}`,
           leadMinutes: 120,
         };
-        
+
         // Formatar datas para padrão brasileiro
-        const departureDateBrazilian = formatDateToBrazilian(input.departureDate);
+        const departureDateBrazilian = formatDateToBrazilian(
+          input.departureDate
+        );
         const returnDateBrazilian = formatDateToBrazilian(input.returnDate);
-        
+
         // Gerar links de rastreamento de voo
         const depTrackUrl = buildFlightTrackUrl(
           input.departureAirline,
@@ -1205,7 +1243,7 @@ export const appRouter = router({
           input.returnAirport,
           input.departureDate
         );
-        
+
         const retTrackUrl = buildFlightTrackUrl(
           input.returnAirline,
           input.returnFlightNumber,
@@ -1213,12 +1251,12 @@ export const appRouter = router({
           input.departureAirport,
           input.returnDate
         );
-        
+
         const googleDepLink = getGoogleCalendarLink(depEvent, 120, 75);
         const outlookDepLink = getOutlookLink(depEvent, 120, 75);
         const googleRetLink = getGoogleCalendarLink(retEvent, 120, 75);
         const outlookRetLink = getOutlookLink(retEvent, 120, 75);
-        
+
         // Construir HTML do e-mail similar ao WhatsApp
         const emailHtml = `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
@@ -1235,7 +1273,7 @@ export const appRouter = router({
               <p style="margin: 8px 0;">
                 <a href="${outlookDepLink}" style="color: #0078d4; margin-right: 10px; text-decoration: none;">📅 Outlook • Ida</a>
                 <a href="${googleDepLink}" style="color: #1f2937; margin-right: 10px; text-decoration: none;">📅 Google • Ida</a>
-                ${depTrackUrl ? `<a href="${depTrackUrl}" style="color: #059669; margin-right: 10px; text-decoration: none;">🔍 Rastrear Ida</a>` : ''}
+                ${depTrackUrl ? `<a href="${depTrackUrl}" style="color: #059669; margin-right: 10px; text-decoration: none;">🔍 Rastrear Ida</a>` : ""}
               </p>
             </div>
             
@@ -1249,7 +1287,7 @@ export const appRouter = router({
               <p style="margin: 8px 0;">
                 <a href="${outlookRetLink}" style="color: #0078d4; margin-right: 10px; text-decoration: none;">📅 Outlook • Volta</a>
                 <a href="${googleRetLink}" style="color: #1f2937; margin-right: 10px; text-decoration: none;">📅 Google • Volta</a>
-                ${retTrackUrl ? `<a href="${retTrackUrl}" style="color: #059669; margin-right: 10px; text-decoration: none;">🔍 Rastrear Volta</a>` : ''}
+                ${retTrackUrl ? `<a href="${retTrackUrl}" style="color: #059669; margin-right: 10px; text-decoration: none;">🔍 Rastrear Volta</a>` : ""}
               </p>
             </div>
             
@@ -1263,7 +1301,7 @@ export const appRouter = router({
         const emailAddresses = emails
           .filter(e => e.active === 1) // Apenas e-mails ativos
           .map(e => e.email);
-        
+
         if (emailAddresses.length === 0) {
           throw new TRPCError({
             code: "BAD_REQUEST",

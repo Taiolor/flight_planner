@@ -1893,6 +1893,14 @@ export default function Home() {
                               priceThreshold &&
                               lowestPrice &&
                               lowestPrice <= priceThreshold;
+
+                            // ⚡ Bolt Optimization: Calculate holidays once per week, instead of multiple times
+                            const feriados = getFeriadosPorIntervalo(
+                              week.weekNumber,
+                              week.departureDate,
+                              week.returnDate
+                            );
+
                             return (
                               <Card
                                 key={week.weekNumber}
@@ -1960,11 +1968,7 @@ export default function Home() {
                                           </span>
                                         )}
                                         {/* Jogos da Copa do Mundo no intervalo da semana */}
-                                        {getFeriadosPorIntervalo(
-                                          week.weekNumber,
-                                          week.departureDate,
-                                          week.returnDate
-                                        )
+                                        {feriados
                                           .filter(
                                             f => f.feriado.tipo === "copa"
                                           )
@@ -1993,12 +1997,6 @@ export default function Home() {
                                       </div>
                                       {/* Datas editáveis inline com dia da semana */}
                                       {(() => {
-                                        const feriados =
-                                          getFeriadosPorIntervalo(
-                                            week.weekNumber,
-                                            week.departureDate,
-                                            week.returnDate
-                                          );
                                         const feriadoIda = feriados.filter(
                                           f => f.tipo === "ida"
                                         );
@@ -3891,7 +3889,8 @@ export default function Home() {
                                                     tempTicketType[
                                                       week.weekNumber
                                                     ] ?? "roundtrip",
-                                                  isTicketIssued: week.isTicketIssued,
+                                                  isTicketIssued:
+                                                    week.isTicketIssued,
                                                 },
                                                 {
                                                   onSuccess: () => {

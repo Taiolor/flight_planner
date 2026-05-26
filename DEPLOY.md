@@ -158,13 +158,13 @@ curl -s -o /dev/null -w "%{http_code}" http://localhost:3000/
 
 ## Solução de Problemas
 
-| Problema                      | Causa provável         | Solução                                                |
-| ----------------------------- | ---------------------- | ------------------------------------------------------ |
-| `DATABASE_URL is required`    | Variável não exportada | `export $(cat .env \| grep -v '^#' \| xargs)`          |
-| `ECONNREFUSED` no banco       | Banco não acessível    | Verificar host, porta e credenciais no `DATABASE_URL`  |
-| Página em branco após deploy  | Build desatualizado    | Rodar `pnpm build` novamente                           |
-| Push notifications não chegam | Chaves VAPID inválidas | Regenerar com `pnpm exec web-push generate-vapid-keys` |
-| Erro de CORS no OAuth         | URL de callback errada | Verificar `VITE_OAUTH_PORTAL_URL` e `OAUTH_SERVER_URL` |
+| Problema                      | Causa provável          | Solução                                                |
+| ----------------------------- | ----------------------- | ------------------------------------------------------ |
+| `DATABASE_URL is required`    | Variável não exportada  | `export $(cat .env \| grep -v '^#' \| xargs)`          |
+| `ECONNREFUSED` no banco       | Banco não acessível     | Verificar host, porta e credenciais no `DATABASE_URL`  |
+| Página em branco após deploy  | Build desatualizado     | Rodar `pnpm build` novamente                           |
+| Push notifications não chegam | Chaves VAPID inválidas  | Regenerar com `pnpm exec web-push generate-vapid-keys` |
+| Erro de CORS no OAuth         | URL de callback errada  | Verificar `VITE_OAUTH_PORTAL_URL` e `OAUTH_SERVER_URL` |
 | E-mail não enviado            | RESEND_API_KEY inválida | Verificar chave em https://resend.com/api-keys         |
 
 ---

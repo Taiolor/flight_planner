@@ -81,7 +81,8 @@ Planejador de Passagens Aéreas 2026
     const summary = `✈️ ${event.airline} ${event.flightNumber} (${tripType}) - Semana ${event.weekNumber}`;
 
     // Build location with airport address if available
-    const departureLocation = event.departureAirportAddress || event.departureAirport;
+    const departureLocation =
+      event.departureAirportAddress || event.departureAirport;
     const arrivalLocation = event.arrivalAirportAddress || event.arrivalAirport;
     const location = `${departureLocation} → ${arrivalLocation}`;
 

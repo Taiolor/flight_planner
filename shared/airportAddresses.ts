@@ -3,10 +3,14 @@
  * Used for Google Calendar event locations
  */
 
-export const airportAddresses: Record<string, { name: string; address: string }> = {
+export const airportAddresses: Record<
+  string,
+  { name: string; address: string }
+> = {
   GRU: {
     name: "Aeroporto Internacional de São Paulo/Guarulhos",
-    address: "Avenida Monteiro de Carvalho, 1000, Guarulhos, SP 07034-902, Brasil",
+    address:
+      "Avenida Monteiro de Carvalho, 1000, Guarulhos, SP 07034-902, Brasil",
   },
   NVT: {
     name: "Aeroporto de Navegantes",
@@ -18,7 +22,8 @@ export const airportAddresses: Record<string, { name: string; address: string }>
   },
   SDU: {
     name: "Aeroporto Santos Dumont",
-    address: "Praça Senador Salgado Filho, s/n, Rio de Janeiro, RJ 20040-020, Brasil",
+    address:
+      "Praça Senador Salgado Filho, s/n, Rio de Janeiro, RJ 20040-020, Brasil",
   },
   GIG: {
     name: "Aeroporto Internacional do Rio de Janeiro",

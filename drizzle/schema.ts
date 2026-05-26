@@ -265,10 +265,10 @@ export const ticketNotificationEmails = mysqlTable(
     createdAt: timestamp("createdAt").defaultNow().notNull(),
     updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
   },
-  table => [
-    index("idx_ticket_notif_emails_active").on(table.active),
-  ]
+  table => [index("idx_ticket_notif_emails_active").on(table.active)]
 );
 
-export type TicketNotificationEmail = typeof ticketNotificationEmails.$inferSelect;
-export type InsertTicketNotificationEmail = typeof ticketNotificationEmails.$inferInsert;
+export type TicketNotificationEmail =
+  typeof ticketNotificationEmails.$inferSelect;
+export type InsertTicketNotificationEmail =
+  typeof ticketNotificationEmails.$inferInsert;
