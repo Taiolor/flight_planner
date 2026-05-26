@@ -192,13 +192,8 @@ export const appRouter = router({
       if (sessionToken) {
         await deleteAuthSession(sessionToken);
       }
-      ctx.res.clearCookie(SESSION_COOKIE, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        // Security: Use lax to mitigate CSRF attacks
-        sameSite: "lax",
-        path: "/",
-      });
+      const cookieOptions = getSessionCookieOptions(ctx.req);
+      ctx.res.clearCookie(SESSION_COOKIE, { ...cookieOptions, maxAge: -1 });
       return { success: true };
     }),
   }),
