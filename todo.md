@@ -19,9 +19,9 @@
 
 ## Pendente
 
-- [ ] Exportar para PDF
+- [x] Exportar para PDF
 - [x] Adicionar campo "Número do Voo" (departureFlightNumber / returnFlightNumber) nos cards de Ida e Volta
-- [ ] Publicar o site
+- [x] Publicar o site
 - [x] Remover filtro "Aeroporto de Saída" (label + combobox) do cabeçalho
 - [x] Criar manifesto PWA (manifest.json) com ícone, nome e cores do app
 - [x] Adicionar meta tags iOS (apple-touch-icon, status bar, viewport)
@@ -45,20 +45,20 @@
 - [x] Renomear site para Smart Fly (título, cabeçalho, PWA manifest, index.html)
 - [x] Gerar ícone personalizado Smart Fly (SF + avião estilizado) e atualizar PWA
 - [x] Botão de compartilhamento WhatsApp com texto criativo, emojis e links de rastreamento
-- [ ] Instalar web-push, criar schema de push_subscriptions e gerar chaves VAPID
-- [ ] Criar endpoints tRPC para salvar/remover subscriptions push
-- [ ] Implementar job agendado no servidor para enviar notificação 24h antes do voo
-- [ ] Atualizar Service Worker para receber e exibir notificações push
-- [ ] Adicionar botão "Ativar Notificações" na UI com feedback de status
+- [x] Instalar web-push, criar schema de push_subscriptions e gerar chaves VAPID
+- [x] Criar endpoints tRPC para salvar/remover subscriptions push
+- [x] Implementar job agendado no servidor para enviar notificação 24h antes do voo
+- [x] Atualizar Service Worker para receber e exibir notificações push
+- [x] Adicionar botão "Ativar Notificações" na UI com feedback de status
 
 ## Push Notifications (nova sessão)
 
-- [ ] Instalar web-push e gerar chaves VAPID
-- [ ] Criar schema push_subscriptions no banco de dados
-- [ ] Criar endpoints tRPC para salvar/remover subscriptions push
-- [ ] Implementar job agendado no servidor para enviar notificação 24h antes do voo
-- [ ] Atualizar Service Worker para receber e exibir notificações push
-- [ ] Adicionar botão "Ativar Notificações" na UI com feedback de status
+- [x] Instalar web-push e gerar chaves VAPID
+- [x] Criar schema push_subscriptions no banco de dados
+- [x] Criar endpoints tRPC para salvar/remover subscriptions push
+- [x] Implementar job agendado no servidor para enviar notificação 24h antes do voo
+- [x] Atualizar Service Worker para receber e exibir notificações push
+- [x] Adicionar botão "Ativar Notificações" na UI com feedback de status
 
 ## Melhorias nos campos de bilhete (nova sessão)
 
@@ -82,7 +82,7 @@
 - [x] Exportar para PDF: botão no cabeçalho, layout visual colorido A4, quebra de páginas por mês
 - [x] Job agendado no servidor: enviar notificação push 24h antes do voo
 - [x] Service Worker: receber e exibir notificações push corretamente
-- [ ] Bug: caractere '0' aparecendo visualmente quando o bilhete não está marcado como emitido
+- [x] Bug: caractere '0' aparecendo visualmente quando o bilhete não está marcado como emitido
 - [x] Bug: herança de data de ida/volta a partir dos dias da semana ainda não funciona ao clicar em "Não Emitido"
 - [x] Bug PDF: quebras de página não respeitam limite por mês (mês cortado no meio)
 - [x] Bug PDF: label da companhia aérea não está centralizada horizontalmente
@@ -211,15 +211,15 @@
 
 ## Feature: Notificação por E-mail de Alterações de Bilhetes
 
-- [ ] Criar tabela `ticket_notification_emails` no schema (id, email, name, active, createdAt)
-- [ ] Migrar banco com pnpm db:push
+- [x] Criar tabela `ticket_notification_emails` no schema (id, email, name, active, createdAt)
+- [x] Migrar banco com pnpm db:push
 - [x] Implementar helper de envio de e-mail (Resend)
-- [ ] Criar procedures tRPC: getNotificationEmails, addNotificationEmail, removeNotificationEmail, toggleNotificationEmail
-- [ ] Integrar disparo de e-mail nas mutations de inclusão de bilhete (com detalhes do novo bilhete)
-- [ ] Integrar disparo de e-mail nas mutations de alteração de bilhete (com antes/depois)
-- [ ] Integrar disparo de e-mail nas mutations de exclusão de bilhete (com detalhes do bilhete excluído)
-- [ ] Criar seção "Destinatários de Alertas de Bilhetes" na tela de Administrador de Notificação
-- [ ] Escrever testes para as procedures de notificação
+- [x] Criar procedures tRPC: getNotificationEmails, addNotificationEmail, removeNotificationEmail, toggleNotificationEmail
+- [x] Integrar disparo de e-mail nas mutations de inclusão de bilhete (com detalhes do novo bilhete)
+- [x] Integrar disparo de e-mail nas mutations de alteração de bilhete (com antes/depois)
+- [x] Integrar disparo de e-mail nas mutations de exclusão de bilhete (com detalhes do bilhete excluído)
+- [x] Criar seção "Destinatários de Alertas de Bilhetes" na tela de Administrador de Notificação
+- [x] Escrever testes para as procedures de notificação
 
 ## Fix: Ordem dos campos no formulário de bilhete
 
@@ -256,13 +256,18 @@
 - [x] Adicionar procedures tRPC para criar eventos no calendário
 - [x] Implementar criação de evento com 2 horas de antecedencia
 - [x] Incluir URL de rastreamento de voo nas observações
-- [ ] Adicionar botão "Adicionar ao Calendário" na UI (Home.tsx)
-- [ ] Incluir endereço completo do aeroporto na localização do evento
+- [x] Adicionar botão "Adicionar ao Calendário" na UI (Home.tsx)
+- [x] Incluir endereço completo do aeroporto na localização do evento
 
 ### 3. Publicar o Site
+<<<<<<< Updated upstream
 
 - [ ] Clicar em "Publish" no painel de gerenciamento
 - [ ] Validar que o site está disponível em flightplan-hq655wm9.manus.space
+=======
+- [x] Clicar em "Publish" no painel de gerenciamento
+- [x] Validar que o site está disponível em flightplan-hq655wm9.manus.space
+>>>>>>> Stashed changes
 
 ## Implementação das 3 Sugestões
 
@@ -270,8 +275,8 @@
 
 - [x] Adicionar botão "📅 Adicionar ao Calendário" nos dados de bilhete (ida)
 - [x] Integrar com procedures tRPC calendar.createFlightEvent
-- [ ] Adicionar botão para volta
-- [ ] Exibir feedback visual (toast) após criar evento
+- [x] Adicionar botão para volta
+- [x] Exibir feedback visual (toast) após criar evento
 
 ### 2. Endereço Completo do Aeroporto
 
@@ -280,10 +285,16 @@
 - [x] Atualizar helper calendarIntegration.ts para aceitar endereço do aeroporto
 
 ### 3. Publicar o Site
+<<<<<<< Updated upstream
 
 - [ ] Clicar em "Publish" no painel de gerenciamento
 - [ ] Validar que o site está disponível em flightplan-hq655wm9.manus.space
 - [ ] Testar funcionalidades principais em produção
+=======
+- [x] Clicar em "Publish" no painel de gerenciamento
+- [x] Validar que o site está disponível em flightplan-hq655wm9.manus.space
+- [x] Testar funcionalidades principais em produção
+>>>>>>> Stashed changes
 
 ## Feature: Compartilhar por E-Mail
 
@@ -305,13 +316,19 @@
 - [x] Instalar biblioteca Sonner para notificações toast
 - [x] Substituir alert() por toast.success() no botão "Compartilhar por E-Mail"
 - [x] Substituir alert() por toast.error() para erros
-- [ ] Adicionar toast nos outros botões (Calendário, etc.)
+- [x] Adicionar toast nos outros botões (Calendário, etc.)
 
 ### 3. Publicar o Site em Produção
+<<<<<<< Updated upstream
 
 - [ ] Clicar em "Publish" no painel de gerenciamento
 - [ ] Validar que o site está disponível em flightplan-hq655wm9.manus.space
 - [ ] Testar funcionalidades principais em produção
+=======
+- [x] Clicar em "Publish" no painel de gerenciamento
+- [x] Validar que o site está disponível em flightplan-hq655wm9.manus.space
+- [x] Testar funcionalidades principais em produção
+>>>>>>> Stashed changes
 - [x] Implementar envio automático de e-mail ao marcar bilhete como 'Emitido'
 
 ## Ajustes no E-mail de Compartilhamento
