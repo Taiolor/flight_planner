@@ -468,6 +468,7 @@ const WeekCard = ({
         className={`w-full flex items-center justify-between px-4 py-3 transition-colors focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-inset ${headerHover}`}
         aria-expanded={expanded}
         aria-label={expanded ? "Recolher detalhes" : "Expandir detalhes"}
+        aria-controls={`quote-content-${week.semana}`}
       >
         <div className="flex items-center gap-3">
           {/* Badge de número da semana */}
@@ -555,6 +556,7 @@ const WeekCard = ({
       {/* Conteúdo expandido */}
       {expanded && (
         <div
+          id={`quote-content-${week.semana}`}
           className={`border-t px-4 py-4 space-y-4 ${
             isPast
               ? "border-slate-200 dark:border-slate-700/60"
