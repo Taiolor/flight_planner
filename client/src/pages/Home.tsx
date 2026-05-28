@@ -250,9 +250,128 @@ interface PriceMap {
   [weekNumber: number]: { [airline: string]: string };
 }
 
+// ⚡ Bolt Optimization: Hoisted static date parsing functions outside the render loop
+// to avoid O(N*M) object creation and garbage collection.
+const parseBR = (s: string) => {
+  if (!s || s.length !== 10) return new Date(NaN);
+  return new Date(
+    +s.substring(6, 10),
+    +s.substring(3, 5) - 1,
+    +s.substring(0, 2)
+  );
+};
+
+const parseISO = (s: string) => {
+  if (!s || s.length !== 10) return new Date(NaN);
+  return new Date(
+    +s.substring(0, 4),
+    +s.substring(5, 7) - 1,
+    +s.substring(8, 10)
+  );
+};
+
+// Helper: calcula dias restantes e labels
+const calcDias = (dataStr: string, hojeMs: number) => {
+  const dataEvento = parseISO(dataStr);
+  const diffMs = dataEvento.getTime() - hojeMs;
+  const diffDias = Math.round(diffMs / (1000 * 60 * 60 * 24));
+  const passou = diffDias < 0;
+  const ehHoje = diffDias === 0;
+  const label = passou
+    ? "Já realizado"
+    : ehHoje
+      ? "🔴 HOJE!"
+      : `em ${diffDias} dia${diffDias === 1 ? "" : "s"}`;
+  const mm = dataStr.substring(5, 7);
+  const dd = dataStr.substring(8, 10);
+  const diasSemana = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
+  const diaSemana = diasSemana[dataEvento.getDay()];
+  return {
+    passou,
+    ehHoje,
+    label,
+    mm,
+    dd,
+    diaSemana,
+    diffDias,
+  };
+};
+
+// ⚡ Bolt Optimization: Arrays hoisted to the module level so they are only allocated once
+const todosJogos = [
+  {
+    data: "2026-06-13",
+    adversario: "Marrocos",
+    cidade: "Nova York/NJ",
+    bandeira: "🇲🇦",
+    horario: "16h",
+  },
+  {
+    data: "2026-06-19",
+    adversario: "Haiti",
+    cidade: "Filadélfia",
+    bandeira: "🇭🇹",
+    horario: "21h",
+  },
+  {
+    data: "2026-06-24",
+    adversario: "Escócia",
+    cidade: "Miami",
+    bandeira: "🏴󠁧󠁢󠁳󠁣󠁴󠁿",
+    horario: "20h",
+  },
+];
+
+const todasFases = [
+  {
+    fase: "32-avos de Final",
+    icone: "🏟️",
+    inicio: "2026-06-28",
+    fim: "2026-07-03",
+    cidades: "Várias cidades",
+    cor: "blue",
+  },
+  {
+    fase: "Oitavas de Final",
+    icone: "⚡",
+    inicio: "2026-07-04",
+    fim: "2026-07-07",
+    cidades: "Várias cidades",
+    cor: "blue",
+  },
+  {
+    fase: "Quartas de Final",
+    icone: "🔥",
+    inicio: "2026-07-09",
+    fim: "2026-07-11",
+    cidades: "Várias cidades",
+    cor: "orange",
+  },
+  {
+    fase: "Semifinais",
+    icone: "🏆",
+    inicio: "2026-07-14",
+    fim: "2026-07-15",
+    cidades: "Dallas, TX",
+    cor: "purple",
+  },
+  {
+    fase: "Final",
+    icone: "🥇",
+    inicio: "2026-07-19",
+    fim: "2026-07-19",
+    cidades: "MetLife Stadium, NJ",
+    cor: "yellow",
+  },
+];
+
 export default function Home() {
   // Theme state
   const { theme, toggleTheme, colorPreset, setColorPreset } = useTheme();
+
+  // ⚡ Bolt Optimization: Hoje ms calculado uma vez por renderização e compartilhado
+  // entre as semanas mapeadas. (Não colocar no escopo global devido a problemas de data stale em SPAs)
+  const hojeMs = new Date().setHours(0, 0, 0, 0);
 
   // Auth state
   const [showLoginModal, setShowLoginModal] = useState(false);
@@ -2378,30 +2497,6 @@ export default function Home() {
                                   >
                                     {/* Painel Copa 2026 — apenas semanas com jogos/fases no intervalo */}
                                     {(() => {
-                                      const hoje = new Date();
-                                      hoje.setHours(0, 0, 0, 0);
-
-                                      // Converte DD/MM/YYYY → Date
-                                      const parseBR = (s: string) => {
-                                        if (!s || s.length !== 10)
-                                          return new Date(NaN);
-                                        return new Date(
-                                          +s.substring(6, 10),
-                                          +s.substring(3, 5) - 1,
-                                          +s.substring(0, 2)
-                                        );
-                                      };
-                                      // Converte YYYY-MM-DD → Date
-                                      const parseISO = (s: string) => {
-                                        if (!s || s.length !== 10)
-                                          return new Date(NaN);
-                                        return new Date(
-                                          +s.substring(0, 4),
-                                          +s.substring(5, 7) - 1,
-                                          +s.substring(8, 10)
-                                        );
-                                      };
-
                                       const semanaInicio = parseBR(
                                         week.departureDate
                                       );
@@ -2420,69 +2515,7 @@ export default function Home() {
                                           ? semanaFimViagem
                                           : semanaFim;
 
-                                      // Helper: calcula dias restantes e labels
-                                      const calcDias = (dataStr: string) => {
-                                        const dataEvento = parseISO(dataStr);
-                                        const diffMs =
-                                          dataEvento.getTime() - hoje.getTime();
-                                        const diffDias = Math.round(
-                                          diffMs / (1000 * 60 * 60 * 24)
-                                        );
-                                        const passou = diffDias < 0;
-                                        const ehHoje = diffDias === 0;
-                                        const label = passou
-                                          ? "Já realizado"
-                                          : ehHoje
-                                            ? "🔴 HOJE!"
-                                            : `em ${diffDias} dia${diffDias === 1 ? "" : "s"}`;
-                                        const mm = dataStr.substring(5, 7);
-                                        const dd = dataStr.substring(8, 10);
-                                        const diasSemana = [
-                                          "Dom",
-                                          "Seg",
-                                          "Ter",
-                                          "Qua",
-                                          "Qui",
-                                          "Sex",
-                                          "Sáb",
-                                        ];
-                                        const diaSemana =
-                                          diasSemana[dataEvento.getDay()];
-                                        return {
-                                          passou,
-                                          ehHoje,
-                                          label,
-                                          mm,
-                                          dd,
-                                          diaSemana,
-                                          diffDias,
-                                        };
-                                      };
-
-                                      // Todos os jogos da 1ª fase
-                                      const todosJogos = [
-                                        {
-                                          data: "2026-06-13",
-                                          adversario: "Marrocos",
-                                          cidade: "Nova York/NJ",
-                                          bandeira: "🇲🇦",
-                                          horario: "16h",
-                                        },
-                                        {
-                                          data: "2026-06-19",
-                                          adversario: "Haiti",
-                                          cidade: "Filadélfia",
-                                          bandeira: "🇭🇹",
-                                          horario: "21h",
-                                        },
-                                        {
-                                          data: "2026-06-24",
-                                          adversario: "Escócia",
-                                          cidade: "Miami",
-                                          bandeira: "🏴󠁧󠁢󠁳󠁣󠁴󠁿",
-                                          horario: "20h",
-                                        },
-                                      ];
+                                      // Todos os jogos da 1ª fase (Hoisted)
 
                                       // Filtrar jogos que caem dentro da semana calendário (dom-sáb)
                                       const jogosDosBrasil = todosJogos.filter(
@@ -2495,49 +2528,7 @@ export default function Home() {
                                         }
                                       );
 
-                                      // Fases eliminatórias: janelas de datas (início e fim de cada fase)
-                                      const todasFases = [
-                                        {
-                                          fase: "32-avos de Final",
-                                          icone: "🏟️",
-                                          inicio: "2026-06-28",
-                                          fim: "2026-07-03",
-                                          cidades: "Várias cidades",
-                                          cor: "blue",
-                                        },
-                                        {
-                                          fase: "Oitavas de Final",
-                                          icone: "⚡",
-                                          inicio: "2026-07-04",
-                                          fim: "2026-07-07",
-                                          cidades: "Várias cidades",
-                                          cor: "blue",
-                                        },
-                                        {
-                                          fase: "Quartas de Final",
-                                          icone: "🔥",
-                                          inicio: "2026-07-09",
-                                          fim: "2026-07-11",
-                                          cidades: "Várias cidades",
-                                          cor: "orange",
-                                        },
-                                        {
-                                          fase: "Semifinais",
-                                          icone: "🏆",
-                                          inicio: "2026-07-14",
-                                          fim: "2026-07-15",
-                                          cidades: "Dallas, TX",
-                                          cor: "purple",
-                                        },
-                                        {
-                                          fase: "Final",
-                                          icone: "🥇",
-                                          inicio: "2026-07-19",
-                                          fim: "2026-07-19",
-                                          cidades: "MetLife Stadium, NJ",
-                                          cor: "yellow",
-                                        },
-                                      ];
+                                      // Fases eliminatórias: janelas de datas (Hoisted)
 
                                       // Filtrar fases eliminatórias que se sobrepõem à semana calendário
                                       const fasesEliminatorias =
@@ -2589,7 +2580,10 @@ export default function Home() {
                                                     mm,
                                                     dd,
                                                     diaSemana,
-                                                  } = calcDias(jogo.data);
+                                                  } = calcDias(
+                                                    jogo.data,
+                                                    hojeMs
+                                                  );
                                                   return (
                                                     <div
                                                       key={jogo.data}
@@ -2676,10 +2670,12 @@ export default function Home() {
                                                 {fasesEliminatorias.map(
                                                   fase => {
                                                     const inicio = calcDias(
-                                                      fase.inicio
+                                                      fase.inicio,
+                                                      hojeMs
                                                     );
                                                     const fim = calcDias(
-                                                      fase.fim
+                                                      fase.fim,
+                                                      hojeMs
                                                     );
                                                     // A fase já passou se o fim já passou
                                                     const passou = fim.passou;
