@@ -97,7 +97,6 @@ export async function sendPushToAll(
 ): Promise<number> {
   const subs = subscriptions ?? (await getAllPushSubscriptions());
   if (subs.length === 0) {
-    console.log("[Push] Nenhuma subscription registrada.");
     return 0;
   }
 

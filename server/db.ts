@@ -639,7 +639,9 @@ export async function getTicketNotificationEmails(): Promise<
     console.log(
       "[Database] Emails:",
       rows.map(r => ({
-        email: r.email,
+        email: r.email
+          ? `${r.email.split("@")[0].slice(0, 3)}***@${r.email.split("@")[1]}`
+          : undefined,
         active: r.active,
         type: typeof r.active,
       }))
@@ -655,7 +657,9 @@ export async function getTicketNotificationEmails(): Promise<
       console.log(
         "[Database] All emails in DB:",
         allRows.map(r => ({
-          email: r.email,
+          email: r.email
+            ? `${r.email.split("@")[0].slice(0, 3)}***@${r.email.split("@")[1]}`
+            : undefined,
           active: r.active,
           type: typeof r.active,
         }))
