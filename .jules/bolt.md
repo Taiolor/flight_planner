@@ -52,3 +52,8 @@
 
 **Learning:** When using `.map()` over large arrays to render UI (like weeks in a month), calling utility functions multiple times per element (e.g., `getFeriadosPorIntervalo`) that execute array `.filter()` or loops internally causes excessive redundant processing and intermediate array allocations, significantly degrading render performance.
 **Action:** Always extract these utility calls into a single scoped variable at the top of the `.map()` callback function, caching the result so that subsequent usages within that iteration only reference the already computed value.
+
+## 2024-05-30 - O(N) Date Object Instantiations in Render Loops
+
+**Learning:** When using IIFE (Immediately Invoked Function Expressions) inside `.map` iteration blocks in large React components, variables like `const hoje = new Date()` get re-instantiated and recalculated for every single element. In a frequently re-rendering component with many items (like calendar weeks), this creates massive object creation and garbage collection overhead.
+**Action:** Always hoist shared single-evaluation objects (like "today" initialized as a static ms timestamp) and pure functions/large constant arrays outside of render maps. Use `useMemo` or store in component scope for dynamic things, and global scope for static constants/functions.
