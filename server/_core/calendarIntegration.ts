@@ -1,4 +1,4 @@
-import { execSync } from "child_process";
+import { execFileSync } from "child_process";
 
 /**
  * Flight event for Google Calendar
@@ -102,10 +102,17 @@ Planejador de Passagens Aéreas 2026
       events: [calendarEvent],
     });
 
-    const escapedInput = input.replace(/"/g, '\\"');
-
-    const result = execSync(
-      `manus-mcp-cli tool call google_calendar_create_events --server google-calendar --input "${escapedInput}"`,
+    const result = execFileSync(
+      "manus-mcp-cli",
+      [
+        "tool",
+        "call",
+        "google_calendar_create_events",
+        "--server",
+        "google-calendar",
+        "--input",
+        input,
+      ],
       { encoding: "utf-8" }
     );
 
