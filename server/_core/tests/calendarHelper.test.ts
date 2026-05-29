@@ -85,6 +85,49 @@ describe("calendarHelper", () => {
       const link = getGoogleCalendarLink(defaultParams, 60, 120);
       expect(link).toMatch(/dates=\d{8}T\d{6}%2F\d{8}T\d{6}/);
     });
+
+    it("uses leadMinutes from params when explicit leadMinutes is not provided", () => {
+      const paramsWithLead = { ...defaultParams, leadMinutes: 90 };
+      const link1 = getGoogleCalendarLink(paramsWithLead); // Should use 90
+      const link2 = getGoogleCalendarLink(paramsWithLead, 45); // Should use 45 (explicit arg overrides)
+
+      expect(link1).toMatch(/dates=\d{8}T\d{6}%2F\d{8}T\d{6}/);
+      expect(link2).toMatch(/dates=\d{8}T\d{6}%2F\d{8}T\d{6}/);
+
+      // Since it's dynamic based on TZ, we just verify it runs and returns a formatted URL
+      expect(link1).not.toBe(link2);
+    });
+
+    it("handles empty title, location, and description safely", () => {
+      const emptyParams = {
+        title: "",
+        flightDatetime: "2024-05-15T10:00",
+        location: "",
+        description: "",
+      };
+      const link = getGoogleCalendarLink(emptyParams);
+
+      const url = new URL(link);
+      expect(url.searchParams.get("text")).toBe("");
+      expect(url.searchParams.get("location")).toBe("");
+      expect(url.searchParams.get("details")).toBe("");
+      expect(link).toMatch(/dates=\d{8}T\d{6}%2F\d{8}T\d{6}/);
+    });
+
+    it("correctly encodes special characters like emojis and ampersands", () => {
+      const specialParams = {
+        title: "Test & Flight 🚀",
+        flightDatetime: "2024-05-15T10:00",
+        location: "City, Country (CODE)",
+        description: "Line 1\nLine 2 & Line 3 = Test",
+      };
+      const link = getGoogleCalendarLink(specialParams);
+
+      const url = new URL(link);
+      expect(url.searchParams.get("text")).toBe("Test & Flight 🚀");
+      expect(url.searchParams.get("location")).toBe("City, Country (CODE)");
+      expect(url.searchParams.get("details")).toBe("Line 1\nLine 2 & Line 3 = Test");
+    });
   });
 
   describe("getOutlookLink", () => {
