@@ -260,14 +260,14 @@
 - [x] Incluir endereço completo do aeroporto na localização do evento
 
 ### 3. Publicar o Site
+
 <<<<<<< Updated upstream
 
 - [ ] Clicar em "Publish" no painel de gerenciamento
-- [ ] Validar que o site está disponível em flightplan-hq655wm9.manus.space
-=======
+- [ ] # Validar que o site está disponível em flightplan-hq655wm9.manus.space
 - [x] Clicar em "Publish" no painel de gerenciamento
 - [x] Validar que o site está disponível em flightplan-hq655wm9.manus.space
->>>>>>> Stashed changes
+  > > > > > > > Stashed changes
 
 ## Implementação das 3 Sugestões
 
@@ -285,16 +285,16 @@
 - [x] Atualizar helper calendarIntegration.ts para aceitar endereço do aeroporto
 
 ### 3. Publicar o Site
+
 <<<<<<< Updated upstream
 
 - [ ] Clicar em "Publish" no painel de gerenciamento
 - [ ] Validar que o site está disponível em flightplan-hq655wm9.manus.space
-- [ ] Testar funcionalidades principais em produção
-=======
+- [ ] # Testar funcionalidades principais em produção
 - [x] Clicar em "Publish" no painel de gerenciamento
 - [x] Validar que o site está disponível em flightplan-hq655wm9.manus.space
 - [x] Testar funcionalidades principais em produção
->>>>>>> Stashed changes
+  > > > > > > > Stashed changes
 
 ## Feature: Compartilhar por E-Mail
 
@@ -319,16 +319,16 @@
 - [x] Adicionar toast nos outros botões (Calendário, etc.)
 
 ### 3. Publicar o Site em Produção
+
 <<<<<<< Updated upstream
 
 - [ ] Clicar em "Publish" no painel de gerenciamento
 - [ ] Validar que o site está disponível em flightplan-hq655wm9.manus.space
-- [ ] Testar funcionalidades principais em produção
-=======
+- [ ] # Testar funcionalidades principais em produção
 - [x] Clicar em "Publish" no painel de gerenciamento
 - [x] Validar que o site está disponível em flightplan-hq655wm9.manus.space
 - [x] Testar funcionalidades principais em produção
->>>>>>> Stashed changes
+  > > > > > > > Stashed changes
 - [x] Implementar envio automático de e-mail ao marcar bilhete como 'Emitido'
 
 ## Ajustes no E-mail de Compartilhamento
