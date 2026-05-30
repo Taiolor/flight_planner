@@ -1,4 +1,8 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
+
+// Set environment variable BEFORE importing appRouter
+vi.stubEnv('JWT_SECRET', 'test-secret');
+
 import { appRouter } from "./routers";
 import type { TrpcContext } from "./_core/context";
 
@@ -47,6 +51,7 @@ describe("flightAuth.login", () => {
   beforeEach(() => {
     process.env.AUTH_EMAIL = "taiolor@gmail.com";
     process.env.AUTH_PASSWORD = "#Salvar2026";
+    process.env.JWT_SECRET = "test-secret";
   });
 
   it("should return success when credentials are correct", async () => {
@@ -88,6 +93,10 @@ describe("flightAuth.login", () => {
 });
 
 describe("flightAuth.check", () => {
+  beforeEach(() => {
+    process.env.JWT_SECRET = "test-secret";
+  });
+
   it("should return unauthenticated when no cookie is present", async () => {
     const ctx = createTestContext("");
     const caller = appRouter.createCaller(ctx);
@@ -99,6 +108,10 @@ describe("flightAuth.check", () => {
 });
 
 describe("flightAuth.logout", () => {
+  beforeEach(() => {
+    process.env.JWT_SECRET = "test-secret";
+  });
+
   it("should clear session cookie on logout", async () => {
     const clearedCookies: string[] = [];
     const ctx: TrpcContext = {
@@ -122,6 +135,10 @@ describe("flightAuth.logout", () => {
 });
 
 describe("flights.updateWeekStatus with airline fields", () => {
+  beforeEach(() => {
+    process.env.JWT_SECRET = "test-secret";
+  });
+
   it("should accept departureAirline and returnAirline fields", async () => {
     const { validateAuthSession, updateFlightWeekStatus } = await import(
       "./db"

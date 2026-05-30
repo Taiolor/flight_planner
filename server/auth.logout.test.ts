@@ -1,4 +1,8 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
+
+// Set environment variable BEFORE importing appRouter
+vi.stubEnv('JWT_SECRET', 'test-secret');
+
 import { appRouter } from "./routers";
 import { COOKIE_NAME } from "../shared/const";
 import type { TrpcContext } from "./_core/context";
@@ -46,6 +50,7 @@ function createAuthContext(): {
 
 describe("auth.logout", () => {
   it("clears the session cookie and reports success", async () => {
+    process.env.JWT_SECRET = "test-secret";
     const { ctx, clearedCookies } = createAuthContext();
     const caller = appRouter.createCaller(ctx);
 
