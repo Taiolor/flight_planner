@@ -414,8 +414,11 @@ export default function Home() {
     return `${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}`;
   };
 
-  const getFlightMinutes = (timeStr: string): number => {
-    const [h, m] = timeStr.split(':').map(Number);
+  const getFlightMinutes = (timeStr: string | undefined): number => {
+    if (!timeStr) return 0;
+    const parts = timeStr.split(':');
+    if (parts.length < 2) return 0;
+    const [h, m] = parts.map(Number);
     return h * 60 + m;
   };
 
