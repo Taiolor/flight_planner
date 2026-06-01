@@ -404,8 +404,8 @@ export default function Home() {
   const [filterMonth, setFilterMonth] = useState<string>("all");
   const [filterAirline, setFilterAirline] = useState<string>("all");
   const [filterTicketStatus, setFilterTicketStatus] = useState<string>("all");
-  const [departureTimeRange, setDepartureTimeRange] = useState<[number, number]>([0, 1439]); // 00:00 - 23:59
-  const [returnTimeRange, setReturnTimeRange] = useState<[number, number]>([0, 1439]); // 00:00 - 23:59
+  const [departureTimeFilter, setDepartureTimeFilter] = useState<number>(0); // 00:00 por padrão
+  const [returnTimeFilter, setReturnTimeFilter] = useState<number>(0); // 00:00 por padrão
 
   // Funcoes auxiliares para conversao de horario
   const minutesToTime = (minutes: number): string => {
@@ -822,12 +822,12 @@ export default function Home() {
       }
       if (filterTicketStatus === "issued" && !w.isTicketIssued) return false;
       if (filterTicketStatus === "notIssued" && w.isTicketIssued) return false;
-      // Filtro de horario de ida
+      // Filtro de horario de ida: entre o horário selecionado até 23:59
       const departureMinutes = getFlightMinutes(w.departureTime);
-      if (departureMinutes < departureTimeRange[0] || departureMinutes > departureTimeRange[1]) return false;
-      // Filtro de horario de volta
+      if (departureMinutes < departureTimeFilter || departureMinutes > 1439) return false;
+      // Filtro de horario de volta: entre o horário selecionado até 23:59
       const returnMinutes = getFlightMinutes(w.returnTime);
-      if (returnMinutes < returnTimeRange[0] || returnMinutes > returnTimeRange[1]) return false;
+      if (returnMinutes < returnTimeFilter || returnMinutes > 1439) return false;
       return true;
     });
   }, [
@@ -836,8 +836,8 @@ export default function Home() {
     showCheapestOnly,
     priceThreshold,
     filterTicketStatus,
-    departureTimeRange,
-    returnTimeRange,
+    departureTimeFilter,
+    returnTimeFilter,
     getLowestPrice,
   ]);
 
@@ -1829,30 +1829,30 @@ export default function Home() {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2 block">
-                  Horário de Ida: {minutesToTime(departureTimeRange[0])}
+                  Horário de Ida: {minutesToTime(departureTimeFilter)}
                 </label>
                 <input
                   type="range"
                   min="0"
                   max="1439"
                   step="15"
-                  value={departureTimeRange[0]}
-                  onChange={e => setDepartureTimeRange([parseInt(e.target.value), departureTimeRange[1]])}
+                  value={departureTimeFilter}
+                  onChange={e => setDepartureTimeFilter(parseInt(e.target.value))}
                   className="w-full"
                 />
               </div>
 
               <div>
                 <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2 block">
-                  Horário de Volta: {minutesToTime(returnTimeRange[0])}
+                  Horário de Volta: {minutesToTime(returnTimeFilter)}
                 </label>
                 <input
                   type="range"
                   min="0"
                   max="1439"
                   step="15"
-                  value={returnTimeRange[0]}
-                  onChange={e => setReturnTimeRange([parseInt(e.target.value), returnTimeRange[1]])}
+                  value={returnTimeFilter}
+                  onChange={e => setReturnTimeFilter(parseInt(e.target.value))}
                   className="w-full"
                 />
               </div>
