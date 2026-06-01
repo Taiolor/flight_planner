@@ -822,12 +822,26 @@ export default function Home() {
       }
       if (filterTicketStatus === "issued" && !w.isTicketIssued) return false;
       if (filterTicketStatus === "notIssued" && w.isTicketIssued) return false;
-      // Filtro de horario de ida: entre o horário selecionado até 23:59
+      // Filtro de horario: considerar ida OU volta
+      // Ida: entre o horário selecionado até 23:59
       const departureMinutes = getFlightMinutes(w.departureTime);
-      if (departureMinutes < departureTimeFilter || departureMinutes > 1439) return false;
-      // Filtro de horario de volta: entre o horário selecionado até 23:59
+      const departureMatches = departureMinutes >= departureTimeFilter && departureMinutes <= 1439;
+      // Volta: entre o horário selecionado até 23:59
       const returnMinutes = getFlightMinutes(w.returnTime);
-      if (returnMinutes < returnTimeFilter || returnMinutes > 1439) return false;
+      const returnMatches = returnMinutes >= returnTimeFilter && returnMinutes <= 1439;
+      // Se ambos os filtros estão em 0 (padrão), mostrar todos
+      if (departureTimeFilter === 0 && returnTimeFilter === 0) {
+        // Sem filtro de horário, mostrar tudo
+      } else if (departureTimeFilter > 0 && returnTimeFilter > 0) {
+        // Ambos filtros ativos: ida OU volta deve bater
+        if (!departureMatches && !returnMatches) return false;
+      } else if (departureTimeFilter > 0) {
+        // Apenas filtro de ida ativo
+        if (!departureMatches) return false;
+      } else if (returnTimeFilter > 0) {
+        // Apenas filtro de volta ativo
+        if (!returnMatches) return false;
+      }
       return true;
     });
   }, [
