@@ -1958,28 +1958,33 @@ export default function Home() {
         {!isLoading && (
           <div className="space-y-3">
             {sortedWeeks.length === 0 ? (
-              <Card className="p-12 text-center border-0 shadow-md">
-                <Calendar className="w-12 h-12 text-slate-300 mx-auto mb-4" />
-                <p className="text-slate-500 text-lg">
-                  Nenhuma semana encontrada com os filtros selecionados
-                </p>
-                {(filterMonth !== "all" ||
-                  filterAirline !== "all" ||
-                  filterTicketStatus !== "all" ||
-                  showCheapestOnly) && (
-                  <Button
-                    variant="outline"
-                    className="mt-6 border-blue-200 text-blue-600 hover:bg-blue-50 hover:text-blue-700"
-                    onClick={() => {
-                      setFilterMonth("all");
-                      setFilterAirline("all");
-                      setFilterTicketStatus("all");
-                      setShowCheapestOnly(false);
-                    }}
-                  >
-                    Limpar Filtros
-                  </Button>
-                )}
+              <Card className="p-12 text-center border-0 shadow-md bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
+                <div className="flex flex-col items-center">
+                  <Calendar className="w-16 h-16 text-slate-300 dark:text-slate-600 mb-4" />
+                  <h3 className="text-xl font-semibold text-slate-700 dark:text-slate-300 mb-2">
+                    Nenhum voo encontrado
+                  </h3>
+                  <p className="text-slate-600 dark:text-slate-400 mb-6 max-w-md">
+                    Desculpe, não encontramos voos que correspondam aos seus filtros. Tente ajustar os horários, mês ou outras opções de filtro.
+                  </p>
+                  <div className="flex gap-3 justify-center flex-wrap">
+                    <Button
+                      variant="outline"
+                      className="border-slate-300 text-slate-700 dark:border-slate-600 dark:text-slate-300"
+                      onClick={() => {
+                        setFilterMonth("all");
+                        setFilterAirline("all");
+                        setFilterTicketStatus("all");
+                        setShowCheapestOnly(false);
+                        setDepartureTimeFilter(0);
+                        setReturnTimeFilter(0);
+                      }}
+                    >
+                      <RotateCcw className="w-4 h-4 mr-2" />
+                      Limpar Todos os Filtros
+                    </Button>
+                  </div>
+                </div>
               </Card>
             ) : (
               weeksByMonth.map(
