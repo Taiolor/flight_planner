@@ -355,3 +355,9 @@
 - [x] Implementar sinalização visual de feriados na página de calendário
 - [x] Adicionar função mouse-over para exibir nome do feriado ao passar o mouse
 - [x] Diferenciar cores/estilos para feriados nacionais, estaduais e municipais (vermelho=nacional, azul=municipal, verde=estadual, âmbar=observância)
+
+## Calendário - Finais de Semana Prolongados
+
+- [x] Implementar lógica para detectar finais de semana prolongados próximos aos feriados
+- [x] Destacar visualmente finais de semana prolongados no calendário (cor roxo claro bg-purple-100)
+- [x] Considerar feriados que caem na sexta (prolongam para segunda) ou segunda (prolongam para sexta)

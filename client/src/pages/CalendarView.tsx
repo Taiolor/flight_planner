@@ -80,6 +80,57 @@ function toKey(date: Date): string {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
 }
 
+function getExtendedWeekends(holidays: Record<string, HolidayInfo>): Set<string> {
+  const extended = new Set<string>();
+  
+  Object.entries(holidays).forEach(([dateStr]) => {
+    const date = new Date(dateStr);
+    const dayOfWeek = date.getDay();
+    
+    if (dayOfWeek === 5) {
+      for (let i = 0; i < 4; i++) {
+        const d = new Date(date);
+        d.setDate(d.getDate() + i);
+        extended.add(toKey(d));
+      }
+    } else if (dayOfWeek === 1) {
+      for (let i = -2; i < 2; i++) {
+        const d = new Date(date);
+        d.setDate(d.getDate() + i);
+        extended.add(toKey(d));
+      }
+    } else if (dayOfWeek === 4) {
+      for (let i = 0; i < 5; i++) {
+        const d = new Date(date);
+        d.setDate(d.getDate() + i);
+        extended.add(toKey(d));
+      }
+    } else if (dayOfWeek === 2) {
+      for (let i = -3; i < 2; i++) {
+        const d = new Date(date);
+        d.setDate(d.getDate() + i);
+        extended.add(toKey(d));
+      }
+    } else if (dayOfWeek === 3) {
+      for (let i = -4; i < 2; i++) {
+        const d = new Date(date);
+        d.setDate(d.getDate() + i);
+        extended.add(toKey(d));
+      }
+    } else if (dayOfWeek === 0 || dayOfWeek === 6) {
+      const friday = new Date(date);
+      friday.setDate(friday.getDate() - (dayOfWeek === 0 ? 2 : 1));
+      for (let i = 0; i < 4; i++) {
+        const d = new Date(friday);
+        d.setDate(d.getDate() + i);
+        extended.add(toKey(d));
+      }
+    }
+  });
+  
+  return extended;
+}
+
 /** Extrai HH:mm de um datetime "YYYY-MM-DDTHH:mm" ou "DD/MM/YYYY HH:mm" */
 function extractTime(dt: string | null | undefined): string {
   if (!dt) return "";
@@ -521,6 +572,10 @@ export default function CalendarView() {
     return d;
   }, []);
 
+  const extendedWeekends = useMemo(() => {
+    return getExtendedWeekends(HOLIDAYS);
+  }, []);
+
   const markedDays = useMemo<Record<string, DayMark>>(() => {
     const map: Record<string, DayMark> = {};
     if (!weeksQuery.data) return map;
@@ -679,6 +734,7 @@ export default function CalendarView() {
                             ? "text-blue-500"
                             : "text-slate-700";
                         const isClickable = !!mark;
+                        const isExtendedWeekend = extendedWeekends.has(key);
 
                         // Determinar cor do indicador de feriado baseado no tipo
                         let holidayDotColor = "bg-amber-400";
@@ -697,14 +753,20 @@ export default function CalendarView() {
                         } else if (isToday) {
                           cellBg = "bg-blue-100";
                           textColor = "text-blue-700 font-bold";
+                        } else if (isExtendedWeekend && !mark) {
+                          cellBg = "bg-purple-100";
+                          textColor = "text-purple-700";
                         }
 
                         // Construir tooltip com informação do feriado
-                        const tooltipText = mark
-                          ? `Semana ${mark.week.weekNumber} — clique para detalhes`
-                          : holiday
-                            ? `${holiday.name} (${holiday.type === "national" ? "Feriado Nacional" : holiday.type === "municipal" ? "Feriado Municipal" : holiday.type === "state" ? "Feriado Estadual" : "Observância"})`
-                            : undefined;
+                        let tooltipText: string | undefined = undefined;
+                        if (mark) {
+                          tooltipText = `Semana ${mark.week.weekNumber} — clique para detalhes`;
+                        } else if (holiday) {
+                          tooltipText = `${holiday.name} (${holiday.type === "national" ? "Feriado Nacional" : holiday.type === "municipal" ? "Feriado Municipal" : holiday.type === "state" ? "Feriado Estadual" : "Observância"})`;
+                        } else if (isExtendedWeekend) {
+                          tooltipText = "Fim de semana prolongado";
+                        }
 
                         return (
                           <div
