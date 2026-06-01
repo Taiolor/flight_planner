@@ -414,11 +414,16 @@ export default function Home() {
     return `${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}`;
   };
 
-  const getFlightMinutes = (timeStr: string | undefined): number => {
-    if (!timeStr) return 0;
+  const getFlightMinutes = (datetimeStr: string | undefined | null): number => {
+    if (!datetimeStr) return -1; // -1 indica que não há horário definido
+    // Formato esperado: "2026-02-22T17:55" ou "17:55"
+    const tIndex = datetimeStr.indexOf('T');
+    const timeStr = tIndex >= 0 ? datetimeStr.slice(tIndex + 1) : datetimeStr;
     const parts = timeStr.split(':');
-    if (parts.length < 2) return 0;
-    const [h, m] = parts.map(Number);
+    if (parts.length < 2) return -1;
+    const h = parseInt(parts[0], 10);
+    const m = parseInt(parts[1], 10);
+    if (isNaN(h) || isNaN(m)) return -1;
     return h * 60 + m;
   };
 
@@ -823,12 +828,12 @@ export default function Home() {
       if (filterTicketStatus === "issued" && !w.isTicketIssued) return false;
       if (filterTicketStatus === "notIssued" && w.isTicketIssued) return false;
       // Filtro de horario: considerar ida OU volta
-      // Ida: entre o horário selecionado até 23:59
-      const departureMinutes = getFlightMinutes(w.departureTime);
-      const departureMatches = departureMinutes >= departureTimeFilter && departureMinutes <= 1439;
-      // Volta: entre o horário selecionado até 23:59
-      const returnMinutes = getFlightMinutes(w.returnTime);
-      const returnMatches = returnMinutes >= returnTimeFilter && returnMinutes <= 1439;
+      // Usa departureFlightDatetime e returnFlightDatetime (formato "2026-02-22T17:55")
+      const departureMinutes = getFlightMinutes(w.departureFlightDatetime);
+      const returnMinutes = getFlightMinutes(w.returnFlightDatetime);
+      // Se o voo não tem horário definido (-1), ele sempre passa no filtro
+      const departureMatches = departureMinutes === -1 || (departureMinutes >= departureTimeFilter && departureMinutes <= 1439);
+      const returnMatches = returnMinutes === -1 || (returnMinutes >= returnTimeFilter && returnMinutes <= 1439);
       // Se ambos os filtros estão em 0 (padrão), mostrar todos
       if (departureTimeFilter === 0 && returnTimeFilter === 0) {
         // Sem filtro de horário, mostrar tudo
@@ -1851,8 +1856,8 @@ export default function Home() {
                 </label>
                 <span className="text-xs bg-blue-100 dark:bg-blue-900 text-blue-900 dark:text-blue-100 px-2 py-1 rounded">
                   {filteredWeeks.filter(w => {
-                    const depMin = getFlightMinutes(w.departureTime);
-                    return depMin >= departureTimeFilter && depMin <= 1439;
+                    const depMin = getFlightMinutes(w.departureFlightDatetime);
+                    return depMin >= 0 && depMin >= departureTimeFilter && depMin <= 1439;
                   }).length} voos
                 </span>
               </div>
@@ -1874,8 +1879,8 @@ export default function Home() {
                 </label>
                 <span className="text-xs bg-blue-100 dark:bg-blue-900 text-blue-900 dark:text-blue-100 px-2 py-1 rounded">
                   {filteredWeeks.filter(w => {
-                    const retMin = getFlightMinutes(w.returnTime);
-                    return retMin >= returnTimeFilter && retMin <= 1439;
+                    const retMin = getFlightMinutes(w.returnFlightDatetime);
+                    return retMin >= 0 && retMin >= returnTimeFilter && retMin <= 1439;
                   }).length} voos
                 </span>
               </div>

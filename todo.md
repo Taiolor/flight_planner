@@ -335,3 +335,10 @@
 
 - [x] Adicionar horários do voo (ida e volta) no corpo do e-mail compartilhado
 - [x] Corrigir links de calendário (Outlook e Gmail) para incluir horários corretos dos voos
+
+## Bug Fix: Filtros de Horário
+
+- [x] Bug: filtros de horário não funcionavam porque acessavam campo inexistente `w.departureTime` em vez de `w.departureFlightDatetime`
+- [x] Corrigir lógica para extrair horário do formato datetime ISO (ex: "2026-02-22T17:55")
+- [x] Usar OR para combinar ida e volta (voos sem horário definido sempre passam no filtro)
+- [x] Corrigir badges dos contadores de voos para usar os campos corretos
