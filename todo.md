@@ -361,3 +361,9 @@
 - [x] Implementar lógica para detectar finais de semana prolongados próximos aos feriados
 - [x] Destacar visualmente finais de semana prolongados no calendário (cor roxo claro bg-purple-100)
 - [x] Considerar feriados que caem na sexta (prolongam para segunda) ou segunda (prolongam para sexta)
+
+## Calendário - Filtro de Feriados e Finais de Semana Prolongados
+
+- [x] Adicionar toggle/checkbox para filtrar apenas feriados e finais de semana prolongados
+- [x] Ocultar outros dias quando filtro está ativo (renderiza div vazia)
+- [x] Manter tooltip e cores diferenciadas para cada tipo de feriado

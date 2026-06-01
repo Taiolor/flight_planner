@@ -565,6 +565,7 @@ function FlightPopup({
 export default function CalendarView() {
   const weeksQuery = trpc.flights.getWeeks.useQuery();
   const [selectedMark, setSelectedMark] = useState<DayMark | null>(null);
+  const [showOnlyHolidaysAndWeekends, setShowOnlyHolidaysAndWeekends] = useState(false);
 
   const today = useMemo(() => {
     const d = new Date();
@@ -672,6 +673,23 @@ export default function CalendarView() {
         </div>
       </header>
 
+      {/* Filtro */}
+      <div className="px-4 py-4 bg-white border-b border-slate-200 sticky top-16 z-9">
+        <div className="max-w-7xl mx-auto flex items-center gap-3">
+          <label className="flex items-center gap-2 cursor-pointer select-none">
+            <input
+              type="checkbox"
+              checked={showOnlyHolidaysAndWeekends}
+              onChange={(e) => setShowOnlyHolidaysAndWeekends(e.target.checked)}
+              className="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-2 focus:ring-blue-500"
+            />
+            <span className="text-sm font-medium text-slate-700">
+              Mostrar apenas feriados e finais de semana prolongados
+            </span>
+          </label>
+        </div>
+      </div>
+
       {/* Grade anual */}
       <main className="px-4 py-6 max-w-7xl mx-auto">
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-5">
@@ -766,6 +784,11 @@ export default function CalendarView() {
                           tooltipText = `${holiday.name} (${holiday.type === "national" ? "Feriado Nacional" : holiday.type === "municipal" ? "Feriado Municipal" : holiday.type === "state" ? "Feriado Estadual" : "Observância"})`;
                         } else if (isExtendedWeekend) {
                           tooltipText = "Fim de semana prolongado";
+                        }
+
+                        // Aplicar filtro: mostrar apenas se tem feriado ou fim de semana prolongado
+                        if (showOnlyHolidaysAndWeekends && !holiday && !isExtendedWeekend) {
+                          return <div key={di} className="aspect-square" />;
                         }
 
                         return (
