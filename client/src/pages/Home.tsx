@@ -1828,9 +1828,17 @@ export default function Home() {
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2 block">
-                  Horário de Ida: {minutesToTime(departureTimeFilter)}
-                </label>
+                <div className="flex justify-between items-center mb-2">
+                  <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">
+                    Horário de Ida: {minutesToTime(departureTimeFilter)}
+                  </label>
+                  <span className="text-xs bg-blue-100 dark:bg-blue-900 text-blue-900 dark:text-blue-100 px-2 py-1 rounded">
+                    {filteredWeeks.filter(w => {
+                      const depMin = getFlightMinutes(w.departureTime);
+                      return depMin >= departureTimeFilter && depMin <= 1439;
+                    }).length} voos
+                  </span>
+                </div>
                 <input
                   type="range"
                   min="0"
@@ -1843,9 +1851,17 @@ export default function Home() {
               </div>
 
               <div>
-                <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2 block">
-                  Horário de Volta: {minutesToTime(returnTimeFilter)}
-                </label>
+                <div className="flex justify-between items-center mb-2">
+                  <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">
+                    Horário de Volta: {minutesToTime(returnTimeFilter)}
+                  </label>
+                  <span className="text-xs bg-blue-100 dark:bg-blue-900 text-blue-900 dark:text-blue-100 px-2 py-1 rounded">
+                    {filteredWeeks.filter(w => {
+                      const retMin = getFlightMinutes(w.returnTime);
+                      return retMin >= returnTimeFilter && retMin <= 1439;
+                    }).length} voos
+                  </span>
+                </div>
                 <input
                   type="range"
                   min="0"
