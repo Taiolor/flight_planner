@@ -42,22 +42,28 @@ const MONTHS = [
 const WEEKDAYS = ["D", "S", "T", "Q", "Q", "S", "S"];
 const YEAR = 2026;
 
-const HOLIDAYS: Record<string, string> = {
-  "2026-01-01": "Ano Novo",
-  "2026-02-16": "Carnaval",
-  "2026-02-17": "Carnaval",
-  "2026-02-18": "Carnaval",
-  "2026-04-03": "Paixão de Cristo",
-  "2026-04-05": "Páscoa",
-  "2026-04-21": "Tiradentes",
-  "2026-05-01": "Dia do Trabalho",
-  "2026-06-04": "Corpus Christi",
-  "2026-09-07": "Independência",
-  "2026-10-12": "N. Sra. Aparecida",
-  "2026-11-02": "Finados",
-  "2026-11-15": "Proclamação da República",
-  "2026-11-20": "Consciência Negra",
-  "2026-12-25": "Natal",
+interface HolidayInfo {
+  name: string;
+  type: "national" | "municipal" | "state" | "observance";
+}
+
+const HOLIDAYS: Record<string, HolidayInfo> = {
+  "2026-01-01": { name: "Confraternização Universal", type: "national" },
+  "2026-02-16": { name: "Carnaval (segunda)", type: "observance" },
+  "2026-02-17": { name: "Carnaval (terça)", type: "observance" },
+  "2026-02-18": { name: "Quarta-feira de Cinzas", type: "observance" },
+  "2026-04-03": { name: "Sexta-feira Santa", type: "national" },
+  "2026-04-05": { name: "Páscoa", type: "national" },
+  "2026-04-21": { name: "Tiradentes", type: "national" },
+  "2026-05-01": { name: "Dia do Trabalho", type: "national" },
+  "2026-06-04": { name: "Corpus Christi", type: "national" },
+  "2026-09-02": { name: "Aniversário de Blumenau", type: "municipal" },
+  "2026-09-07": { name: "Independência do Brasil", type: "national" },
+  "2026-10-12": { name: "Nossa Senhora Aparecida", type: "national" },
+  "2026-11-02": { name: "Finados", type: "national" },
+  "2026-11-15": { name: "Proclamação da República", type: "national" },
+  "2026-11-20": { name: "Consciência Negra", type: "national" },
+  "2026-12-25": { name: "Natal", type: "national" },
 };
 
 function parseDate(dateStr: string): Date | null {
@@ -674,6 +680,15 @@ export default function CalendarView() {
                             : "text-slate-700";
                         const isClickable = !!mark;
 
+                        // Determinar cor do indicador de feriado baseado no tipo
+                        let holidayDotColor = "bg-amber-400";
+                        if (holiday) {
+                          if (holiday.type === "national") holidayDotColor = "bg-red-500";
+                          else if (holiday.type === "municipal") holidayDotColor = "bg-blue-500";
+                          else if (holiday.type === "state") holidayDotColor = "bg-green-500";
+                          else holidayDotColor = "bg-amber-400";
+                        }
+
                         if (mark) {
                           cellBg = mark.isPast
                             ? "bg-slate-500"
@@ -684,14 +699,17 @@ export default function CalendarView() {
                           textColor = "text-blue-700 font-bold";
                         }
 
+                        // Construir tooltip com informação do feriado
+                        const tooltipText = mark
+                          ? `Semana ${mark.week.weekNumber} — clique para detalhes`
+                          : holiday
+                            ? `${holiday.name} (${holiday.type === "national" ? "Feriado Nacional" : holiday.type === "municipal" ? "Feriado Municipal" : holiday.type === "state" ? "Feriado Estadual" : "Observância"})`
+                            : undefined;
+
                         return (
                           <div
                             key={di}
-                            title={
-                              mark
-                                ? `Semana ${mark.week.weekNumber} — clique para detalhes`
-                                : holiday || undefined
-                            }
+                            title={tooltipText}
                             onClick={() => mark && setSelectedMark(mark)}
                             className={`relative flex flex-col items-center justify-center rounded-md aspect-square text-[10px] font-medium select-none transition-all
                               ${cellBg || "hover:bg-slate-50"}
@@ -702,7 +720,7 @@ export default function CalendarView() {
                           >
                             <span>{day}</span>
                             {holiday && !mark && (
-                              <span className="absolute bottom-0.5 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-amber-400" />
+                              <span className={`absolute bottom-0.5 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full ${holidayDotColor}`} />
                             )}
                             {mark && (
                               <span className="absolute bottom-0.5 left-1/2 -translate-x-1/2 flex gap-0.5">

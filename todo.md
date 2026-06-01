@@ -349,3 +349,9 @@
 - [x] Atualizar dados de feriados no flightData.ts para incluir feriados municipais (Aniversário de Blumenau: 02/09)
 - [x] Atualizar interface Feriado para incluir tipos "estadual" e "municipal"
 - [x] Feriados já são exibidos corretamente nos cards das semanas (sistema já tinha getFeriadosDaSemana funcionando)
+
+## Calendário - Sinalização de Feriados
+
+- [x] Implementar sinalização visual de feriados na página de calendário
+- [x] Adicionar função mouse-over para exibir nome do feriado ao passar o mouse
+- [x] Diferenciar cores/estilos para feriados nacionais, estaduais e municipais (vermelho=nacional, azul=municipal, verde=estadual, âmbar=observância)
