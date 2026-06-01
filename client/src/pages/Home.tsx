@@ -1828,58 +1828,32 @@ export default function Home() {
 
             <div>
               <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2 block">
-                Horário de Ida
+                Horário de Ida: {minutesToTime(departureTimeRange[0])}
               </label>
-              <div className="flex items-center gap-2">
-                <span className="text-xs text-slate-600 min-w-12">{minutesToTime(departureTimeRange[0])}</span>
-                <input
-                  type="range"
-                  min="0"
-                  max="1439"
-                  step="15"
-                  value={departureTimeRange[0]}
-                  onChange={e => setDepartureTimeRange([parseInt(e.target.value), departureTimeRange[1]])}
-                  className="flex-1"
-                />
-                <input
-                  type="range"
-                  min="0"
-                  max="1439"
-                  step="15"
-                  value={departureTimeRange[1]}
-                  onChange={e => setDepartureTimeRange([departureTimeRange[0], parseInt(e.target.value)])}
-                  className="flex-1"
-                />
-                <span className="text-xs text-slate-600 min-w-12">{minutesToTime(departureTimeRange[1])}</span>
-              </div>
+              <input
+                type="range"
+                min="0"
+                max="1439"
+                step="15"
+                value={departureTimeRange[0]}
+                onChange={e => setDepartureTimeRange([parseInt(e.target.value), departureTimeRange[1]])}
+                className="w-full"
+              />
             </div>
 
             <div>
               <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2 block">
-                Horário de Volta
+                Horário de Volta: {minutesToTime(returnTimeRange[0])}
               </label>
-              <div className="flex items-center gap-2">
-                <span className="text-xs text-slate-600 min-w-12">{minutesToTime(returnTimeRange[0])}</span>
-                <input
-                  type="range"
-                  min="0"
-                  max="1439"
-                  step="15"
-                  value={returnTimeRange[0]}
-                  onChange={e => setReturnTimeRange([parseInt(e.target.value), returnTimeRange[1]])}
-                  className="flex-1"
-                />
-                <input
-                  type="range"
-                  min="0"
-                  max="1439"
-                  step="15"
-                  value={returnTimeRange[1]}
-                  onChange={e => setReturnTimeRange([returnTimeRange[0], parseInt(e.target.value)])}
-                  className="flex-1"
-                />
-                <span className="text-xs text-slate-600 min-w-12">{minutesToTime(returnTimeRange[1])}</span>
-              </div>
+              <input
+                type="range"
+                min="0"
+                max="1439"
+                step="15"
+                value={returnTimeRange[0]}
+                onChange={e => setReturnTimeRange([parseInt(e.target.value), returnTimeRange[1]])}
+                className="w-full"
+              />
             </div>
 
             <div className="bg-green-50 border border-green-200 rounded-lg p-4">
