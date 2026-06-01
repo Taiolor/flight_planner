@@ -1874,6 +1874,21 @@ export default function Home() {
               </div>
             </div>
 
+            <div className="flex justify-end mt-4">
+              <Button
+                onClick={() => {
+                  setDepartureTimeFilter(0);
+                  setReturnTimeFilter(0);
+                }}
+                variant="outline"
+                size="sm"
+                className="text-slate-700 dark:text-slate-300"
+              >
+                <RotateCcw className="w-4 h-4 mr-2" />
+                Limpar Filtros de Horário
+              </Button>
+            </div>
+
             <div className="bg-green-50 border border-green-200 rounded-lg p-4">
               <p className="text-sm font-semibold text-green-900">
                 {sortedWeeks.length} viagens
