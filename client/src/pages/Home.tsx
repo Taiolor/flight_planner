@@ -1826,34 +1826,36 @@ export default function Home() {
               </Select>
             </div>
 
-            <div>
-              <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2 block">
-                Horário de Ida: {minutesToTime(departureTimeRange[0])}
-              </label>
-              <input
-                type="range"
-                min="0"
-                max="1439"
-                step="15"
-                value={departureTimeRange[0]}
-                onChange={e => setDepartureTimeRange([parseInt(e.target.value), departureTimeRange[1]])}
-                className="w-full"
-              />
-            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2 block">
+                  Horário de Ida: {minutesToTime(departureTimeRange[0])}
+                </label>
+                <input
+                  type="range"
+                  min="0"
+                  max="1439"
+                  step="15"
+                  value={departureTimeRange[0]}
+                  onChange={e => setDepartureTimeRange([parseInt(e.target.value), departureTimeRange[1]])}
+                  className="w-full"
+                />
+              </div>
 
-            <div>
-              <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2 block">
-                Horário de Volta: {minutesToTime(returnTimeRange[0])}
-              </label>
-              <input
-                type="range"
-                min="0"
-                max="1439"
-                step="15"
-                value={returnTimeRange[0]}
-                onChange={e => setReturnTimeRange([parseInt(e.target.value), returnTimeRange[1]])}
-                className="w-full"
-              />
+              <div>
+                <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2 block">
+                  Horário de Volta: {minutesToTime(returnTimeRange[0])}
+                </label>
+                <input
+                  type="range"
+                  min="0"
+                  max="1439"
+                  step="15"
+                  value={returnTimeRange[0]}
+                  onChange={e => setReturnTimeRange([parseInt(e.target.value), returnTimeRange[1]])}
+                  className="w-full"
+                />
+              </div>
             </div>
 
             <div className="bg-green-50 border border-green-200 rounded-lg p-4">
