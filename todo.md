@@ -342,3 +342,10 @@
 - [x] Corrigir lógica para extrair horário do formato datetime ISO (ex: "2026-02-22T17:55")
 - [x] Usar OR para combinar ida e volta (voos sem horário definido sempre passam no filtro)
 - [x] Corrigir badges dos contadores de voos para usar os campos corretos
+
+## Feriados de Blumenau, SC e Nacionais
+
+- [x] Pesquisar e listar todos os feriados nacionais, estaduais (SC) e municipais (Blumenau) de 2026
+- [x] Atualizar dados de feriados no flightData.ts para incluir feriados municipais (Aniversário de Blumenau: 02/09)
+- [x] Atualizar interface Feriado para incluir tipos "estadual" e "municipal"
+- [x] Feriados já são exibidos corretamente nos cards das semanas (sistema já tinha getFeriadosDaSemana funcionando)
