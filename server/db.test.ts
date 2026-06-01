@@ -10,7 +10,7 @@ describe("upsertUser", () => {
   const originalEnv = process.env;
 
   beforeEach(() => {
-    process.env = { ...originalEnv, DATABASE_URL: "mysql://mock" };
+    process.env = { ...originalEnv, DATABASE_URL: "mysql://mock", JWT_SECRET: "test-secret" };
     vi.clearAllMocks();
     vi.resetModules(); // This will clear the module cache, so _db in db.ts is null for each test
     vi.spyOn(console, "error").mockImplementation(() => {});
