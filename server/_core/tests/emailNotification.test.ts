@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import {
   sendTicketNotificationEmail,
   sendShareByEmailNotification,
@@ -22,7 +22,11 @@ vi.mock("resend", () => {
 describe("emailNotification", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    process.env.RESEND_API_KEY = "re_test_api_key";
+    vi.stubEnv("RESEND_API_KEY", "re_test_api_key");
+  });
+
+  afterEach(() => {
+    vi.unstubAllEnvs();
   });
 
   describe("sendTicketNotificationEmail", () => {
@@ -37,6 +41,23 @@ describe("emailNotification", () => {
       const result = await sendTicketNotificationEmail([], notification);
 
       expect(result).toBe(false);
+      expect(mockSend).not.toHaveBeenCalled();
+    });
+
+    it("should return false if recipients array is undefined or null", async () => {
+      const notification: TicketChangeNotification = {
+        type: "created",
+        weekNumber: 1,
+        ticketType: "departure",
+        timestamp: new Date("2024-01-01T10:00:00Z"),
+      };
+
+      const result1 = await sendTicketNotificationEmail(null as any, notification);
+      expect(result1).toBe(false);
+
+      const result2 = await sendTicketNotificationEmail(undefined as any, notification);
+      expect(result2).toBe(false);
+
       expect(mockSend).not.toHaveBeenCalled();
     });
 
@@ -105,6 +126,30 @@ describe("emailNotification", () => {
       expect(result).toBe(false);
       expect(mockSend).toHaveBeenCalledTimes(1);
     });
+
+    it("should return false and log error if getResendClient throws (e.g. no API key)", async () => {
+      vi.stubEnv("RESEND_API_KEY", "");
+
+      const notification: TicketChangeNotification = {
+        type: "created",
+        weekNumber: 1,
+        ticketType: "departure",
+        timestamp: new Date("2024-01-01T10:00:00Z"),
+      };
+
+      const result = await sendTicketNotificationEmail(["test@example.com"], notification);
+
+      expect(result).toBe(false);
+      expect(mockSend).not.toHaveBeenCalled();
+    });
+
+    it("should catch errors thrown during formatting (e.g. invalid notification object)", async () => {
+      // Intentionally pass an invalid notification to cause a TypeError in formatTicketDetails
+      const result = await sendTicketNotificationEmail(["test@example.com"], null as any);
+
+      expect(result).toBe(false);
+      expect(mockSend).not.toHaveBeenCalled();
+    });
   });
 
   describe("sendShareByEmailNotification", () => {
@@ -126,6 +171,12 @@ describe("emailNotification", () => {
       expect(sendArgs.subject).toBe("Share Subject");
       expect(sendArgs.html).toBe("<h1>Hello</h1>");
     });
+
+    it("should return false if getResendClient throws", async () => {
+      vi.stubEnv("RESEND_API_KEY", "");
+      const result = await sendShareByEmailNotification(["test@example.com"], "Share Subject", "<h1>Hello</h1>");
+      expect(result).toBe(false);
+    });
   });
 
   describe("sendTestEmail", () => {
@@ -139,6 +190,12 @@ describe("emailNotification", () => {
       expect(sendArgs.to).toEqual(["admin@test.com"]);
       expect(sendArgs.subject).toBe("✅ Teste de Configuração de E-mail — Smart Fly");
       expect(sendArgs.html).toContain("Configuração de E-mail Funcionando");
+    });
+
+    it("should return false if getResendClient throws", async () => {
+      vi.stubEnv("RESEND_API_KEY", "");
+      const result = await sendTestEmail("admin@test.com");
+      expect(result).toBe(false);
     });
   });
 });
