@@ -957,7 +957,7 @@ export function generateBookingLink(
 export interface Feriado {
   data: string; // DD/MM/YYYY
   nome: string;
-  tipo: "nacional" | "facultativo" | "copa";
+  tipo: "nacional" | "facultativo" | "copa" | "estadual" | "municipal";
 }
 
 export const feriados2026: Feriado[] = [
@@ -988,6 +988,7 @@ export const feriados2026: Feriado[] = [
   { data: "02/11/2026", nome: "Finados", tipo: "nacional" },
   { data: "15/11/2026", nome: "Proclamação da República", tipo: "nacional" },
   { data: "20/11/2026", nome: "Consciência Negra", tipo: "nacional" },
+  { data: "02/09/2026", nome: "Aniversário de Blumenau", tipo: "municipal" },
   {
     data: "24/12/2026",
     nome: "Véspera de Natal (ponto facultativo)",

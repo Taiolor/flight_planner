@@ -72,9 +72,13 @@ describe("calendarHelper", () => {
       // leadMinutes = 120 -> start = 10:00 - 2h = 08:00
       // durationMinutes = 75 -> end = 10:00 + 1h15 = 11:15
       expect(link).toContain("action=TEMPLATE");
-      expect(link).toContain("text=%E2%9C%88%EF%B8%8F+Voo+IDA+LA3045+%E2%80%94+LATAM+Airlines");
+      expect(link).toContain(
+        "text=%E2%9C%88%EF%B8%8F+Voo+IDA+LA3045+%E2%80%94+LATAM+Airlines"
+      );
       expect(link).toContain("location=Aeroporto+de+Guarulhos+%28GRU%29");
-      expect(link).toContain("details=Localizador%3A+ABC123%0ACompanhia%3A+LATAM");
+      expect(link).toContain(
+        "details=Localizador%3A+ABC123%0ACompanhia%3A+LATAM"
+      );
 
       // We don't assert the exact date string since it relies on local timezone in the implementation
       // but we can check if it has the format YYYYMMDDTHHmm00%2FYYYYMMDDTHHmm00 (URL encoded slash)
@@ -141,7 +145,9 @@ describe("calendarHelper", () => {
     it("generates a valid Outlook Web link with default lead/duration times", () => {
       const link = getOutlookLink(defaultParams);
       expect(link).toContain("outlook.live.com");
-      expect(link).toContain("subject=%E2%9C%88%EF%B8%8F+Voo+IDA+G31234+%E2%80%94+Gol");
+      expect(link).toContain(
+        "subject=%E2%9C%88%EF%B8%8F+Voo+IDA+G31234+%E2%80%94+Gol"
+      );
       expect(link).toContain("location=Aeroporto+de+Congonhas+%28CGH%29");
 
       // Assert that startdt and enddt are present and are valid ISO strings (URL encoded)

@@ -67,6 +67,189 @@ function getMonthLabel(dateStr: string): string {
 
 // ─── Componentes de página (sem hooks — apenas JSX puro para renderToStaticMarkup) ─
 
+interface FlightDetailsProps {
+  title: string;
+  titleColor: string;
+  borderRight?: boolean;
+  airline?: string | null;
+  airlineInfo?: { bg: string; text: string; label: string };
+  flightNumber?: string | null;
+  locator?: string | null;
+  flightDatetime?: string | null;
+  airport?: string | null;
+}
+
+function FlightDetailsSection({
+  title,
+  titleColor,
+  borderRight,
+  airline,
+  airlineInfo,
+  flightNumber,
+  locator,
+  flightDatetime,
+  airport,
+}: FlightDetailsProps) {
+  return (
+    <div
+      style={{
+        flex: 1,
+        padding: "16px 20px",
+        borderRight: borderRight ? "1px solid #e2e8f0" : undefined,
+      }}
+    >
+      <div
+        style={{
+          fontSize: "10px",
+          fontWeight: 800,
+          textTransform: "uppercase",
+          letterSpacing: "1px",
+          color: titleColor,
+          marginBottom: "10px",
+        }}
+      >
+        {title}
+      </div>
+      <table
+        style={{
+          width: "100%",
+          borderCollapse: "collapse",
+          fontSize: "12px",
+        }}
+      >
+        <tbody>
+          {airline && (
+            <tr>
+              <td
+                style={{
+                  color: "#64748b",
+                  paddingBottom: "6px",
+                  width: "90px",
+                  verticalAlign: "middle",
+                }}
+              >
+                Companhia
+              </td>
+              <td
+                style={{
+                  paddingBottom: "6px",
+                  verticalAlign: "middle",
+                }}
+              >
+                {airlineInfo ? (
+                  <span
+                    style={{
+                      display: "inline-block",
+                      background: airlineInfo.bg,
+                      color: airlineInfo.text,
+                      borderRadius: "4px",
+                      padding: "3px 10px",
+                      fontSize: "11px",
+                      fontWeight: 700,
+                      minWidth: "52px",
+                      textAlign: "center",
+                    }}
+                  >
+                    {airlineInfo.label}
+                  </span>
+                ) : (
+                  airline
+                )}
+              </td>
+            </tr>
+          )}
+          {flightNumber && (
+            <tr>
+              <td
+                style={{
+                  color: "#64748b",
+                  paddingBottom: "6px",
+                  verticalAlign: "middle",
+                }}
+              >
+                Voo
+              </td>
+              <td
+                style={{
+                  paddingBottom: "6px",
+                  fontWeight: 700,
+                  color: "#1e293b",
+                  verticalAlign: "middle",
+                }}
+              >
+                {flightNumber}
+              </td>
+            </tr>
+          )}
+          {locator && (
+            <tr>
+              <td
+                style={{
+                  color: "#64748b",
+                  paddingBottom: "6px",
+                  verticalAlign: "middle",
+                }}
+              >
+                Localizador
+              </td>
+              <td
+                style={{
+                  paddingBottom: "6px",
+                  fontWeight: 700,
+                  color: "#1e293b",
+                  fontFamily: "monospace",
+                  letterSpacing: "1px",
+                  verticalAlign: "middle",
+                }}
+              >
+                {locator}
+              </td>
+            </tr>
+          )}
+          {flightDatetime && (
+            <tr>
+              <td
+                style={{
+                  color: "#64748b",
+                  paddingBottom: "6px",
+                  verticalAlign: "middle",
+                }}
+              >
+                Data/Hora
+              </td>
+              <td
+                style={{
+                  paddingBottom: "6px",
+                  color: "#1e293b",
+                  verticalAlign: "middle",
+                }}
+              >
+                {formatDatetime(flightDatetime)}
+              </td>
+            </tr>
+          )}
+          {airport && (
+            <tr>
+              <td style={{ color: "#64748b", verticalAlign: "middle" }}>
+                Aeroporto
+              </td>
+              <td
+                style={{
+                  fontWeight: 600,
+                  color: "#1e293b",
+                  verticalAlign: "middle",
+                }}
+              >
+                {airport}
+              </td>
+            </tr>
+          )}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
 function CoverPage({
   issued,
   totalInvested,
@@ -314,319 +497,27 @@ function MonthPage({
             </div>
 
             <div style={{ display: "flex" }}>
-              {/* IDA */}
-              <div
-                style={{
-                  flex: 1,
-                  padding: "16px 20px",
-                  borderRight: "1px solid #e2e8f0",
-                }}
-              >
-                <div
-                  style={{
-                    fontSize: "10px",
-                    fontWeight: 800,
-                    textTransform: "uppercase",
-                    letterSpacing: "1px",
-                    color: "#1d4ed8",
-                    marginBottom: "10px",
-                  }}
-                >
-                  → IDA
-                </div>
-                <table
-                  style={{
-                    width: "100%",
-                    borderCollapse: "collapse",
-                    fontSize: "12px",
-                  }}
-                >
-                  <tbody>
-                    {week.departureAirline && (
-                      <tr>
-                        <td
-                          style={{
-                            color: "#64748b",
-                            paddingBottom: "6px",
-                            width: "90px",
-                            verticalAlign: "middle",
-                          }}
-                        >
-                          Companhia
-                        </td>
-                        <td
-                          style={{
-                            paddingBottom: "6px",
-                            verticalAlign: "middle",
-                          }}
-                        >
-                          {depAirlineInfo ? (
-                            <span
-                              style={{
-                                display: "inline-block",
-                                background: depAirlineInfo.bg,
-                                color: depAirlineInfo.text,
-                                borderRadius: "4px",
-                                padding: "3px 10px",
-                                fontSize: "11px",
-                                fontWeight: 700,
-                                minWidth: "52px",
-                                textAlign: "center",
-                              }}
-                            >
-                              {depAirlineInfo.label}
-                            </span>
-                          ) : (
-                            week.departureAirline
-                          )}
-                        </td>
-                      </tr>
-                    )}
-                    {week.departureFlightNumber && (
-                      <tr>
-                        <td
-                          style={{
-                            color: "#64748b",
-                            paddingBottom: "6px",
-                            verticalAlign: "middle",
-                          }}
-                        >
-                          Voo
-                        </td>
-                        <td
-                          style={{
-                            paddingBottom: "6px",
-                            fontWeight: 700,
-                            color: "#1e293b",
-                            verticalAlign: "middle",
-                          }}
-                        >
-                          {week.departureFlightNumber}
-                        </td>
-                      </tr>
-                    )}
-                    {week.departureLocator && (
-                      <tr>
-                        <td
-                          style={{
-                            color: "#64748b",
-                            paddingBottom: "6px",
-                            verticalAlign: "middle",
-                          }}
-                        >
-                          Localizador
-                        </td>
-                        <td
-                          style={{
-                            paddingBottom: "6px",
-                            fontWeight: 700,
-                            color: "#1e293b",
-                            fontFamily: "monospace",
-                            letterSpacing: "1px",
-                            verticalAlign: "middle",
-                          }}
-                        >
-                          {week.departureLocator}
-                        </td>
-                      </tr>
-                    )}
-                    {week.departureFlightDatetime && (
-                      <tr>
-                        <td
-                          style={{
-                            color: "#64748b",
-                            paddingBottom: "6px",
-                            verticalAlign: "middle",
-                          }}
-                        >
-                          Data/Hora
-                        </td>
-                        <td
-                          style={{
-                            paddingBottom: "6px",
-                            color: "#1e293b",
-                            verticalAlign: "middle",
-                          }}
-                        >
-                          {formatDatetime(week.departureFlightDatetime)}
-                        </td>
-                      </tr>
-                    )}
-                    {week.departureAirport && (
-                      <tr>
-                        <td
-                          style={{ color: "#64748b", verticalAlign: "middle" }}
-                        >
-                          Aeroporto
-                        </td>
-                        <td
-                          style={{
-                            fontWeight: 600,
-                            color: "#1e293b",
-                            verticalAlign: "middle",
-                          }}
-                        >
-                          {week.departureAirport}
-                        </td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
-              </div>
-
-              {/* VOLTA */}
-              <div style={{ flex: 1, padding: "16px 20px" }}>
-                <div
-                  style={{
-                    fontSize: "10px",
-                    fontWeight: 800,
-                    textTransform: "uppercase",
-                    letterSpacing: "1px",
-                    color: "#ea580c",
-                    marginBottom: "10px",
-                  }}
-                >
-                  ↩ VOLTA
-                </div>
-                <table
-                  style={{
-                    width: "100%",
-                    borderCollapse: "collapse",
-                    fontSize: "12px",
-                  }}
-                >
-                  <tbody>
-                    {week.returnAirline && (
-                      <tr>
-                        <td
-                          style={{
-                            color: "#64748b",
-                            paddingBottom: "6px",
-                            width: "90px",
-                            verticalAlign: "middle",
-                          }}
-                        >
-                          Companhia
-                        </td>
-                        <td
-                          style={{
-                            paddingBottom: "6px",
-                            verticalAlign: "middle",
-                          }}
-                        >
-                          {retAirlineInfo ? (
-                            <span
-                              style={{
-                                display: "inline-block",
-                                background: retAirlineInfo.bg,
-                                color: retAirlineInfo.text,
-                                borderRadius: "4px",
-                                padding: "3px 10px",
-                                fontSize: "11px",
-                                fontWeight: 700,
-                                minWidth: "52px",
-                                textAlign: "center",
-                              }}
-                            >
-                              {retAirlineInfo.label}
-                            </span>
-                          ) : (
-                            week.returnAirline
-                          )}
-                        </td>
-                      </tr>
-                    )}
-                    {week.returnFlightNumber && (
-                      <tr>
-                        <td
-                          style={{
-                            color: "#64748b",
-                            paddingBottom: "6px",
-                            verticalAlign: "middle",
-                          }}
-                        >
-                          Voo
-                        </td>
-                        <td
-                          style={{
-                            paddingBottom: "6px",
-                            fontWeight: 700,
-                            color: "#1e293b",
-                            verticalAlign: "middle",
-                          }}
-                        >
-                          {week.returnFlightNumber}
-                        </td>
-                      </tr>
-                    )}
-                    {week.returnLocator && (
-                      <tr>
-                        <td
-                          style={{
-                            color: "#64748b",
-                            paddingBottom: "6px",
-                            verticalAlign: "middle",
-                          }}
-                        >
-                          Localizador
-                        </td>
-                        <td
-                          style={{
-                            paddingBottom: "6px",
-                            fontWeight: 700,
-                            color: "#1e293b",
-                            fontFamily: "monospace",
-                            letterSpacing: "1px",
-                            verticalAlign: "middle",
-                          }}
-                        >
-                          {week.returnLocator}
-                        </td>
-                      </tr>
-                    )}
-                    {week.returnFlightDatetime && (
-                      <tr>
-                        <td
-                          style={{
-                            color: "#64748b",
-                            paddingBottom: "6px",
-                            verticalAlign: "middle",
-                          }}
-                        >
-                          Data/Hora
-                        </td>
-                        <td
-                          style={{
-                            paddingBottom: "6px",
-                            color: "#1e293b",
-                            verticalAlign: "middle",
-                          }}
-                        >
-                          {formatDatetime(week.returnFlightDatetime)}
-                        </td>
-                      </tr>
-                    )}
-                    {week.returnAirport && (
-                      <tr>
-                        <td
-                          style={{ color: "#64748b", verticalAlign: "middle" }}
-                        >
-                          Aeroporto
-                        </td>
-                        <td
-                          style={{
-                            fontWeight: 600,
-                            color: "#1e293b",
-                            verticalAlign: "middle",
-                          }}
-                        >
-                          {week.returnAirport}
-                        </td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
-              </div>
+              <FlightDetailsSection
+                title="→ IDA"
+                titleColor="#1d4ed8"
+                borderRight={true}
+                airline={week.departureAirline}
+                airlineInfo={depAirlineInfo}
+                flightNumber={week.departureFlightNumber}
+                locator={week.departureLocator}
+                flightDatetime={week.departureFlightDatetime}
+                airport={week.departureAirport}
+              />
+              <FlightDetailsSection
+                title="↩ VOLTA"
+                titleColor="#ea580c"
+                airline={week.returnAirline}
+                airlineInfo={retAirlineInfo}
+                flightNumber={week.returnFlightNumber}
+                locator={week.returnLocator}
+                flightDatetime={week.returnFlightDatetime}
+                airport={week.returnAirport}
+              />
             </div>
           </div>
         );

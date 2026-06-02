@@ -1,6 +1,5 @@
 import { COOKIE_NAME } from "@shared/const";
 import { quotesRouter } from "./routers/quotes";
-import type { Request } from "express";
 import crypto from "crypto";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";

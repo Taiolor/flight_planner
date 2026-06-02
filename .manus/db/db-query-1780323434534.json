@@ -1,0 +1,60 @@
+{
+  "query": "SELECT weekNumber, departureFlightDatetime, returnFlightDatetime FROM flight_weeks WHERE isTicketIssued = 1 LIMIT 10;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3hTCxLMFFnvwjKu.root --database HQ655wm9a6bck22hJAwYRc --execute SELECT weekNumber, departureFlightDatetime, returnFlightDatetime FROM flight_weeks WHERE isTicketIssued = 1 LIMIT 10;",
+  "rows": [
+    {
+      "weekNumber": "1",
+      "departureFlightDatetime": "2026-02-22T17:55",
+      "returnFlightDatetime": "2026-03-06T19:50"
+    },
+    {
+      "weekNumber": "2",
+      "departureFlightDatetime": "2026-03-08T17:55",
+      "returnFlightDatetime": "2026-03-13T19:50"
+    },
+    {
+      "weekNumber": "3",
+      "departureFlightDatetime": "2026-03-15T17:15",
+      "returnFlightDatetime": "2026-03-19T06:20"
+    },
+    {
+      "weekNumber": "4",
+      "departureFlightDatetime": "2026-03-22T22:15",
+      "returnFlightDatetime": "2026-03-27T19:50"
+    },
+    {
+      "weekNumber": "5",
+      "departureFlightDatetime": "2026-03-29T10:20",
+      "returnFlightDatetime": "2026-04-02T20:00"
+    },
+    {
+      "weekNumber": "6",
+      "departureFlightDatetime": "2026-04-05T22:10",
+      "returnFlightDatetime": "2026-04-09T19:45"
+    },
+    {
+      "weekNumber": "7",
+      "departureFlightDatetime": "2026-04-12T21:55",
+      "returnFlightDatetime": "2026-04-17T20:00"
+    },
+    {
+      "weekNumber": "8",
+      "departureFlightDatetime": "2026-04-21T22:10",
+      "returnFlightDatetime": "2026-04-28T19:45"
+    },
+    {
+      "weekNumber": "11",
+      "departureFlightDatetime": "2026-05-10T22:05",
+      "returnFlightDatetime": "2026-05-29T19:10"
+    },
+    {
+      "weekNumber": "12",
+      "departureFlightDatetime": "2026-05-15T19:10",
+      "returnFlightDatetime": "2026-05-24T17:55"
+    }
+  ],
+  "messages": [],
+  "stdout": "weekNumber\tdepartureFlightDatetime\treturnFlightDatetime\n1\t2026-02-22T17:55\t2026-03-06T19:50\n2\t2026-03-08T17:55\t2026-03-13T19:50\n3\t2026-03-15T17:15\t2026-03-19T06:20\n4\t2026-03-22T22:15\t2026-03-27T19:50\n5\t2026-03-29T10:20\t2026-04-02T20:00\n6\t2026-04-05T22:10\t2026-04-09T19:45\n7\t2026-04-12T21:55\t2026-04-17T20:00\n8\t2026-04-21T22:10\t2026-04-28T19:45\n11\t2026-05-10T22:05\t2026-05-29T19:10\n12\t2026-05-15T19:10\t2026-05-24T17:55\n",
+  "stderr": "",
+  "execution_time_ms": 315
+}

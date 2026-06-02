@@ -335,3 +335,35 @@
 
 - [x] Adicionar horários do voo (ida e volta) no corpo do e-mail compartilhado
 - [x] Corrigir links de calendário (Outlook e Gmail) para incluir horários corretos dos voos
+
+## Bug Fix: Filtros de Horário
+
+- [x] Bug: filtros de horário não funcionavam porque acessavam campo inexistente `w.departureTime` em vez de `w.departureFlightDatetime`
+- [x] Corrigir lógica para extrair horário do formato datetime ISO (ex: "2026-02-22T17:55")
+- [x] Usar OR para combinar ida e volta (voos sem horário definido sempre passam no filtro)
+- [x] Corrigir badges dos contadores de voos para usar os campos corretos
+
+## Feriados de Blumenau, SC e Nacionais
+
+- [x] Pesquisar e listar todos os feriados nacionais, estaduais (SC) e municipais (Blumenau) de 2026
+- [x] Atualizar dados de feriados no flightData.ts para incluir feriados municipais (Aniversário de Blumenau: 02/09)
+- [x] Atualizar interface Feriado para incluir tipos "estadual" e "municipal"
+- [x] Feriados já são exibidos corretamente nos cards das semanas (sistema já tinha getFeriadosDaSemana funcionando)
+
+## Calendário - Sinalização de Feriados
+
+- [x] Implementar sinalização visual de feriados na página de calendário
+- [x] Adicionar função mouse-over para exibir nome do feriado ao passar o mouse
+- [x] Diferenciar cores/estilos para feriados nacionais, estaduais e municipais (vermelho=nacional, azul=municipal, verde=estadual, âmbar=observância)
+
+## Calendário - Finais de Semana Prolongados
+
+- [x] Implementar lógica para detectar finais de semana prolongados próximos aos feriados
+- [x] Destacar visualmente finais de semana prolongados no calendário (cor roxo claro bg-purple-100)
+- [x] Considerar feriados que caem na sexta (prolongam para segunda) ou segunda (prolongam para sexta)
+
+## Calendário - Filtro de Feriados e Finais de Semana Prolongados
+
+- [x] Adicionar toggle/checkbox para filtrar apenas feriados e finais de semana prolongados
+- [x] Ocultar outros dias quando filtro está ativo (renderiza div vazia)
+- [x] Manter tooltip e cores diferenciadas para cada tipo de feriado

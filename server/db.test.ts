@@ -10,7 +10,7 @@ describe("upsertUser", () => {
   const originalEnv = process.env;
 
   beforeEach(() => {
-    process.env = { ...originalEnv, DATABASE_URL: "mysql://mock" };
+    process.env = { ...originalEnv, DATABASE_URL: "mysql://mock", JWT_SECRET: "test-secret" };
     vi.clearAllMocks();
     vi.resetModules(); // This will clear the module cache, so _db in db.ts is null for each test
     vi.spyOn(console, "error").mockImplementation(() => {});
@@ -21,21 +21,21 @@ describe("upsertUser", () => {
     process.env = originalEnv;
   });
 
-  it("should throw an error if db insertion fails", async () => {
+  it("should throw an error if db insertion fails due to database rejection", async () => {
     const mockDb = {
       insert: vi.fn().mockReturnThis(),
       values: vi.fn().mockReturnThis(),
       onDuplicateKeyUpdate: vi
         .fn()
-        .mockRejectedValue(new Error("DB insertion failed")),
+        .mockRejectedValue(new Error("Constraint violation")),
     };
 
     (drizzle as any).mockReturnValue(mockDb);
 
     const { upsertUser } = await import("./db");
 
-    await expect(upsertUser({ openId: "test-user-123" })).rejects.toThrow(
-      "DB insertion failed"
+    await expect(upsertUser({ openId: "invalid-duplicate-user" })).rejects.toThrow(
+      "Constraint violation"
     );
 
     expect(console.error).toHaveBeenCalledWith(
@@ -51,6 +51,19 @@ describe("upsertUser", () => {
     await expect(upsertUser({})).rejects.toThrow(
       "User openId is required for upsert"
     );
+  });
+
+  it("should return early and warn if db is not available", async () => {
+    const { upsertUser } = await import("./db");
+
+    vi.stubEnv("DATABASE_URL", ""); // db will fail to connect
+
+    await expect(upsertUser({ openId: "test-user-123" })).resolves.toBeUndefined();
+
+    expect(console.warn).toHaveBeenCalledWith(
+      "[Database] Cannot upsert user: database not available"
+    );
+    vi.unstubAllEnvs();
   });
 
   it("should successfully upsert user", async () => {
@@ -69,7 +82,98 @@ describe("upsertUser", () => {
     ).resolves.toBeUndefined();
 
     expect(mockDb.insert).toHaveBeenCalled();
-    expect(mockDb.values).toHaveBeenCalled();
-    expect(mockDb.onDuplicateKeyUpdate).toHaveBeenCalled();
+    expect(mockDb.values).toHaveBeenCalledWith(
+      expect.objectContaining({ openId: "test-user-123", email: "test@example.com" })
+    );
+    expect(mockDb.onDuplicateKeyUpdate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        set: expect.objectContaining({ email: "test@example.com" })
+      })
+    );
+  });
+
+  it("should set lastSignedIn in updateSet if updateSet is otherwise empty", async () => {
+    const mockDb = {
+      insert: vi.fn().mockReturnThis(),
+      values: vi.fn().mockReturnThis(),
+      onDuplicateKeyUpdate: vi.fn().mockResolvedValue([{ insertId: 1 }]),
+    };
+
+    (drizzle as any).mockReturnValue(mockDb);
+
+    const { upsertUser } = await import("./db");
+
+    await expect(
+      upsertUser({ openId: "test-user-123" }) // No other fields provided
+    ).resolves.toBeUndefined();
+
+    expect(mockDb.onDuplicateKeyUpdate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        set: expect.objectContaining({
+          lastSignedIn: expect.any(Date)
+        })
+      })
+    );
+  });
+
+  it("should handle full parameters and specific role assignment", async () => {
+    const mockDb = {
+      insert: vi.fn().mockReturnThis(),
+      values: vi.fn().mockReturnThis(),
+      onDuplicateKeyUpdate: vi.fn().mockResolvedValue([{ insertId: 1 }]),
+    };
+
+    (drizzle as any).mockReturnValue(mockDb);
+
+    const { upsertUser } = await import("./db");
+
+    const date = new Date();
+    await expect(
+      upsertUser({
+        openId: "test-user-123",
+        email: "test@example.com",
+        name: "Test User",
+        loginMethod: "google",
+        role: "admin",
+        lastSignedIn: date,
+      })
+    ).resolves.toBeUndefined();
+
+    expect(mockDb.values).toHaveBeenCalledWith(
+      expect.objectContaining({
+        openId: "test-user-123",
+        email: "test@example.com",
+        name: "Test User",
+        loginMethod: "google",
+        role: "admin",
+        lastSignedIn: date,
+      })
+    );
+  });
+
+  it("should fall back to admin role if openId matches ownerOpenId", async () => {
+    const mockDb = {
+      insert: vi.fn().mockReturnThis(),
+      values: vi.fn().mockReturnThis(),
+      onDuplicateKeyUpdate: vi.fn().mockResolvedValue([{ insertId: 1 }]),
+    };
+
+    (drizzle as any).mockReturnValue(mockDb);
+
+    // We mock ENV to enforce ownerOpenId matching
+    vi.doMock("./_core/env", () => ({
+      ENV: { ownerOpenId: "owner-123" }
+    }));
+    vi.resetModules();
+
+    const { upsertUser } = await import("./db");
+
+    await expect(
+      upsertUser({ openId: "owner-123" })
+    ).resolves.toBeUndefined();
+
+    expect(mockDb.values).toHaveBeenCalledWith(
+      expect.objectContaining({ openId: "owner-123", role: "admin" })
+    );
   });
 });
