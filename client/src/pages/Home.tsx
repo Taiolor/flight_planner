@@ -404,8 +404,8 @@ export default function Home() {
   const [filterMonth, setFilterMonth] = useState<string>("all");
   const [filterAirline, setFilterAirline] = useState<string>("all");
   const [filterTicketStatus, setFilterTicketStatus] = useState<string>("all");
-  const [departureTimeRange, setDepartureTimeRange] = useState<[number, number]>([0, 1439]); // 00:00 - 23:59
-  const [returnTimeRange, setReturnTimeRange] = useState<[number, number]>([0, 1439]); // 00:00 - 23:59
+  const [departureTimeFilter, setDepartureTimeFilter] = useState<number>(0); // 00:00 por padrão
+  const [returnTimeFilter, setReturnTimeFilter] = useState<number>(0); // 00:00 por padrão
 
   // Funcoes auxiliares para conversao de horario
   const minutesToTime = (minutes: number): string => {
@@ -414,11 +414,16 @@ export default function Home() {
     return `${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}`;
   };
 
-  const getFlightMinutes = (timeStr: string | undefined): number => {
-    if (!timeStr) return 0;
+  const getFlightMinutes = (datetimeStr: string | undefined | null): number => {
+    if (!datetimeStr) return -1; // -1 indica que não há horário definido
+    // Formato esperado: "2026-02-22T17:55" ou "17:55"
+    const tIndex = datetimeStr.indexOf('T');
+    const timeStr = tIndex >= 0 ? datetimeStr.slice(tIndex + 1) : datetimeStr;
     const parts = timeStr.split(':');
-    if (parts.length < 2) return 0;
-    const [h, m] = parts.map(Number);
+    if (parts.length < 2) return -1;
+    const h = parseInt(parts[0], 10);
+    const m = parseInt(parts[1], 10);
+    if (isNaN(h) || isNaN(m)) return -1;
     return h * 60 + m;
   };
 
@@ -822,12 +827,26 @@ export default function Home() {
       }
       if (filterTicketStatus === "issued" && !w.isTicketIssued) return false;
       if (filterTicketStatus === "notIssued" && w.isTicketIssued) return false;
-      // Filtro de horario de ida
-      const departureMinutes = getFlightMinutes(w.departureTime);
-      if (departureMinutes < departureTimeRange[0] || departureMinutes > departureTimeRange[1]) return false;
-      // Filtro de horario de volta
-      const returnMinutes = getFlightMinutes(w.returnTime);
-      if (returnMinutes < returnTimeRange[0] || returnMinutes > returnTimeRange[1]) return false;
+      // Filtro de horario: considerar ida OU volta
+      // Usa departureFlightDatetime e returnFlightDatetime (formato "2026-02-22T17:55")
+      const departureMinutes = getFlightMinutes(w.departureFlightDatetime);
+      const returnMinutes = getFlightMinutes(w.returnFlightDatetime);
+      // Se o voo não tem horário definido (-1), ele sempre passa no filtro
+      const departureMatches = departureMinutes === -1 || (departureMinutes >= departureTimeFilter && departureMinutes <= 1439);
+      const returnMatches = returnMinutes === -1 || (returnMinutes >= returnTimeFilter && returnMinutes <= 1439);
+      // Se ambos os filtros estão em 0 (padrão), mostrar todos
+      if (departureTimeFilter === 0 && returnTimeFilter === 0) {
+        // Sem filtro de horário, mostrar tudo
+      } else if (departureTimeFilter > 0 && returnTimeFilter > 0) {
+        // Ambos filtros ativos: ida OU volta deve bater
+        if (!departureMatches && !returnMatches) return false;
+      } else if (departureTimeFilter > 0) {
+        // Apenas filtro de ida ativo
+        if (!departureMatches) return false;
+      } else if (returnTimeFilter > 0) {
+        // Apenas filtro de volta ativo
+        if (!returnMatches) return false;
+      }
       return true;
     });
   }, [
@@ -836,8 +855,8 @@ export default function Home() {
     showCheapestOnly,
     priceThreshold,
     filterTicketStatus,
-    departureTimeRange,
-    returnTimeRange,
+    departureTimeFilter,
+    returnTimeFilter,
     getLowestPrice,
   ]);
 
@@ -1706,7 +1725,8 @@ export default function Home() {
           <h2 className="text-base sm:text-xl font-bold text-slate-900 dark:text-slate-100 mb-3 sm:mb-6">
             Filtros e Controles
           </h2>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
+          {/* Linha 1: Mês, Companhia, Ordenar por, Filtro de Preço, Status do Bilhete */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
             <div>
               <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2 block">
                 Mês
@@ -1825,40 +1845,72 @@ export default function Home() {
                 </SelectContent>
               </Select>
             </div>
+          </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2 block">
-                  Horário de Ida: {minutesToTime(departureTimeRange[0])}
+          {/* Linha 2: Horários de Ida e Volta + Botão Limpar + Resumo */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mt-4">
+            <div>
+              <div className="flex justify-between items-center mb-2">
+                <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">
+                  Horário de Ida: {minutesToTime(departureTimeFilter)}
                 </label>
-                <input
-                  type="range"
-                  min="0"
-                  max="1439"
-                  step="15"
-                  value={departureTimeRange[0]}
-                  onChange={e => setDepartureTimeRange([parseInt(e.target.value), departureTimeRange[1]])}
-                  className="w-full"
-                />
+                <span className="text-xs bg-blue-100 dark:bg-blue-900 text-blue-900 dark:text-blue-100 px-2 py-1 rounded">
+                  {filteredWeeks.filter(w => {
+                    const depMin = getFlightMinutes(w.departureFlightDatetime);
+                    return depMin >= 0 && depMin >= departureTimeFilter && depMin <= 1439;
+                  }).length} voos
+                </span>
               </div>
-
-              <div>
-                <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2 block">
-                  Horário de Volta: {minutesToTime(returnTimeRange[0])}
-                </label>
-                <input
-                  type="range"
-                  min="0"
-                  max="1439"
-                  step="15"
-                  value={returnTimeRange[0]}
-                  onChange={e => setReturnTimeRange([parseInt(e.target.value), returnTimeRange[1]])}
-                  className="w-full"
-                />
-              </div>
+              <input
+                type="range"
+                min="0"
+                max="1439"
+                step="15"
+                value={departureTimeFilter}
+                onChange={e => setDepartureTimeFilter(parseInt(e.target.value))}
+                className="w-full"
+              />
             </div>
 
-            <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+            <div>
+              <div className="flex justify-between items-center mb-2">
+                <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">
+                  Horário de Volta: {minutesToTime(returnTimeFilter)}
+                </label>
+                <span className="text-xs bg-blue-100 dark:bg-blue-900 text-blue-900 dark:text-blue-100 px-2 py-1 rounded">
+                  {filteredWeeks.filter(w => {
+                    const retMin = getFlightMinutes(w.returnFlightDatetime);
+                    return retMin >= 0 && retMin >= returnTimeFilter && retMin <= 1439;
+                  }).length} voos
+                </span>
+              </div>
+              <input
+                type="range"
+                min="0"
+                max="1439"
+                step="15"
+                value={returnTimeFilter}
+                onChange={e => setReturnTimeFilter(parseInt(e.target.value))}
+                className="w-full"
+              />
+            </div>
+
+            <div className="flex items-end">
+              <Button
+                onClick={() => {
+                  setDepartureTimeFilter(0);
+                  setReturnTimeFilter(0);
+                }}
+                variant="outline"
+                size="sm"
+                className="w-full text-slate-700 dark:text-slate-300"
+              >
+                <RotateCcw className="w-4 h-4 mr-2" />
+                Limpar Horários
+              </Button>
+            </div>
+
+            <div className="bg-green-50 border border-green-200 rounded-lg p-4 flex flex-col justify-center">
               <p className="text-sm font-semibold text-green-900">
                 {sortedWeeks.length} viagens
               </p>
@@ -1927,28 +1979,33 @@ export default function Home() {
         {!isLoading && (
           <div className="space-y-3">
             {sortedWeeks.length === 0 ? (
-              <Card className="p-12 text-center border-0 shadow-md">
-                <Calendar className="w-12 h-12 text-slate-300 mx-auto mb-4" />
-                <p className="text-slate-500 text-lg">
-                  Nenhuma semana encontrada com os filtros selecionados
-                </p>
-                {(filterMonth !== "all" ||
-                  filterAirline !== "all" ||
-                  filterTicketStatus !== "all" ||
-                  showCheapestOnly) && (
-                  <Button
-                    variant="outline"
-                    className="mt-6 border-blue-200 text-blue-600 hover:bg-blue-50 hover:text-blue-700"
-                    onClick={() => {
-                      setFilterMonth("all");
-                      setFilterAirline("all");
-                      setFilterTicketStatus("all");
-                      setShowCheapestOnly(false);
-                    }}
-                  >
-                    Limpar Filtros
-                  </Button>
-                )}
+              <Card className="p-12 text-center border-0 shadow-md bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
+                <div className="flex flex-col items-center">
+                  <Calendar className="w-16 h-16 text-slate-300 dark:text-slate-600 mb-4" />
+                  <h3 className="text-xl font-semibold text-slate-700 dark:text-slate-300 mb-2">
+                    Nenhum voo encontrado
+                  </h3>
+                  <p className="text-slate-600 dark:text-slate-400 mb-6 max-w-md">
+                    Desculpe, não encontramos voos que correspondam aos seus filtros. Tente ajustar os horários, mês ou outras opções de filtro.
+                  </p>
+                  <div className="flex gap-3 justify-center flex-wrap">
+                    <Button
+                      variant="outline"
+                      className="border-slate-300 text-slate-700 dark:border-slate-600 dark:text-slate-300"
+                      onClick={() => {
+                        setFilterMonth("all");
+                        setFilterAirline("all");
+                        setFilterTicketStatus("all");
+                        setShowCheapestOnly(false);
+                        setDepartureTimeFilter(0);
+                        setReturnTimeFilter(0);
+                      }}
+                    >
+                      <RotateCcw className="w-4 h-4 mr-2" />
+                      Limpar Todos os Filtros
+                    </Button>
+                  </div>
+                </div>
               </Card>
             ) : (
               weeksByMonth.map(

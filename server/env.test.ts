@@ -8,14 +8,13 @@ describe("Environment Configuration", () => {
     process.env = { ...originalEnv };
   });
 
-  it("should generate a random secret in dev when JWT_SECRET is missing", async () => {
+  it("should throw an error if JWT_SECRET is missing in development", async () => {
     delete process.env.JWT_SECRET;
     process.env.NODE_ENV = "development";
 
-    const { ENV } = await import("./_core/env");
-    // In dev, a random 64-char hex string is generated instead of throwing
-    expect(ENV.cookieSecret).toBeTruthy();
-    expect(ENV.cookieSecret.length).toBe(64);
+    await expect(import("./_core/env")).rejects.toThrow(
+      "JWT_SECRET environment variable is required in all environments"
+    );
   });
 
   it("should throw an error if JWT_SECRET is missing in production", async () => {
@@ -23,7 +22,7 @@ describe("Environment Configuration", () => {
     process.env.NODE_ENV = "production";
 
     await expect(import("./_core/env")).rejects.toThrow(
-      "JWT_SECRET environment variable is required in production"
+      "JWT_SECRET environment variable is required in all environments"
     );
   });
 

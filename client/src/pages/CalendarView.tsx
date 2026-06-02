@@ -42,22 +42,28 @@ const MONTHS = [
 const WEEKDAYS = ["D", "S", "T", "Q", "Q", "S", "S"];
 const YEAR = 2026;
 
-const HOLIDAYS: Record<string, string> = {
-  "2026-01-01": "Ano Novo",
-  "2026-02-16": "Carnaval",
-  "2026-02-17": "Carnaval",
-  "2026-02-18": "Carnaval",
-  "2026-04-03": "Paixão de Cristo",
-  "2026-04-05": "Páscoa",
-  "2026-04-21": "Tiradentes",
-  "2026-05-01": "Dia do Trabalho",
-  "2026-06-04": "Corpus Christi",
-  "2026-09-07": "Independência",
-  "2026-10-12": "N. Sra. Aparecida",
-  "2026-11-02": "Finados",
-  "2026-11-15": "Proclamação da República",
-  "2026-11-20": "Consciência Negra",
-  "2026-12-25": "Natal",
+interface HolidayInfo {
+  name: string;
+  type: "national" | "municipal" | "state" | "observance";
+}
+
+const HOLIDAYS: Record<string, HolidayInfo> = {
+  "2026-01-01": { name: "Confraternização Universal", type: "national" },
+  "2026-02-16": { name: "Carnaval (segunda)", type: "observance" },
+  "2026-02-17": { name: "Carnaval (terça)", type: "observance" },
+  "2026-02-18": { name: "Quarta-feira de Cinzas", type: "observance" },
+  "2026-04-03": { name: "Sexta-feira Santa", type: "national" },
+  "2026-04-05": { name: "Páscoa", type: "national" },
+  "2026-04-21": { name: "Tiradentes", type: "national" },
+  "2026-05-01": { name: "Dia do Trabalho", type: "national" },
+  "2026-06-04": { name: "Corpus Christi", type: "national" },
+  "2026-09-02": { name: "Aniversário de Blumenau", type: "municipal" },
+  "2026-09-07": { name: "Independência do Brasil", type: "national" },
+  "2026-10-12": { name: "Nossa Senhora Aparecida", type: "national" },
+  "2026-11-02": { name: "Finados", type: "national" },
+  "2026-11-15": { name: "Proclamação da República", type: "national" },
+  "2026-11-20": { name: "Consciência Negra", type: "national" },
+  "2026-12-25": { name: "Natal", type: "national" },
 };
 
 function parseDate(dateStr: string): Date | null {
@@ -72,6 +78,57 @@ function parseDate(dateStr: string): Date | null {
 
 function toKey(date: Date): string {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+}
+
+function getExtendedWeekends(holidays: Record<string, HolidayInfo>): Set<string> {
+  const extended = new Set<string>();
+  
+  Object.entries(holidays).forEach(([dateStr]) => {
+    const date = new Date(dateStr);
+    const dayOfWeek = date.getDay();
+    
+    if (dayOfWeek === 5) {
+      for (let i = 0; i < 4; i++) {
+        const d = new Date(date);
+        d.setDate(d.getDate() + i);
+        extended.add(toKey(d));
+      }
+    } else if (dayOfWeek === 1) {
+      for (let i = -2; i < 2; i++) {
+        const d = new Date(date);
+        d.setDate(d.getDate() + i);
+        extended.add(toKey(d));
+      }
+    } else if (dayOfWeek === 4) {
+      for (let i = 0; i < 5; i++) {
+        const d = new Date(date);
+        d.setDate(d.getDate() + i);
+        extended.add(toKey(d));
+      }
+    } else if (dayOfWeek === 2) {
+      for (let i = -3; i < 2; i++) {
+        const d = new Date(date);
+        d.setDate(d.getDate() + i);
+        extended.add(toKey(d));
+      }
+    } else if (dayOfWeek === 3) {
+      for (let i = -4; i < 2; i++) {
+        const d = new Date(date);
+        d.setDate(d.getDate() + i);
+        extended.add(toKey(d));
+      }
+    } else if (dayOfWeek === 0 || dayOfWeek === 6) {
+      const friday = new Date(date);
+      friday.setDate(friday.getDate() - (dayOfWeek === 0 ? 2 : 1));
+      for (let i = 0; i < 4; i++) {
+        const d = new Date(friday);
+        d.setDate(d.getDate() + i);
+        extended.add(toKey(d));
+      }
+    }
+  });
+  
+  return extended;
 }
 
 /** Extrai HH:mm de um datetime "YYYY-MM-DDTHH:mm" ou "DD/MM/YYYY HH:mm" */
@@ -508,11 +565,16 @@ function FlightPopup({
 export default function CalendarView() {
   const weeksQuery = trpc.flights.getWeeks.useQuery();
   const [selectedMark, setSelectedMark] = useState<DayMark | null>(null);
+  const [showOnlyHolidaysAndWeekends, setShowOnlyHolidaysAndWeekends] = useState(false);
 
   const today = useMemo(() => {
     const d = new Date();
     d.setHours(0, 0, 0, 0);
     return d;
+  }, []);
+
+  const extendedWeekends = useMemo(() => {
+    return getExtendedWeekends(HOLIDAYS);
   }, []);
 
   const markedDays = useMemo<Record<string, DayMark>>(() => {
@@ -611,6 +673,23 @@ export default function CalendarView() {
         </div>
       </header>
 
+      {/* Filtro */}
+      <div className="px-4 py-4 bg-white border-b border-slate-200 sticky top-16 z-9">
+        <div className="max-w-7xl mx-auto flex items-center gap-3">
+          <label className="flex items-center gap-2 cursor-pointer select-none">
+            <input
+              type="checkbox"
+              checked={showOnlyHolidaysAndWeekends}
+              onChange={(e) => setShowOnlyHolidaysAndWeekends(e.target.checked)}
+              className="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-2 focus:ring-blue-500"
+            />
+            <span className="text-sm font-medium text-slate-700">
+              Mostrar apenas feriados e finais de semana prolongados
+            </span>
+          </label>
+        </div>
+      </div>
+
       {/* Grade anual */}
       <main className="px-4 py-6 max-w-7xl mx-auto">
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-5">
@@ -673,6 +752,16 @@ export default function CalendarView() {
                             ? "text-blue-500"
                             : "text-slate-700";
                         const isClickable = !!mark;
+                        const isExtendedWeekend = extendedWeekends.has(key);
+
+                        // Determinar cor do indicador de feriado baseado no tipo
+                        let holidayDotColor = "bg-amber-400";
+                        if (holiday) {
+                          if (holiday.type === "national") holidayDotColor = "bg-red-500";
+                          else if (holiday.type === "municipal") holidayDotColor = "bg-blue-500";
+                          else if (holiday.type === "state") holidayDotColor = "bg-green-500";
+                          else holidayDotColor = "bg-amber-400";
+                        }
 
                         if (mark) {
                           cellBg = mark.isPast
@@ -682,16 +771,30 @@ export default function CalendarView() {
                         } else if (isToday) {
                           cellBg = "bg-blue-100";
                           textColor = "text-blue-700 font-bold";
+                        } else if (isExtendedWeekend && !mark) {
+                          cellBg = "bg-purple-100";
+                          textColor = "text-purple-700";
+                        }
+
+                        // Construir tooltip com informação do feriado
+                        let tooltipText: string | undefined = undefined;
+                        if (mark) {
+                          tooltipText = `Semana ${mark.week.weekNumber} — clique para detalhes`;
+                        } else if (holiday) {
+                          tooltipText = `${holiday.name} (${holiday.type === "national" ? "Feriado Nacional" : holiday.type === "municipal" ? "Feriado Municipal" : holiday.type === "state" ? "Feriado Estadual" : "Observância"})`;
+                        } else if (isExtendedWeekend) {
+                          tooltipText = "Fim de semana prolongado";
+                        }
+
+                        // Aplicar filtro: mostrar apenas se tem feriado ou fim de semana prolongado
+                        if (showOnlyHolidaysAndWeekends && !holiday && !isExtendedWeekend) {
+                          return <div key={di} className="aspect-square" />;
                         }
 
                         return (
                           <div
                             key={di}
-                            title={
-                              mark
-                                ? `Semana ${mark.week.weekNumber} — clique para detalhes`
-                                : holiday || undefined
-                            }
+                            title={tooltipText}
                             onClick={() => mark && setSelectedMark(mark)}
                             className={`relative flex flex-col items-center justify-center rounded-md aspect-square text-[10px] font-medium select-none transition-all
                               ${cellBg || "hover:bg-slate-50"}
@@ -702,7 +805,7 @@ export default function CalendarView() {
                           >
                             <span>{day}</span>
                             {holiday && !mark && (
-                              <span className="absolute bottom-0.5 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-amber-400" />
+                              <span className={`absolute bottom-0.5 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full ${holidayDotColor}`} />
                             )}
                             {mark && (
                               <span className="absolute bottom-0.5 left-1/2 -translate-x-1/2 flex gap-0.5">
