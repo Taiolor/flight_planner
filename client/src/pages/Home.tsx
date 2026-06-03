@@ -411,15 +411,15 @@ export default function Home() {
   const minutesToTime = (minutes: number): string => {
     const hours = Math.floor(minutes / 60);
     const mins = minutes % 60;
-    return `${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}`;
+    return `${hours.toString().padStart(2, "0")}:${mins.toString().padStart(2, "0")}`;
   };
 
   const getFlightMinutes = (datetimeStr: string | undefined | null): number => {
     if (!datetimeStr) return -1; // -1 indica que não há horário definido
     // Formato esperado: "2026-02-22T17:55" ou "17:55"
-    const tIndex = datetimeStr.indexOf('T');
+    const tIndex = datetimeStr.indexOf("T");
     const timeStr = tIndex >= 0 ? datetimeStr.slice(tIndex + 1) : datetimeStr;
-    const parts = timeStr.split(':');
+    const parts = timeStr.split(":");
     if (parts.length < 2) return -1;
     const h = parseInt(parts[0], 10);
     const m = parseInt(parts[1], 10);
@@ -832,8 +832,12 @@ export default function Home() {
       const departureMinutes = getFlightMinutes(w.departureFlightDatetime);
       const returnMinutes = getFlightMinutes(w.returnFlightDatetime);
       // Se o voo não tem horário definido (-1), ele sempre passa no filtro
-      const departureMatches = departureMinutes === -1 || (departureMinutes >= departureTimeFilter && departureMinutes <= 1439);
-      const returnMatches = returnMinutes === -1 || (returnMinutes >= returnTimeFilter && returnMinutes <= 1439);
+      const departureMatches =
+        departureMinutes === -1 ||
+        (departureMinutes >= departureTimeFilter && departureMinutes <= 1439);
+      const returnMatches =
+        returnMinutes === -1 ||
+        (returnMinutes >= returnTimeFilter && returnMinutes <= 1439);
       // Se ambos os filtros estão em 0 (padrão), mostrar todos
       if (departureTimeFilter === 0 && returnTimeFilter === 0) {
         // Sem filtro de horário, mostrar tudo
@@ -1855,10 +1859,19 @@ export default function Home() {
                   Horário de Ida: {minutesToTime(departureTimeFilter)}
                 </label>
                 <span className="text-xs bg-blue-100 dark:bg-blue-900 text-blue-900 dark:text-blue-100 px-2 py-1 rounded">
-                  {filteredWeeks.filter(w => {
-                    const depMin = getFlightMinutes(w.departureFlightDatetime);
-                    return depMin >= 0 && depMin >= departureTimeFilter && depMin <= 1439;
-                  }).length} voos
+                  {
+                    filteredWeeks.filter(w => {
+                      const depMin = getFlightMinutes(
+                        w.departureFlightDatetime
+                      );
+                      return (
+                        depMin >= 0 &&
+                        depMin >= departureTimeFilter &&
+                        depMin <= 1439
+                      );
+                    }).length
+                  }{" "}
+                  voos
                 </span>
               </div>
               <input
@@ -1878,10 +1891,17 @@ export default function Home() {
                   Horário de Volta: {minutesToTime(returnTimeFilter)}
                 </label>
                 <span className="text-xs bg-blue-100 dark:bg-blue-900 text-blue-900 dark:text-blue-100 px-2 py-1 rounded">
-                  {filteredWeeks.filter(w => {
-                    const retMin = getFlightMinutes(w.returnFlightDatetime);
-                    return retMin >= 0 && retMin >= returnTimeFilter && retMin <= 1439;
-                  }).length} voos
+                  {
+                    filteredWeeks.filter(w => {
+                      const retMin = getFlightMinutes(w.returnFlightDatetime);
+                      return (
+                        retMin >= 0 &&
+                        retMin >= returnTimeFilter &&
+                        retMin <= 1439
+                      );
+                    }).length
+                  }{" "}
+                  voos
                 </span>
               </div>
               <input
@@ -1986,7 +2006,9 @@ export default function Home() {
                     Nenhum voo encontrado
                   </h3>
                   <p className="text-slate-600 dark:text-slate-400 mb-6 max-w-md">
-                    Desculpe, não encontramos voos que correspondam aos seus filtros. Tente ajustar os horários, mês ou outras opções de filtro.
+                    Desculpe, não encontramos voos que correspondam aos seus
+                    filtros. Tente ajustar os horários, mês ou outras opções de
+                    filtro.
                   </p>
                   <div className="flex gap-3 justify-center flex-wrap">
                     <Button

@@ -35,7 +35,11 @@ describe("storagePut and storageGet", () => {
 
     const { storagePut } = await import("./storage");
 
-    const result = await storagePut("folder/test.txt", "hello world", "text/plain");
+    const result = await storagePut(
+      "folder/test.txt",
+      "hello world",
+      "text/plain"
+    );
 
     expect(result).toEqual({
       key: "folder/test.txt",
@@ -45,7 +49,9 @@ describe("storagePut and storageGet", () => {
     expect(mockFetch).toHaveBeenCalledTimes(1);
     const [url, options] = mockFetch.mock.calls[0];
 
-    expect(url.toString()).toBe("https://api.forge.com/v1/storage/upload?path=folder%2Ftest.txt");
+    expect(url.toString()).toBe(
+      "https://api.forge.com/v1/storage/upload?path=folder%2Ftest.txt"
+    );
     expect(options.method).toBe("POST");
     expect(options.headers).toEqual({ Authorization: "Bearer secret-key" });
     expect(options.body).toBeInstanceOf(FormData);
@@ -58,7 +64,9 @@ describe("storagePut and storageGet", () => {
 
     const mockFetch = vi.fn().mockResolvedValue({
       ok: true,
-      json: async () => ({ url: "https://api.forge.com/v1/storage/buffer.bin" }),
+      json: async () => ({
+        url: "https://api.forge.com/v1/storage/buffer.bin",
+      }),
     });
     global.fetch = mockFetch;
 
@@ -74,7 +82,9 @@ describe("storagePut and storageGet", () => {
 
     expect(mockFetch).toHaveBeenCalledTimes(1);
     const [url] = mockFetch.mock.calls[0];
-    expect(url.toString()).toBe("https://api.forge.com/v1/storage/upload?path=folder%2Fbuffer.bin");
+    expect(url.toString()).toBe(
+      "https://api.forge.com/v1/storage/upload?path=folder%2Fbuffer.bin"
+    );
   });
 
   it("should throw an error if the upload request fails", async () => {
@@ -104,7 +114,9 @@ describe("storagePut and storageGet", () => {
 
     const mockFetch = vi.fn().mockResolvedValue({
       ok: true,
-      json: async () => ({ url: "https://api.forge.com/v1/storage/download/test.txt" }),
+      json: async () => ({
+        url: "https://api.forge.com/v1/storage/download/test.txt",
+      }),
     });
     global.fetch = mockFetch;
 
@@ -120,7 +132,9 @@ describe("storagePut and storageGet", () => {
     expect(mockFetch).toHaveBeenCalledTimes(1);
     const [url, options] = mockFetch.mock.calls[0];
 
-    expect(url.toString()).toBe("https://api.forge.com/v1/storage/downloadUrl?path=test.txt");
+    expect(url.toString()).toBe(
+      "https://api.forge.com/v1/storage/downloadUrl?path=test.txt"
+    );
     expect(options.method).toBe("GET");
     expect(options.headers).toEqual({ Authorization: "Bearer secret-key" });
   });

@@ -21,7 +21,9 @@ describe("buildWhatsAppShareUrl", () => {
 
     expect(url).toContain("https://wa.me/?text=");
 
-    const decodedText = decodeURIComponent(url.replace("https://wa.me/?text=", ""));
+    const decodedText = decodeURIComponent(
+      url.replace("https://wa.me/?text=", "")
+    );
     expect(decodedText).toContain("✈️ *Smart Fly — Passagem Confirmada!*");
     expect(decodedText).toContain("📅 *Semana de 15/05*");
 
@@ -29,13 +31,17 @@ describe("buildWhatsAppShareUrl", () => {
     expect(decodedText).toContain("15/05/2024 às 10:00");
     expect(decodedText).toContain("LATAM Airlines • Voo LA3045");
     expect(decodedText).toContain("🔑 Localizador: *ABC123*");
-    expect(decodedText).toContain("🔍 Rastrear: https://www.google.com/search?q=LA+flight+3045+from+GRU+to+NVT,+2024-05-15");
+    expect(decodedText).toContain(
+      "🔍 Rastrear: https://www.google.com/search?q=LA+flight+3045+from+GRU+to+NVT,+2024-05-15"
+    );
 
     expect(decodedText).toContain("🛬 *VOLTA — NVT → GRU*");
     expect(decodedText).toContain("20/05/2024 às 15:00");
     expect(decodedText).toContain("Gol Linhas Aéreas • Voo G31234");
     expect(decodedText).toContain("🔑 Localizador: *XYZ987*");
-    expect(decodedText).toContain("🔍 Rastrear: https://www.google.com/search?q=G3+flight+1234+from+NVT+to+GRU,+2024-05-20");
+    expect(decodedText).toContain(
+      "🔍 Rastrear: https://www.google.com/search?q=G3+flight+1234+from+NVT+to+GRU,+2024-05-20"
+    );
   });
 
   it("generates a valid URL when some optional fields are missing", () => {
@@ -55,7 +61,9 @@ describe("buildWhatsAppShareUrl", () => {
       returnLocator: "",
     });
 
-    const decodedText = decodeURIComponent(url.replace("https://wa.me/?text=", ""));
+    const decodedText = decodeURIComponent(
+      url.replace("https://wa.me/?text=", "")
+    );
     expect(decodedText).toContain("✈️ *Smart Fly — Passagem Confirmada!*");
     expect(decodedText).toContain("🛫 *IDA — GRU → NVT*"); // Defaults to GRU -> NVT
     expect(decodedText).toContain("🛬 *VOLTA — NVT → GRU*"); // Defaults to NVT -> GRU
@@ -80,13 +88,17 @@ describe("buildWhatsAppShareUrl", () => {
       returnLocator: "",
     });
 
-    const decodedText = decodeURIComponent(url.replace("https://wa.me/?text=", ""));
+    const decodedText = decodeURIComponent(
+      url.replace("https://wa.me/?text=", "")
+    );
     expect(decodedText).toContain("🛫 *IDA — GRU → NVT*");
     expect(decodedText).toContain("15/05/2024 às 10:00");
     expect(decodedText).toContain("LATAM Airlines • Voo LA3045");
     expect(decodedText).toContain("🔑 Localizador: *ABC123*");
 
     expect(decodedText).toContain("🛬 *VOLTA — NVT → GRU*");
-    expect(decodedText).not.toContain("🔍 Rastrear: https://www.google.com/search?q=from+NVT+to+GRU"); // No track URL for return flight
+    expect(decodedText).not.toContain(
+      "🔍 Rastrear: https://www.google.com/search?q=from+NVT+to+GRU"
+    ); // No track URL for return flight
   });
 });

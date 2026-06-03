@@ -1,7 +1,7 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
 
 // Set environment variable BEFORE importing appRouter
-vi.stubEnv('JWT_SECRET', 'test-secret');
+vi.stubEnv("JWT_SECRET", "test-secret");
 
 import { appRouter } from "./routers";
 import type { TrpcContext } from "./_core/context";
@@ -140,9 +140,8 @@ describe("flights.updateWeekStatus with airline fields", () => {
   });
 
   it("should accept departureAirline and returnAirline fields", async () => {
-    const { validateAuthSession, updateFlightWeekStatus } = await import(
-      "./db"
-    );
+    const { validateAuthSession, updateFlightWeekStatus } =
+      await import("./db");
     (validateAuthSession as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
       email: "taiolor@gmail.com",
     });

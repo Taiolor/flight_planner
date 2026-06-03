@@ -67,26 +67,34 @@ const HOLIDAYS: Record<string, HolidayInfo> = {
 };
 
 function parseDate(dateStr: string): Date | null {
-  if (!dateStr) return null;
+  if (!dateStr || dateStr.length !== 10) return null;
   if (dateStr.includes("/")) {
-    const [d, m, y] = dateStr.split("/");
-    return new Date(Number(y), Number(m) - 1, Number(d));
+    // DD/MM/YYYY
+    const d = Number(dateStr.substring(0, 2));
+    const m = Number(dateStr.substring(3, 5)) - 1;
+    const y = Number(dateStr.substring(6, 10));
+    return new Date(y, m, d);
   }
-  const [y, m, d] = dateStr.split("-");
-  return new Date(Number(y), Number(m) - 1, Number(d));
+  // YYYY-MM-DD
+  const y = Number(dateStr.substring(0, 4));
+  const m = Number(dateStr.substring(5, 7)) - 1;
+  const d = Number(dateStr.substring(8, 10));
+  return new Date(y, m, d);
 }
 
 function toKey(date: Date): string {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
 }
 
-function getExtendedWeekends(holidays: Record<string, HolidayInfo>): Set<string> {
+function getExtendedWeekends(
+  holidays: Record<string, HolidayInfo>
+): Set<string> {
   const extended = new Set<string>();
-  
+
   Object.entries(holidays).forEach(([dateStr]) => {
     const date = new Date(dateStr);
     const dayOfWeek = date.getDay();
-    
+
     if (dayOfWeek === 5) {
       for (let i = 0; i < 4; i++) {
         const d = new Date(date);
@@ -127,7 +135,7 @@ function getExtendedWeekends(holidays: Record<string, HolidayInfo>): Set<string>
       }
     }
   });
-  
+
   return extended;
 }
 
@@ -565,7 +573,8 @@ function FlightPopup({
 export default function CalendarView() {
   const weeksQuery = trpc.flights.getWeeks.useQuery();
   const [selectedMark, setSelectedMark] = useState<DayMark | null>(null);
-  const [showOnlyHolidaysAndWeekends, setShowOnlyHolidaysAndWeekends] = useState(false);
+  const [showOnlyHolidaysAndWeekends, setShowOnlyHolidaysAndWeekends] =
+    useState(false);
 
   const today = useMemo(() => {
     const d = new Date();
@@ -577,18 +586,51 @@ export default function CalendarView() {
     return getExtendedWeekends(HOLIDAYS);
   }, []);
 
-  const markedDays = useMemo<Record<string, DayMark>>(() => {
+  const {
+    markedDays,
+    issuedPerMonth,
+    futureIssuedCount,
+    pastIssuedCount,
+    unissuedCount,
+  } = useMemo(() => {
     const map: Record<string, DayMark> = {};
-    if (!weeksQuery.data) return map;
+    const issuedPerMonth = new Array(12).fill(0);
+    let futureIssuedCount = 0;
+    let pastIssuedCount = 0;
+    let unissuedCount = 0;
+
+    if (!weeksQuery.data) {
+      return {
+        markedDays: map,
+        issuedPerMonth,
+        futureIssuedCount,
+        pastIssuedCount,
+        unissuedCount,
+      };
+    }
 
     for (const week of weeksQuery.data as WeekRow[]) {
-      if (!week.isTicketIssued) continue;
+      if (!week.isTicketIssued) {
+        if (!week.isDeleted) {
+          unissuedCount++;
+        }
+        continue;
+      }
 
       const depDate = parseDate(week.departureDate);
       const retDate = parseDate(week.returnDate);
       const isOneway = (week.ticketType ?? "roundtrip") === "oneway";
 
       if (depDate) {
+        if (depDate.getFullYear() === YEAR) {
+          issuedPerMonth[depDate.getMonth()]++;
+        }
+        if (depDate >= today) {
+          futureIssuedCount++;
+        } else {
+          pastIssuedCount++;
+        }
+
         const key = toKey(depDate);
         const isPast = depDate < today;
         if (!map[key])
@@ -610,7 +652,13 @@ export default function CalendarView() {
         }
       }
     }
-    return map;
+    return {
+      markedDays: map,
+      issuedPerMonth,
+      futureIssuedCount,
+      pastIssuedCount,
+      unissuedCount,
+    };
   }, [weeksQuery.data, today]);
 
   function buildMonthGrid(year: number, month: number): (number | null)[][] {
@@ -622,15 +670,6 @@ export default function CalendarView() {
     const weeks: (number | null)[][] = [];
     for (let i = 0; i < cells.length; i += 7) weeks.push(cells.slice(i, i + 7));
     return weeks;
-  }
-
-  function countIssuedInMonth(month: number): number {
-    if (!weeksQuery.data) return 0;
-    return (weeksQuery.data as WeekRow[]).filter(w => {
-      if (!w.isTicketIssued) return false;
-      const dep = parseDate(w.departureDate);
-      return dep && dep.getMonth() === month && dep.getFullYear() === YEAR;
-    }).length;
   }
 
   return (
@@ -680,7 +719,7 @@ export default function CalendarView() {
             <input
               type="checkbox"
               checked={showOnlyHolidaysAndWeekends}
-              onChange={(e) => setShowOnlyHolidaysAndWeekends(e.target.checked)}
+              onChange={e => setShowOnlyHolidaysAndWeekends(e.target.checked)}
               className="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-2 focus:ring-blue-500"
             />
             <span className="text-sm font-medium text-slate-700">
@@ -695,7 +734,7 @@ export default function CalendarView() {
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-5">
           {MONTHS.map((monthName, monthIdx) => {
             const grid = buildMonthGrid(YEAR, monthIdx);
-            const issuedCount = countIssuedInMonth(monthIdx);
+            const issuedCount = issuedPerMonth[monthIdx];
 
             return (
               <div
@@ -757,9 +796,12 @@ export default function CalendarView() {
                         // Determinar cor do indicador de feriado baseado no tipo
                         let holidayDotColor = "bg-amber-400";
                         if (holiday) {
-                          if (holiday.type === "national") holidayDotColor = "bg-red-500";
-                          else if (holiday.type === "municipal") holidayDotColor = "bg-blue-500";
-                          else if (holiday.type === "state") holidayDotColor = "bg-green-500";
+                          if (holiday.type === "national")
+                            holidayDotColor = "bg-red-500";
+                          else if (holiday.type === "municipal")
+                            holidayDotColor = "bg-blue-500";
+                          else if (holiday.type === "state")
+                            holidayDotColor = "bg-green-500";
                           else holidayDotColor = "bg-amber-400";
                         }
 
@@ -787,7 +829,11 @@ export default function CalendarView() {
                         }
 
                         // Aplicar filtro: mostrar apenas se tem feriado ou fim de semana prolongado
-                        if (showOnlyHolidaysAndWeekends && !holiday && !isExtendedWeekend) {
+                        if (
+                          showOnlyHolidaysAndWeekends &&
+                          !holiday &&
+                          !isExtendedWeekend
+                        ) {
                           return <div key={di} className="aspect-square" />;
                         }
 
@@ -805,7 +851,9 @@ export default function CalendarView() {
                           >
                             <span>{day}</span>
                             {holiday && !mark && (
-                              <span className={`absolute bottom-0.5 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full ${holidayDotColor}`} />
+                              <span
+                                className={`absolute bottom-0.5 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full ${holidayDotColor}`}
+                              />
                             )}
                             {mark && (
                               <span className="absolute bottom-0.5 left-1/2 -translate-x-1/2 flex gap-0.5">
@@ -842,32 +890,19 @@ export default function CalendarView() {
               <div className="flex items-center gap-2">
                 <span className="w-3 h-3 rounded-full bg-emerald-500 inline-block" />
                 <span className="text-sm font-semibold text-slate-700">
-                  {(weeksQuery.data as WeekRow[] | undefined)?.filter(w => {
-                    if (!w.isTicketIssued) return false;
-                    const dep = parseDate(w.departureDate);
-                    return dep && dep >= today;
-                  }).length ?? 0}{" "}
-                  voos futuros emitidos
+                  {futureIssuedCount} voos futuros emitidos
                 </span>
               </div>
               <div className="flex items-center gap-2">
                 <span className="w-3 h-3 rounded-full bg-slate-500 inline-block" />
                 <span className="text-sm font-semibold text-slate-700">
-                  {(weeksQuery.data as WeekRow[] | undefined)?.filter(w => {
-                    if (!w.isTicketIssued) return false;
-                    const dep = parseDate(w.departureDate);
-                    return dep && dep < today;
-                  }).length ?? 0}{" "}
-                  voos passados
+                  {pastIssuedCount} voos passados
                 </span>
               </div>
               <div className="flex items-center gap-2">
                 <Circle className="w-3 h-3 text-slate-300" />
                 <span className="text-sm font-semibold text-slate-700">
-                  {(weeksQuery.data as WeekRow[] | undefined)?.filter(
-                    w => !w.isTicketIssued && !w.isDeleted
-                  ).length ?? 0}{" "}
-                  semanas sem bilhete
+                  {unissuedCount} semanas sem bilhete
                 </span>
               </div>
             </>
