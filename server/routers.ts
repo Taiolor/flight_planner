@@ -550,6 +550,16 @@ export const appRouter = router({
                   weekNumber: input.weekNumber,
                   ticketType: "departure",
                   timestamp: new Date(),
+                  departureFlightNumber: weekBefore.departureFlightNumber,
+                  departureFlightDatetime: weekBefore.departureFlightDatetime,
+                  departureAirline: weekBefore.departureAirline,
+                  departureLocator: weekBefore.departureLocator,
+                  returnFlightNumber: weekBefore.returnFlightNumber,
+                  returnFlightDatetime: weekBefore.returnFlightDatetime,
+                  returnAirline: weekBefore.returnAirline,
+                  returnLocator: weekBefore.returnLocator,
+                  departureDate: weekBefore.departureDate,
+                  returnDate: weekBefore.returnDate,
                 });
               }
 
@@ -560,6 +570,16 @@ export const appRouter = router({
                   weekNumber: input.weekNumber,
                   ticketType: "return",
                   timestamp: new Date(),
+                  departureFlightNumber: weekBefore.departureFlightNumber,
+                  departureFlightDatetime: weekBefore.departureFlightDatetime,
+                  departureAirline: weekBefore.departureAirline,
+                  departureLocator: weekBefore.departureLocator,
+                  returnFlightNumber: weekBefore.returnFlightNumber,
+                  returnFlightDatetime: weekBefore.returnFlightDatetime,
+                  returnAirline: weekBefore.returnAirline,
+                  returnLocator: weekBefore.returnLocator,
+                  departureDate: weekBefore.departureDate,
+                  returnDate: weekBefore.returnDate,
                 });
               }
             }
@@ -598,6 +618,16 @@ export const appRouter = router({
                     },
                   },
                   timestamp: new Date(),
+                  departureFlightNumber: input.departureFlightNumber,
+                  departureFlightDatetime: input.departureFlightDatetime,
+                  departureAirline: input.departureAirline,
+                  departureLocator: input.departureLocator,
+                  returnFlightNumber: input.returnFlightNumber,
+                  returnFlightDatetime: input.returnFlightDatetime,
+                  returnAirline: input.returnAirline,
+                  returnLocator: input.returnLocator,
+                  departureDate: weekData.departureDate,
+                  returnDate: weekData.returnDate,
                 });
               }
 
@@ -628,6 +658,16 @@ export const appRouter = router({
                     },
                   },
                   timestamp: new Date(),
+                  departureFlightNumber: input.departureFlightNumber,
+                  departureFlightDatetime: input.departureFlightDatetime,
+                  departureAirline: input.departureAirline,
+                  departureLocator: input.departureLocator,
+                  returnFlightNumber: input.returnFlightNumber,
+                  returnFlightDatetime: input.returnFlightDatetime,
+                  returnAirline: input.returnAirline,
+                  returnLocator: input.returnLocator,
+                  departureDate: weekData.departureDate,
+                  returnDate: weekData.returnDate,
                 });
               }
             }
