@@ -29,13 +29,17 @@ describe("imageGeneration", () => {
     it("should throw an error if BUILT_IN_FORGE_API_URL is missing", async () => {
       ENV.forgeApiUrl = "";
 
-      await expect(generateImage({ prompt: "test" })).rejects.toThrow("BUILT_IN_FORGE_API_URL is not configured");
+      await expect(generateImage({ prompt: "test" })).rejects.toThrow(
+        "BUILT_IN_FORGE_API_URL is not configured"
+      );
     });
 
     it("should throw an error if BUILT_IN_FORGE_API_KEY is missing", async () => {
       ENV.forgeApiKey = "";
 
-      await expect(generateImage({ prompt: "test" })).rejects.toThrow("BUILT_IN_FORGE_API_KEY is not configured");
+      await expect(generateImage({ prompt: "test" })).rejects.toThrow(
+        "BUILT_IN_FORGE_API_KEY is not configured"
+      );
     });
 
     it("should throw an error if the image generation request fails", async () => {
@@ -90,7 +94,9 @@ describe("imageGeneration", () => {
 
       expect(mockFetch).toHaveBeenCalledTimes(1);
       const fetchArgs = mockFetch.mock.calls[0];
-      expect(fetchArgs[0]).toBe("https://api.example.com/images.v1.ImageService/GenerateImage");
+      expect(fetchArgs[0]).toBe(
+        "https://api.example.com/images.v1.ImageService/GenerateImage"
+      );
       expect(fetchArgs[1].method).toBe("POST");
       expect(fetchArgs[1].headers.authorization).toBe("Bearer test-api-key");
       expect(JSON.parse(fetchArgs[1].body)).toEqual({
@@ -126,8 +132,8 @@ describe("imageGeneration", () => {
       await generateImage({
         prompt: "A beautiful landscape",
         originalImages: [
-          { url: "https://example.com/original.jpg", mimeType: "image/jpeg" }
-        ]
+          { url: "https://example.com/original.jpg", mimeType: "image/jpeg" },
+        ],
       });
 
       expect(mockFetch).toHaveBeenCalledTimes(1);
@@ -135,7 +141,7 @@ describe("imageGeneration", () => {
       expect(JSON.parse(fetchArgs[1].body)).toEqual({
         prompt: "A beautiful landscape",
         original_images: [
-          { url: "https://example.com/original.jpg", mimeType: "image/jpeg" }
+          { url: "https://example.com/original.jpg", mimeType: "image/jpeg" },
         ],
       });
     });

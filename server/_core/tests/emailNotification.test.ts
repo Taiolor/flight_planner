@@ -7,7 +7,9 @@ import {
 } from "../emailNotification";
 
 // We need to access the mocked send function to verify its calls
-const mockSend = vi.fn().mockResolvedValue({ data: { id: "test-id" }, error: null });
+const mockSend = vi
+  .fn()
+  .mockResolvedValue({ data: { id: "test-id" }, error: null });
 
 vi.mock("resend", () => {
   return {
@@ -52,10 +54,16 @@ describe("emailNotification", () => {
         timestamp: new Date("2024-01-01T10:00:00Z"),
       };
 
-      const result1 = await sendTicketNotificationEmail(null as any, notification);
+      const result1 = await sendTicketNotificationEmail(
+        null as any,
+        notification
+      );
       expect(result1).toBe(false);
 
-      const result2 = await sendTicketNotificationEmail(undefined as any, notification);
+      const result2 = await sendTicketNotificationEmail(
+        undefined as any,
+        notification
+      );
       expect(result2).toBe(false);
 
       expect(mockSend).not.toHaveBeenCalled();
@@ -69,7 +77,10 @@ describe("emailNotification", () => {
         timestamp: new Date("2024-01-01T10:00:00Z"),
       };
 
-      const result = await sendTicketNotificationEmail(["test@example.com"], notification);
+      const result = await sendTicketNotificationEmail(
+        ["test@example.com"],
+        notification
+      );
 
       expect(result).toBe(true);
       expect(mockSend).toHaveBeenCalledTimes(1);
@@ -90,11 +101,14 @@ describe("emailNotification", () => {
         timestamp: new Date("2024-01-01T10:00:00Z"),
         changes: {
           before: { flightNumber: "LA123", status: "scheduled" },
-          after: { flightNumber: "LA456", status: "scheduled" } // Only flightNumber changed
-        }
+          after: { flightNumber: "LA456", status: "scheduled" }, // Only flightNumber changed
+        },
       };
 
-      const result = await sendTicketNotificationEmail(["user1@test.com", "user2@test.com"], notification);
+      const result = await sendTicketNotificationEmail(
+        ["user1@test.com", "user2@test.com"],
+        notification
+      );
 
       expect(result).toBe(true);
       expect(mockSend).toHaveBeenCalledTimes(1);
@@ -105,23 +119,29 @@ describe("emailNotification", () => {
 
       // Check HTML content
       expect(sendArgs.html).toContain("Bilhete Alterado");
-      expect(sendArgs.html).toContain("Detalhes da Alteração");
+      expect(sendArgs.html).toContain("O que foi atualizado");
       expect(sendArgs.html).toContain("flightNumber");
       expect(sendArgs.html).toContain("LA123");
       expect(sendArgs.html).toContain("LA456");
     });
 
     it("should return false if resend API returns an error", async () => {
-       mockSend.mockResolvedValueOnce({ data: null, error: new Error("Resend failed") });
+      mockSend.mockResolvedValueOnce({
+        data: null,
+        error: new Error("Resend failed"),
+      });
 
-       const notification: TicketChangeNotification = {
+      const notification: TicketChangeNotification = {
         type: "deleted",
         weekNumber: 3,
         ticketType: "departure",
         timestamp: new Date("2024-01-01T10:00:00Z"),
       };
 
-      const result = await sendTicketNotificationEmail(["test@example.com"], notification);
+      const result = await sendTicketNotificationEmail(
+        ["test@example.com"],
+        notification
+      );
 
       expect(result).toBe(false);
       expect(mockSend).toHaveBeenCalledTimes(1);
@@ -137,7 +157,10 @@ describe("emailNotification", () => {
         timestamp: new Date("2024-01-01T10:00:00Z"),
       };
 
-      const result = await sendTicketNotificationEmail(["test@example.com"], notification);
+      const result = await sendTicketNotificationEmail(
+        ["test@example.com"],
+        notification
+      );
 
       expect(result).toBe(false);
       expect(mockSend).not.toHaveBeenCalled();
@@ -145,7 +168,10 @@ describe("emailNotification", () => {
 
     it("should catch errors thrown during formatting (e.g. invalid notification object)", async () => {
       // Intentionally pass an invalid notification to cause a TypeError in formatTicketDetails
-      const result = await sendTicketNotificationEmail(["test@example.com"], null as any);
+      const result = await sendTicketNotificationEmail(
+        ["test@example.com"],
+        null as any
+      );
 
       expect(result).toBe(false);
       expect(mockSend).not.toHaveBeenCalled();
@@ -154,14 +180,22 @@ describe("emailNotification", () => {
 
   describe("sendShareByEmailNotification", () => {
     it("should return false if no recipients are provided", async () => {
-      const result = await sendShareByEmailNotification([], "Test Subject", "<p>Test</p>");
+      const result = await sendShareByEmailNotification(
+        [],
+        "Test Subject",
+        "<p>Test</p>"
+      );
 
       expect(result).toBe(false);
       expect(mockSend).not.toHaveBeenCalled();
     });
 
     it("should send a share notification email", async () => {
-      const result = await sendShareByEmailNotification(["friend@test.com"], "Share Subject", "<h1>Hello</h1>");
+      const result = await sendShareByEmailNotification(
+        ["friend@test.com"],
+        "Share Subject",
+        "<h1>Hello</h1>"
+      );
 
       expect(result).toBe(true);
       expect(mockSend).toHaveBeenCalledTimes(1);
@@ -174,7 +208,11 @@ describe("emailNotification", () => {
 
     it("should return false if getResendClient throws", async () => {
       vi.stubEnv("RESEND_API_KEY", "");
-      const result = await sendShareByEmailNotification(["test@example.com"], "Share Subject", "<h1>Hello</h1>");
+      const result = await sendShareByEmailNotification(
+        ["test@example.com"],
+        "Share Subject",
+        "<h1>Hello</h1>"
+      );
       expect(result).toBe(false);
     });
   });
@@ -188,7 +226,9 @@ describe("emailNotification", () => {
 
       const sendArgs = mockSend.mock.calls[0][0];
       expect(sendArgs.to).toEqual(["admin@test.com"]);
-      expect(sendArgs.subject).toBe("✅ Teste de Configuração de E-mail — Smart Fly");
+      expect(sendArgs.subject).toBe(
+        "✅ Teste de Configuração de E-mail — Smart Fly"
+      );
       expect(sendArgs.html).toContain("Configuração de E-mail Funcionando");
     });
 

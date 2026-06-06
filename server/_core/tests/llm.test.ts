@@ -63,7 +63,10 @@ describe("invokeLLM", () => {
         role: "user",
         content: [
           { type: "text", text: "Look at this" },
-          { type: "image_url", image_url: { url: "https://example.com/img.png" } }
+          {
+            type: "image_url",
+            image_url: { url: "https://example.com/img.png" },
+          },
         ],
       },
     ];
@@ -77,7 +80,10 @@ describe("invokeLLM", () => {
       role: "user",
       content: [
         { type: "text", text: "Look at this" },
-        { type: "image_url", image_url: { url: "https://example.com/img.png" } }
+        {
+          type: "image_url",
+          image_url: { url: "https://example.com/img.png" },
+        },
       ],
     });
   });
@@ -112,7 +118,9 @@ describe("invokeLLM", () => {
       },
     ];
 
-    await expect(invokeLLM({ messages })).rejects.toThrow("Unsupported message content part");
+    await expect(invokeLLM({ messages })).rejects.toThrow(
+      "Unsupported message content part"
+    );
   });
 
   it("should pass tools and normalize tool_choice", async () => {
@@ -145,7 +153,9 @@ describe("invokeLLM", () => {
         messages: [{ role: "user", content: "Hi" }],
         toolChoice: "required",
       })
-    ).rejects.toThrow("tool_choice 'required' was provided but no tools were configured");
+    ).rejects.toThrow(
+      "tool_choice 'required' was provided but no tools were configured"
+    );
   });
 
   it("should throw an error if toolChoice is 'required' but multiple tools are provided", async () => {
@@ -159,7 +169,9 @@ describe("invokeLLM", () => {
         tools,
         toolChoice: "required",
       })
-    ).rejects.toThrow("tool_choice 'required' needs a single tool or specify the tool name explicitly");
+    ).rejects.toThrow(
+      "tool_choice 'required' needs a single tool or specify the tool name explicitly"
+    );
   });
 
   it("should support toolChoice as an explicit name", async () => {
@@ -202,13 +214,19 @@ describe("invokeLLM", () => {
         // @ts-expect-error Testing missing schema
         responseFormat: { type: "json_schema" },
       })
-    ).rejects.toThrow("responseFormat json_schema requires a defined schema object");
+    ).rejects.toThrow(
+      "responseFormat json_schema requires a defined schema object"
+    );
   });
 
   it("should set outputSchema correctly", async () => {
     await invokeLLM({
       messages: [{ role: "user", content: "Hi" }],
-      outputSchema: { name: "MySchema", schema: { type: "object" }, strict: true },
+      outputSchema: {
+        name: "MySchema",
+        schema: { type: "object" },
+        strict: true,
+      },
     });
 
     const fetchCall = vi.mocked(global.fetch).mock.calls[0];
@@ -216,7 +234,11 @@ describe("invokeLLM", () => {
 
     expect(body.response_format).toEqual({
       type: "json_schema",
-      json_schema: { name: "MySchema", schema: { type: "object" }, strict: true },
+      json_schema: {
+        name: "MySchema",
+        schema: { type: "object" },
+        strict: true,
+      },
     });
   });
 
@@ -242,7 +264,9 @@ describe("invokeLLM", () => {
       invokeLLM({
         messages: [{ role: "user", content: "Hi" }],
       })
-    ).rejects.toThrow("LLM invoke failed: 500 Internal Server Error – Something went wrong");
+    ).rejects.toThrow(
+      "LLM invoke failed: 500 Internal Server Error – Something went wrong"
+    );
   });
 });
 
@@ -319,15 +343,19 @@ describe("invokeLLM - Coverage Additions", () => {
 
   it("should handle file_url content correctly", async () => {
     await invokeLLM({
-      messages: [{
-        role: "user",
-        content: [{ type: "file_url", file_url: { url: "test.pdf" } }]
-      }],
+      messages: [
+        {
+          role: "user",
+          content: [{ type: "file_url", file_url: { url: "test.pdf" } }],
+        },
+      ],
     });
 
     const fetchCall = vi.mocked(global.fetch).mock.calls[0];
     const body = JSON.parse(fetchCall[1]!.body as string);
-    expect(body.messages[0].content).toEqual([{ type: "file_url", file_url: { url: "test.pdf" } }]);
+    expect(body.messages[0].content).toEqual([
+      { type: "file_url", file_url: { url: "test.pdf" } },
+    ]);
   });
 });
 
@@ -552,9 +580,9 @@ describe("invokeLLM - Fallback URL Coverage 5", () => {
     const fetchCall = vi.mocked(global.fetch).mock.calls[0];
     const body = JSON.parse(fetchCall[1]!.body as string);
     expect(body.tool_choice).toEqual({
-        type: "function",
-        function: { name: "my_tool" },
-      });
+      type: "function",
+      function: { name: "my_tool" },
+    });
   });
 });
 
@@ -583,7 +611,9 @@ describe("invokeLLM - Full Coverage 6", () => {
 
   it("should handle tool message with string content", async () => {
     await invokeLLM({
-      messages: [{ role: "tool", tool_call_id: "123", content: "some string output" }],
+      messages: [
+        { role: "tool", tool_call_id: "123", content: "some string output" },
+      ],
     });
 
     const fetchCall = vi.mocked(global.fetch).mock.calls[0];
@@ -603,7 +633,6 @@ describe("invokeLLM - Full Coverage 6", () => {
     expect(body.tool_choice).toBeUndefined();
     expect(body.response_format).toBeUndefined();
   });
-
 });
 
 describe("invokeLLM - Full Coverage 7", () => {
@@ -648,7 +677,10 @@ describe("invokeLLM - Full Coverage 7", () => {
 
     const fetchCall = vi.mocked(global.fetch).mock.calls[0];
     const body = JSON.parse(fetchCall[1]!.body as string);
-    expect(body.response_format.json_schema).toEqual({ name: "test", schema: {} });
+    expect(body.response_format.json_schema).toEqual({
+      name: "test",
+      schema: {},
+    });
   });
 
   it("should handle tool_choice correctly", async () => {
@@ -661,7 +693,6 @@ describe("invokeLLM - Full Coverage 7", () => {
     const body = JSON.parse(fetchCall[1]!.body as string);
     expect(body.tool_choice).toBe("auto");
   });
-
 });
 
 describe("invokeLLM - Full Coverage 8", () => {
@@ -695,7 +726,10 @@ describe("invokeLLM - Full Coverage 8", () => {
 
     const fetchCall = vi.mocked(global.fetch).mock.calls[0];
     const body = JSON.parse(fetchCall[1]!.body as string);
-    expect(body.response_format.json_schema).toEqual({ name: "test", schema: {} });
+    expect(body.response_format.json_schema).toEqual({
+      name: "test",
+      schema: {},
+    });
   });
 
   it("should throw an error if response_format json_schema lacks schema", async () => {
@@ -705,7 +739,9 @@ describe("invokeLLM - Full Coverage 8", () => {
         // @ts-expect-error Testing missing schema
         response_format: { type: "json_schema" },
       })
-    ).rejects.toThrow("responseFormat json_schema requires a defined schema object");
+    ).rejects.toThrow(
+      "responseFormat json_schema requires a defined schema object"
+    );
   });
 });
 
@@ -740,9 +776,12 @@ describe("invokeLLM - Full Coverage 9", () => {
 
     const fetchCall = vi.mocked(global.fetch).mock.calls[0];
     const body = JSON.parse(fetchCall[1]!.body as string);
-    expect(body.response_format.json_schema).toEqual({ name: "test", schema: {}, strict: false });
+    expect(body.response_format.json_schema).toEqual({
+      name: "test",
+      schema: {},
+      strict: false,
+    });
   });
-
 });
 
 describe("invokeLLM - Full Coverage 10", () => {
@@ -775,6 +814,8 @@ describe("invokeLLM - Full Coverage 10", () => {
         // @ts-expect-error Testing missing schema explicitly
         response_format: { type: "json_schema", json_schema: {} },
       })
-    ).rejects.toThrow("responseFormat json_schema requires a defined schema object");
+    ).rejects.toThrow(
+      "responseFormat json_schema requires a defined schema object"
+    );
   });
 });
