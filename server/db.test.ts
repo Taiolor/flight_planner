@@ -10,7 +10,11 @@ describe("upsertUser", () => {
   const originalEnv = process.env;
 
   beforeEach(() => {
-    process.env = { ...originalEnv, DATABASE_URL: "mysql://mock", JWT_SECRET: "test-secret" };
+    process.env = {
+      ...originalEnv,
+      DATABASE_URL: "mysql://mock",
+      JWT_SECRET: "test-secret",
+    };
     vi.clearAllMocks();
     vi.resetModules(); // This will clear the module cache, so _db in db.ts is null for each test
     vi.spyOn(console, "error").mockImplementation(() => {});
@@ -34,9 +38,9 @@ describe("upsertUser", () => {
 
     const { upsertUser } = await import("./db");
 
-    await expect(upsertUser({ openId: "invalid-duplicate-user" })).rejects.toThrow(
-      "Constraint violation"
-    );
+    await expect(
+      upsertUser({ openId: "invalid-duplicate-user" })
+    ).rejects.toThrow("Constraint violation");
 
     expect(console.error).toHaveBeenCalledWith(
       "[Database] Failed to upsert user:",
@@ -58,7 +62,9 @@ describe("upsertUser", () => {
 
     vi.stubEnv("DATABASE_URL", ""); // db will fail to connect
 
-    await expect(upsertUser({ openId: "test-user-123" })).resolves.toBeUndefined();
+    await expect(
+      upsertUser({ openId: "test-user-123" })
+    ).resolves.toBeUndefined();
 
     expect(console.warn).toHaveBeenCalledWith(
       "[Database] Cannot upsert user: database not available"
@@ -83,11 +89,14 @@ describe("upsertUser", () => {
 
     expect(mockDb.insert).toHaveBeenCalled();
     expect(mockDb.values).toHaveBeenCalledWith(
-      expect.objectContaining({ openId: "test-user-123", email: "test@example.com" })
+      expect.objectContaining({
+        openId: "test-user-123",
+        email: "test@example.com",
+      })
     );
     expect(mockDb.onDuplicateKeyUpdate).toHaveBeenCalledWith(
       expect.objectContaining({
-        set: expect.objectContaining({ email: "test@example.com" })
+        set: expect.objectContaining({ email: "test@example.com" }),
       })
     );
   });
@@ -110,8 +119,8 @@ describe("upsertUser", () => {
     expect(mockDb.onDuplicateKeyUpdate).toHaveBeenCalledWith(
       expect.objectContaining({
         set: expect.objectContaining({
-          lastSignedIn: expect.any(Date)
-        })
+          lastSignedIn: expect.any(Date),
+        }),
       })
     );
   });
@@ -162,15 +171,13 @@ describe("upsertUser", () => {
 
     // We mock ENV to enforce ownerOpenId matching
     vi.doMock("./_core/env", () => ({
-      ENV: { ownerOpenId: "owner-123" }
+      ENV: { ownerOpenId: "owner-123" },
     }));
     vi.resetModules();
 
     const { upsertUser } = await import("./db");
 
-    await expect(
-      upsertUser({ openId: "owner-123" })
-    ).resolves.toBeUndefined();
+    await expect(upsertUser({ openId: "owner-123" })).resolves.toBeUndefined();
 
     expect(mockDb.values).toHaveBeenCalledWith(
       expect.objectContaining({ openId: "owner-123", role: "admin" })

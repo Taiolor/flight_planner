@@ -210,6 +210,7 @@ const QuoteRow = ({
             onClick={() => onDelete(quote.id)}
             className="p-1 rounded text-slate-400 hover:text-red-500 dark:hover:text-red-400 transition-colors focus-visible:ring-2 focus-visible:ring-red-500"
             aria-label="Excluir cotação"
+            title="Excluir cotação"
           >
             <Trash2 className="w-3.5 h-3.5" />
           </button>

@@ -40,7 +40,10 @@ describe("notifyOwner", () => {
       ok: true,
     } as Response);
 
-    const result = await notifyOwner({ title: "Test", content: "Test Content" });
+    const result = await notifyOwner({
+      title: "Test",
+      content: "Test Content",
+    });
     expect(result).toBe(true);
     expect(global.fetch).toHaveBeenCalledTimes(1);
   });
@@ -54,7 +57,10 @@ describe("notifyOwner", () => {
       text: vi.fn().mockResolvedValue("Some error details"),
     } as unknown as Response);
 
-    const result = await notifyOwner({ title: "Test", content: "Test Content" });
+    const result = await notifyOwner({
+      title: "Test",
+      content: "Test Content",
+    });
     expect(result).toBe(false);
     expect(mockWarn).toHaveBeenCalledWith(
       "[Notification] Failed to notify owner (400 Bad Request): Some error details"
@@ -67,7 +73,10 @@ describe("notifyOwner", () => {
     const fetchError = new Error("Network Error");
     global.fetch = vi.fn().mockRejectedValue(fetchError);
 
-    const result = await notifyOwner({ title: "Test", content: "Test Content" });
+    const result = await notifyOwner({
+      title: "Test",
+      content: "Test Content",
+    });
     expect(result).toBe(false);
     expect(mockWarn).toHaveBeenCalledWith(
       "[Notification] Error calling notification service:",

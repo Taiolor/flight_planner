@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 
 // Set environment variable BEFORE importing appRouter
-vi.stubEnv('JWT_SECRET', 'test-secret');
+vi.stubEnv("JWT_SECRET", "test-secret");
 
 import { appRouter } from "./routers";
 import { COOKIE_NAME } from "../shared/const";

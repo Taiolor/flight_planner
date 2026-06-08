@@ -80,13 +80,15 @@ function toKey(date: Date): string {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
 }
 
-function getExtendedWeekends(holidays: Record<string, HolidayInfo>): Set<string> {
+function getExtendedWeekends(
+  holidays: Record<string, HolidayInfo>
+): Set<string> {
   const extended = new Set<string>();
-  
+
   Object.entries(holidays).forEach(([dateStr]) => {
     const date = new Date(dateStr);
     const dayOfWeek = date.getDay();
-    
+
     if (dayOfWeek === 5) {
       for (let i = 0; i < 4; i++) {
         const d = new Date(date);
@@ -127,7 +129,7 @@ function getExtendedWeekends(holidays: Record<string, HolidayInfo>): Set<string>
       }
     }
   });
-  
+
   return extended;
 }
 
@@ -565,7 +567,8 @@ function FlightPopup({
 export default function CalendarView() {
   const weeksQuery = trpc.flights.getWeeks.useQuery();
   const [selectedMark, setSelectedMark] = useState<DayMark | null>(null);
-  const [showOnlyHolidaysAndWeekends, setShowOnlyHolidaysAndWeekends] = useState(false);
+  const [showOnlyHolidaysAndWeekends, setShowOnlyHolidaysAndWeekends] =
+    useState(false);
 
   const today = useMemo(() => {
     const d = new Date();
@@ -680,7 +683,7 @@ export default function CalendarView() {
             <input
               type="checkbox"
               checked={showOnlyHolidaysAndWeekends}
-              onChange={(e) => setShowOnlyHolidaysAndWeekends(e.target.checked)}
+              onChange={e => setShowOnlyHolidaysAndWeekends(e.target.checked)}
               className="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-2 focus:ring-blue-500"
             />
             <span className="text-sm font-medium text-slate-700">
@@ -757,9 +760,12 @@ export default function CalendarView() {
                         // Determinar cor do indicador de feriado baseado no tipo
                         let holidayDotColor = "bg-amber-400";
                         if (holiday) {
-                          if (holiday.type === "national") holidayDotColor = "bg-red-500";
-                          else if (holiday.type === "municipal") holidayDotColor = "bg-blue-500";
-                          else if (holiday.type === "state") holidayDotColor = "bg-green-500";
+                          if (holiday.type === "national")
+                            holidayDotColor = "bg-red-500";
+                          else if (holiday.type === "municipal")
+                            holidayDotColor = "bg-blue-500";
+                          else if (holiday.type === "state")
+                            holidayDotColor = "bg-green-500";
                           else holidayDotColor = "bg-amber-400";
                         }
 
@@ -787,7 +793,11 @@ export default function CalendarView() {
                         }
 
                         // Aplicar filtro: mostrar apenas se tem feriado ou fim de semana prolongado
-                        if (showOnlyHolidaysAndWeekends && !holiday && !isExtendedWeekend) {
+                        if (
+                          showOnlyHolidaysAndWeekends &&
+                          !holiday &&
+                          !isExtendedWeekend
+                        ) {
                           return <div key={di} className="aspect-square" />;
                         }
 
@@ -805,7 +815,9 @@ export default function CalendarView() {
                           >
                             <span>{day}</span>
                             {holiday && !mark && (
-                              <span className={`absolute bottom-0.5 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full ${holidayDotColor}`} />
+                              <span
+                                className={`absolute bottom-0.5 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full ${holidayDotColor}`}
+                              />
                             )}
                             {mark && (
                               <span className="absolute bottom-0.5 left-1/2 -translate-x-1/2 flex gap-0.5">

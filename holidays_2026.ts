@@ -35,7 +35,10 @@ export const holidays2026: Holiday[] = [
  * @param month - mês (1-12)
  * @returns Holiday ou undefined
  */
-export function getHolidayByDate(day: number, month: number): Holiday | undefined {
+export function getHolidayByDate(
+  day: number,
+  month: number
+): Holiday | undefined {
   const dateStr = `${String(day).padStart(2, "0")}/${String(month).padStart(2, "0")}`;
   return holidays2026.find(h => h.date === dateStr);
 }
@@ -46,8 +49,13 @@ export function getHolidayByDate(day: number, month: number): Holiday | undefine
  * @param endDate - data final (formato "DD/MM/YYYY")
  * @returns array de feriados no intervalo
  */
-export function getHolidaysInRange(startDate: string, endDate: string): Holiday[] {
-  const parseDate = (dateStr: string): { day: number; month: number; year: number } => {
+export function getHolidaysInRange(
+  startDate: string,
+  endDate: string
+): Holiday[] {
+  const parseDate = (
+    dateStr: string
+  ): { day: number; month: number; year: number } => {
     const [day, month, year] = dateStr.split("/").map(Number);
     return { day, month, year };
   };
@@ -57,7 +65,7 @@ export function getHolidaysInRange(startDate: string, endDate: string): Holiday[
 
   return holidays2026.filter(holiday => {
     const [day, month] = holiday.date.split("/").map(Number);
-    
+
     // Comparação simplificada (assume mesmo ano)
     const monthDay = month * 100 + day;
     const startMonthDay = start.month * 100 + start.day;

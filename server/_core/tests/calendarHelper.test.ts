@@ -130,7 +130,9 @@ describe("calendarHelper", () => {
       const url = new URL(link);
       expect(url.searchParams.get("text")).toBe("Test & Flight 🚀");
       expect(url.searchParams.get("location")).toBe("City, Country (CODE)");
-      expect(url.searchParams.get("details")).toBe("Line 1\nLine 2 & Line 3 = Test");
+      expect(url.searchParams.get("details")).toBe(
+        "Line 1\nLine 2 & Line 3 = Test"
+      );
     });
   });
 

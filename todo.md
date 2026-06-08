@@ -368,7 +368,6 @@
 - [x] Ocultar outros dias quando filtro está ativo (renderiza div vazia)
 - [x] Manter tooltip e cores diferenciadas para cada tipo de feriado
 
-
 ## Notificações por Email - Melhoria de Template
 
 - [x] Localizar e analisar template de email de notificação de bilhetes
