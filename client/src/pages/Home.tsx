@@ -2172,6 +2172,8 @@ export default function Home() {
                                 <div
                                   className="flex items-start justify-between gap-2 sm:gap-4 cursor-pointer select-none focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded-lg"
                                   role="button"
+                                  aria-expanded={expandedWeekCards.has(week.weekNumber)}
+                                  aria-controls={`week-content-${week.weekNumber}`}
                                   tabIndex={0}
                                   onClick={e => {
                                     // Não toggle se clicou em botão, checkbox ou input
