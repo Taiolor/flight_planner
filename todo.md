@@ -367,3 +367,13 @@
 - [x] Adicionar toggle/checkbox para filtrar apenas feriados e finais de semana prolongados
 - [x] Ocultar outros dias quando filtro está ativo (renderiza div vazia)
 - [x] Manter tooltip e cores diferenciadas para cada tipo de feriado
+
+
+## Notificações por Email - Melhoria de Template
+
+- [x] Localizar e analisar template de email de notificação de bilhetes
+- [x] Adicionar seção com dados completos do bilhete (ida e volta)
+- [x] Incluir botões de calendário (Outlook, Gmail) para ida e volta (já existem em shareByEmail)
+- [x] Atualizar interface TicketChangeNotification com campos de bilhete completo
+- [x] Melhorar template HTML com seção "O que foi atualizado" + "Dados Completos do Bilhete"
+- [x] Adicionar dados completos nas chamadas de sendTicketNotificationEmail em routers.ts
