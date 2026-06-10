@@ -1,5 +1,10 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { Mail } from "lucide-react";
 import { toast } from "sonner";
 import { trpc } from "@/lib/trpc";
@@ -112,10 +117,12 @@ export function ShareByEmailButton({
     }
   };
 
-  return (
+  const isDisabled = isLoading || !departureFlightNumber || !returnFlightNumber;
+
+  const buttonContent = (
     <Button
       onClick={handleShareByEmail}
-      disabled={isLoading || !departureFlightNumber || !returnFlightNumber}
+      disabled={isDisabled}
       className="w-full bg-blue-600 hover:bg-blue-700 text-white"
       size="sm"
     >
@@ -123,4 +130,24 @@ export function ShareByEmailButton({
       {isLoading ? "Enviando..." : "📧 Compartilhar por E-Mail"}
     </Button>
   );
+
+  if (!departureFlightNumber || !returnFlightNumber) {
+    return (
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <span
+            tabIndex={0}
+            className="w-full block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-md"
+          >
+            {buttonContent}
+          </span>
+        </TooltipTrigger>
+        <TooltipContent>
+          <p>Preencha os dados de ida e volta antes de compartilhar</p>
+        </TooltipContent>
+      </Tooltip>
+    );
+  }
+
+  return buttonContent;
 }

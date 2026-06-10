@@ -12,3 +12,7 @@
 
 **Learning:** In React components with custom expandable/collapsible sections (like the Week details in Home or Quote details in FlightQuotes), providing `aria-expanded` on the toggle button is not enough for full accessibility. Screen readers need `aria-controls` on the button to explicitly link it to the `id` of the expanded content container, allowing users to understand the relationship and navigate smoothly.
 **Action:** Always ensure that custom accordion or toggle components link their trigger button to their target content using matching `aria-controls` and `id` attributes.
+
+## 2026-06-09 - Tooltips on Disabled Buttons
+**Learning:** Disabled HTML elements (like `button disabled`) do not fire pointer events in many browsers, making tooltips invisible to users precisely when they need an explanation the most.
+**Action:** When adding an informative tooltip to explain why a button is disabled, always wrap the disabled button in a `span` or `div` with `tabIndex={0}`. Apply `focus-visible` styling and ensure the wrapper spans the full width of its content so the tooltip trigger area perfectly covers the button.
