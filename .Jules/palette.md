@@ -12,3 +12,7 @@
 
 **Learning:** In React components with custom expandable/collapsible sections (like the Week details in Home or Quote details in FlightQuotes), providing `aria-expanded` on the toggle button is not enough for full accessibility. Screen readers need `aria-controls` on the button to explicitly link it to the `id` of the expanded content container, allowing users to understand the relationship and navigate smoothly.
 **Action:** Always ensure that custom accordion or toggle components link their trigger button to their target content using matching `aria-controls` and `id` attributes.
+## 2026-06-11 - Protecting Destructive Actions
+
+**Learning:** Implementing the AlertDialog for delete actions requires careful wrapping around the specific destructive trigger icon. Utilizing the Radix/Shadcn UI pattern ensures accessibility via 'asChild' and isolates the action inside the AlertDialogAction component seamlessly.
+**Action:** When adding confirm dialogs using Shadcn AlertDialog, replace the direct onClick of the trigger button with the AlertDialogAction onClick, and use 'asChild' on the Trigger to retain the button's native styling and behavior.
