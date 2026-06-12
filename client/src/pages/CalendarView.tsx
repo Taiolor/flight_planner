@@ -67,13 +67,19 @@ const HOLIDAYS: Record<string, HolidayInfo> = {
 };
 
 function parseDate(dateStr: string): Date | null {
-  if (!dateStr) return null;
+  if (!dateStr || dateStr.length !== 10) return null;
   if (dateStr.includes("/")) {
-    const [d, m, y] = dateStr.split("/");
-    return new Date(Number(y), Number(m) - 1, Number(d));
+    // DD/MM/YYYY
+    const d = Number(dateStr.substring(0, 2));
+    const m = Number(dateStr.substring(3, 5)) - 1;
+    const y = Number(dateStr.substring(6, 10));
+    return new Date(y, m, d);
   }
-  const [y, m, d] = dateStr.split("-");
-  return new Date(Number(y), Number(m) - 1, Number(d));
+  // YYYY-MM-DD
+  const y = Number(dateStr.substring(0, 4));
+  const m = Number(dateStr.substring(5, 7)) - 1;
+  const d = Number(dateStr.substring(8, 10));
+  return new Date(y, m, d);
 }
 
 function toKey(date: Date): string {
@@ -580,18 +586,51 @@ export default function CalendarView() {
     return getExtendedWeekends(HOLIDAYS);
   }, []);
 
-  const markedDays = useMemo<Record<string, DayMark>>(() => {
+  const {
+    markedDays,
+    issuedPerMonth,
+    futureIssuedCount,
+    pastIssuedCount,
+    unissuedCount,
+  } = useMemo(() => {
     const map: Record<string, DayMark> = {};
-    if (!weeksQuery.data) return map;
+    const issuedPerMonth = new Array(12).fill(0);
+    let futureIssuedCount = 0;
+    let pastIssuedCount = 0;
+    let unissuedCount = 0;
+
+    if (!weeksQuery.data) {
+      return {
+        markedDays: map,
+        issuedPerMonth,
+        futureIssuedCount,
+        pastIssuedCount,
+        unissuedCount,
+      };
+    }
 
     for (const week of weeksQuery.data as WeekRow[]) {
-      if (!week.isTicketIssued) continue;
+      if (!week.isTicketIssued) {
+        if (!week.isDeleted) {
+          unissuedCount++;
+        }
+        continue;
+      }
 
       const depDate = parseDate(week.departureDate);
       const retDate = parseDate(week.returnDate);
       const isOneway = (week.ticketType ?? "roundtrip") === "oneway";
 
       if (depDate) {
+        if (depDate.getFullYear() === YEAR) {
+          issuedPerMonth[depDate.getMonth()]++;
+        }
+        if (depDate >= today) {
+          futureIssuedCount++;
+        } else {
+          pastIssuedCount++;
+        }
+
         const key = toKey(depDate);
         const isPast = depDate < today;
         if (!map[key])
@@ -613,7 +652,13 @@ export default function CalendarView() {
         }
       }
     }
-    return map;
+    return {
+      markedDays: map,
+      issuedPerMonth,
+      futureIssuedCount,
+      pastIssuedCount,
+      unissuedCount,
+    };
   }, [weeksQuery.data, today]);
 
   function buildMonthGrid(year: number, month: number): (number | null)[][] {
@@ -625,15 +670,6 @@ export default function CalendarView() {
     const weeks: (number | null)[][] = [];
     for (let i = 0; i < cells.length; i += 7) weeks.push(cells.slice(i, i + 7));
     return weeks;
-  }
-
-  function countIssuedInMonth(month: number): number {
-    if (!weeksQuery.data) return 0;
-    return (weeksQuery.data as WeekRow[]).filter(w => {
-      if (!w.isTicketIssued) return false;
-      const dep = parseDate(w.departureDate);
-      return dep && dep.getMonth() === month && dep.getFullYear() === YEAR;
-    }).length;
   }
 
   return (
@@ -698,7 +734,7 @@ export default function CalendarView() {
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-5">
           {MONTHS.map((monthName, monthIdx) => {
             const grid = buildMonthGrid(YEAR, monthIdx);
-            const issuedCount = countIssuedInMonth(monthIdx);
+            const issuedCount = issuedPerMonth[monthIdx];
 
             return (
               <div
@@ -854,32 +890,19 @@ export default function CalendarView() {
               <div className="flex items-center gap-2">
                 <span className="w-3 h-3 rounded-full bg-emerald-500 inline-block" />
                 <span className="text-sm font-semibold text-slate-700">
-                  {(weeksQuery.data as WeekRow[] | undefined)?.filter(w => {
-                    if (!w.isTicketIssued) return false;
-                    const dep = parseDate(w.departureDate);
-                    return dep && dep >= today;
-                  }).length ?? 0}{" "}
-                  voos futuros emitidos
+                  {futureIssuedCount} voos futuros emitidos
                 </span>
               </div>
               <div className="flex items-center gap-2">
                 <span className="w-3 h-3 rounded-full bg-slate-500 inline-block" />
                 <span className="text-sm font-semibold text-slate-700">
-                  {(weeksQuery.data as WeekRow[] | undefined)?.filter(w => {
-                    if (!w.isTicketIssued) return false;
-                    const dep = parseDate(w.departureDate);
-                    return dep && dep < today;
-                  }).length ?? 0}{" "}
-                  voos passados
+                  {pastIssuedCount} voos passados
                 </span>
               </div>
               <div className="flex items-center gap-2">
                 <Circle className="w-3 h-3 text-slate-300" />
                 <span className="text-sm font-semibold text-slate-700">
-                  {(weeksQuery.data as WeekRow[] | undefined)?.filter(
-                    w => !w.isTicketIssued && !w.isDeleted
-                  ).length ?? 0}{" "}
-                  semanas sem bilhete
+                  {unissuedCount} semanas sem bilhete
                 </span>
               </div>
             </>
