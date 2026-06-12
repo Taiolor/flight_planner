@@ -406,3 +406,11 @@
 
 - [x] Resolver conflitos de merge do PR #126 (resolvido localmente em version.json)
 - [x] Fazer merge do PR #126 após resolução de conflitos (✓ Merged - Otimização de performance aplicada)
+
+
+## Resolução dos PRs #130 e #131 de UI/UX
+
+- [x] Resolver conflitos de merge do PR #130 (resolvido em .Jules/palette.md)
+- [x] Fazer merge do PR #130 (✓ Merged - Tooltip em botão ShareByEmail)
+- [x] PR #131 já foi mergeado automaticamente (Proteção de ações destrutivas)
+- [x] Todos os PRs abertos resolvidos - repositório limpo
