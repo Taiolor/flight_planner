@@ -119,7 +119,7 @@ describe("emailNotification", () => {
 
       // Check HTML content
       expect(sendArgs.html).toContain("Bilhete Alterado");
-      expect(sendArgs.html).toContain("Detalhes da Alteração");
+      expect(sendArgs.html).toContain("O que foi atualizado");
       expect(sendArgs.html).toContain("flightNumber");
       expect(sendArgs.html).toContain("LA123");
       expect(sendArgs.html).toContain("LA456");

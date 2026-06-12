@@ -15,6 +15,17 @@ export interface TicketChangeNotification {
     after?: Record<string, any>;
   };
   timestamp: Date;
+  // Complete ticket data for both departure and return
+  departureFlightNumber?: string;
+  departureFlightDatetime?: string;
+  departureAirline?: string;
+  departureLocator?: string;
+  returnFlightNumber?: string;
+  returnFlightDatetime?: string;
+  returnAirline?: string;
+  returnLocator?: string;
+  departureDate?: string;
+  returnDate?: string;
 }
 
 /**
@@ -32,33 +43,51 @@ function getResendClient(): Resend {
  * Format ticket change details for email body
  */
 function formatTicketDetails(notification: TicketChangeNotification): string {
-  const { type, weekNumber, ticketType, changes, timestamp } = notification;
+  const {
+    type,
+    weekNumber,
+    ticketType,
+    changes,
+    timestamp,
+    departureFlightNumber,
+    departureFlightDatetime,
+    departureAirline,
+    departureLocator,
+    returnFlightNumber,
+    returnFlightDatetime,
+    returnAirline,
+    returnLocator,
+    departureDate,
+    returnDate,
+  } = notification;
 
   let html = `
-    <div style="font-family: Arial, sans-serif; color: #333;">
-      <h2 style="color: #1e40af;">Notificação de Alteração de Bilhete</h2>
+    <div style="font-family: Arial, sans-serif; color: #333; max-width: 700px; margin: 0 auto;">
+      <h2 style="color: #1e40af; border-bottom: 2px solid #1e40af; padding-bottom: 10px;">Notificação de Alteração de Bilhete</h2>
       
-      <p><strong>Tipo de evento:</strong> ${
-        type === "created"
-          ? "✅ Bilhete Criado"
-          : type === "updated"
-            ? "✏️ Bilhete Alterado"
-            : "❌ Bilhete Deletado"
-      }</p>
-      
-      <p><strong>Semana:</strong> ${weekNumber}</p>
-      <p><strong>Trecho:</strong> ${ticketType === "departure" ? "Ida" : "Volta"}</p>
-      <p><strong>Data/Hora:</strong> ${timestamp.toLocaleString("pt-BR")}</p>
+      <div style="background-color: #f8f9fa; padding: 15px; border-radius: 5px; margin: 15px 0;">
+        <p><strong>Tipo de evento:</strong> ${
+          type === "created"
+            ? "✅ Bilhete Criado"
+            : type === "updated"
+              ? "✏️ Bilhete Alterado"
+              : "❌ Bilhete Deletado"
+        }</p>
+        <p><strong>Semana:</strong> ${weekNumber}</p>
+        <p><strong>Trecho:</strong> ${ticketType === "departure" ? "Ida" : "Volta"}</p>
+        <p><strong>Data/Hora da Notificação:</strong> ${timestamp.toLocaleString("pt-BR")}</p>
+      </div>
   `;
 
+  // Show what was updated
   if (changes && type === "updated") {
     html += `
-      <h3 style="color: #1e40af; margin-top: 20px;">Detalhes da Alteração</h3>
-      <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
-        <tr style="background-color: #f0f0f0;">
-          <th style="border: 1px solid #ddd; padding: 10px; text-align: left;">Campo</th>
-          <th style="border: 1px solid #ddd; padding: 10px; text-align: left;">Antes</th>
-          <th style="border: 1px solid #ddd; padding: 10px; text-align: left;">Depois</th>
+      <h3 style="color: #1e40af; margin-top: 20px; margin-bottom: 10px;">📝 O que foi atualizado</h3>
+      <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+        <tr style="background-color: #e3f2fd;">
+          <th style="border: 1px solid #90caf9; padding: 12px; text-align: left; font-weight: bold;">Campo</th>
+          <th style="border: 1px solid #90caf9; padding: 12px; text-align: left; font-weight: bold;">Antes</th>
+          <th style="border: 1px solid #90caf9; padding: 12px; text-align: left; font-weight: bold;">Depois</th>
         </tr>
     `;
 
@@ -74,9 +103,9 @@ function formatTicketDetails(notification: TicketChangeNotification): string {
       if (before !== after) {
         html += `
           <tr>
-            <td style="border: 1px solid #ddd; padding: 10px;"><strong>${key}</strong></td>
-            <td style="border: 1px solid #ddd; padding: 10px;">${before}</td>
-            <td style="border: 1px solid #ddd; padding: 10px; background-color: #fffacd;"><strong>${after}</strong></td>
+            <td style="border: 1px solid #90caf9; padding: 12px;"><strong>${key}</strong></td>
+            <td style="border: 1px solid #90caf9; padding: 12px; color: #666;">${before}</td>
+            <td style="border: 1px solid #90caf9; padding: 12px; background-color: #fff9c4; font-weight: bold;">${after}</td>
           </tr>
         `;
       }
@@ -85,12 +114,48 @@ function formatTicketDetails(notification: TicketChangeNotification): string {
     html += `</table>`;
   }
 
+  // Show complete ticket data
   html += `
-      <hr style="margin: 20px 0; border: none; border-top: 1px solid #ddd;">
-      <p style="font-size: 12px; color: #666;">
-        Esta é uma notificação automática do Planejador de Passagens Aéreas 2026.
-      </p>
+    <h3 style="color: #1e40af; margin-top: 20px; margin-bottom: 10px;">✈️ Dados Completos do Bilhete</h3>
+    <div style="background-color: #f5f5f5; padding: 15px; border-radius: 5px; margin-bottom: 20px;">
+  `;
+
+  // Departure flight info
+  if (departureFlightNumber || departureAirline) {
+    html += `
+      <div style="margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid #ddd;">
+        <h4 style="color: #0d47a1; margin: 0 0 10px 0;">🔵 Voo de Ida</h4>
+        <p><strong>Data:</strong> ${departureDate || "—"}</p>
+        <p><strong>Companhia Aérea:</strong> ${departureAirline || "—"}</p>
+        <p><strong>Número do Voo:</strong> ${departureFlightNumber || "—"}</p>
+        <p><strong>Data/Hora de Partida:</strong> ${departureFlightDatetime || "—"}</p>
+        <p><strong>Localizador:</strong> <span style="font-family: monospace; background-color: #fff9c4; padding: 2px 6px; border-radius: 3px; font-weight: bold;">${departureLocator || "—"}</span></p>
+      </div>
+    `;
+  }
+
+  // Return flight info
+  if (returnFlightNumber || returnAirline) {
+    html += `
+      <div>
+        <h4 style="color: #0d47a1; margin: 0 0 10px 0;">🔴 Voo de Volta</h4>
+        <p><strong>Data:</strong> ${returnDate || "—"}</p>
+        <p><strong>Companhia Aérea:</strong> ${returnAirline || "—"}</p>
+        <p><strong>Número do Voo:</strong> ${returnFlightNumber || "—"}</p>
+        <p><strong>Data/Hora de Partida:</strong> ${returnFlightDatetime || "—"}</p>
+        <p><strong>Localizador:</strong> <span style="font-family: monospace; background-color: #fff9c4; padding: 2px 6px; border-radius: 3px; font-weight: bold;">${returnLocator || "—"}</span></p>
+      </div>
+    `;
+  }
+
+  html += `
     </div>
+    <hr style="margin: 20px 0; border: none; border-top: 1px solid #ddd;">
+    <p style="font-size: 12px; color: #666; text-align: center;">
+      Smart Fly — Planejador de Passagens Aéreas 2026<br>
+      Esta é uma notificação automática. Não responda este e-mail.
+    </p>
+  </div>
   `;
 
   return html;

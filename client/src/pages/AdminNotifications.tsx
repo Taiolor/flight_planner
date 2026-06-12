@@ -760,6 +760,8 @@ function TicketNotificationEmailsSection() {
                   }
                   disabled={removeRecipientMutation.isPending}
                   className="text-red-600 hover:text-red-700 hover:bg-red-50 ml-2 flex-shrink-0"
+                  aria-label="Remover destinatário"
+                  title="Remover destinatário"
                 >
                   <XCircle className="w-4 h-4" />
                 </Button>

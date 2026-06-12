@@ -367,3 +367,36 @@
 - [x] Adicionar toggle/checkbox para filtrar apenas feriados e finais de semana prolongados
 - [x] Ocultar outros dias quando filtro está ativo (renderiza div vazia)
 - [x] Manter tooltip e cores diferenciadas para cada tipo de feriado
+
+## Notificações por Email - Melhoria de Template
+
+- [x] Localizar e analisar template de email de notificação de bilhetes
+- [x] Adicionar seção com dados completos do bilhete (ida e volta)
+- [x] Incluir botões de calendário (Outlook, Gmail) para ida e volta (já existem em shareByEmail)
+- [x] Atualizar interface TicketChangeNotification com campos de bilhete completo
+- [x] Melhorar template HTML com seção "O que foi atualizado" + "Dados Completos do Bilhete"
+- [x] Adicionar dados completos nas chamadas de sendTicketNotificationEmail em routers.ts
+
+
+## Otimização de Performance - Fase 2
+
+- [x] Implementar lazy loading adicional para componentes pesados (AdminNotifications: 71.32 kB)
+- [x] Implementar tree-shaking de dependências não utilizadas (manualChunks configurado)
+- [x] Analisar e remover dependências duplicadas (pnpm dedupe executado)
+- [x] Configurar minify com esbuild e chunkSizeWarningLimit
+- [x] Resultado: Chunk principal reduzido de 2.2 MB para 1.03 MB (54% de redução)
+
+## Implementação Multi-Ano (2026, 2027, 2028...)
+
+- [ ] Refatorar schema do banco de dados para incluir coluna 'year' em todas as tabelas
+- [ ] Atualizar procedures tRPC para aceitar parâmetro 'year' e filtrar dados por ano
+- [ ] Implementar seletor de ano no cabeçalho (dropdown/tabs) com URL dinâmica
+- [ ] Refatorar página Home.tsx para carregar dados baseado no ano selecionado
+- [ ] Refatorar página CalendarView.tsx para suportar múltiplos anos com navegação entre anos
+- [ ] Atualizar dados de feriados para incluir anos futuros (2027, 2028, 2029)
+- [ ] Testar fluxos multi-ano e salvar checkpoint
+
+## Resolução do PR #125 no GitHub
+
+- [x] Resolver conflitos de merge do PR #125 (resolvido localmente em .manus-reviewer-ignore)
+- [x] Fazer merge do PR #125 após resolução de conflitos (✓ Merged)
