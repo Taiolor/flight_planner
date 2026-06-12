@@ -57,3 +57,6 @@
 
 **Learning:** When using IIFE (Immediately Invoked Function Expressions) inside `.map` iteration blocks in large React components, variables like `const hoje = new Date()` get re-instantiated and recalculated for every single element. In a frequently re-rendering component with many items (like calendar weeks), this creates massive object creation and garbage collection overhead.
 **Action:** Always hoist shared single-evaluation objects (like "today" initialized as a static ms timestamp) and pure functions/large constant arrays outside of render maps. Use `useMemo` or store in component scope for dynamic things, and global scope for static constants/functions.
+## 2026-06-02 - O(N) Iteration Optimization in React Renders
+**Learning:** Running multiple `.filter()` operations on the same large array during a React render cycle causes O(N) redundant passes and unnecessary array allocations. In `CalendarView.tsx`, the app was executing `countIssuedInMonth` (which contained a `.filter()`) 12 times per render, plus 3 additional filters for the summary footer.
+**Action:** Always seek to consolidate array operations into a single-pass loop (e.g., within a `useMemo`) that pre-computes all needed aggregates or maps at once. Replace inline `.filter()` loops with direct access to these pre-computed aggregates to reduce time complexity from O(K*N) to O(N).
