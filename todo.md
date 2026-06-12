@@ -400,3 +400,9 @@
 
 - [x] Resolver conflitos de merge do PR #125 (resolvido localmente em .manus-reviewer-ignore)
 - [x] Fazer merge do PR #125 após resolução de conflitos (✓ Merged)
+
+
+## Resolução do PR #126 no GitHub
+
+- [x] Resolver conflitos de merge do PR #126 (resolvido localmente em version.json)
+- [x] Fazer merge do PR #126 após resolução de conflitos (✓ Merged - Otimização de performance aplicada)
