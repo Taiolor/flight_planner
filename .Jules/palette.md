@@ -14,5 +14,11 @@
 **Action:** Always ensure that custom accordion or toggle components link their trigger button to their target content using matching `aria-controls` and `id` attributes.
 
 ## 2026-06-09 - Tooltips on Disabled Buttons
+
 **Learning:** Disabled HTML elements (like `button disabled`) do not fire pointer events in many browsers, making tooltips invisible to users precisely when they need an explanation the most.
 **Action:** When adding an informative tooltip to explain why a button is disabled, always wrap the disabled button in a `span` or `div` with `tabIndex={0}`. Apply `focus-visible` styling and ensure the wrapper spans the full width of its content so the tooltip trigger area perfectly covers the button.
+
+## 2026-06-11 - Protecting Destructive Actions
+
+**Learning:** Implementing the AlertDialog for delete actions requires careful wrapping around the specific destructive trigger icon. Utilizing the Radix/Shadcn UI pattern ensures accessibility via 'asChild' and isolates the action inside the AlertDialogAction component seamlessly.
+**Action:** When adding confirm dialogs using Shadcn AlertDialog, replace the direct onClick of the trigger button with the AlertDialogAction onClick, and use 'asChild' on the Trigger to retain the button's native styling and behavior.
