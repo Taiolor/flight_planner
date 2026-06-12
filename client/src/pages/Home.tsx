@@ -1061,6 +1061,7 @@ export default function Home() {
 
   // Dados para o gráfico de variação de preços por mês (todas as empresas)
   const chartData = useMemo(() => {
+    // ⚡ Bolt: Single-pass iteration to avoid multiple array allocations from .filter()
     const MONTHS = [
       { num: "03", label: "Mar" },
       { num: "04", label: "Abr" },
@@ -1073,50 +1074,85 @@ export default function Home() {
       { num: "11", label: "Nov" },
       { num: "12", label: "Dez" },
     ];
-    return MONTHS.map(({ num, label }) => {
-      const monthWeeks = weeksData.filter(w => {
-        return w.departureDate.substring(3, 5) === num && !w.isDeleted;
-      });
-      const entry: Record<string, string | number> = { mes: label };
-      // ⚡ Otimização: Evitar map().filter().reduce()
-      // Usar um único loop nas monthWeeks para cada empresa economiza alocações
-      // Todas as empresas incluindo kayak e onhappy
+
+    // Initialize accumulator for each month
+    const monthStats: Record<
+      string,
+      {
+        mes: string;
+        airlines: Record<string, { sum: number; count: number }>;
+        minPrice: number;
+        totalAll: number;
+        countAll: number;
+      }
+    > = {};
+
+    for (let i = 0; i < MONTHS.length; i++) {
+      const monthNum = MONTHS[i].num;
+      monthStats[monthNum] = {
+        mes: MONTHS[i].label,
+        airlines: {},
+        minPrice: Infinity,
+        totalAll: 0,
+        countAll: 0,
+      };
       for (const airline of airlines) {
-        let sum = 0;
-        let count = 0;
-        for (let i = 0; i < monthWeeks.length; i++) {
-          const w = monthWeeks[i];
-          const p = parseFloat(priceMap[w.weekNumber]?.[airline.id] || "");
+        monthStats[monthNum].airlines[airline.id] = { sum: 0, count: 0 };
+      }
+    }
+
+    // Single pass over weeksData
+    for (let i = 0; i < weeksData.length; i++) {
+      const w = weeksData[i];
+      if (w.isDeleted) continue;
+
+      const monthNum = w.departureDate.substring(3, 5);
+      const stats = monthStats[monthNum];
+      if (!stats) continue;
+
+      // Update airline averages
+      const weekPrices = priceMap[w.weekNumber];
+      if (weekPrices) {
+        for (const airline of airlines) {
+          const p = parseFloat((weekPrices[airline.id] as string) || "");
           if (!isNaN(p) && p > 0) {
-            sum += p;
-            count++;
+            stats.airlines[airline.id].sum += p;
+            stats.airlines[airline.id].count++;
           }
         }
-        if (count > 0) {
-          entry[airline.id] = Math.round(sum / count);
+      }
+
+      // Update month min and average
+      const lowestP = getLowestPrice(w.weekNumber);
+      if (lowestP !== null && lowestP > 0) {
+        if (lowestP < stats.minPrice) stats.minPrice = lowestP;
+        stats.totalAll += lowestP;
+        stats.countAll++;
+      }
+    }
+
+    // Format output exactly as expected
+    const result: Record<string, string | number>[] = [];
+    for (let i = 0; i < MONTHS.length; i++) {
+      const stats = monthStats[MONTHS[i].num];
+      const entry: Record<string, string | number> = { mes: stats.mes };
+
+      for (const airline of airlines) {
+        const airStats = stats.airlines[airline.id];
+        if (airStats.count > 0) {
+          entry[airline.id] = Math.round(airStats.sum / airStats.count);
         }
       }
 
-      // Menor preço geral do mês (considerando todas as empresas)
-      let minPrice = Infinity;
-      let totalAll = 0;
-      let countAll = 0;
-      for (let i = 0; i < monthWeeks.length; i++) {
-        const w = monthWeeks[i];
-        const p = getLowestPrice(w.weekNumber);
-        if (p !== null && p > 0) {
-          if (p < minPrice) minPrice = p;
-          totalAll += p;
-          countAll++;
-        }
+      if (stats.countAll > 0) {
+        entry["menor"] = Math.round(stats.minPrice);
+        entry["media"] = Math.round(stats.totalAll / stats.countAll);
       }
 
-      if (countAll > 0) {
-        entry["menor"] = Math.round(minPrice);
-        entry["media"] = Math.round(totalAll / countAll);
-      }
-      return entry;
-    });
+      result.push(entry);
+    }
+
+    return result;
   }, [weeksData, priceMap, getLowestPrice]);
 
   const hasChartData = chartData.some(d => Object.keys(d).length > 1);
@@ -2172,7 +2208,9 @@ export default function Home() {
                                 <div
                                   className="flex items-start justify-between gap-2 sm:gap-4 cursor-pointer select-none focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded-lg"
                                   role="button"
-                                  aria-expanded={expandedWeekCards.has(week.weekNumber)}
+                                  aria-expanded={expandedWeekCards.has(
+                                    week.weekNumber
+                                  )}
                                   aria-controls={`week-content-${week.weekNumber}`}
                                   tabIndex={0}
                                   onClick={e => {
