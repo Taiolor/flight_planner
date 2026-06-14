@@ -550,12 +550,16 @@ export const appRouter = router({
                   weekNumber: input.weekNumber,
                   ticketType: "departure",
                   timestamp: new Date(),
-                  departureFlightNumber: weekBefore.departureFlightNumber ?? undefined,
-                  departureFlightDatetime: weekBefore.departureFlightDatetime ?? undefined,
+                  departureFlightNumber:
+                    weekBefore.departureFlightNumber ?? undefined,
+                  departureFlightDatetime:
+                    weekBefore.departureFlightDatetime ?? undefined,
                   departureAirline: weekBefore.departureAirline ?? undefined,
                   departureLocator: weekBefore.departureLocator ?? undefined,
-                  returnFlightNumber: weekBefore.returnFlightNumber ?? undefined,
-                  returnFlightDatetime: weekBefore.returnFlightDatetime ?? undefined,
+                  returnFlightNumber:
+                    weekBefore.returnFlightNumber ?? undefined,
+                  returnFlightDatetime:
+                    weekBefore.returnFlightDatetime ?? undefined,
                   returnAirline: weekBefore.returnAirline ?? undefined,
                   returnLocator: weekBefore.returnLocator ?? undefined,
                   departureDate: weekBefore.departureDate ?? undefined,
@@ -570,12 +574,16 @@ export const appRouter = router({
                   weekNumber: input.weekNumber,
                   ticketType: "return",
                   timestamp: new Date(),
-                  departureFlightNumber: weekBefore.departureFlightNumber ?? undefined,
-                  departureFlightDatetime: weekBefore.departureFlightDatetime ?? undefined,
+                  departureFlightNumber:
+                    weekBefore.departureFlightNumber ?? undefined,
+                  departureFlightDatetime:
+                    weekBefore.departureFlightDatetime ?? undefined,
                   departureAirline: weekBefore.departureAirline ?? undefined,
                   departureLocator: weekBefore.departureLocator ?? undefined,
-                  returnFlightNumber: weekBefore.returnFlightNumber ?? undefined,
-                  returnFlightDatetime: weekBefore.returnFlightDatetime ?? undefined,
+                  returnFlightNumber:
+                    weekBefore.returnFlightNumber ?? undefined,
+                  returnFlightDatetime:
+                    weekBefore.returnFlightDatetime ?? undefined,
                   returnAirline: weekBefore.returnAirline ?? undefined,
                   returnLocator: weekBefore.returnLocator ?? undefined,
                   departureDate: weekBefore.departureDate ?? undefined,
@@ -618,8 +626,10 @@ export const appRouter = router({
                     },
                   },
                   timestamp: new Date(),
-                  departureFlightNumber: input.departureFlightNumber ?? undefined,
-                  departureFlightDatetime: input.departureFlightDatetime ?? undefined,
+                  departureFlightNumber:
+                    input.departureFlightNumber ?? undefined,
+                  departureFlightDatetime:
+                    input.departureFlightDatetime ?? undefined,
                   departureAirline: input.departureAirline ?? undefined,
                   departureLocator: input.departureLocator ?? undefined,
                   returnFlightNumber: input.returnFlightNumber ?? undefined,
@@ -658,8 +668,10 @@ export const appRouter = router({
                     },
                   },
                   timestamp: new Date(),
-                  departureFlightNumber: input.departureFlightNumber ?? undefined,
-                  departureFlightDatetime: input.departureFlightDatetime ?? undefined,
+                  departureFlightNumber:
+                    input.departureFlightNumber ?? undefined,
+                  departureFlightDatetime:
+                    input.departureFlightDatetime ?? undefined,
                   departureAirline: input.departureAirline ?? undefined,
                   departureLocator: input.departureLocator ?? undefined,
                   returnFlightNumber: input.returnFlightNumber ?? undefined,

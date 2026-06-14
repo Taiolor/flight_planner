@@ -1466,6 +1466,13 @@ export default function Home() {
                         ? "Notificações ativas — clique para desativar"
                         : "Ativar notificações de voo"
                   }
+                  aria-label={
+                    pushStatus === "denied"
+                      ? "Notificações bloqueadas"
+                      : pushSubscribed
+                        ? "Desativar notificações"
+                        : "Ativar notificações"
+                  }
                   disabled={pushLoading || pushStatus === "denied"}
                   className={`border-white/40 text-white hover:bg-white/20 backdrop-blur-sm transition-all ${
                     pushSubscribed
@@ -2172,7 +2179,9 @@ export default function Home() {
                                 <div
                                   className="flex items-start justify-between gap-2 sm:gap-4 cursor-pointer select-none focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded-lg"
                                   role="button"
-                                  aria-expanded={expandedWeekCards.has(week.weekNumber)}
+                                  aria-expanded={expandedWeekCards.has(
+                                    week.weekNumber
+                                  )}
                                   aria-controls={`week-content-${week.weekNumber}`}
                                   tabIndex={0}
                                   onClick={e => {

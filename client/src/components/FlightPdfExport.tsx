@@ -747,6 +747,7 @@ export function ExportPdfButton({
           ? "Nenhum bilhete emitido para exportar"
           : "Exportar relatório em PDF"
       }
+      aria-label="Exportar relatório em PDF"
       className="bg-white/10 border-white text-white hover:bg-white hover:text-blue-700 transition-all"
     >
       {exporting ? (
