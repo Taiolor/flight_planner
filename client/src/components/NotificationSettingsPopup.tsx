@@ -242,6 +242,7 @@ export function NotificationSettingsPopup({
       size="sm"
       onClick={isMobile ? handleOpen : undefined}
       title="Configurar agendamentos de notificação"
+      aria-label="Configurar agendamentos de notificação"
       className="flex items-center gap-1.5 text-xs h-8 px-2.5 text-slate-300 hover:text-white hover:bg-white/10"
     >
       <Settings2 className="w-4 h-4" />
@@ -286,6 +287,7 @@ export function NotificationSettingsPopup({
           variant="ghost"
           size="sm"
           title="Configurar agendamentos de notificação"
+          aria-label="Configurar agendamentos de notificação"
           className="flex items-center gap-1.5 text-xs h-8 px-2.5 text-slate-300 hover:text-white hover:bg-white/10"
         >
           <Settings2 className="w-4 h-4" />
