@@ -911,12 +911,12 @@ export default function Home() {
       monthIssuedTotal: number;
     }[] = [];
 
-    const seen = new Set<string>();
+    const groupMap: Record<string, typeof groups[0]> = {};
+
     for (const week of sortedWeeks) {
       const monthKey = week.departureDate.substring(3, 5);
-      if (!seen.has(monthKey)) {
-        seen.add(monthKey);
-        groups.push({
+      if (!groupMap[monthKey]) {
+        const newGroup = {
           monthKey,
           monthLabel: MONTH_NAMES[monthKey] || monthKey,
           weeks: [],
@@ -924,9 +924,11 @@ export default function Home() {
           monthSelected: 0,
           monthHasHoliday: false,
           monthIssuedTotal: 0,
-        });
+        };
+        groupMap[monthKey] = newGroup;
+        groups.push(newGroup);
       }
-      groups.find(g => g.monthKey === monthKey)!.weeks.push(week);
+      groupMap[monthKey].weeks.push(week);
     }
 
     // After grouping, compute the aggregates per month once
