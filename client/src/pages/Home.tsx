@@ -827,6 +827,12 @@ export default function Home() {
       }
       if (filterTicketStatus === "issued" && !w.isTicketIssued) return false;
       if (filterTicketStatus === "notIssued" && w.isTicketIssued) return false;
+      // Filtro de companhia: considerar ida OU volta
+      if (filterAirline !== "all") {
+        const departureMatches = w.departureAirline === filterAirline;
+        const returnMatches = w.returnAirline === filterAirline;
+        if (!departureMatches && !returnMatches) return false;
+      }
       // Filtro de horario: considerar ida OU volta
       // Usa departureFlightDatetime e returnFlightDatetime (formato "2026-02-22T17:55")
       const departureMinutes = getFlightMinutes(w.departureFlightDatetime);
@@ -856,6 +862,7 @@ export default function Home() {
   }, [
     weeksData,
     filterMonth,
+    filterAirline,
     showCheapestOnly,
     priceThreshold,
     filterTicketStatus,
