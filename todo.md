@@ -411,3 +411,19 @@
 - [x] Fazer merge do PR #130 (✓ Merged - Tooltip em botão ShareByEmail)
 - [x] PR #131 já foi mergeado automaticamente (Proteção de ações destrutivas)
 - [x] Todos os PRs abertos resolvidos - repositório limpo
+
+
+## Bug Fix - Filtros não Funcionam Corretamente
+
+- [x] Filtro de Companhia não retorna resultados quando selecionado (CORRIGIDO)
+- [x] Investigar lógica de filtro em Home.tsx (filterAirline não estava sendo aplicado)
+- [x] Adicionar lógica de filtro de companhia (ida OU volta)
+- [x] Adicionar filterAirline às dependências do useMemo
+
+
+## UI/UX - Logotipos de Companhias Aéreas
+
+- [x] Companhias já possuem ícones definidos em flightData.ts
+- [x] Adicionar logotipos ao filtro de companhia (Select component)
+- [x] Melhorar visual com ícones ao lado dos nomes (flex layout com gap)
+- [x] Exibição dos logotipos funcionando corretamente
