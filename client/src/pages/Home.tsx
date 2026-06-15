@@ -1797,7 +1797,10 @@ export default function Home() {
                   <SelectItem value="all">Todas as companhias</SelectItem>
                   {airlines.map(a => (
                     <SelectItem key={a.id} value={a.id}>
-                      {a.name}
+                      <div className="flex items-center gap-2">
+                        <span className="text-lg">{a.icon}</span>
+                        <span>{a.name}</span>
+                      </div>
                     </SelectItem>
                   ))}
                 </SelectContent>

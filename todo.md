@@ -422,3 +422,11 @@
 - [x] Investigar lógica de filtro em Home.tsx (filterAirline não estava sendo aplicado)
 - [x] Adicionar lógica de filtro de companhia (ida OU volta)
 - [x] Adicionar filterAirline às dependências do useMemo
+
+
+## UI/UX - Logotipos de Companhias Aéreas
+
+- [x] Companhias já possuem ícones definidos em flightData.ts
+- [x] Adicionar logotipos ao filtro de companhia (Select component)
+- [x] Melhorar visual com ícones ao lado dos nomes (flex layout com gap)
+- [x] Exibição dos logotipos funcionando corretamente
