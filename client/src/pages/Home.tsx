@@ -1511,6 +1511,13 @@ export default function Home() {
                         ? "Notificações ativas — clique para desativar"
                         : "Ativar notificações de voo"
                   }
+                  aria-label={
+                    pushStatus === "denied"
+                      ? "Notificações bloqueadas"
+                      : pushSubscribed
+                        ? "Desativar notificações"
+                        : "Ativar notificações"
+                  }
                   disabled={pushLoading || pushStatus === "denied"}
                   className={`border-white/40 text-white hover:bg-white/20 backdrop-blur-sm transition-all ${
                     pushSubscribed

@@ -377,7 +377,6 @@
 - [x] Melhorar template HTML com seção "O que foi atualizado" + "Dados Completos do Bilhete"
 - [x] Adicionar dados completos nas chamadas de sendTicketNotificationEmail em routers.ts
 
-
 ## Otimização de Performance - Fase 2
 
 - [x] Implementar lazy loading adicional para componentes pesados (AdminNotifications: 71.32 kB)
@@ -401,12 +400,10 @@
 - [x] Resolver conflitos de merge do PR #125 (resolvido localmente em .manus-reviewer-ignore)
 - [x] Fazer merge do PR #125 após resolução de conflitos (✓ Merged)
 
-
 ## Resolução do PR #126 no GitHub
 
 - [x] Resolver conflitos de merge do PR #126 (resolvido localmente em version.json)
 - [x] Fazer merge do PR #126 após resolução de conflitos (✓ Merged - Otimização de performance aplicada)
-
 
 ## Resolução dos PRs #130 e #131 de UI/UX
 

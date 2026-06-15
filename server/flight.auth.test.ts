@@ -140,8 +140,9 @@ describe("flights.updateWeekStatus with airline fields", () => {
   });
 
   it("should accept departureAirline and returnAirline fields", async () => {
-    const { validateAuthSession, updateFlightWeekStatus } =
-      await import("./db");
+    const { validateAuthSession, updateFlightWeekStatus } = await import(
+      "./db"
+    );
     (validateAuthSession as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
       email: "taiolor@gmail.com",
     });

@@ -117,7 +117,12 @@ export default function AdminNotifications() {
         <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Link href="/">
-              <Button variant="ghost" size="sm" className="gap-2 text-gray-600">
+              <Button
+                variant="ghost"
+                size="sm"
+                aria-label="Voltar"
+                className="gap-2 text-gray-600"
+              >
                 <ArrowLeft className="w-4 h-4" />
                 <span className="hidden sm:inline">Voltar</span>
               </Button>
@@ -135,6 +140,11 @@ export default function AdminNotifications() {
               variant="ghost"
               size="sm"
               onClick={() => setAutoRefresh(v => !v)}
+              aria-label={
+                autoRefresh
+                  ? "Desativar atualização automática"
+                  : "Ativar atualização automática"
+              }
               className={`gap-2 text-sm ${autoRefresh ? "text-green-600" : "text-gray-500"}`}
             >
               {autoRefresh ? (
@@ -151,6 +161,7 @@ export default function AdminNotifications() {
               size="sm"
               onClick={() => refetch()}
               disabled={isFetching}
+              aria-label="Atualizar"
               className="gap-2"
             >
               <RefreshCw
