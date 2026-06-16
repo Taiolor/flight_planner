@@ -918,7 +918,7 @@ export default function Home() {
       monthIssuedTotal: number;
     }[] = [];
 
-    const groupMap: Record<string, typeof groups[0]> = {};
+    const groupMap: Record<string, (typeof groups)[0]> = {};
 
     for (const week of sortedWeeks) {
       const monthKey = week.departureDate.substring(3, 5);
