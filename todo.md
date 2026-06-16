@@ -412,14 +412,12 @@
 - [x] PR #131 já foi mergeado automaticamente (Proteção de ações destrutivas)
 - [x] Todos os PRs abertos resolvidos - repositório limpo
 
-
 ## Bug Fix - Filtros não Funcionam Corretamente
 
 - [x] Filtro de Companhia não retorna resultados quando selecionado (CORRIGIDO)
 - [x] Investigar lógica de filtro em Home.tsx (filterAirline não estava sendo aplicado)
 - [x] Adicionar lógica de filtro de companhia (ida OU volta)
 - [x] Adicionar filterAirline às dependências do useMemo
-
 
 ## UI/UX - Logotipos de Companhias Aéreas
 
@@ -428,7 +426,6 @@
 - [x] Melhorar visual com ícones ao lado dos nomes (flex layout com gap)
 - [x] Exibição dos logotipos funcionando corretamente
 
-
 ## UI/UX - Skeleton Screen para Carregamento
 
 - [ ] Criar componente SkeletonChart para simular gráfico durante carregamento
@@ -436,7 +433,6 @@
 - [ ] Adicionar estado de loading ao componente Home
 - [ ] Mostrar skeleton screens enquanto dados estão sendo carregados
 - [ ] Adicionar transição suave entre skeleton e conteúdo real
-
 
 ## UI/UX - Skeleton Screen para Carregamento
 
