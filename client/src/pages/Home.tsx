@@ -918,7 +918,7 @@ export default function Home() {
       monthIssuedTotal: number;
     }[] = [];
 
-    const groupMap: Record<string, typeof groups[0]> = {};
+    const groupMap: Record<string, (typeof groups)[0]> = {};
 
     for (const week of sortedWeeks) {
       const monthKey = week.departureDate.substring(3, 5);
@@ -2312,16 +2312,29 @@ export default function Home() {
                                       </div>
                                       {/* Datas editáveis inline com dia da semana */}
                                       {(() => {
-                                        const feriadoIda = feriados.filter(
-                                          f => f.tipo === "ida"
-                                        );
-                                        const feriadoRetorno = feriados.filter(
-                                          f => f.tipo === "retorno"
-                                        );
-                                        const feriadosIntervalo =
-                                          feriados.filter(
-                                            f => f.tipo === "intervalo"
-                                          );
+                                        // ⚡ Bolt Optimization: Group all holiday types in a single pass instead of multiple .filter() calls
+                                        const feriadoIda: typeof feriados = [];
+                                        const feriadoRetorno: typeof feriados =
+                                          [];
+                                        const feriadosIntervalo: typeof feriados =
+                                          [];
+                                        const feriadosIntervaloCopa: typeof feriados =
+                                          [];
+                                        const feriadosIntervaloNaoCopa: typeof feriados =
+                                          [];
+                                        for (const f of feriados) {
+                                          if (f.tipo === "ida")
+                                            feriadoIda.push(f);
+                                          else if (f.tipo === "retorno")
+                                            feriadoRetorno.push(f);
+                                          else if (f.tipo === "intervalo") {
+                                            feriadosIntervalo.push(f);
+                                            if (f.feriado.tipo === "copa")
+                                              feriadosIntervaloCopa.push(f);
+                                            else
+                                              feriadosIntervaloNaoCopa.push(f);
+                                          }
+                                        }
 
                                         // Converte DD/MM/YYYY → YYYY-MM-DD para o input type=date
                                         const toInputDate = (d: string) => {
@@ -2522,19 +2535,14 @@ export default function Home() {
                                                 </span>
                                               ))}
                                             </div>
-                                            {feriadosIntervalo.filter(
-                                              f => f.feriado.tipo !== "copa"
-                                            ).length > 0 && (
+                                            {feriadosIntervaloNaoCopa.length >
+                                              0 && (
                                               <p className="text-xs text-slate-500 flex items-center gap-1 flex-wrap pl-5">
                                                 <span className="text-orange-600 dark:text-orange-300 font-semibold">
                                                   ⚠️ Feriados no período:
                                                 </span>
-                                                {feriadosIntervalo
-                                                  .filter(
-                                                    f =>
-                                                      f.feriado.tipo !== "copa"
-                                                  )
-                                                  .map(f => (
+                                                {feriadosIntervaloNaoCopa.map(
+                                                  f => (
                                                     <span
                                                       key={f.feriado.data}
                                                       className={`px-2 py-0.5 rounded-full ${
@@ -2550,22 +2558,18 @@ export default function Home() {
                                                       )}{" "}
                                                       – {f.feriado.nome}
                                                     </span>
-                                                  ))}
+                                                  )
+                                                )}
                                               </p>
                                             )}
-                                            {feriadosIntervalo.filter(
-                                              f => f.feriado.tipo === "copa"
-                                            ).length > 0 && (
+                                            {feriadosIntervaloCopa.length >
+                                              0 && (
                                               <p className="text-xs text-slate-500 flex items-center gap-1 flex-wrap pl-5">
                                                 <span className="text-green-700 dark:text-green-300 font-semibold">
                                                   ⚽ Copa 2026 no período:
                                                 </span>
-                                                {feriadosIntervalo
-                                                  .filter(
-                                                    f =>
-                                                      f.feriado.tipo === "copa"
-                                                  )
-                                                  .map(f => (
+                                                {feriadosIntervaloCopa.map(
+                                                  f => (
                                                     <span
                                                       key={f.feriado.data}
                                                       className="px-2 py-0.5 rounded-full bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-200 font-semibold"
@@ -2576,7 +2580,8 @@ export default function Home() {
                                                       )}{" "}
                                                       – {f.feriado.nome}
                                                     </span>
-                                                  ))}
+                                                  )
+                                                )}
                                               </p>
                                             )}
                                           </div>
