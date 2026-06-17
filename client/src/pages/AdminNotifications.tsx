@@ -26,7 +26,7 @@ import {
   Plane,
   ChevronDown,
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { toast } from "sonner";
 import { TestNextAlertButton } from "@/components/admin-notifications/TestNextAlertButton";
 import {
@@ -102,12 +102,24 @@ export default function AdminNotifications() {
     );
   }
 
-  const pendingAlerts =
-    data?.scheduledAlerts.filter(a => a.status === "pending") ?? [];
-  const sentAlerts =
-    data?.scheduledAlerts.filter(a => a.status === "sent") ?? [];
-  const pastAlerts =
-    data?.scheduledAlerts.filter(a => a.status === "past") ?? [];
+  // ⚡ Bolt Optimization: Single-pass iteration to categorize alerts
+  // Replaces 3x O(N) .filter() array iterations with 1x O(N) pass, reducing overhead
+  const { pendingAlerts, sentAlerts, pastAlerts } = useMemo(() => {
+    type AlertArray = NonNullable<typeof data>["scheduledAlerts"];
+    const pending: AlertArray = [];
+    const sent: AlertArray = [];
+    const past: AlertArray = [];
+
+    if (data?.scheduledAlerts) {
+      for (const alert of data.scheduledAlerts) {
+        if (alert.status === "pending") pending.push(alert);
+        else if (alert.status === "sent") sent.push(alert);
+        else if (alert.status === "past") past.push(alert);
+      }
+    }
+
+    return { pendingAlerts: pending, sentAlerts: sent, pastAlerts: past };
+  }, [data?.scheduledAlerts]);
   const nextAlert = pendingAlerts[0];
 
   return (
