@@ -371,6 +371,8 @@ export const appRouter = router({
           departureFlightNumber: z.string().nullable().optional(),
           returnFlightNumber: z.string().nullable().optional(),
           ticketType: z.string().nullable().optional(),
+          smilesPoints: z.number().nullable().optional(),
+          latamPassPoints: z.number().nullable().optional(),
         })
       )
       .mutation(async ({ input, ctx }) => {
@@ -401,6 +403,8 @@ export const appRouter = router({
           departureFlightNumber: input.departureFlightNumber,
           returnFlightNumber: input.returnFlightNumber,
           ticketType: input.ticketType,
+          smilesPoints: input.smilesPoints,
+          latamPassPoints: input.latamPassPoints,
         });
 
         // Send email notifications if ticket was issued or modified

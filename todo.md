@@ -442,3 +442,15 @@
 - [x] Criar componente SkeletonFilters para simular filtros durante carregamento
 - [ ] Integrar skeleton screens no componente Home com transição suave
 - [ ] Testar animação de carregamento em diferentes velocidades de rede
+
+
+## Pagamento por Milhas (SMILES e LATAM PASS)
+
+- [x] Adicionar colunas smilesPoints e latamPassPoints ao schema do banco (flightWeeks)
+- [x] Executar migração do banco de dados (pnpm db:push)
+- [x] Atualizar db.ts para incluir campos de milhas nas queries
+- [x] Atualizar routers.ts para aceitar e retornar campos de milhas
+- [x] Adicionar campos SMILES e LATAM PASS no frame de valores da UI (input em pontos)
+- [x] Implementar soma mensal de milhas gastas no resumo por mês
+- [ ] Atualizar notificações por email para incluir dados de milhas
+- [x] Testar fluxo completo de entrada e exibição de milhas (158 testes passando)

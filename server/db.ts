@@ -192,6 +192,8 @@ export async function updateFlightWeekStatus(
     departureFlightNumber?: string | null;
     returnFlightNumber?: string | null;
     ticketType?: string | null;
+    smilesPoints?: number | null;
+    latamPassPoints?: number | null;
   }
 ) {
   const db = await getDb();

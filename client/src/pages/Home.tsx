@@ -244,6 +244,8 @@ interface WeekData {
   departureFlightNumber?: string | null;
   returnFlightNumber?: string | null;
   ticketType?: string | null;
+  smilesPoints?: number | null;
+  latamPassPoints?: number | null;
 }
 
 interface PriceMap {
@@ -457,6 +459,11 @@ export default function Home() {
   const [savingPrice, setSavingPrice] = useState<{
     week: number;
     airline: string;
+  } | null>(null);
+
+  const [savingMiles, setSavingMiles] = useState<{
+    week: number;
+    field: "smilesPoints" | "latamPassPoints";
   } | null>(null);
 
   // Estado para ocultar valores monetários (privacidade)
@@ -750,6 +757,8 @@ export default function Home() {
         departureFlightNumber: (w as any).departureFlightNumber ?? null,
         returnFlightNumber: (w as any).returnFlightNumber ?? null,
         ticketType: (w as any).ticketType ?? "roundtrip",
+        smilesPoints: (w as any).smilesPoints ?? null,
+        latamPassPoints: (w as any).latamPassPoints ?? null,
       }));
     }
     // Fallback to static data
@@ -916,6 +925,8 @@ export default function Home() {
       monthSelected: number;
       monthHasHoliday: boolean;
       monthIssuedTotal: number;
+      monthSmilesTotal: number;
+      monthLatamPassTotal: number;
     }[] = [];
 
     const groupMap: Record<string, (typeof groups)[0]> = {};
@@ -931,6 +942,8 @@ export default function Home() {
           monthSelected: 0,
           monthHasHoliday: false,
           monthIssuedTotal: 0,
+          monthSmilesTotal: 0,
+          monthLatamPassTotal: 0,
         };
         groupMap[monthKey] = newGroup;
         groups.push(newGroup);
@@ -945,6 +958,9 @@ export default function Home() {
       let selectedCount = 0;
       let hasHoliday = false;
       let issuedTotal = 0;
+
+      let smilesTotal = 0;
+      let latamPassTotal = 0;
 
       for (const w of group.weeks) {
         if (w.isTicketIssued) {
@@ -961,12 +977,16 @@ export default function Home() {
         ) {
           hasHoliday = true;
         }
+        if (w.smilesPoints) smilesTotal += w.smilesPoints;
+        if (w.latamPassPoints) latamPassTotal += w.latamPassPoints;
       }
 
       group.monthIssued = issuedCount;
       group.monthSelected = selectedCount;
       group.monthHasHoliday = hasHoliday;
       group.monthIssuedTotal = issuedTotal;
+      group.monthSmilesTotal = smilesTotal;
+      group.monthLatamPassTotal = latamPassTotal;
     }
 
     return groups;
@@ -1353,6 +1373,32 @@ export default function Home() {
         onError: err => {
           setSavingPrice(null);
           if (err.message?.includes("login")) setShowLoginModal(true);
+        },
+      }
+    );
+  };
+
+  const handleMilesBlur = (
+    weekNumber: number,
+    field: "smilesPoints" | "latamPassPoints",
+    value: string
+  ) => {
+    if (!isAuthenticated) {
+      setShowLoginModal(true);
+      return;
+    }
+    const numValue = value === "" ? null : parseInt(value, 10);
+    if (value !== "" && isNaN(numValue as number)) return;
+    setSavingMiles({ week: weekNumber, field });
+    updateStatusMutation.mutate(
+      { weekNumber, [field]: numValue },
+      {
+        onSuccess: () => {
+          utils.flights.getWeeks.invalidate();
+          setSavingMiles(null);
+        },
+        onError: () => {
+          setSavingMiles(null);
         },
       }
     );
@@ -2094,6 +2140,8 @@ export default function Home() {
                   monthSelected,
                   monthHasHoliday,
                   monthIssuedTotal,
+                  monthSmilesTotal,
+                  monthLatamPassTotal,
                 }) => {
                   const isOpen = expandedMonths.has(monthKey);
                   return (
@@ -2186,6 +2234,34 @@ export default function Home() {
                               {hideValues
                                 ? "••••"
                                 : `R$ ${monthIssuedTotal.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                            </span>
+                          )}
+                          {monthSmilesTotal > 0 && (
+                            <span
+                              className={`px-2 py-0.5 rounded-full text-xs font-bold ${
+                                isOpen
+                                  ? "bg-orange-400/80 text-white"
+                                  : "bg-orange-100 text-orange-700"
+                              }`}
+                              title="Total de pontos SMILES gastos no mês"
+                            >
+                              {hideValues
+                                ? "••••"
+                                : `✦ ${monthSmilesTotal.toLocaleString("pt-BR")} pts`}
+                            </span>
+                          )}
+                          {monthLatamPassTotal > 0 && (
+                            <span
+                              className={`px-2 py-0.5 rounded-full text-xs font-bold ${
+                                isOpen
+                                  ? "bg-red-400/80 text-white"
+                                  : "bg-red-100 text-red-700"
+                              }`}
+                              title="Total de pontos LATAM PASS gastos no mês"
+                            >
+                              {hideValues
+                                ? "••••"
+                                : `✦ ${monthLatamPassTotal.toLocaleString("pt-BR")} LATAM`}
                             </span>
                           )}
                         </div>
@@ -3008,6 +3084,91 @@ export default function Home() {
                                             </span>
                                           </div>
                                           <div className="p-3 space-y-2">
+                                            {/* Campos de Milhas: SMILES e LATAM PASS */}
+                                            {(() => {
+                                              const currentSmiles = week.smilesPoints ?? null;
+                                              const currentLatam = week.latamPassPoints ?? null;
+                                              const isSavingSmiles =
+                                                savingMiles?.week === week.weekNumber &&
+                                                savingMiles?.field === "smilesPoints";
+                                              const isSavingLatam =
+                                                savingMiles?.week === week.weekNumber &&
+                                                savingMiles?.field === "latamPassPoints";
+                                              return (
+                                                <>
+                                                  {/* Separador */}
+                                                  <div className="border-t border-slate-200 dark:border-slate-600 pt-2 mt-1">
+                                                    <span className="text-[10px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                                                      Pagamento em Milhas
+                                                    </span>
+                                                  </div>
+                                                  {/* SMILES */}
+                                                  <div className="flex items-center gap-2">
+                                                    <span className="bg-orange-500 text-white px-2 py-1 rounded text-xs font-semibold w-20 text-center flex-shrink-0">
+                                                      ✦ SMILES
+                                                    </span>
+                                                    <div className="relative flex-1">
+                                                      {hideValues ? (
+                                                        <div className="h-8 rounded-md border border-input bg-muted flex items-center px-3 text-xs text-muted-foreground tracking-widest">
+                                                          ••••
+                                                        </div>
+                                                      ) : (
+                                                        <Input
+                                                          type="number"
+                                                          placeholder="0 pts"
+                                                          aria-label="Pontos SMILES"
+                                                          defaultValue={currentSmiles ?? ""}
+                                                          key={`${week.weekNumber}-smiles-${currentSmiles}`}
+                                                          onBlur={e =>
+                                                            handleMilesBlur(
+                                                              week.weekNumber,
+                                                              "smilesPoints",
+                                                              e.target.value
+                                                            )
+                                                          }
+                                                          className="h-8 text-xs"
+                                                        />
+                                                      )}
+                                                      {isSavingSmiles && (
+                                                        <Loader2 className="w-3.5 h-3.5 animate-spin absolute right-2 top-2 text-orange-500" />
+                                                      )}
+                                                    </div>
+                                                  </div>
+                                                  {/* LATAM PASS */}
+                                                  <div className="flex items-center gap-2">
+                                                    <span className="bg-red-600 text-white px-2 py-1 rounded text-xs font-semibold w-20 text-center flex-shrink-0">
+                                                      ✦ LATAM
+                                                    </span>
+                                                    <div className="relative flex-1">
+                                                      {hideValues ? (
+                                                        <div className="h-8 rounded-md border border-input bg-muted flex items-center px-3 text-xs text-muted-foreground tracking-widest">
+                                                          ••••
+                                                        </div>
+                                                      ) : (
+                                                        <Input
+                                                          type="number"
+                                                          placeholder="0 pts"
+                                                          aria-label="Pontos LATAM PASS"
+                                                          defaultValue={currentLatam ?? ""}
+                                                          key={`${week.weekNumber}-latam-${currentLatam}`}
+                                                          onBlur={e =>
+                                                            handleMilesBlur(
+                                                              week.weekNumber,
+                                                              "latamPassPoints",
+                                                              e.target.value
+                                                            )
+                                                          }
+                                                          className="h-8 text-xs"
+                                                        />
+                                                      )}
+                                                      {isSavingLatam && (
+                                                        <Loader2 className="w-3.5 h-3.5 animate-spin absolute right-2 top-2 text-red-500" />
+                                                      )}
+                                                    </div>
+                                                  </div>
+                                                </>
+                                              );
+                                            })()}
                                             {airlines.map(airline => {
                                               const currentPrice =
                                                 priceMap[week.weekNumber]?.[
