@@ -1258,6 +1258,24 @@ export default function Home() {
   }, [weeksData]);
   const annualHasData = annualSummaryData.some(d => d.total > 0);
 
+  const annualSmilesTotal = useMemo(() => {
+    let sum = 0;
+    for (let i = 0; i < weeksData.length; i++) {
+      const w = weeksData[i];
+      if (!w.isDeleted && w.smilesPoints) sum += w.smilesPoints;
+    }
+    return sum;
+  }, [weeksData]);
+
+  const annualLatamPassTotal = useMemo(() => {
+    let sum = 0;
+    for (let i = 0; i < weeksData.length; i++) {
+      const w = weeksData[i];
+      if (!w.isDeleted && w.latamPassPoints) sum += w.latamPassPoints;
+    }
+    return sum;
+  }, [weeksData]);
+
   // Handlers
   const handleToggleSelect = (weekNumber: number, current: number) => {
     requireAuth(() => {
@@ -1731,6 +1749,30 @@ export default function Home() {
                       : "—"}
                 </p>
               </div>
+              {annualSmilesTotal > 0 && (
+                <div className="text-center">
+                  <p className="text-orange-200 text-[10px] sm:text-xs uppercase tracking-wider mb-1">
+                    ✦ Total SMILES
+                  </p>
+                  <p className="text-2xl sm:text-3xl font-black text-orange-300">
+                    {hideValues
+                      ? "••••"
+                      : `${annualSmilesTotal.toLocaleString("pt-BR")} pts`}
+                  </p>
+                </div>
+              )}
+              {annualLatamPassTotal > 0 && (
+                <div className="text-center">
+                  <p className="text-red-200 text-[10px] sm:text-xs uppercase tracking-wider mb-1">
+                    ✦ Total LATAM PASS
+                  </p>
+                  <p className="text-2xl sm:text-3xl font-black text-red-300">
+                    {hideValues
+                      ? "••••"
+                      : `${annualLatamPassTotal.toLocaleString("pt-BR")} pts`}
+                  </p>
+                </div>
+              )}
             </div>
           </div>
           {annualHasData ? (
