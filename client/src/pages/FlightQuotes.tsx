@@ -12,6 +12,11 @@ import { flightData } from "@/lib/flightData";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -217,16 +222,20 @@ const QuoteRow = ({
             })}
           </span>
           <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <button
-                type="button"
-                className="p-1 rounded text-slate-400 hover:text-red-500 dark:hover:text-red-400 transition-colors focus-visible:ring-2 focus-visible:ring-red-500"
-                aria-label="Excluir cotação"
-                title="Excluir cotação"
-              >
-                <Trash2 className="w-3.5 h-3.5" />
-              </button>
-            </AlertDialogTrigger>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <AlertDialogTrigger asChild>
+                  <button
+                    type="button"
+                    className="p-1 rounded text-slate-400 hover:text-red-500 dark:hover:text-red-400 transition-colors focus-visible:ring-2 focus-visible:ring-red-500"
+                    aria-label="Excluir cotação"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                </AlertDialogTrigger>
+              </TooltipTrigger>
+              <TooltipContent>Excluir cotação</TooltipContent>
+            </Tooltip>
             <AlertDialogContent>
               <AlertDialogHeader>
                 <AlertDialogTitle>Excluir cotação</AlertDialogTitle>
@@ -613,28 +622,37 @@ const WeekCard = ({
           {!isPast && (
             <div className="flex flex-wrap gap-2">
               {/* Botão API */}
-              <Button
-                size="sm"
-                onClick={() => onFetchApi(week.semana, depIso, retIso)}
-                disabled={isLoadingApi || apiLimitReached}
-                className={`flex items-center gap-1.5 text-xs ${
-                  apiLimitReached
-                    ? "bg-slate-300 dark:bg-slate-600 cursor-not-allowed"
-                    : "bg-emerald-600 hover:bg-emerald-700 text-white"
-                }`}
-                title={
-                  apiLimitReached
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span
+                    tabIndex={0}
+                    className="inline-block rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
+                  >
+                    <Button
+                      size="sm"
+                      onClick={() => onFetchApi(week.semana, depIso, retIso)}
+                      disabled={isLoadingApi || apiLimitReached}
+                      className={`flex items-center gap-1.5 text-xs ${
+                        apiLimitReached
+                          ? "bg-slate-300 dark:bg-slate-600 cursor-not-allowed"
+                          : "bg-emerald-600 hover:bg-emerald-700 text-white"
+                      }`}
+                    >
+                      {isLoadingApi ? (
+                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      ) : (
+                        <Bot className="w-3.5 h-3.5" />
+                      )}
+                      {isLoadingApi ? "Buscando..." : "Buscar via API"}
+                    </Button>
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent>
+                  {apiLimitReached
                     ? "Limite mensal atingido — use o Kayak"
-                    : "Buscar preço via Sky Scrapper API"
-                }
-              >
-                {isLoadingApi ? (
-                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                ) : (
-                  <Bot className="w-3.5 h-3.5" />
-                )}
-                {isLoadingApi ? "Buscando..." : "Buscar via API"}
-              </Button>
+                    : "Buscar preço via Sky Scrapper API"}
+                </TooltipContent>
+              </Tooltip>
 
               {/* Botão Kayak */}
               <a

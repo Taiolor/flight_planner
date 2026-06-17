@@ -22,3 +22,6 @@
 
 **Learning:** Implementing the AlertDialog for delete actions requires careful wrapping around the specific destructive trigger icon. Utilizing the Radix/Shadcn UI pattern ensures accessibility via 'asChild' and isolates the action inside the AlertDialogAction component seamlessly.
 **Action:** When adding confirm dialogs using Shadcn AlertDialog, replace the direct onClick of the trigger button with the AlertDialogAction onClick, and use 'asChild' on the Trigger to retain the button's native styling and behavior.
+## 2024-06-16 - Tooltips on Disabled Elements via Shadcn/Radix UI
+**Learning:** Adding a Radix `<Tooltip>` directly to a disabled native HTML element (like `<button disabled>`) doesn't work because the element doesn't emit pointer events when disabled, preventing the tooltip from appearing when hovered.
+**Action:** Always wrap the disabled trigger element inside a focusable container, such as a `<span tabIndex={0} className="focus-visible:ring-2 ...">`, and use `<TooltipTrigger asChild>` on this wrapper so the tooltip correctly triggers on hover or focus even when the inner element is disabled.
