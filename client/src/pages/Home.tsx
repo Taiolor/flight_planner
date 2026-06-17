@@ -2379,6 +2379,22 @@ export default function Home() {
                                               : `R$ ${lowestPrice.toFixed(2)}`}
                                           </span>
                                         )}
+                                        {week.smilesPoints ? (
+                                          <span className="text-xs bg-orange-100 text-orange-800 dark:bg-orange-900/40 dark:text-orange-200 px-2 py-1 rounded font-semibold">
+                                            ✦{" "}
+                                            {hideValues
+                                              ? "••••"
+                                              : `${week.smilesPoints.toLocaleString("pt-BR")} pts`}
+                                          </span>
+                                        ) : null}
+                                        {week.latamPassPoints ? (
+                                          <span className="text-xs bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-200 px-2 py-1 rounded font-semibold">
+                                            ✦{" "}
+                                            {hideValues
+                                              ? "••••"
+                                              : `${week.latamPassPoints.toLocaleString("pt-BR")} LATAM`}
+                                          </span>
+                                        ) : null}
                                         {week.isTicketIssued ? (
                                           <span className="text-xs bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-200 px-2 py-1 rounded flex items-center gap-1">
                                             <CheckCircle2 className="w-3 h-3" />{" "}
