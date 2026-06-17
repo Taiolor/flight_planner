@@ -425,3 +425,20 @@
 - [x] Adicionar logotipos ao filtro de companhia (Select component)
 - [x] Melhorar visual com ícones ao lado dos nomes (flex layout com gap)
 - [x] Exibição dos logotipos funcionando corretamente
+
+
+## UI/UX - Skeleton Screen para Carregamento
+
+- [ ] Criar componente SkeletonChart para simular gráfico durante carregamento
+- [ ] Criar componente SkeletonFilters para simular filtros durante carregamento
+- [ ] Adicionar estado de loading ao componente Home
+- [ ] Mostrar skeleton screens enquanto dados estão sendo carregados
+- [ ] Adicionar transição suave entre skeleton e conteúdo real
+
+
+## UI/UX - Skeleton Screen para Carregamento
+
+- [x] Criar componente SkeletonChart para simular gráfico durante carregamento
+- [x] Criar componente SkeletonFilters para simular filtros durante carregamento
+- [ ] Integrar skeleton screens no componente Home com transição suave
+- [ ] Testar animação de carregamento em diferentes velocidades de rede
