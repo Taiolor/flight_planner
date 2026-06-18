@@ -426,7 +426,6 @@
 - [x] Melhorar visual com ícones ao lado dos nomes (flex layout com gap)
 - [x] Exibição dos logotipos funcionando corretamente
 
-
 ## UI/UX - Skeleton Screen para Carregamento
 
 - [ ] Criar componente SkeletonChart para simular gráfico durante carregamento
@@ -434,7 +433,6 @@
 - [ ] Adicionar estado de loading ao componente Home
 - [ ] Mostrar skeleton screens enquanto dados estão sendo carregados
 - [ ] Adicionar transição suave entre skeleton e conteúdo real
-
 
 ## UI/UX - Skeleton Screen para Carregamento
 

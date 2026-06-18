@@ -1998,7 +1998,10 @@ export default function Home() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mt-4">
             <div>
               <div className="flex justify-between items-center mb-2">
-                <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">
+                <label
+                  htmlFor="departureTimeFilter"
+                  className="text-sm font-semibold text-slate-700 dark:text-slate-300 cursor-pointer"
+                >
                   Horário de Ida: {minutesToTime(departureTimeFilter)}
                 </label>
                 <span className="text-xs bg-blue-100 dark:bg-blue-900 text-blue-900 dark:text-blue-100 px-2 py-1 rounded">
@@ -2018,6 +2021,7 @@ export default function Home() {
                 </span>
               </div>
               <input
+                id="departureTimeFilter"
                 type="range"
                 min="0"
                 max="1439"
@@ -2030,7 +2034,10 @@ export default function Home() {
 
             <div>
               <div className="flex justify-between items-center mb-2">
-                <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">
+                <label
+                  htmlFor="returnTimeFilter"
+                  className="text-sm font-semibold text-slate-700 dark:text-slate-300 cursor-pointer"
+                >
                   Horário de Volta: {minutesToTime(returnTimeFilter)}
                 </label>
                 <span className="text-xs bg-blue-100 dark:bg-blue-900 text-blue-900 dark:text-blue-100 px-2 py-1 rounded">
@@ -2048,6 +2055,7 @@ export default function Home() {
                 </span>
               </div>
               <input
+                id="returnTimeFilter"
                 type="range"
                 min="0"
                 max="1439"
@@ -2091,10 +2099,14 @@ export default function Home() {
 
           {showCheapestOnly && (
             <div className="mt-6 pt-6 border-t border-slate-200">
-              <label className="text-sm font-semibold text-slate-700 mb-3 block">
+              <label
+                htmlFor="pricePercentile"
+                className="text-sm font-semibold text-slate-700 mb-3 block cursor-pointer"
+              >
                 Percentil de Preço: {pricePercentile}%
               </label>
               <input
+                id="pricePercentile"
                 type="range"
                 min="5"
                 max="50"
