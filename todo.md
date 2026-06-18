@@ -471,11 +471,11 @@
 - [x] Testar performance em mobile
 
 ### Fase 3: Animações Vibrantes
-- [ ] Implementar ripple effect em botões
-- [ ] Implementar glow effect com roxo/ciano
-- [ ] Adicionar scale/hover animations
-- [ ] Aplicar a todos os botões (30-40)
-- [ ] Testar acessibilidade (prefers-reduced-motion)
+- [x] Implementar ripple effect em botões
+- [x] Implementar glow effect com roxo/ciano
+- [x] Adicionar scale/hover animations
+- [x] Aplicar a todos os botões (30-40)
+- [x] Testar acessibilidade (prefers-reduced-motion)
 
 ### Fase 4: Ícones 3D/SVG
 - [ ] Obter/criar ícones de companhias aéreas (GOL, LATAM, Onhappy, Kayak, Azul, Voepass)

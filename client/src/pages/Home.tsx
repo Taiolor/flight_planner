@@ -1636,7 +1636,7 @@ export default function Home() {
               <Button
                 size="sm"
                 variant="outline"
-                className="bg-white bg-opacity-10 border-white text-white hover:bg-white hover:text-blue-700"
+                className="bg-white bg-opacity-10 border-white text-white hover:bg-white hover:text-blue-700 btn-glow-cyan transition-all"
                 onClick={() => {
                   const el = document.getElementById("price-chart-section");
                   if (el)
@@ -1649,7 +1649,7 @@ export default function Home() {
                 <Button
                   size="sm"
                   variant="outline"
-                  className="bg-white bg-opacity-10 border-white text-white hover:bg-white hover:text-blue-700"
+                  className="bg-white bg-opacity-10 border-white text-white hover:bg-white hover:text-blue-700 btn-glow-cyan transition-all"
                 >
                   <CalendarDays className="w-4 h-4 mr-1" /> Calendário
                 </Button>
@@ -1658,7 +1658,7 @@ export default function Home() {
                 <Button
                   size="sm"
                   variant="outline"
-                  className="bg-white bg-opacity-10 border-white text-white hover:bg-white hover:text-blue-700"
+                  className="bg-white bg-opacity-10 border-white text-white hover:bg-white hover:text-blue-700 btn-glow-cyan transition-all"
                   title="Cotações de Passagens"
                 >
                   <DollarSign className="w-4 h-4 mr-1" /> Cotações
@@ -1669,7 +1669,7 @@ export default function Home() {
                   <Button
                     size="sm"
                     variant="outline"
-                    className="bg-white bg-opacity-10 border-white text-white hover:bg-white hover:text-blue-700"
+                    className="bg-white bg-opacity-10 border-white text-white hover:bg-white hover:text-blue-700 btn-glow-cyan transition-all"
                     title="Painel de Notificações"
                   >
                     <ShieldCheck className="w-4 h-4 mr-1" /> Admin
@@ -1685,7 +1685,7 @@ export default function Home() {
                   <Button
                     size="sm"
                     variant="outline"
-                    className="bg-white bg-opacity-10 border-white text-white hover:bg-white hover:text-blue-700"
+                    className="bg-white bg-opacity-10 border-white text-white hover:bg-white hover:text-blue-700 btn-glow-cyan transition-all"
                     onClick={handleLogout}
                   >
                     <LogOut className="w-4 h-4 mr-1" /> Sair
@@ -1695,10 +1695,10 @@ export default function Home() {
                 <Button
                   size="sm"
                   variant="outline"
-                  className="bg-white bg-opacity-10 border-white text-white hover:bg-white hover:text-blue-700"
+                  className="bg-white bg-opacity-10 border-white text-white hover:bg-white hover:text-blue-700 btn-glow-cyan transition-all"
                   onClick={() => setShowLoginModal(true)}
                 >
-                  <Lock className="w-4 h-4 mr-1" /> Entrar
+                  <LogIn className="w-4 h-4 mr-1" /> Entrar
                 </Button>
               )}
             </div>
