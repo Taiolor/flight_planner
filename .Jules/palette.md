@@ -25,3 +25,6 @@
 ## 2024-06-16 - Tooltips on Disabled Elements via Shadcn/Radix UI
 **Learning:** Adding a Radix `<Tooltip>` directly to a disabled native HTML element (like `<button disabled>`) doesn't work because the element doesn't emit pointer events when disabled, preventing the tooltip from appearing when hovered.
 **Action:** Always wrap the disabled trigger element inside a focusable container, such as a `<span tabIndex={0} className="focus-visible:ring-2 ...">`, and use `<TooltipTrigger asChild>` on this wrapper so the tooltip correctly triggers on hover or focus even when the inner element is disabled.
+## 2024-05-19 - Loading State Visual Feedback Pattern
+**Learning:** For async operations, simply changing button text (e.g., from "Compartilhar" to "Enviando...") provides insufficient visual feedback and looks unpolished. The established pattern in this app's design system is to replace static icons (like `Mail` or `Bot`) with the animated `Loader2` component from `lucide-react`.
+**Action:** When adding async states to buttons, always check if an existing icon can be swapped out for an `animate-spin` `Loader2` rather than just relying on text changes or disabling the button.

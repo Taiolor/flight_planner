@@ -5,7 +5,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { Mail } from "lucide-react";
+import { Mail, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { trpc } from "@/lib/trpc";
 
@@ -126,7 +126,11 @@ export function ShareByEmailButton({
       className="w-full bg-blue-600 hover:bg-blue-700 text-white"
       size="sm"
     >
-      <Mail className="w-4 h-4 mr-2" />
+      {isLoading ? (
+        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+      ) : (
+        <Mail className="w-4 h-4 mr-2" />
+      )}
       {isLoading ? "Enviando..." : "📧 Compartilhar por E-Mail"}
     </Button>
   );
