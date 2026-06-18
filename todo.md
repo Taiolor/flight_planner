@@ -452,3 +452,92 @@
 - [x] Implementar soma mensal de milhas gastas no resumo por mês
 - [ ] Atualizar notificações por email para incluir dados de milhas
 - [x] Testar fluxo completo de entrada e exibição de milhas (158 testes passando)
+
+
+## Restyling Opção 2 (Moderna) - Paleta Roxo/Ciano
+
+### Fase 1: Paleta de Cores Global
+- [x] Atualizar CSS com cores roxo (#7c3aed) e ciano (#06b6d4)
+- [x] Adicionar variáveis CSS para gradientes dinâmicos
+- [x] Testar contraste WCAG para novas cores
+- [x] Atualizar tema escuro com roxo/ciano
+
+### Fase 2: Glassmorphism e Gradientes
+- [x] Implementar glassmorphism em cards principais
+- [x] Criar gradientes dinâmicos (azul→roxo→ciano)
+- [x] Adicionar animação de movimento em gradientes
+- [x] Aplicar em hero section do Home
+- [x] Aplicar em resumo anual
+- [x] Testar performance em mobile
+
+### Fase 3: Animações Vibrantes
+- [ ] Implementar ripple effect em botões
+- [ ] Implementar glow effect com roxo/ciano
+- [ ] Adicionar scale/hover animations
+- [ ] Aplicar a todos os botões (30-40)
+- [ ] Testar acessibilidade (prefers-reduced-motion)
+
+### Fase 4: Ícones 3D/SVG
+- [ ] Obter/criar ícones de companhias aéreas (GOL, LATAM, Onhappy, Kayak, Azul, Voepass)
+- [ ] Implementar animações SVG (rotação, hover)
+- [ ] Adicionar efeitos de cor roxo/ciano
+- [ ] Testar em diferentes resoluções
+- [ ] Otimizar peso dos SVGs
+
+### Fase 5: Glow Effects
+- [ ] Adicionar glow em badges SMILES (laranja com roxo)
+- [ ] Adicionar glow em badges LATAM PASS (vermelho com ciano)
+- [ ] Implementar animação de pulsação
+- [ ] Aplicar a todas as badges (~20-30)
+- [ ] Testar em diferentes backgrounds
+
+### Fase 6: Restyling Home
+- [ ] Atualizar cabeçalho com novo design
+- [ ] Aplicar glassmorphism em cards de semanas
+- [ ] Adicionar gradientes em seção de resumo
+- [ ] Integrar ícones 3D das companhias
+- [ ] Atualizar cores de badges de milhas
+- [ ] Testar responsividade
+
+### Fase 7: Restyling Calendário
+- [ ] Atualizar cores do calendário (roxo/ciano)
+- [ ] Aplicar glassmorphism em cards de eventos
+- [ ] Adicionar animações em datas interativas
+- [ ] Atualizar cores de feriados
+- [ ] Testar em mobile
+
+### Fase 8: Restyling Configurações
+- [ ] Atualizar cores de inputs e selects
+- [ ] Aplicar glassmorphism em cards de configuração
+- [ ] Adicionar animações em toggles
+- [ ] Atualizar cores de botões de ação
+- [ ] Testar formulários
+
+### Fase 9: Restyling Admin/Dashboard
+- [ ] Atualizar cores da sidebar
+- [ ] Aplicar glassmorphism em cards de dados
+- [ ] Adicionar gradientes em gráficos
+- [ ] Atualizar cores de status indicators
+- [ ] Testar em diferentes resoluções
+
+### Fase 10: Restyling Alertas e Notificações
+- [ ] Atualizar cores de alertas (sucesso, erro, aviso, info)
+- [ ] Aplicar glassmorphism em modais
+- [ ] Adicionar animações de entrada/saída
+- [ ] Atualizar cores de badges de notificação
+- [ ] Testar acessibilidade de alertas
+
+### Fase 11: Testes Completos
+- [ ] Testar em Chrome, Firefox, Safari, Edge
+- [ ] Testar em iOS e Android
+- [ ] Verificar contraste WCAG AA/AAA
+- [ ] Testar com leitor de tela
+- [ ] Verificar prefers-reduced-motion
+- [ ] Testar performance (Lighthouse)
+
+### Fase 12: Finalização
+- [ ] Otimizar performance geral
+- [ ] Documentar mudanças de design
+- [ ] Criar guia de manutenção
+- [ ] Preparar checkpoint final
+- [ ] Pronto para publicação

@@ -1509,7 +1509,7 @@ export default function Home() {
                 variant="outline"
                 title={theme === "dark" ? "Modo claro" : "Modo escuro"}
                 aria-label={theme === "dark" ? "Modo claro" : "Modo escuro"}
-                className="border-white/40 text-white hover:bg-white/20 backdrop-blur-sm bg-white/10"
+                className="border-white/40 text-white hover:bg-white/20 backdrop-blur-sm bg-white/10 btn-glow-cyan transition-all"
                 onClick={toggleTheme}
               >
                 {theme === "dark" ? (
@@ -1708,7 +1708,7 @@ export default function Home() {
 
       <main className="container py-4 sm:py-8">
         {/* Resumo Anual */}
-        <Card className="p-4 sm:p-6 mb-4 sm:mb-8 border border-slate-200/60 shadow-xl shadow-slate-200/40 bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 text-white rounded-3xl relative overflow-hidden">
+        <Card className="p-4 sm:p-6 mb-4 sm:mb-8 gradient-modern-animated text-white rounded-3xl relative overflow-hidden shadow-2xl">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-4 sm:mb-6">
             <div>
               <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
@@ -1865,7 +1865,7 @@ export default function Home() {
         </Card>
 
         {/* Filtros */}
-        <Card className="p-4 sm:p-6 mb-4 sm:mb-8 border border-slate-200/60 shadow-xl shadow-slate-200/40 bg-white rounded-3xl dark:bg-slate-800 dark:border-slate-700 dark:shadow-slate-900/40">
+        <Card className="p-4 sm:p-6 mb-4 sm:mb-8 glassmorphism-card">
           <h2 className="text-base sm:text-xl font-bold text-slate-900 dark:text-slate-100 mb-3 sm:mb-6">
             Filtros e Controles
           </h2>
@@ -2201,7 +2201,7 @@ export default function Home() {
                   return (
                     <div
                       key={monthKey}
-                      className="rounded-xl border border-slate-200 dark:border-0 shadow-sm overflow-hidden dark:shadow-slate-900/40"
+                      className="rounded-xl overflow-hidden glassmorphism-card"
                     >
                       {/* Cabeçalho do Mês */}
                       <button
