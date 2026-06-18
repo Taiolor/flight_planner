@@ -31,6 +31,16 @@ export const airlines: Airline[] = [
   { id: "onhappy", name: "Onhappy", color: "bg-green-600", icon: "😊" },
 ];
 
+// Mapa de cores para ícones SVG das companhias
+export const airlineIconColors: Record<string, string> = {
+  kayak: "text-red-500",
+  latam: "text-blue-600",
+  gol: "text-yellow-500",
+  azul: "text-blue-400",
+  voepass: "text-purple-600",
+  onhappy: "text-green-600",
+};
+
 export const airports = {
   GRU: { name: "Guarulhos (GRU)", city: "São Paulo", code: "GRU" },
   CGH: { name: "Congonhas (CGH)", city: "São Paulo", code: "CGH" },

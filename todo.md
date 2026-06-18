@@ -478,18 +478,18 @@
 - [x] Testar acessibilidade (prefers-reduced-motion)
 
 ### Fase 4: Ícones 3D/SVG
-- [ ] Obter/criar ícones de companhias aéreas (GOL, LATAM, Onhappy, Kayak, Azul, Voepass)
-- [ ] Implementar animações SVG (rotação, hover)
-- [ ] Adicionar efeitos de cor roxo/ciano
-- [ ] Testar em diferentes resoluções
-- [ ] Otimizar peso dos SVGs
+- [x] Obter/criar ícones de companhias aéreas (GOL, LATAM, Onhappy, Kayak, Azul, Voepass)
+- [x] Implementar animações SVG (rotação, hover)
+- [x] Adicionar efeitos de cor roxo/ciano
+- [x] Testar em diferentes resoluções
+- [x] Otimizar peso dos SVGs
 
 ### Fase 5: Glow Effects
-- [ ] Adicionar glow em badges SMILES (laranja com roxo)
-- [ ] Adicionar glow em badges LATAM PASS (vermelho com ciano)
-- [ ] Implementar animação de pulsação
-- [ ] Aplicar a todas as badges (~20-30)
-- [ ] Testar em diferentes backgrounds
+- [x] Adicionar glow em badges SMILES (laranja com roxo)
+- [x] Adicionar glow em badges LATAM PASS (vermelho com ciano)
+- [x] Implementar animação de pulsação
+- [x] Aplicar a todas as badges (~20-30)
+- [x] Testar em diferentes backgrounds
 
 ### Fase 6: Restyling Home
 - [ ] Atualizar cabeçalho com novo design

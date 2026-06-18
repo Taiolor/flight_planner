@@ -67,6 +67,7 @@ import {
   TrendingUp,
   Lock,
   LogOut,
+  LogIn,
   Eye,
   EyeOff,
   CalendarPlus,
@@ -2292,7 +2293,7 @@ export default function Home() {
                           )}
                           {monthSmilesTotal > 0 && (
                             <span
-                              className={`px-2 py-0.5 rounded-full text-xs font-bold ${
+                              className={`px-2 py-0.5 rounded-full text-xs font-bold badge-glow-smiles ${
                                 isOpen
                                   ? "bg-orange-400/80 text-white"
                                   : "bg-orange-100 text-orange-700"
@@ -2306,7 +2307,7 @@ export default function Home() {
                           )}
                           {monthLatamPassTotal > 0 && (
                             <span
-                              className={`px-2 py-0.5 rounded-full text-xs font-bold ${
+                              className={`px-2 py-0.5 rounded-full text-xs font-bold badge-glow-latam ${
                                 isOpen
                                   ? "bg-red-400/80 text-white"
                                   : "bg-red-100 text-red-700"
