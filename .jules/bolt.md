@@ -64,5 +64,14 @@
 **Action:** Always seek to consolidate array operations into a single-pass loop (e.g., within a `useMemo`) that pre-computes all needed aggregates or maps at once. Replace inline `.filter()` loops with direct access to these pre-computed aggregates to reduce time complexity from O(K\*N) to O(N).
 
 ## 2024-06-15 - Consolidating React render loop filter calls for small arrays
-**Learning:** Even for small arrays (like feriados returned for a week), having multiple `.filter()` calls inside a map loop inside a large component means recreating intermediate arrays and processing multiple passes O(N * M * K). Replacing it with a single `for...of` loop pushes it to a single pass, saving allocations and improving JS execution speed in render.
+
+**Learning:** Even for small arrays (like feriados returned for a week), having multiple `.filter()` calls inside a map loop inside a large component means recreating intermediate arrays and processing multiple passes O(N _ M _ K). Replacing it with a single `for...of` loop pushes it to a single pass, saving allocations and improving JS execution speed in render.
 **Action:** Replace sequential `array.filter(...)` statements in render loops with a single `for...of` pass that groups items into categorical arrays simultaneously.
+
+## 2024-05-20 - O(N) Array Operations in Render Paths
+**Learning:** Found `.filter().length` calls inside a UI render loop for updating a counter dynamically. This performs O(N) intermediate array allocations just to count items, increasing garbage collection pressure.
+**Action:** Replace `.filter().length` with an IIFE wrapping a standard `for` loop that iterates and increments a counter variable directly, returning the integer.
+
+## 2024-05-21 - Redundant Date Instantiations in Nested Loops
+**Learning:** Found static global data arrays (`todosJogos` and `todasFases`) where date strings were being passed to `parseISO` on every render iteration of expanded items. This caused O(N*M) date object instantiation on a completely static data set.
+**Action:** When filtering static reference data against dynamic state variables, pre-calculate their parsed timestamps (e.g. via `.getTime()`) once at the module level.
