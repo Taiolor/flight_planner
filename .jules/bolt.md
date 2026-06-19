@@ -67,11 +67,6 @@
 
 **Learning:** Even for small arrays (like feriados returned for a week), having multiple `.filter()` calls inside a map loop inside a large component means recreating intermediate arrays and processing multiple passes O(N _ M _ K). Replacing it with a single `for...of` loop pushes it to a single pass, saving allocations and improving JS execution speed in render.
 **Action:** Replace sequential `array.filter(...)` statements in render loops with a single `for...of` pass that groups items into categorical arrays simultaneously.
-
-## 2024-05-20 - O(N) Array Operations in Render Paths
-**Learning:** Found `.filter().length` calls inside a UI render loop for updating a counter dynamically. This performs O(N) intermediate array allocations just to count items, increasing garbage collection pressure.
-**Action:** Replace `.filter().length` with an IIFE wrapping a standard `for` loop that iterates and increments a counter variable directly, returning the integer.
-
-## 2024-05-21 - Redundant Date Instantiations in Nested Loops
-**Learning:** Found static global data arrays (`todosJogos` and `todasFases`) where date strings were being passed to `parseISO` on every render iteration of expanded items. This caused O(N*M) date object instantiation on a completely static data set.
-**Action:** When filtering static reference data against dynamic state variables, pre-calculate their parsed timestamps (e.g. via `.getTime()`) once at the module level.
+## 2025-06-25 - Optimizin getFlightWeek Database Lookup
+**Learning:** Avoid fetching an entire un-indexed collection of arrays just to find one element when you can use the database layer to do it infinitely faster. Database queries usually fetch an entire table, and JavaScript `find()` over big datasets forces unnecessary parsing and processing, taking ~270ms for something that should be done in <1ms natively in the db.
+**Action:** When filtering for specific items out of a database table, prefer utilizing native query constraints instead of in-memory methods like `.find()`, ensuring index alignment where applicable.
