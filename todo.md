@@ -492,12 +492,12 @@
 - [x] Testar em diferentes backgrounds
 
 ### Fase 6: Restyling Home
-- [ ] Atualizar cabeçalho com novo design
-- [ ] Aplicar glassmorphism em cards de semanas
-- [ ] Adicionar gradientes em seção de resumo
-- [ ] Integrar ícones 3D das companhias
-- [ ] Atualizar cores de badges de milhas
-- [ ] Testar responsividade
+- [x] Atualizar cabeçalho com novo design (gradiente roxo/ciano)
+- [x] Aplicar glassmorphism em cards de semanas
+- [x] Adicionar gradientes em seção de resumo
+- [x] Integrar ícones 3D das companhias
+- [x] Atualizar cores de badges de milhas
+- [x] Testar responsividade
 
 ### Fase 7: Restyling Calendário
 - [ ] Atualizar cores do calendário (roxo/ciano)
