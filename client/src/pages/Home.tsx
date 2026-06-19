@@ -3171,8 +3171,14 @@ export default function Home() {
                                     <div className="flex flex-col lg:flex-row gap-3 sm:gap-4 mt-2">
                                       {/* Coluna esquerda: Buscadores de preços */}
                                       <div className="lg:w-72 xl:w-80 flex-shrink-0">
-                                        <div className="rounded-xl border border-slate-200 bg-slate-50 overflow-hidden">
-                                          <div className="bg-slate-700 px-3 py-2 flex items-center gap-2">
+                                        <div className={`rounded-xl border overflow-hidden transition-colors duration-300 ${
+                                          theme === 'dark'
+                                            ? 'border-slate-600 bg-slate-800'
+                                            : 'border-slate-200 bg-slate-50'
+                                        }`}>
+                                          <div className={`px-3 py-2 flex items-center gap-2 transition-colors duration-300 ${
+                                            theme === 'dark' ? 'bg-slate-700' : 'bg-slate-700'
+                                          }`}>
                                             <Plane className="w-3.5 h-3.5 text-white" />
                                             <span className="text-xs font-bold text-white uppercase tracking-wider">
                                               Consulta de Preços
@@ -3192,8 +3198,12 @@ export default function Home() {
                                               return (
                                                 <>
                                                   {/* Separador */}
-                                                  <div className="border-t border-slate-200 dark:border-slate-600 pt-2 mt-1">
-                                                    <span className="text-[10px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                                                  <div className={`border-t pt-2 mt-1 transition-colors duration-300 ${
+                                                    theme === 'dark' ? 'border-slate-600' : 'border-slate-200'
+                                                  }`}>
+                                                    <span className={`text-[10px] font-semibold uppercase tracking-wider transition-colors duration-300 ${
+                                                      theme === 'dark' ? 'text-slate-400' : 'text-slate-500'
+                                                    }`}>
                                                       Pagamento em Milhas
                                                     </span>
                                                   </div>
@@ -5022,17 +5032,29 @@ export default function Home() {
         {/* Gráfico de Variação de Preços */}
         <Card
           id="price-chart-section"
-          className="mt-8 p-6 border border-slate-200/60 shadow-xl shadow-slate-200/40 bg-white rounded-3xl scroll-mt-4"
+          className={`mt-8 p-6 border rounded-3xl scroll-mt-4 transition-colors duration-300 ${
+            theme === 'dark'
+              ? 'border-slate-700/60 shadow-xl shadow-slate-900/40 bg-slate-800'
+              : 'border-slate-200/60 shadow-xl shadow-slate-200/40 bg-white'
+          }`}
         >
           <div className="flex items-center gap-3 mb-6">
-            <div className="bg-blue-100 p-2 rounded-lg">
-              <TrendingUp className="w-5 h-5 text-blue-600" />
+            <div className={`p-2 rounded-lg transition-colors duration-300 ${
+              theme === 'dark' ? 'bg-blue-900/40' : 'bg-blue-100'
+            }`}>
+              <TrendingUp className={`w-5 h-5 transition-colors duration-300 ${
+                theme === 'dark' ? 'text-blue-400' : 'text-blue-600'
+              }`} />
             </div>
             <div>
-              <h2 className="text-xl font-bold text-slate-900">
+              <h2 className={`text-xl font-bold transition-colors duration-300 ${
+                theme === 'dark' ? 'text-slate-100' : 'text-slate-900'
+              }`}>
                 Variação de Preços por Mês
               </h2>
-              <p className="text-sm text-slate-500">
+              <p className={`text-sm transition-colors duration-300 ${
+                theme === 'dark' ? 'text-slate-400' : 'text-slate-500'
+              }`}>
                 Média dos preços registrados por todas as empresas e buscadores
                 em cada mês
               </p>
@@ -5040,9 +5062,15 @@ export default function Home() {
           </div>
 
           {/* Filtro de empresas do gráfico - sempre visível */}
-          <div className="mb-6 p-4 bg-slate-50 rounded-xl border border-slate-200">
+          <div className={`mb-6 p-4 rounded-xl border transition-colors duration-300 ${
+            theme === 'dark'
+              ? 'bg-slate-700/50 border-slate-600'
+              : 'bg-slate-50 border-slate-200'
+          }`}>
             <div className="flex items-center justify-between mb-3">
-              <span className="text-sm font-semibold text-slate-700">
+              <span className={`text-sm font-semibold transition-colors duration-300 ${
+                theme === 'dark' ? 'text-slate-300' : 'text-slate-700'
+              }`}>
                 Filtrar Empresas no Gráfico
               </span>
               <div className="flex gap-2">
