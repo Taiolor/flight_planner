@@ -5152,7 +5152,9 @@ export default function Home() {
             <div className="space-y-8">
               {/* Gráfico de Barras por Companhia */}
               <div>
-                <h3 className="text-sm font-semibold text-slate-600 mb-4 uppercase tracking-wide">
+                <h3 className={`text-sm font-semibold mb-4 uppercase tracking-wide transition-colors duration-300 ${
+                  theme === 'dark' ? 'text-slate-400' : 'text-slate-600'
+                }`}>
                   Preço Médio por Companhia (R$)
                 </h3>
                 <ResponsiveContainer
@@ -5187,10 +5189,12 @@ export default function Home() {
                         background: theme === "dark" ? "#1e293b" : "#ffffff",
                         border:
                           theme === "dark"
-                            ? "1px solid #475569"
-                            : "1px solid #e2e8f0",
-                        borderRadius: 8,
+                            ? "2px solid #7c3aed"
+                            : "2px solid #06b6d4",
+                        borderRadius: 12,
                         color: theme === "dark" ? "#f1f5f9" : "#1e293b",
+                        boxShadow: theme === "dark" ? "0 8px 16px rgba(124, 58, 237, 0.2)" : "0 8px 16px rgba(6, 182, 212, 0.2)",
+                        padding: "12px 16px",
                       }}
                       formatter={(value: number) => [
                         hideValues ? "••••" : `R$ ${value.toFixed(2)}`,
@@ -5198,8 +5202,10 @@ export default function Home() {
                       ]}
                       labelStyle={{
                         color: theme === "dark" ? "#cbd5e1" : "#64748b",
-                        fontWeight: 600,
+                        fontWeight: 700,
+                        fontSize: 14,
                       }}
+                      cursor={{ fill: theme === "dark" ? "rgba(124, 58, 237, 0.1)" : "rgba(6, 182, 212, 0.1)" }}
                     />
                     <Legend
                       wrapperStyle={{
@@ -5211,7 +5217,8 @@ export default function Home() {
                         dataKey="kayak"
                         name="Kayak"
                         fill="#ef4444"
-                        radius={[4, 4, 0, 0]}
+                        radius={[8, 8, 0, 0]}
+                        isAnimationActive={true}
                       />
                     )}
                     {chartSelectedAirlines.has("latam") && (
@@ -5219,7 +5226,8 @@ export default function Home() {
                         dataKey="latam"
                         name="LATAM"
                         fill="#2563eb"
-                        radius={[4, 4, 0, 0]}
+                        radius={[8, 8, 0, 0]}
+                        isAnimationActive={true}
                       />
                     )}
                     {chartSelectedAirlines.has("gol") && (
@@ -5227,7 +5235,8 @@ export default function Home() {
                         dataKey="gol"
                         name="Gol"
                         fill="#eab308"
-                        radius={[4, 4, 0, 0]}
+                        radius={[8, 8, 0, 0]}
+                        isAnimationActive={true}
                       />
                     )}
                     {chartSelectedAirlines.has("azul") && (
@@ -5235,7 +5244,8 @@ export default function Home() {
                         dataKey="azul"
                         name="Azul"
                         fill="#38bdf8"
-                        radius={[4, 4, 0, 0]}
+                        radius={[8, 8, 0, 0]}
+                        isAnimationActive={true}
                       />
                     )}
                     {chartSelectedAirlines.has("voepass") && (
@@ -5243,7 +5253,8 @@ export default function Home() {
                         dataKey="voepass"
                         name="Voepass"
                         fill="#9333ea"
-                        radius={[4, 4, 0, 0]}
+                        radius={[8, 8, 0, 0]}
+                        isAnimationActive={true}
                       />
                     )}
                     {chartSelectedAirlines.has("onhappy") && (
@@ -5251,7 +5262,8 @@ export default function Home() {
                         dataKey="onhappy"
                         name="Onhappy"
                         fill="#16a34a"
-                        radius={[4, 4, 0, 0]}
+                        radius={[8, 8, 0, 0]}
+                        isAnimationActive={true}
                       />
                     )}
                   </BarChart>
@@ -5260,7 +5272,9 @@ export default function Home() {
 
               {/* Gráfico de Linha - Menor Preço e Média */}
               <div>
-                <h3 className="text-sm font-semibold text-slate-600 mb-4 uppercase tracking-wide">
+                <h3 className={`text-sm font-semibold mb-4 uppercase tracking-wide transition-colors duration-300 ${
+                  theme === 'dark' ? 'text-slate-400' : 'text-slate-600'
+                }`}>
                   Menor Preço vs. Preço Médio por Mês (R$)
                 </h3>
                 <ResponsiveContainer
@@ -5295,10 +5309,12 @@ export default function Home() {
                         background: theme === "dark" ? "#1e293b" : "#ffffff",
                         border:
                           theme === "dark"
-                            ? "1px solid #475569"
-                            : "1px solid #e2e8f0",
-                        borderRadius: 8,
+                            ? "2px solid #7c3aed"
+                            : "2px solid #06b6d4",
+                        borderRadius: 12,
                         color: theme === "dark" ? "#f1f5f9" : "#1e293b",
+                        boxShadow: theme === "dark" ? "0 8px 16px rgba(124, 58, 237, 0.2)" : "0 8px 16px rgba(6, 182, 212, 0.2)",
+                        padding: "12px 16px",
                       }}
                       formatter={(value: number) => [
                         hideValues ? "••••" : `R$ ${value.toFixed(2)}`,
@@ -5306,8 +5322,10 @@ export default function Home() {
                       ]}
                       labelStyle={{
                         color: theme === "dark" ? "#cbd5e1" : "#64748b",
-                        fontWeight: 600,
+                        fontWeight: 700,
+                        fontSize: 14,
                       }}
+                      cursor={{ fill: theme === "dark" ? "rgba(124, 58, 237, 0.1)" : "rgba(6, 182, 212, 0.1)" }}
                     />
                     <Legend
                       wrapperStyle={{
@@ -5319,19 +5337,23 @@ export default function Home() {
                       dataKey="menor"
                       name="Menor Preço"
                       stroke="#16a34a"
-                      strokeWidth={2}
-                      dot={{ r: 5, fill: "#16a34a" }}
+                      strokeWidth={3}
+                      dot={{ r: 6, fill: "#16a34a", strokeWidth: 2, stroke: "#ffffff" }}
+                      activeDot={{ r: 8, fill: "#16a34a", strokeWidth: 2, stroke: "#ffffff" }}
                       connectNulls
+                      isAnimationActive={true}
                     />
                     <Line
                       type="monotone"
                       dataKey="media"
                       name="Preço Médio"
                       stroke="#f97316"
-                      strokeWidth={2}
+                      strokeWidth={3}
                       strokeDasharray="5 5"
-                      dot={{ r: 4, fill: "#f97316" }}
+                      dot={{ r: 5, fill: "#f97316", strokeWidth: 2, stroke: "#ffffff" }}
+                      activeDot={{ r: 7, fill: "#f97316", strokeWidth: 2, stroke: "#ffffff" }}
                       connectNulls
+                      isAnimationActive={true}
                     />
                   </LineChart>
                 </ResponsiveContainer>
