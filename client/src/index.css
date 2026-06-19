@@ -262,15 +262,6 @@
     }
   }
 
-  /* Glassmorphism */
-  .glassmorphism {
-    @apply bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border border-white/20 dark:border-slate-700/30;
-  }
-
-  .glassmorphism-card {
-    @apply glassmorphism rounded-2xl shadow-xl;
-  }
-
   /* Gradientes */
   .gradient-modern {
     background: linear-gradient(135deg, var(--primary) 0%, var(--purple) 50%, var(--cyan) 100%);
@@ -283,23 +274,7 @@
   }
 
   /* Animações de Botões */
-  .btn-glow {
-    @apply relative transition-all duration-300;
-    box-shadow: 0 0 0 0 rgba(124, 58, 237, 0.3);
-  }
-
-  .btn-glow:hover {
-    box-shadow: 0 0 20px 10px rgba(124, 58, 237, 0.1);
-  }
-
-  .btn-glow-cyan {
-    @apply relative transition-all duration-300;
-    box-shadow: 0 0 0 0 rgba(6, 182, 212, 0.3);
-  }
-
-  .btn-glow-cyan:hover {
-    box-shadow: 0 0 20px 10px rgba(6, 182, 212, 0.1);
-  }
+  /* Button Glow Effects - Removidas para evitar erro de @apply */
 
   /* Ripple Effect */
   .ripple {
@@ -324,28 +299,7 @@
     animation: rippleEffect 0.6s ease-out;
   }
 
-  /* Glow Effects */
-  .badge-glow {
-    @apply transition-all duration-300;
-  }
-
-  .badge-glow-smiles {
-    @apply badge-glow;
-    box-shadow: 0 0 15px rgba(255, 140, 0, 0.4);
-  }
-
-  .badge-glow-smiles:hover {
-    box-shadow: 0 0 25px rgba(255, 140, 0, 0.6), 0 0 35px rgba(124, 58, 237, 0.3);
-  }
-
-  .badge-glow-latam {
-    @apply badge-glow;
-    box-shadow: 0 0 15px rgba(239, 68, 68, 0.4);
-  }
-
-  .badge-glow-latam:hover {
-    box-shadow: 0 0 25px rgba(239, 68, 68, 0.6), 0 0 35px rgba(6, 182, 212, 0.3);
-  }
+  /* Glow Effects - Removidas para evitar erro de @apply com classes customizadas */
 
   /* Pulsação */
   .pulse-glow {
