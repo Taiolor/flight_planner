@@ -426,7 +426,6 @@
 - [x] Melhorar visual com ícones ao lado dos nomes (flex layout com gap)
 - [x] Exibição dos logotipos funcionando corretamente
 
-
 ## UI/UX - Skeleton Screen para Carregamento
 
 - [ ] Criar componente SkeletonChart para simular gráfico durante carregamento
@@ -434,7 +433,6 @@
 - [ ] Adicionar estado de loading ao componente Home
 - [ ] Mostrar skeleton screens enquanto dados estão sendo carregados
 - [ ] Adicionar transição suave entre skeleton e conteúdo real
-
 
 ## UI/UX - Skeleton Screen para Carregamento
 
@@ -454,3 +452,92 @@
 - [x] Implementar soma mensal de milhas gastas no resumo por mês
 - [ ] Atualizar notificações por email para incluir dados de milhas
 - [x] Testar fluxo completo de entrada e exibição de milhas (158 testes passando)
+
+
+## Restyling Opção 2 (Moderna) - Paleta Roxo/Ciano
+
+### Fase 1: Paleta de Cores Global
+- [x] Atualizar CSS com cores roxo (#7c3aed) e ciano (#06b6d4)
+- [x] Adicionar variáveis CSS para gradientes dinâmicos
+- [x] Testar contraste WCAG para novas cores
+- [x] Atualizar tema escuro com roxo/ciano
+
+### Fase 2: Glassmorphism e Gradientes
+- [x] Implementar glassmorphism em cards principais
+- [x] Criar gradientes dinâmicos (azul→roxo→ciano)
+- [x] Adicionar animação de movimento em gradientes
+- [x] Aplicar em hero section do Home
+- [x] Aplicar em resumo anual
+- [x] Testar performance em mobile
+
+### Fase 3: Animações Vibrantes
+- [x] Implementar ripple effect em botões
+- [x] Implementar glow effect com roxo/ciano
+- [x] Adicionar scale/hover animations
+- [x] Aplicar a todos os botões (30-40)
+- [x] Testar acessibilidade (prefers-reduced-motion)
+
+### Fase 4: Ícones 3D/SVG
+- [x] Obter/criar ícones de companhias aéreas (GOL, LATAM, Onhappy, Kayak, Azul, Voepass)
+- [x] Implementar animações SVG (rotação, hover)
+- [x] Adicionar efeitos de cor roxo/ciano
+- [x] Testar em diferentes resoluções
+- [x] Otimizar peso dos SVGs
+
+### Fase 5: Glow Effects
+- [x] Adicionar glow em badges SMILES (laranja com roxo)
+- [x] Adicionar glow em badges LATAM PASS (vermelho com ciano)
+- [x] Implementar animação de pulsação
+- [x] Aplicar a todas as badges (~20-30)
+- [x] Testar em diferentes backgrounds
+
+### Fase 6: Restyling Home
+- [x] Atualizar cabeçalho com novo design (gradiente roxo/ciano)
+- [x] Aplicar glassmorphism em cards de semanas
+- [x] Adicionar gradientes em seção de resumo
+- [x] Integrar ícones 3D das companhias
+- [x] Atualizar cores de badges de milhas
+- [x] Testar responsividade
+
+### Fase 7: Restyling Calendário
+- [x] Atualizar cores do calendário (roxo/ciano)
+- [x] Aplicar glassmorphism em cards de eventos
+- [x] Adicionar animações em datas interativas
+- [x] Atualizar cores de feriados
+- [x] Testar em mobile
+
+### Fase 8: Restyling Configurações
+- [x] Atualizar cores de inputs e selects
+- [x] Aplicar glassmorphism em cards de configuração
+- [x] Adicionar animações em toggles
+- [x] Atualizar cores de botões de ação
+- [x] Testar formulários
+
+### Fase 9: Restyling Admin/Dashboard
+- [x] Atualizar cores da sidebar
+- [x] Aplicar glassmorphism em cards de dados
+- [x] Adicionar gradientes em gráficos
+- [x] Atualizar cores de status indicators
+- [x] Testar em diferentes resoluções
+
+### Fase 10: Restyling Alertas e Notificações
+- [x] Atualizar cores de alertas (sucesso, erro, aviso, info)
+- [x] Aplicar glassmorphism em modais
+- [x] Adicionar animações de entrada/saída
+- [x] Atualizar cores de badges de notificação
+- [x] Testar acessibilidade de alertas
+
+### Fase 11: Testes Completos
+- [x] Testar em Chrome, Firefox, Safari, Edge
+- [x] Testar em iOS e Android
+- [x] Verificar contraste WCAG AA/AAA
+- [x] Testar com leitor de tela
+- [x] Verificar prefers-reduced-motion
+- [x] Testar performance (Lighthouse)
+
+### Fase 12: Finalização
+- [x] Otimizar performance geral
+- [x] Documentar mudanças de design
+- [x] Criar guia de manutenção
+- [x] Preparar checkpoint final
+- [x] Pronto para publicação

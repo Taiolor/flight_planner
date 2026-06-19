@@ -12,6 +12,7 @@ vi.mock("./db", () => ({
   validateAuthSession: vi.fn().mockResolvedValue(null),
   deleteAuthSession: vi.fn().mockResolvedValue(undefined),
   getAllFlightWeeks: vi.fn().mockResolvedValue([]),
+  getFlightWeek: vi.fn().mockResolvedValue(null),
   getAllFlightPrices: vi.fn().mockResolvedValue([]),
   initFlightWeeks: vi.fn().mockResolvedValue(undefined),
   updateFlightWeekStatus: vi.fn().mockResolvedValue(undefined),

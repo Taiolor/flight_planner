@@ -118,12 +118,12 @@ export function NotificationSettingsPopup({
       {/* Aviso 1 */}
       <div className="space-y-1.5">
         <div className="flex items-center gap-2">
-          <div className="w-5 h-5 rounded-full bg-blue-500 flex items-center justify-center text-xs font-bold text-white flex-shrink-0">
+          <div className="w-5 h-5 rounded-full bg-gradient-to-br from-purple-500 to-cyan-500 flex items-center justify-center text-xs font-bold text-white flex-shrink-0">
             1
           </div>
           <label className="text-sm font-medium text-slate-200">Aviso 1</label>
           {aviso1 > 0 && (
-            <span className="ml-auto text-xs text-blue-400 flex items-center gap-1">
+            <span className="ml-auto text-xs text-purple-400 flex items-center gap-1">
               <Clock className="w-3 h-3" />
               {getAvisoLabel(aviso1)}
             </span>
@@ -153,12 +153,12 @@ export function NotificationSettingsPopup({
       {/* Aviso 2 */}
       <div className="space-y-1.5">
         <div className="flex items-center gap-2">
-          <div className="w-5 h-5 rounded-full bg-orange-500 flex items-center justify-center text-xs font-bold text-white flex-shrink-0">
+          <div className="w-5 h-5 rounded-full bg-gradient-to-br from-cyan-500 to-purple-500 flex items-center justify-center text-xs font-bold text-white flex-shrink-0">
             2
           </div>
           <label className="text-sm font-medium text-slate-200">Aviso 2</label>
           {aviso2 > 0 && (
-            <span className="ml-auto text-xs text-orange-400 flex items-center gap-1">
+            <span className="ml-auto text-xs text-cyan-400 flex items-center gap-1">
               <Clock className="w-3 h-3" />
               {getAvisoLabel(aviso2)}
             </span>
@@ -187,13 +187,13 @@ export function NotificationSettingsPopup({
 
       {/* Resumo */}
       {(aviso1 > 0 || aviso2 > 0) && (
-        <div className="rounded-lg bg-slate-800/60 border border-slate-700 p-3 space-y-1.5">
+        <div className="rounded-lg bg-gradient-to-r from-purple-500/10 to-cyan-500/10 border border-purple-400/30 p-3 space-y-1.5">
           <p className="text-xs text-slate-400 font-medium">Avisos ativos:</p>
           {aviso1 > 0 && (
             <div className="flex items-center gap-2 text-xs text-slate-300">
-              <div className="w-2 h-2 rounded-full bg-blue-500 flex-shrink-0" />
+              <div className="w-2 h-2 rounded-full bg-purple-500 flex-shrink-0" />
               Aviso 1:{" "}
-              <span className="text-blue-400 font-medium">
+              <span className="text-purple-400 font-medium">
                 {getAvisoLabel(aviso1)}
               </span>{" "}
               antes do voo
@@ -201,9 +201,9 @@ export function NotificationSettingsPopup({
           )}
           {aviso2 > 0 && (
             <div className="flex items-center gap-2 text-xs text-slate-300">
-              <div className="w-2 h-2 rounded-full bg-orange-500 flex-shrink-0" />
+              <div className="w-2 h-2 rounded-full bg-cyan-500 flex-shrink-0" />
               Aviso 2:{" "}
-              <span className="text-orange-400 font-medium">
+              <span className="text-cyan-400 font-medium">
                 {getAvisoLabel(aviso2)}
               </span>{" "}
               antes do voo

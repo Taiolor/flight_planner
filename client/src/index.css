@@ -43,7 +43,7 @@
 }
 
 :root {
-  /* Modern Travel Dashboard - Azul + Verde + Laranja */
+  /* Modern Travel Dashboard - Opção 2 (Moderna): Azul + Verde + Laranja + Roxo + Ciano */
   --primary: #0066cc;
   --primary-foreground: #ffffff;
   --sidebar-primary: #0052a3;
@@ -53,6 +53,13 @@
   --chart-3: #ff8c00;
   --chart-4: #0052a3;
   --chart-5: #ff6b35;
+  /* Novas cores para design moderno */
+  --purple: #7c3aed;
+  --purple-light: #a78bfa;
+  --purple-dark: #5b21b6;
+  --cyan: #06b6d4;
+  --cyan-light: #22d3ee;
+  --cyan-dark: #0891b2;
   --radius: 0.65rem;
   --background: #ffffff;
   --foreground: #2c3e50;
@@ -112,6 +119,13 @@
   --sidebar-accent-foreground: #00a86b;
   --sidebar-border: #2c3642;
   --sidebar-ring: #0066cc;
+  /* Novas cores para design moderno (dark mode) */
+  --purple: #a78bfa;
+  --purple-light: #c4b5fd;
+  --purple-dark: #7c3aed;
+  --cyan: #22d3ee;
+  --cyan-light: #06b6d4;
+  --cyan-dark: #0891b2;
 }
 
 @layer base {
@@ -246,5 +260,81 @@
       padding-left: env(safe-area-inset-left);
       padding-right: env(safe-area-inset-right);
     }
+  }
+
+  /* Gradientes */
+  .gradient-modern {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--purple) 50%, var(--cyan) 100%);
+  }
+
+  .gradient-modern-animated {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--purple) 50%, var(--cyan) 100%);
+    background-size: 200% 200%;
+    animation: gradientShift 8s ease infinite;
+  }
+
+  /* Animações de Botões */
+  /* Button Glow Effects - Removidas para evitar erro de @apply */
+
+  /* Ripple Effect */
+  .ripple {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .ripple::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.5);
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+  }
+
+  .ripple:active::after {
+    animation: rippleEffect 0.6s ease-out;
+  }
+
+  /* Glow Effects - Removidas para evitar erro de @apply com classes customizadas */
+
+  /* Pulsação */
+  .pulse-glow {
+    animation: pulseGlow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+}
+
+@keyframes gradientShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+@keyframes rippleEffect {
+  to {
+    width: 300px;
+    height: 300px;
+    opacity: 0;
+  }
+}
+
+@keyframes pulseGlow {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.8;
+  }
+}
+
+/* Respeitar preferência de redução de movimento */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 }

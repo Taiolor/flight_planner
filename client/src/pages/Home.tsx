@@ -67,6 +67,7 @@ import {
   TrendingUp,
   Lock,
   LogOut,
+  LogIn,
   Eye,
   EyeOff,
   CalendarPlus,
@@ -366,6 +367,17 @@ const todasFases = [
     cor: "yellow",
   },
 ];
+
+const todosJogosParsed = todosJogos.map(jogo => ({
+  ...jogo,
+  dataMs: parseISO(jogo.data).getTime(),
+}));
+
+const todasFasesParsed = todasFases.map(fase => ({
+  ...fase,
+  inicioMs: parseISO(fase.inicio).getTime(),
+  fimMs: parseISO(fase.fim).getTime(),
+}));
 
 export default function Home() {
   // Theme state
@@ -1425,7 +1437,11 @@ export default function Home() {
   const isLoading = weeksQuery.isLoading || pricesQuery.isLoading;
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-800 font-sans tracking-tight">
+    <div className={`min-h-screen font-sans tracking-tight transition-colors duration-300 ${
+      theme === 'dark'
+        ? 'bg-slate-900 text-slate-100'
+        : 'bg-slate-50 text-slate-800'
+    }`}>
       {/* Pull-to-refresh indicator */}
       {(isPulling || isRefreshing) && (
         <div
@@ -1461,7 +1477,9 @@ export default function Home() {
       )}
       {/* Hero Header */}
       <header
-        className="relative shadow-xl sticky top-0 z-50 overflow-hidden"
+        className={`relative shadow-xl sticky top-0 z-50 overflow-hidden transition-colors duration-300 ${
+          theme === 'dark' ? 'bg-slate-800' : 'bg-white'
+        }`}
         style={{ paddingTop: "env(safe-area-inset-top)" }}
       >
         {/* Background with Preset Gradient */}
@@ -1509,7 +1527,7 @@ export default function Home() {
                 variant="outline"
                 title={theme === "dark" ? "Modo claro" : "Modo escuro"}
                 aria-label={theme === "dark" ? "Modo claro" : "Modo escuro"}
-                className="border-white/40 text-white hover:bg-white/20 backdrop-blur-sm bg-white/10"
+                className="border-white/40 text-white hover:bg-white/20 backdrop-blur-sm bg-white/10 btn-glow-cyan transition-all"
                 onClick={toggleTheme}
               >
                 {theme === "dark" ? (
@@ -1636,7 +1654,7 @@ export default function Home() {
               <Button
                 size="sm"
                 variant="outline"
-                className="bg-white bg-opacity-10 border-white text-white hover:bg-white hover:text-blue-700"
+                className="bg-white bg-opacity-10 border-white text-white hover:bg-white hover:text-blue-700 btn-glow-cyan transition-all"
                 onClick={() => {
                   const el = document.getElementById("price-chart-section");
                   if (el)
@@ -1649,7 +1667,7 @@ export default function Home() {
                 <Button
                   size="sm"
                   variant="outline"
-                  className="bg-white bg-opacity-10 border-white text-white hover:bg-white hover:text-blue-700"
+                  className="bg-white bg-opacity-10 border-white text-white hover:bg-white hover:text-blue-700 btn-glow-cyan transition-all"
                 >
                   <CalendarDays className="w-4 h-4 mr-1" /> Calendário
                 </Button>
@@ -1658,7 +1676,7 @@ export default function Home() {
                 <Button
                   size="sm"
                   variant="outline"
-                  className="bg-white bg-opacity-10 border-white text-white hover:bg-white hover:text-blue-700"
+                  className="bg-white bg-opacity-10 border-white text-white hover:bg-white hover:text-blue-700 btn-glow-cyan transition-all"
                   title="Cotações de Passagens"
                 >
                   <DollarSign className="w-4 h-4 mr-1" /> Cotações
@@ -1669,7 +1687,7 @@ export default function Home() {
                   <Button
                     size="sm"
                     variant="outline"
-                    className="bg-white bg-opacity-10 border-white text-white hover:bg-white hover:text-blue-700"
+                    className="bg-white bg-opacity-10 border-white text-white hover:bg-white hover:text-blue-700 btn-glow-cyan transition-all"
                     title="Painel de Notificações"
                   >
                     <ShieldCheck className="w-4 h-4 mr-1" /> Admin
@@ -1685,7 +1703,7 @@ export default function Home() {
                   <Button
                     size="sm"
                     variant="outline"
-                    className="bg-white bg-opacity-10 border-white text-white hover:bg-white hover:text-blue-700"
+                    className="bg-white bg-opacity-10 border-white text-white hover:bg-white hover:text-blue-700 btn-glow-cyan transition-all"
                     onClick={handleLogout}
                   >
                     <LogOut className="w-4 h-4 mr-1" /> Sair
@@ -1695,10 +1713,10 @@ export default function Home() {
                 <Button
                   size="sm"
                   variant="outline"
-                  className="bg-white bg-opacity-10 border-white text-white hover:bg-white hover:text-blue-700"
+                  className="bg-white bg-opacity-10 border-white text-white hover:bg-white hover:text-blue-700 btn-glow-cyan transition-all"
                   onClick={() => setShowLoginModal(true)}
                 >
-                  <Lock className="w-4 h-4 mr-1" /> Entrar
+                  <LogIn className="w-4 h-4 mr-1" /> Entrar
                 </Button>
               )}
             </div>
@@ -1708,7 +1726,7 @@ export default function Home() {
 
       <main className="container py-4 sm:py-8">
         {/* Resumo Anual */}
-        <Card className="p-4 sm:p-6 mb-4 sm:mb-8 border border-slate-200/60 shadow-xl shadow-slate-200/40 bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 text-white rounded-3xl relative overflow-hidden">
+        <Card className="p-4 sm:p-6 mb-4 sm:mb-8 gradient-modern-animated text-white rounded-3xl relative overflow-hidden shadow-2xl">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-4 sm:mb-6">
             <div>
               <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
@@ -1865,14 +1883,22 @@ export default function Home() {
         </Card>
 
         {/* Filtros */}
-        <Card className="p-4 sm:p-6 mb-4 sm:mb-8 border border-slate-200/60 shadow-xl shadow-slate-200/40 bg-white rounded-3xl dark:bg-slate-800 dark:border-slate-700 dark:shadow-slate-900/40">
-          <h2 className="text-base sm:text-xl font-bold text-slate-900 dark:text-slate-100 mb-3 sm:mb-6">
+        <Card className={`p-4 sm:p-6 mb-4 sm:mb-8 backdrop-blur-md border rounded-2xl shadow-xl transition-colors duration-300 ${
+          theme === 'dark'
+            ? 'bg-slate-800/80 border-slate-700/30'
+            : 'bg-white/80 border-white/20'
+        }`}>
+          <h2 className={`text-base sm:text-xl font-bold mb-3 sm:mb-6 transition-colors duration-300 ${
+            theme === 'dark' ? 'text-slate-100' : 'text-slate-900'
+          }`}>
             Filtros e Controles
           </h2>
           {/* Linha 1: Mês, Companhia, Ordenar por, Filtro de Preço, Status do Bilhete */}
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
             <div>
-              <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2 block">
+              <label className={`text-sm font-semibold mb-2 block transition-colors duration-300 ${
+                theme === 'dark' ? 'text-slate-300' : 'text-slate-700'
+              }`}>
                 Mês
               </label>
               <Select value={filterMonth} onValueChange={setFilterMonth}>
@@ -1919,7 +1945,9 @@ export default function Home() {
             </div>
 
             <div>
-              <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2 block">
+              <label className={`text-sm font-semibold mb-2 block transition-colors duration-300 ${
+                theme === 'dark' ? 'text-slate-300' : 'text-slate-700'
+              }`}>
                 Companhia
               </label>
               <Select value={filterAirline} onValueChange={setFilterAirline}>
@@ -1941,7 +1969,9 @@ export default function Home() {
             </div>
 
             <div>
-              <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2 block">
+              <label className={`text-sm font-semibold mb-2 block transition-colors duration-300 ${
+                theme === 'dark' ? 'text-slate-300' : 'text-slate-700'
+              }`}>
                 Ordenar por
               </label>
               <Select value={sortBy} onValueChange={setSortBy}>
@@ -1956,7 +1986,9 @@ export default function Home() {
             </div>
 
             <div>
-              <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2 block">
+              <label className={`text-sm font-semibold mb-2 block transition-colors duration-300 ${
+                theme === 'dark' ? 'text-slate-300' : 'text-slate-700'
+              }`}>
                 Filtro de Preço
               </label>
               <div className="flex items-center gap-2 mt-1">
@@ -1967,7 +1999,9 @@ export default function Home() {
                 />
                 <label
                   htmlFor="cheap-filter"
-                  className="text-sm text-slate-600 cursor-pointer select-none"
+                  className={`text-sm cursor-pointer select-none transition-colors duration-300 ${
+                    theme === 'dark' ? 'text-slate-400' : 'text-slate-600'
+                  }`}
                 >
                   Apenas os mais baratos
                 </label>
@@ -1975,7 +2009,9 @@ export default function Home() {
             </div>
 
             <div>
-              <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2 block">
+              <label className={`text-sm font-semibold mb-2 block transition-colors duration-300 ${
+                theme === 'dark' ? 'text-slate-300' : 'text-slate-700'
+              }`}>
                 Status do Bilhete
               </label>
               <Select
@@ -1998,26 +2034,34 @@ export default function Home() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mt-4">
             <div>
               <div className="flex justify-between items-center mb-2">
-                <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">
+                <label
+                  htmlFor="departureTimeFilter"
+                  className="text-sm font-semibold text-slate-700 dark:text-slate-300 cursor-pointer"
+                >
                   Horário de Ida: {minutesToTime(departureTimeFilter)}
                 </label>
                 <span className="text-xs bg-blue-100 dark:bg-blue-900 text-blue-900 dark:text-blue-100 px-2 py-1 rounded">
-                  {
-                    filteredWeeks.filter(w => {
+                  {(() => {
+                    let count = 0;
+                    for (let i = 0; i < filteredWeeks.length; i++) {
                       const depMin = getFlightMinutes(
-                        w.departureFlightDatetime
+                        filteredWeeks[i].departureFlightDatetime
                       );
-                      return (
+                      if (
                         depMin >= 0 &&
                         depMin >= departureTimeFilter &&
                         depMin <= 1439
-                      );
-                    }).length
-                  }{" "}
+                      ) {
+                        count++;
+                      }
+                    }
+                    return count;
+                  })()}{" "}
                   voos
                 </span>
               </div>
               <input
+                id="departureTimeFilter"
                 type="range"
                 min="0"
                 max="1439"
@@ -2030,24 +2074,34 @@ export default function Home() {
 
             <div>
               <div className="flex justify-between items-center mb-2">
-                <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">
+                <label
+                  htmlFor="returnTimeFilter"
+                  className="text-sm font-semibold text-slate-700 dark:text-slate-300 cursor-pointer"
+                >
                   Horário de Volta: {minutesToTime(returnTimeFilter)}
                 </label>
                 <span className="text-xs bg-blue-100 dark:bg-blue-900 text-blue-900 dark:text-blue-100 px-2 py-1 rounded">
-                  {
-                    filteredWeeks.filter(w => {
-                      const retMin = getFlightMinutes(w.returnFlightDatetime);
-                      return (
+                  {(() => {
+                    let count = 0;
+                    for (let i = 0; i < filteredWeeks.length; i++) {
+                      const retMin = getFlightMinutes(
+                        filteredWeeks[i].returnFlightDatetime
+                      );
+                      if (
                         retMin >= 0 &&
                         retMin >= returnTimeFilter &&
                         retMin <= 1439
-                      );
-                    }).length
-                  }{" "}
+                      ) {
+                        count++;
+                      }
+                    }
+                    return count;
+                  })()}{" "}
                   voos
                 </span>
               </div>
               <input
+                id="returnTimeFilter"
                 type="range"
                 min="0"
                 max="1439"
@@ -2091,10 +2145,14 @@ export default function Home() {
 
           {showCheapestOnly && (
             <div className="mt-6 pt-6 border-t border-slate-200">
-              <label className="text-sm font-semibold text-slate-700 mb-3 block">
+              <label
+                htmlFor="pricePercentile"
+                className="text-sm font-semibold text-slate-700 mb-3 block cursor-pointer"
+              >
                 Percentil de Preço: {pricePercentile}%
               </label>
               <input
+                id="pricePercentile"
                 type="range"
                 min="5"
                 max="50"
@@ -2189,7 +2247,7 @@ export default function Home() {
                   return (
                     <div
                       key={monthKey}
-                      className="rounded-xl border border-slate-200 dark:border-0 shadow-sm overflow-hidden dark:shadow-slate-900/40"
+                      className="rounded-xl overflow-hidden bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border border-white/20 dark:border-slate-700/30 rounded-2xl shadow-xl"
                     >
                       {/* Cabeçalho do Mês */}
                       <button
@@ -2280,7 +2338,7 @@ export default function Home() {
                           )}
                           {monthSmilesTotal > 0 && (
                             <span
-                              className={`px-2 py-0.5 rounded-full text-xs font-bold ${
+                              className={`px-2 py-0.5 rounded-full text-xs font-bold badge-glow-smiles ${
                                 isOpen
                                   ? "bg-orange-400/80 text-white"
                                   : "bg-orange-100 text-orange-700"
@@ -2294,7 +2352,7 @@ export default function Home() {
                           )}
                           {monthLatamPassTotal > 0 && (
                             <span
-                              className={`px-2 py-0.5 rounded-full text-xs font-bold ${
+                              className={`px-2 py-0.5 rounded-full text-xs font-bold badge-glow-latam ${
                                 isOpen
                                   ? "bg-red-400/80 text-white"
                                   : "bg-red-100 text-red-700"
@@ -2853,29 +2911,28 @@ export default function Home() {
                                       // Todos os jogos da 1ª fase (Hoisted)
 
                                       // Filtrar jogos que caem dentro da semana calendário (dom-sáb)
-                                      const jogosDosBrasil = todosJogos.filter(
-                                        jogo => {
-                                          const dataJogo = parseISO(jogo.data);
+                                      const semanaInicioMs =
+                                        semanaInicio.getTime();
+                                      const semanaFimEfetivoMs =
+                                        semanaFimEfetivo.getTime();
+                                      const jogosDosBrasil =
+                                        todosJogosParsed.filter(jogo => {
                                           return (
-                                            dataJogo >= semanaInicio &&
-                                            dataJogo <= semanaFimEfetivo
+                                            jogo.dataMs >= semanaInicioMs &&
+                                            jogo.dataMs <= semanaFimEfetivoMs
                                           );
-                                        }
-                                      );
+                                        });
 
                                       // Fases eliminatórias: janelas de datas (Hoisted)
 
                                       // Filtrar fases eliminatórias que se sobrepõem à semana calendário
                                       const fasesEliminatorias =
-                                        todasFases.filter(fase => {
-                                          const faseInicio = parseISO(
-                                            fase.inicio
-                                          );
-                                          const faseFim = parseISO(fase.fim);
+                                        todasFasesParsed.filter(fase => {
                                           // Sobreposição: faseInicio <= semanaFimEfetivo E faseFim >= semanaInicio
                                           return (
-                                            faseInicio <= semanaFimEfetivo &&
-                                            faseFim >= semanaInicio
+                                            fase.inicioMs <=
+                                              semanaFimEfetivoMs &&
+                                            fase.fimMs >= semanaInicioMs
                                           );
                                         });
 
@@ -3134,8 +3191,14 @@ export default function Home() {
                                     <div className="flex flex-col lg:flex-row gap-3 sm:gap-4 mt-2">
                                       {/* Coluna esquerda: Buscadores de preços */}
                                       <div className="lg:w-72 xl:w-80 flex-shrink-0">
-                                        <div className="rounded-xl border border-slate-200 bg-slate-50 overflow-hidden">
-                                          <div className="bg-slate-700 px-3 py-2 flex items-center gap-2">
+                                        <div className={`rounded-xl border overflow-hidden transition-colors duration-300 ${
+                                          theme === 'dark'
+                                            ? 'border-slate-600 bg-slate-800'
+                                            : 'border-slate-200 bg-slate-50'
+                                        }`}>
+                                          <div className={`px-3 py-2 flex items-center gap-2 transition-colors duration-300 ${
+                                            theme === 'dark' ? 'bg-slate-700' : 'bg-slate-700'
+                                          }`}>
                                             <Plane className="w-3.5 h-3.5 text-white" />
                                             <span className="text-xs font-bold text-white uppercase tracking-wider">
                                               Consulta de Preços
@@ -3144,19 +3207,29 @@ export default function Home() {
                                           <div className="p-3 space-y-2">
                                             {/* Campos de Milhas: SMILES e LATAM PASS */}
                                             {(() => {
-                                              const currentSmiles = week.smilesPoints ?? null;
-                                              const currentLatam = week.latamPassPoints ?? null;
+                                              const currentSmiles =
+                                                week.smilesPoints ?? null;
+                                              const currentLatam =
+                                                week.latamPassPoints ?? null;
                                               const isSavingSmiles =
-                                                savingMiles?.week === week.weekNumber &&
-                                                savingMiles?.field === "smilesPoints";
+                                                savingMiles?.week ===
+                                                  week.weekNumber &&
+                                                savingMiles?.field ===
+                                                  "smilesPoints";
                                               const isSavingLatam =
-                                                savingMiles?.week === week.weekNumber &&
-                                                savingMiles?.field === "latamPassPoints";
+                                                savingMiles?.week ===
+                                                  week.weekNumber &&
+                                                savingMiles?.field ===
+                                                  "latamPassPoints";
                                               return (
                                                 <>
                                                   {/* Separador */}
-                                                  <div className="border-t border-slate-200 dark:border-slate-600 pt-2 mt-1">
-                                                    <span className="text-[10px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                                                  <div className={`border-t pt-2 mt-1 transition-colors duration-300 ${
+                                                    theme === 'dark' ? 'border-slate-600' : 'border-slate-200'
+                                                  }`}>
+                                                    <span className={`text-[10px] font-semibold uppercase tracking-wider transition-colors duration-300 ${
+                                                      theme === 'dark' ? 'text-slate-400' : 'text-slate-500'
+                                                    }`}>
                                                       Pagamento em Milhas
                                                     </span>
                                                   </div>
@@ -3175,7 +3248,9 @@ export default function Home() {
                                                           type="number"
                                                           placeholder="0 pts"
                                                           aria-label="Pontos SMILES"
-                                                          defaultValue={currentSmiles ?? ""}
+                                                          defaultValue={
+                                                            currentSmiles ?? ""
+                                                          }
                                                           key={`${week.weekNumber}-smiles-${currentSmiles}`}
                                                           onBlur={e =>
                                                             handleMilesBlur(
@@ -3207,7 +3282,9 @@ export default function Home() {
                                                           type="number"
                                                           placeholder="0 pts"
                                                           aria-label="Pontos LATAM PASS"
-                                                          defaultValue={currentLatam ?? ""}
+                                                          defaultValue={
+                                                            currentLatam ?? ""
+                                                          }
                                                           key={`${week.weekNumber}-latam-${currentLatam}`}
                                                           onBlur={e =>
                                                             handleMilesBlur(
@@ -4985,17 +5062,29 @@ export default function Home() {
         {/* Gráfico de Variação de Preços */}
         <Card
           id="price-chart-section"
-          className="mt-8 p-6 border border-slate-200/60 shadow-xl shadow-slate-200/40 bg-white rounded-3xl scroll-mt-4"
+          className={`mt-8 p-6 border rounded-3xl scroll-mt-4 transition-colors duration-300 ${
+            theme === 'dark'
+              ? 'border-slate-700/60 shadow-xl shadow-slate-900/40 bg-slate-800'
+              : 'border-slate-200/60 shadow-xl shadow-slate-200/40 bg-white'
+          }`}
         >
           <div className="flex items-center gap-3 mb-6">
-            <div className="bg-blue-100 p-2 rounded-lg">
-              <TrendingUp className="w-5 h-5 text-blue-600" />
+            <div className={`p-2 rounded-lg transition-colors duration-300 ${
+              theme === 'dark' ? 'bg-blue-900/40' : 'bg-blue-100'
+            }`}>
+              <TrendingUp className={`w-5 h-5 transition-colors duration-300 ${
+                theme === 'dark' ? 'text-blue-400' : 'text-blue-600'
+              }`} />
             </div>
             <div>
-              <h2 className="text-xl font-bold text-slate-900">
+              <h2 className={`text-xl font-bold transition-colors duration-300 ${
+                theme === 'dark' ? 'text-slate-100' : 'text-slate-900'
+              }`}>
                 Variação de Preços por Mês
               </h2>
-              <p className="text-sm text-slate-500">
+              <p className={`text-sm transition-colors duration-300 ${
+                theme === 'dark' ? 'text-slate-400' : 'text-slate-500'
+              }`}>
                 Média dos preços registrados por todas as empresas e buscadores
                 em cada mês
               </p>
@@ -5003,9 +5092,15 @@ export default function Home() {
           </div>
 
           {/* Filtro de empresas do gráfico - sempre visível */}
-          <div className="mb-6 p-4 bg-slate-50 rounded-xl border border-slate-200">
+          <div className={`mb-6 p-4 rounded-xl border transition-colors duration-300 ${
+            theme === 'dark'
+              ? 'bg-slate-700/50 border-slate-600'
+              : 'bg-slate-50 border-slate-200'
+          }`}>
             <div className="flex items-center justify-between mb-3">
-              <span className="text-sm font-semibold text-slate-700">
+              <span className={`text-sm font-semibold transition-colors duration-300 ${
+                theme === 'dark' ? 'text-slate-300' : 'text-slate-700'
+              }`}>
                 Filtrar Empresas no Gráfico
               </span>
               <div className="flex gap-2">
@@ -5087,7 +5182,9 @@ export default function Home() {
             <div className="space-y-8">
               {/* Gráfico de Barras por Companhia */}
               <div>
-                <h3 className="text-sm font-semibold text-slate-600 mb-4 uppercase tracking-wide">
+                <h3 className={`text-sm font-semibold mb-4 uppercase tracking-wide transition-colors duration-300 ${
+                  theme === 'dark' ? 'text-slate-400' : 'text-slate-600'
+                }`}>
                   Preço Médio por Companhia (R$)
                 </h3>
                 <ResponsiveContainer
@@ -5122,10 +5219,12 @@ export default function Home() {
                         background: theme === "dark" ? "#1e293b" : "#ffffff",
                         border:
                           theme === "dark"
-                            ? "1px solid #475569"
-                            : "1px solid #e2e8f0",
-                        borderRadius: 8,
+                            ? "2px solid #7c3aed"
+                            : "2px solid #06b6d4",
+                        borderRadius: 12,
                         color: theme === "dark" ? "#f1f5f9" : "#1e293b",
+                        boxShadow: theme === "dark" ? "0 8px 16px rgba(124, 58, 237, 0.2)" : "0 8px 16px rgba(6, 182, 212, 0.2)",
+                        padding: "12px 16px",
                       }}
                       formatter={(value: number) => [
                         hideValues ? "••••" : `R$ ${value.toFixed(2)}`,
@@ -5133,8 +5232,10 @@ export default function Home() {
                       ]}
                       labelStyle={{
                         color: theme === "dark" ? "#cbd5e1" : "#64748b",
-                        fontWeight: 600,
+                        fontWeight: 700,
+                        fontSize: 14,
                       }}
+                      cursor={{ fill: theme === "dark" ? "rgba(124, 58, 237, 0.1)" : "rgba(6, 182, 212, 0.1)" }}
                     />
                     <Legend
                       wrapperStyle={{
@@ -5146,7 +5247,8 @@ export default function Home() {
                         dataKey="kayak"
                         name="Kayak"
                         fill="#ef4444"
-                        radius={[4, 4, 0, 0]}
+                        radius={[8, 8, 0, 0]}
+                        isAnimationActive={true}
                       />
                     )}
                     {chartSelectedAirlines.has("latam") && (
@@ -5154,7 +5256,8 @@ export default function Home() {
                         dataKey="latam"
                         name="LATAM"
                         fill="#2563eb"
-                        radius={[4, 4, 0, 0]}
+                        radius={[8, 8, 0, 0]}
+                        isAnimationActive={true}
                       />
                     )}
                     {chartSelectedAirlines.has("gol") && (
@@ -5162,7 +5265,8 @@ export default function Home() {
                         dataKey="gol"
                         name="Gol"
                         fill="#eab308"
-                        radius={[4, 4, 0, 0]}
+                        radius={[8, 8, 0, 0]}
+                        isAnimationActive={true}
                       />
                     )}
                     {chartSelectedAirlines.has("azul") && (
@@ -5170,7 +5274,8 @@ export default function Home() {
                         dataKey="azul"
                         name="Azul"
                         fill="#38bdf8"
-                        radius={[4, 4, 0, 0]}
+                        radius={[8, 8, 0, 0]}
+                        isAnimationActive={true}
                       />
                     )}
                     {chartSelectedAirlines.has("voepass") && (
@@ -5178,7 +5283,8 @@ export default function Home() {
                         dataKey="voepass"
                         name="Voepass"
                         fill="#9333ea"
-                        radius={[4, 4, 0, 0]}
+                        radius={[8, 8, 0, 0]}
+                        isAnimationActive={true}
                       />
                     )}
                     {chartSelectedAirlines.has("onhappy") && (
@@ -5186,7 +5292,8 @@ export default function Home() {
                         dataKey="onhappy"
                         name="Onhappy"
                         fill="#16a34a"
-                        radius={[4, 4, 0, 0]}
+                        radius={[8, 8, 0, 0]}
+                        isAnimationActive={true}
                       />
                     )}
                   </BarChart>
@@ -5195,7 +5302,9 @@ export default function Home() {
 
               {/* Gráfico de Linha - Menor Preço e Média */}
               <div>
-                <h3 className="text-sm font-semibold text-slate-600 mb-4 uppercase tracking-wide">
+                <h3 className={`text-sm font-semibold mb-4 uppercase tracking-wide transition-colors duration-300 ${
+                  theme === 'dark' ? 'text-slate-400' : 'text-slate-600'
+                }`}>
                   Menor Preço vs. Preço Médio por Mês (R$)
                 </h3>
                 <ResponsiveContainer
@@ -5230,10 +5339,12 @@ export default function Home() {
                         background: theme === "dark" ? "#1e293b" : "#ffffff",
                         border:
                           theme === "dark"
-                            ? "1px solid #475569"
-                            : "1px solid #e2e8f0",
-                        borderRadius: 8,
+                            ? "2px solid #7c3aed"
+                            : "2px solid #06b6d4",
+                        borderRadius: 12,
                         color: theme === "dark" ? "#f1f5f9" : "#1e293b",
+                        boxShadow: theme === "dark" ? "0 8px 16px rgba(124, 58, 237, 0.2)" : "0 8px 16px rgba(6, 182, 212, 0.2)",
+                        padding: "12px 16px",
                       }}
                       formatter={(value: number) => [
                         hideValues ? "••••" : `R$ ${value.toFixed(2)}`,
@@ -5241,8 +5352,10 @@ export default function Home() {
                       ]}
                       labelStyle={{
                         color: theme === "dark" ? "#cbd5e1" : "#64748b",
-                        fontWeight: 600,
+                        fontWeight: 700,
+                        fontSize: 14,
                       }}
+                      cursor={{ fill: theme === "dark" ? "rgba(124, 58, 237, 0.1)" : "rgba(6, 182, 212, 0.1)" }}
                     />
                     <Legend
                       wrapperStyle={{
@@ -5254,19 +5367,23 @@ export default function Home() {
                       dataKey="menor"
                       name="Menor Preço"
                       stroke="#16a34a"
-                      strokeWidth={2}
-                      dot={{ r: 5, fill: "#16a34a" }}
+                      strokeWidth={3}
+                      dot={{ r: 6, fill: "#16a34a", strokeWidth: 2, stroke: "#ffffff" }}
+                      activeDot={{ r: 8, fill: "#16a34a", strokeWidth: 2, stroke: "#ffffff" }}
                       connectNulls
+                      isAnimationActive={true}
                     />
                     <Line
                       type="monotone"
                       dataKey="media"
                       name="Preço Médio"
                       stroke="#f97316"
-                      strokeWidth={2}
+                      strokeWidth={3}
                       strokeDasharray="5 5"
-                      dot={{ r: 4, fill: "#f97316" }}
+                      dot={{ r: 5, fill: "#f97316", strokeWidth: 2, stroke: "#ffffff" }}
+                      activeDot={{ r: 7, fill: "#f97316", strokeWidth: 2, stroke: "#ffffff" }}
                       connectNulls
+                      isAnimationActive={true}
                     />
                   </LineChart>
                 </ResponsiveContainer>
