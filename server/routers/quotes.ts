@@ -9,7 +9,7 @@
 
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
-import { protectedProcedure, publicProcedure, router } from "../_core/trpc";
+import { protectedProcedure, router } from "../_core/trpc";
 import {
   getAllFlightQuotes,
   getFlightQuotesByWeek,
@@ -230,19 +230,19 @@ async function fetchSkyScrapperPrice(
 
 export const quotesRouter = router({
   /** Listar todas as cotações (mais recentes primeiro) */
-  getAll: publicProcedure.query(async () => {
+  getAll: protectedProcedure.query(async () => {
     return getAllFlightQuotes();
   }),
 
   /** Listar cotações de uma semana específica */
-  getByWeek: publicProcedure
+  getByWeek: protectedProcedure
     .input(z.object({ weekNumber: z.number().int().positive() }))
     .query(async ({ input }) => {
       return getFlightQuotesByWeek(input.weekNumber);
     }),
 
   /** Verificar uso atual da API no mês corrente */
-  getApiUsage: publicProcedure.query(async () => {
+  getApiUsage: protectedProcedure.query(async () => {
     const yearMonth = getCurrentYearMonth();
     return getApiUsage(yearMonth);
   }),
