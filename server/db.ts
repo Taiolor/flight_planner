@@ -142,6 +142,19 @@ export async function getAllFlightWeeks(): Promise<FlightWeek[]> {
   return _flightWeeksPromise;
 }
 
+export async function getFlightWeek(
+  weekNumber: number
+): Promise<FlightWeek | null> {
+  const db = await getDb();
+  if (!db) return null;
+  const result = await db
+    .select()
+    .from(flightWeeks)
+    .where(eq(flightWeeks.weekNumber, weekNumber))
+    .limit(1);
+  return result[0] || null;
+}
+
 export async function upsertFlightWeek(week: InsertFlightWeek) {
   const db = await getDb();
   if (!db) return;

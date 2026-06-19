@@ -12,6 +12,7 @@ vi.mock("./db", () => ({
   validateAuthSession: vi.fn().mockResolvedValue(null),
   deleteAuthSession: vi.fn().mockResolvedValue(undefined),
   getAllFlightWeeks: vi.fn().mockResolvedValue([]),
+  getFlightWeek: vi.fn().mockResolvedValue(null),
   getAllFlightPrices: vi.fn().mockResolvedValue([]),
   initFlightWeeks: vi.fn().mockResolvedValue(undefined),
   updateFlightWeekStatus: vi.fn().mockResolvedValue(undefined),
@@ -140,8 +141,9 @@ describe("flights.updateWeekStatus with airline fields", () => {
   });
 
   it("should accept departureAirline and returnAirline fields", async () => {
-    const { validateAuthSession, updateFlightWeekStatus } =
-      await import("./db");
+    const { validateAuthSession, updateFlightWeekStatus } = await import(
+      "./db"
+    );
     (validateAuthSession as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
       email: "taiolor@gmail.com",
     });

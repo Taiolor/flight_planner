@@ -8,6 +8,7 @@ import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 import {
   getAllFlightWeeks,
+  getFlightWeek,
   getAllFlightPrices,
   getPublicPrices,
   upsertFlightWeek,
@@ -385,8 +386,7 @@ export const appRouter = router({
         }
 
         // Get the week before update to detect changes
-        const weeks = await getAllFlightWeeks();
-        const weekBefore = weeks.find(w => w.weekNumber === input.weekNumber);
+        const weekBefore = await getFlightWeek(input.weekNumber);
 
         await updateFlightWeekStatus(input.weekNumber, {
           isDeleted: input.isDeleted,
