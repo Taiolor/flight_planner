@@ -1198,95 +1198,72 @@ export default function Home() {
 
   const hasChartData = chartData.some(d => Object.keys(d).length > 1);
 
-  // Dados do resumo anual: total emitido por mês
-  const annualSummaryData = useMemo(() => {
-    // ⚡ Bolt: Single-pass iteration to avoid .map().filter().reduce() overhead
+  // ⚡ Bolt: Single-pass iteration to calculate all annual metrics simultaneously
+  // Replaces 5 separate useMemo loops with a single loop over weeksData
+  const {
+    annualSummaryData,
+    annualTotalIssued,
+    annualIssuedCount,
+    annualSmilesTotal,
+    annualLatamPassTotal
+  } = useMemo(() => {
     const MONTHS = [
-      { num: "03", label: "Mar" },
-      { num: "04", label: "Abr" },
-      { num: "05", label: "Mai" },
-      { num: "06", label: "Jun" },
-      { num: "07", label: "Jul" },
-      { num: "08", label: "Ago" },
-      { num: "09", label: "Set" },
-      { num: "10", label: "Out" },
-      { num: "11", label: "Nov" },
+      { num: "03", label: "Mar" }, { num: "04", label: "Abr" }, { num: "05", label: "Mai" },
+      { num: "06", label: "Jun" }, { num: "07", label: "Jul" }, { num: "08", label: "Ago" },
+      { num: "09", label: "Set" }, { num: "10", label: "Out" }, { num: "11", label: "Nov" },
       { num: "12", label: "Dez" },
     ];
 
-    const summaryMap: Record<
-      string,
-      { mes: string; total: number; count: number }
-    > = {};
+    const summaryMap: Record<string, { mes: string; total: number; count: number }> = {};
     for (let i = 0; i < MONTHS.length; i++) {
       summaryMap[MONTHS[i].num] = { mes: MONTHS[i].label, total: 0, count: 0 };
     }
 
+    let totalIssued = 0;
+    let issuedCount = 0;
+    let smilesTotal = 0;
+    let latamPassTotal = 0;
+
     for (let i = 0; i < weeksData.length; i++) {
       const w = weeksData[i];
-      if (!w.isDeleted && w.isTicketIssued) {
+      if (w.isDeleted) continue;
+
+      if (w.isTicketIssued) {
+        const lowest = getLowestPrice(w.weekNumber) ?? 0;
+        totalIssued += lowest;
+        issuedCount++;
+
         const monthNum = w.departureDate.substring(3, 5);
         if (summaryMap[monthNum]) {
-          summaryMap[monthNum].total += getLowestPrice(w.weekNumber) ?? 0;
+          summaryMap[monthNum].total += lowest;
           summaryMap[monthNum].count += 1;
         }
       }
+
+      if (w.smilesPoints) smilesTotal += w.smilesPoints;
+      if (w.latamPassPoints) latamPassTotal += w.latamPassPoints;
     }
 
-    const result = [];
+    const summaryData = [];
     for (let i = 0; i < MONTHS.length; i++) {
       const s = summaryMap[MONTHS[i].num];
-      result.push({
+      summaryData.push({
         mes: s.mes,
         total: s.total > 0 ? Math.round(s.total * 100) / 100 : 0,
         count: s.count,
       });
     }
-    return result;
+
+    return {
+      annualSummaryData: summaryData,
+      annualTotalIssued: totalIssued,
+      annualIssuedCount: issuedCount,
+      annualSmilesTotal: smilesTotal,
+      annualLatamPassTotal: latamPassTotal
+    };
   }, [weeksData, getLowestPrice]);
 
-  const annualTotalIssued = useMemo(() => {
-    // ⚡ Bolt: Single-pass loop to avoid intermediate array allocations
-    let sum = 0;
-    for (let i = 0; i < weeksData.length; i++) {
-      const w = weeksData[i];
-      if (w.isTicketIssued && !w.isDeleted) {
-        sum += getLowestPrice(w.weekNumber) ?? 0;
-      }
-    }
-    return sum;
-  }, [weeksData, getLowestPrice]);
-
-  const annualIssuedCount = useMemo(() => {
-    // ⚡ Bolt: Single-pass loop to avoid intermediate array allocations
-    let count = 0;
-    for (let i = 0; i < weeksData.length; i++) {
-      const w = weeksData[i];
-      if (w.isTicketIssued && !w.isDeleted) {
-        count++;
-      }
-    }
-    return count;
-  }, [weeksData]);
   const annualHasData = annualSummaryData.some(d => d.total > 0);
-
-  const annualSmilesTotal = useMemo(() => {
-    let sum = 0;
-    for (let i = 0; i < weeksData.length; i++) {
-      const w = weeksData[i];
-      if (!w.isDeleted && w.smilesPoints) sum += w.smilesPoints;
-    }
-    return sum;
-  }, [weeksData]);
-
-  const annualLatamPassTotal = useMemo(() => {
-    let sum = 0;
-    for (let i = 0; i < weeksData.length; i++) {
-      const w = weeksData[i];
-      if (!w.isDeleted && w.latamPassPoints) sum += w.latamPassPoints;
-    }
-    return sum;
-  }, [weeksData]);
 
   // Handlers
   const handleToggleSelect = (weekNumber: number, current: number) => {

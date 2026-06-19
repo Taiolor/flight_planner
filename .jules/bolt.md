@@ -1,3 +1,6 @@
 ## 2024-05-18 - Single-Pass Array Categorization
 **Learning:** Replaced multiple O(N) `.filter()` array methods with a single-pass `for...of` loop inside a `useMemo` block. When separating elements of a single dataset into multiple distinct arrays based on enum values (e.g., status flags), doing it in a single pass reduces redundant loop executions and lowers intermediate memory allocations, particularly benefiting frequently re-rendered React components.
 **Action:** Next time when encountering a pattern where an array is filtered multiple times sequentially for distinct non-overlapping categories, convert it to a single-pass loop approach using `useMemo`.
+## 2024-05-19 - Single-Pass Multiple Aggregations
+**Learning:** Replaced 5 distinct `useMemo` blocks, each containing an O(N) loop over the same `weeksData` array, with a single `useMemo` block that aggregates all 5 sets of data in a single O(N) pass. In a React component that re-renders frequently (e.g. `client/src/pages/Home.tsx`), performing multiple redundant O(N) loops just to compute separate totals creates noticeable CPU overhead and intermediate garbage collection strain.
+**Action:** Next time you see multiple variables aggregating data over the same array with separate loops, merge them into a single loop returning an object containing all aggregations.
