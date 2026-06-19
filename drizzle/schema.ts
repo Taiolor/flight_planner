@@ -63,7 +63,7 @@ export const flightWeeks = mysqlTable(
     returnTerminal: varchar("returnTerminal", { length: 20 }),
     ticketType: varchar("ticketType", { length: 20 }).default("roundtrip"),
     // Campos de pagamento por milhas (pontos, não R$)
-    smilesPoints: int("smilesPoints"),   // pontos SMILES gastos
+    smilesPoints: int("smilesPoints"), // pontos SMILES gastos
     latamPassPoints: int("latamPassPoints"), // pontos LATAM PASS gastos
     createdAt: timestamp("createdAt").defaultNow().notNull(),
     updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),

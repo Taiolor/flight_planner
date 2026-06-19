@@ -368,6 +368,17 @@ const todasFases = [
   },
 ];
 
+const todosJogosParsed = todosJogos.map(jogo => ({
+  ...jogo,
+  dataMs: parseISO(jogo.data).getTime(),
+}));
+
+const todasFasesParsed = todasFases.map(fase => ({
+  ...fase,
+  inicioMs: parseISO(fase.inicio).getTime(),
+  fimMs: parseISO(fase.fim).getTime(),
+}));
+
 export default function Home() {
   // Theme state
   const { theme, toggleTheme, colorPreset, setColorPreset } = useTheme();
@@ -2030,18 +2041,22 @@ export default function Home() {
                   Horário de Ida: {minutesToTime(departureTimeFilter)}
                 </label>
                 <span className="text-xs bg-blue-100 dark:bg-blue-900 text-blue-900 dark:text-blue-100 px-2 py-1 rounded">
-                  {
-                    filteredWeeks.filter(w => {
+                  {(() => {
+                    let count = 0;
+                    for (let i = 0; i < filteredWeeks.length; i++) {
                       const depMin = getFlightMinutes(
-                        w.departureFlightDatetime
+                        filteredWeeks[i].departureFlightDatetime
                       );
-                      return (
+                      if (
                         depMin >= 0 &&
                         depMin >= departureTimeFilter &&
                         depMin <= 1439
-                      );
-                    }).length
-                  }{" "}
+                      ) {
+                        count++;
+                      }
+                    }
+                    return count;
+                  })()}{" "}
                   voos
                 </span>
               </div>
@@ -2066,16 +2081,22 @@ export default function Home() {
                   Horário de Volta: {minutesToTime(returnTimeFilter)}
                 </label>
                 <span className="text-xs bg-blue-100 dark:bg-blue-900 text-blue-900 dark:text-blue-100 px-2 py-1 rounded">
-                  {
-                    filteredWeeks.filter(w => {
-                      const retMin = getFlightMinutes(w.returnFlightDatetime);
-                      return (
+                  {(() => {
+                    let count = 0;
+                    for (let i = 0; i < filteredWeeks.length; i++) {
+                      const retMin = getFlightMinutes(
+                        filteredWeeks[i].returnFlightDatetime
+                      );
+                      if (
                         retMin >= 0 &&
                         retMin >= returnTimeFilter &&
                         retMin <= 1439
-                      );
-                    }).length
-                  }{" "}
+                      ) {
+                        count++;
+                      }
+                    }
+                    return count;
+                  })()}{" "}
                   voos
                 </span>
               </div>
@@ -2890,29 +2911,28 @@ export default function Home() {
                                       // Todos os jogos da 1ª fase (Hoisted)
 
                                       // Filtrar jogos que caem dentro da semana calendário (dom-sáb)
-                                      const jogosDosBrasil = todosJogos.filter(
-                                        jogo => {
-                                          const dataJogo = parseISO(jogo.data);
+                                      const semanaInicioMs =
+                                        semanaInicio.getTime();
+                                      const semanaFimEfetivoMs =
+                                        semanaFimEfetivo.getTime();
+                                      const jogosDosBrasil =
+                                        todosJogosParsed.filter(jogo => {
                                           return (
-                                            dataJogo >= semanaInicio &&
-                                            dataJogo <= semanaFimEfetivo
+                                            jogo.dataMs >= semanaInicioMs &&
+                                            jogo.dataMs <= semanaFimEfetivoMs
                                           );
-                                        }
-                                      );
+                                        });
 
                                       // Fases eliminatórias: janelas de datas (Hoisted)
 
                                       // Filtrar fases eliminatórias que se sobrepõem à semana calendário
                                       const fasesEliminatorias =
-                                        todasFases.filter(fase => {
-                                          const faseInicio = parseISO(
-                                            fase.inicio
-                                          );
-                                          const faseFim = parseISO(fase.fim);
+                                        todasFasesParsed.filter(fase => {
                                           // Sobreposição: faseInicio <= semanaFimEfetivo E faseFim >= semanaInicio
                                           return (
-                                            faseInicio <= semanaFimEfetivo &&
-                                            faseFim >= semanaInicio
+                                            fase.inicioMs <=
+                                              semanaFimEfetivoMs &&
+                                            fase.fimMs >= semanaInicioMs
                                           );
                                         });
 
@@ -3187,14 +3207,20 @@ export default function Home() {
                                           <div className="p-3 space-y-2">
                                             {/* Campos de Milhas: SMILES e LATAM PASS */}
                                             {(() => {
-                                              const currentSmiles = week.smilesPoints ?? null;
-                                              const currentLatam = week.latamPassPoints ?? null;
+                                              const currentSmiles =
+                                                week.smilesPoints ?? null;
+                                              const currentLatam =
+                                                week.latamPassPoints ?? null;
                                               const isSavingSmiles =
-                                                savingMiles?.week === week.weekNumber &&
-                                                savingMiles?.field === "smilesPoints";
+                                                savingMiles?.week ===
+                                                  week.weekNumber &&
+                                                savingMiles?.field ===
+                                                  "smilesPoints";
                                               const isSavingLatam =
-                                                savingMiles?.week === week.weekNumber &&
-                                                savingMiles?.field === "latamPassPoints";
+                                                savingMiles?.week ===
+                                                  week.weekNumber &&
+                                                savingMiles?.field ===
+                                                  "latamPassPoints";
                                               return (
                                                 <>
                                                   {/* Separador */}
@@ -3222,7 +3248,9 @@ export default function Home() {
                                                           type="number"
                                                           placeholder="0 pts"
                                                           aria-label="Pontos SMILES"
-                                                          defaultValue={currentSmiles ?? ""}
+                                                          defaultValue={
+                                                            currentSmiles ?? ""
+                                                          }
                                                           key={`${week.weekNumber}-smiles-${currentSmiles}`}
                                                           onBlur={e =>
                                                             handleMilesBlur(
@@ -3254,7 +3282,9 @@ export default function Home() {
                                                           type="number"
                                                           placeholder="0 pts"
                                                           aria-label="Pontos LATAM PASS"
-                                                          defaultValue={currentLatam ?? ""}
+                                                          defaultValue={
+                                                            currentLatam ?? ""
+                                                          }
                                                           key={`${week.weekNumber}-latam-${currentLatam}`}
                                                           onBlur={e =>
                                                             handleMilesBlur(
