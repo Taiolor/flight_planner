@@ -441,7 +441,6 @@
 - [ ] Integrar skeleton screens no componente Home com transição suave
 - [ ] Testar animação de carregamento em diferentes velocidades de rede
 
-
 ## Pagamento por Milhas (SMILES e LATAM PASS)
 
 - [x] Adicionar colunas smilesPoints e latamPassPoints ao schema do banco (flightWeeks)
