@@ -683,7 +683,7 @@ export default function CalendarView() {
       )}
 
       {/* Cabeçalho */}
-      <header className="bg-blue-700 text-white px-4 py-3 flex items-center gap-3 shadow-md sticky top-0 z-10">
+      <header className="bg-gradient-to-r from-blue-600 via-purple-600 to-cyan-500 text-white px-4 py-3 flex items-center gap-3 shadow-lg sticky top-0 z-10">
         <Link href="/">
           <button className="flex items-center gap-1.5 text-white/80 hover:text-white transition-colors text-sm font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-blue-700 rounded-sm">
             <ArrowLeft className="w-4 h-4" />
@@ -713,7 +713,7 @@ export default function CalendarView() {
       </header>
 
       {/* Filtro */}
-      <div className="px-4 py-4 bg-white border-b border-slate-200 sticky top-16 z-9">
+      <div className="px-4 py-4 bg-white/80 backdrop-blur-sm border-b border-purple-200/30 sticky top-16 z-9">
         <div className="max-w-7xl mx-auto flex items-center gap-3">
           <label className="flex items-center gap-2 cursor-pointer select-none">
             <input
@@ -739,14 +739,14 @@ export default function CalendarView() {
             return (
               <div
                 key={monthIdx}
-                className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden"
+                className="bg-white rounded-2xl shadow-lg border border-purple-200/30 overflow-hidden hover:shadow-xl transition-shadow"
               >
-                <div className="bg-blue-700 px-3 py-2 flex items-center justify-between">
+                <div className="bg-gradient-to-r from-purple-600 to-cyan-500 px-3 py-2 flex items-center justify-between">
                   <span className="text-white font-bold text-sm">
                     {monthName}
                   </span>
                   {issuedCount > 0 && (
-                    <span className="flex items-center gap-1 bg-emerald-400/20 border border-emerald-300/40 text-emerald-200 text-[10px] font-semibold px-2 py-0.5 rounded-full">
+                    <span className="flex items-center gap-1 bg-cyan-400/20 border border-cyan-300/40 text-cyan-100 text-[10px] font-semibold px-2 py-0.5 rounded-full">
                       <Plane className="w-2.5 h-2.5" />
                       {issuedCount} {issuedCount === 1 ? "voo" : "voos"}
                     </span>

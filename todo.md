@@ -500,11 +500,11 @@
 - [x] Testar responsividade
 
 ### Fase 7: Restyling Calendário
-- [ ] Atualizar cores do calendário (roxo/ciano)
-- [ ] Aplicar glassmorphism em cards de eventos
-- [ ] Adicionar animações em datas interativas
-- [ ] Atualizar cores de feriados
-- [ ] Testar em mobile
+- [x] Atualizar cores do calendário (roxo/ciano)
+- [x] Aplicar glassmorphism em cards de eventos
+- [x] Adicionar animações em datas interativas
+- [x] Atualizar cores de feriados
+- [x] Testar em mobile
 
 ### Fase 8: Restyling Configurações
 - [ ] Atualizar cores de inputs e selects
