@@ -1426,7 +1426,11 @@ export default function Home() {
   const isLoading = weeksQuery.isLoading || pricesQuery.isLoading;
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-800 font-sans tracking-tight">
+    <div className={`min-h-screen font-sans tracking-tight transition-colors duration-300 ${
+      theme === 'dark'
+        ? 'bg-slate-900 text-slate-100'
+        : 'bg-slate-50 text-slate-800'
+    }`}>
       {/* Pull-to-refresh indicator */}
       {(isPulling || isRefreshing) && (
         <div
@@ -1462,7 +1466,9 @@ export default function Home() {
       )}
       {/* Hero Header */}
       <header
-        className="relative shadow-xl sticky top-0 z-50 overflow-hidden"
+        className={`relative shadow-xl sticky top-0 z-50 overflow-hidden transition-colors duration-300 ${
+          theme === 'dark' ? 'bg-slate-800' : 'bg-white'
+        }`}
         style={{ paddingTop: "env(safe-area-inset-top)" }}
       >
         {/* Background with Preset Gradient */}
@@ -1866,14 +1872,22 @@ export default function Home() {
         </Card>
 
         {/* Filtros */}
-        <Card className="p-4 sm:p-6 mb-4 sm:mb-8 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border border-white/20 dark:border-slate-700/30 rounded-2xl shadow-xl">
-          <h2 className="text-base sm:text-xl font-bold text-slate-900 dark:text-slate-100 mb-3 sm:mb-6">
+        <Card className={`p-4 sm:p-6 mb-4 sm:mb-8 backdrop-blur-md border rounded-2xl shadow-xl transition-colors duration-300 ${
+          theme === 'dark'
+            ? 'bg-slate-800/80 border-slate-700/30'
+            : 'bg-white/80 border-white/20'
+        }`}>
+          <h2 className={`text-base sm:text-xl font-bold mb-3 sm:mb-6 transition-colors duration-300 ${
+            theme === 'dark' ? 'text-slate-100' : 'text-slate-900'
+          }`}>
             Filtros e Controles
           </h2>
           {/* Linha 1: Mês, Companhia, Ordenar por, Filtro de Preço, Status do Bilhete */}
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
             <div>
-              <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2 block">
+              <label className={`text-sm font-semibold mb-2 block transition-colors duration-300 ${
+                theme === 'dark' ? 'text-slate-300' : 'text-slate-700'
+              }`}>
                 Mês
               </label>
               <Select value={filterMonth} onValueChange={setFilterMonth}>
@@ -1920,7 +1934,9 @@ export default function Home() {
             </div>
 
             <div>
-              <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2 block">
+              <label className={`text-sm font-semibold mb-2 block transition-colors duration-300 ${
+                theme === 'dark' ? 'text-slate-300' : 'text-slate-700'
+              }`}>
                 Companhia
               </label>
               <Select value={filterAirline} onValueChange={setFilterAirline}>
@@ -1942,7 +1958,9 @@ export default function Home() {
             </div>
 
             <div>
-              <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2 block">
+              <label className={`text-sm font-semibold mb-2 block transition-colors duration-300 ${
+                theme === 'dark' ? 'text-slate-300' : 'text-slate-700'
+              }`}>
                 Ordenar por
               </label>
               <Select value={sortBy} onValueChange={setSortBy}>
@@ -1957,7 +1975,9 @@ export default function Home() {
             </div>
 
             <div>
-              <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2 block">
+              <label className={`text-sm font-semibold mb-2 block transition-colors duration-300 ${
+                theme === 'dark' ? 'text-slate-300' : 'text-slate-700'
+              }`}>
                 Filtro de Preço
               </label>
               <div className="flex items-center gap-2 mt-1">
@@ -1968,7 +1988,9 @@ export default function Home() {
                 />
                 <label
                   htmlFor="cheap-filter"
-                  className="text-sm text-slate-600 cursor-pointer select-none"
+                  className={`text-sm cursor-pointer select-none transition-colors duration-300 ${
+                    theme === 'dark' ? 'text-slate-400' : 'text-slate-600'
+                  }`}
                 >
                   Apenas os mais baratos
                 </label>
@@ -1976,7 +1998,9 @@ export default function Home() {
             </div>
 
             <div>
-              <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2 block">
+              <label className={`text-sm font-semibold mb-2 block transition-colors duration-300 ${
+                theme === 'dark' ? 'text-slate-300' : 'text-slate-700'
+              }`}>
                 Status do Bilhete
               </label>
               <Select
