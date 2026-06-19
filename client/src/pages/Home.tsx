@@ -1866,7 +1866,7 @@ export default function Home() {
         </Card>
 
         {/* Filtros */}
-        <Card className="p-4 sm:p-6 mb-4 sm:mb-8 glassmorphism-card">
+        <Card className="p-4 sm:p-6 mb-4 sm:mb-8 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border border-white/20 dark:border-slate-700/30 rounded-2xl shadow-xl">
           <h2 className="text-base sm:text-xl font-bold text-slate-900 dark:text-slate-100 mb-3 sm:mb-6">
             Filtros e Controles
           </h2>
@@ -2202,7 +2202,7 @@ export default function Home() {
                   return (
                     <div
                       key={monthKey}
-                      className="rounded-xl overflow-hidden glassmorphism-card"
+                      className="rounded-xl overflow-hidden bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border border-white/20 dark:border-slate-700/30 rounded-2xl shadow-xl"
                     >
                       {/* Cabeçalho do Mês */}
                       <button
