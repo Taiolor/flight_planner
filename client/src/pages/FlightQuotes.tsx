@@ -683,12 +683,13 @@ const WeekCard = ({
           {/* Campo de preço manual — apenas para semanas presentes/futuras */}
           {!isPast && (
             <div className="space-y-2">
-              <label className="text-xs font-semibold text-slate-600 dark:text-slate-300 flex items-center gap-1.5">
+              <label htmlFor={`manual-price-${week.semana}`} className="text-xs font-semibold text-slate-600 dark:text-slate-300 flex items-center gap-1.5">
                 <DollarSign className="w-3.5 h-3.5" />
                 Inserir preço manualmente (R$)
               </label>
               <div className="flex gap-2">
                 <Input
+                  id={`manual-price-${week.semana}`}
                   type="number"
                   min="0"
                   step="0.01"
@@ -720,10 +721,11 @@ const WeekCard = ({
               {showManualDetails && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3 rounded-lg bg-slate-50 dark:bg-slate-700/30 border border-slate-200 dark:border-slate-600 mt-2 animate-in fade-in slide-in-from-top-1 duration-200">
                   <div className="space-y-1.5">
-                    <label className="text-[10px] font-bold uppercase text-slate-500 dark:text-slate-400">
+                    <label htmlFor={`outbound-airline-${week.semana}`} className="text-[10px] font-bold uppercase text-slate-500 dark:text-slate-400">
                       Cia Aérea Ida
                     </label>
                     <Input
+                      id={`outbound-airline-${week.semana}`}
                       placeholder="Ex: LATAM"
                       value={outboundAirline}
                       onChange={e => setOutboundAirline(e.target.value)}
@@ -731,10 +733,11 @@ const WeekCard = ({
                     />
                   </div>
                   <div className="space-y-1.5">
-                    <label className="text-[10px] font-bold uppercase text-slate-500 dark:text-slate-400">
+                    <label htmlFor={`return-airline-${week.semana}`} className="text-[10px] font-bold uppercase text-slate-500 dark:text-slate-400">
                       Cia Aérea Volta
                     </label>
                     <Input
+                      id={`return-airline-${week.semana}`}
                       placeholder="Ex: GOL"
                       value={returnAirline}
                       onChange={e => setReturnAirline(e.target.value)}
@@ -742,10 +745,11 @@ const WeekCard = ({
                     />
                   </div>
                   <div className="space-y-1.5">
-                    <label className="text-[10px] font-bold uppercase text-slate-500 dark:text-slate-400">
+                    <label htmlFor={`outbound-departure-${week.semana}`} className="text-[10px] font-bold uppercase text-slate-500 dark:text-slate-400">
                       Partida Ida
                     </label>
                     <Input
+                      id={`outbound-departure-${week.semana}`}
                       type="datetime-local"
                       value={outboundDeparture}
                       onChange={e => setOutboundDeparture(e.target.value)}
@@ -753,10 +757,11 @@ const WeekCard = ({
                     />
                   </div>
                   <div className="space-y-1.5">
-                    <label className="text-[10px] font-bold uppercase text-slate-500 dark:text-slate-400">
+                    <label htmlFor={`return-departure-${week.semana}`} className="text-[10px] font-bold uppercase text-slate-500 dark:text-slate-400">
                       Partida Volta
                     </label>
                     <Input
+                      id={`return-departure-${week.semana}`}
                       type="datetime-local"
                       value={returnDeparture}
                       onChange={e => setReturnDeparture(e.target.value)}
