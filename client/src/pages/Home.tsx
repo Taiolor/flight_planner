@@ -1245,48 +1245,39 @@ export default function Home() {
     return result;
   }, [weeksData, getLowestPrice]);
 
-  const annualTotalIssued = useMemo(() => {
-    // ⚡ Bolt: Single-pass loop to avoid intermediate array allocations
-    let sum = 0;
+  // ⚡ Bolt Optimization: Consolidate multiple O(N) loops into a single pass
+  const {
+    annualTotalIssued,
+    annualIssuedCount,
+    annualSmilesTotal,
+    annualLatamPassTotal,
+  } = useMemo(() => {
+    let totalIssued = 0;
+    let issuedCount = 0;
+    let smilesTotal = 0;
+    let latamPassTotal = 0;
+
     for (let i = 0; i < weeksData.length; i++) {
       const w = weeksData[i];
-      if (w.isTicketIssued && !w.isDeleted) {
-        sum += getLowestPrice(w.weekNumber) ?? 0;
+      if (!w.isDeleted) {
+        if (w.isTicketIssued) {
+          totalIssued += getLowestPrice(w.weekNumber) ?? 0;
+          issuedCount++;
+        }
+        if (w.smilesPoints) smilesTotal += w.smilesPoints;
+        if (w.latamPassPoints) latamPassTotal += w.latamPassPoints;
       }
     }
-    return sum;
+
+    return {
+      annualTotalIssued: totalIssued,
+      annualIssuedCount: issuedCount,
+      annualSmilesTotal: smilesTotal,
+      annualLatamPassTotal: latamPassTotal,
+    };
   }, [weeksData, getLowestPrice]);
 
-  const annualIssuedCount = useMemo(() => {
-    // ⚡ Bolt: Single-pass loop to avoid intermediate array allocations
-    let count = 0;
-    for (let i = 0; i < weeksData.length; i++) {
-      const w = weeksData[i];
-      if (w.isTicketIssued && !w.isDeleted) {
-        count++;
-      }
-    }
-    return count;
-  }, [weeksData]);
   const annualHasData = annualSummaryData.some(d => d.total > 0);
-
-  const annualSmilesTotal = useMemo(() => {
-    let sum = 0;
-    for (let i = 0; i < weeksData.length; i++) {
-      const w = weeksData[i];
-      if (!w.isDeleted && w.smilesPoints) sum += w.smilesPoints;
-    }
-    return sum;
-  }, [weeksData]);
-
-  const annualLatamPassTotal = useMemo(() => {
-    let sum = 0;
-    for (let i = 0; i < weeksData.length; i++) {
-      const w = weeksData[i];
-      if (!w.isDeleted && w.latamPassPoints) sum += w.latamPassPoints;
-    }
-    return sum;
-  }, [weeksData]);
 
   // Handlers
   const handleToggleSelect = (weekNumber: number, current: number) => {
