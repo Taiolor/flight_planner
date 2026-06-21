@@ -1514,12 +1514,16 @@ export default function Home() {
           gap: '6px',
         }}
       >
-        {weeksQuery.isLoading && (
-          <Loader2 className="w-3 h-3 animate-spin" />
+        {weeksQuery.isLoading ? (
+          <div key="loading" className="fade-in flex items-center gap-2">
+            <Loader2 className="w-3 h-3 animate-spin" />
+            <span>Atualizando dados...</span>
+          </div>
+        ) : (
+          <div key="loaded" className="fade-in">
+            Última atualização: {formatLastUpdate(lastUpdateTime)}
+          </div>
         )}
-        <span>
-          {weeksQuery.isLoading ? 'Atualizando dados...' : `Última atualização: ${formatLastUpdate(lastUpdateTime)}`}
-        </span>
       </div>
       {/* Hero Header */}
       <header
