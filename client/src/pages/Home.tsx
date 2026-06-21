@@ -1511,9 +1511,15 @@ export default function Home() {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
+          gap: '6px',
         }}
       >
-        Última atualização: {formatLastUpdate(lastUpdateTime)}
+        {weeksQuery.isLoading && (
+          <Loader2 className="w-3 h-3 animate-spin" />
+        )}
+        <span>
+          {weeksQuery.isLoading ? 'Atualizando dados...' : `Última atualização: ${formatLastUpdate(lastUpdateTime)}`}
+        </span>
       </div>
       {/* Hero Header */}
       <header
