@@ -1436,7 +1436,7 @@ export default function Home() {
       {/* Pull-to-refresh indicator */}
       {(isPulling || isRefreshing) && (
         <div
-          className="fixed top-0 left-0 right-0 z-[100] flex items-center justify-center transition-all duration-200"
+          className="fixed top-0 left-0 right-0 z-30 flex items-center justify-center transition-all duration-200 pointer-events-none"
           style={{
             height: isRefreshing ? "52px" : `${Math.max(pullDistance, 0)}px`,
             paddingTop: "env(safe-area-inset-top)",
@@ -1468,10 +1468,10 @@ export default function Home() {
       )}
       {/* Hero Header */}
       <header
-        className={`relative shadow-xl sticky top-0 z-50 overflow-hidden transition-colors duration-300 ${
+        className={`relative shadow-xl sticky top-0 z-40 overflow-hidden transition-colors duration-300 ${
           theme === 'dark' ? 'bg-slate-800' : 'bg-white'
         }`}
-        style={{ paddingTop: "env(safe-area-inset-top)" }}
+        style={{ paddingTop: `calc(env(safe-area-inset-top) + ${Math.max(pullDistance, 0)}px)`, transition: 'padding-top 0.1s ease-out' }}
       >
         {/* Background with Preset Gradient */}
         <div
