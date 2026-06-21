@@ -570,6 +570,39 @@ export default function Home() {
     onRefresh: handleRefresh,
   });
 
+  // Estado para rastrear última atualização
+  const [lastUpdateTime, setLastUpdateTime] = useState<Date | null>(null);
+  
+  // Atualizar timestamp quando os dados forem atualizados
+  useEffect(() => {
+    if (weeksQuery.data && weeksQuery.data.length > 0) {
+      setLastUpdateTime(new Date());
+    }
+  }, [weeksQuery.data]);
+
+  // Formatar data/hora da última atualização
+  const formatLastUpdate = (date: Date | null) => {
+    if (!date) return 'Nunca';
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+
+    if (diffMins < 1) return 'Agora';
+    if (diffMins < 60) return `${diffMins}min atrás`;
+    if (diffHours < 24) return `${diffHours}h atrás`;
+    if (diffDays === 1) return 'Ontem';
+    if (diffDays < 7) return `${diffDays}d atrás`;
+    
+    return date.toLocaleDateString('pt-BR', {
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  };
+
   // Push Notifications
   const {
     status: pushStatus,
@@ -1466,6 +1499,22 @@ export default function Home() {
           </div>
         </div>
       )}
+      {/* Last Update Timestamp */}
+      <div
+        className={`text-center text-xs transition-all duration-300 ${
+          theme === 'dark' ? 'text-slate-400' : 'text-slate-500'
+        }`}
+        style={{
+          paddingTop: '8px',
+          paddingBottom: '8px',
+          minHeight: '24px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
+        Última atualização: {formatLastUpdate(lastUpdateTime)}
+      </div>
       {/* Hero Header */}
       <header
         className={`relative shadow-xl sticky top-0 z-40 overflow-hidden transition-colors duration-300 ${
