@@ -59,11 +59,27 @@ async function startServer() {
   app.set("trust proxy", 1);
 
   // Security headers via Helmet
-  // Nota: contentSecurityPolicy desativado para não quebrar o Manus OAuth e o Vite HMR
   app.use(
     helmet({
-      contentSecurityPolicy: false, // Gerenciado pelo Vite/Manus OAuth
-      crossOriginEmbedderPolicy: false, // Necessário para recursos externos (fontes, etc.)
+      contentSecurityPolicy: {
+        directives: {
+          defaultSrc: ["'self'"],
+          scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://cdn.jsdelivr.net"],
+          styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+          fontSrc: ["'self'", "https://fonts.gstatic.com"],
+          imgSrc: ["'self'", "data:", "https:"],
+          connectSrc: ["'self'", "https:"],
+          frameSrc: ["'none'"],
+          objectSrc: ["'none'"],
+          baseUri: ["'self'"],
+          formAction: ["'self'"],
+          frameAncestors: ["'none'"],
+        },
+      },
+      crossOriginEmbedderPolicy: false,
+      frameguard: {
+        action: "deny",
+      },
     })
   );
 
