@@ -100,7 +100,6 @@ export async function sendPushToAll(
     return 0;
   }
 
-  // ⚡ Bolt: Execute push notifications in parallel to reduce overall network latency
   const results = await Promise.all(
     subs.map(sub => sendPushToOne(sub.endpoint, sub.p256dh, sub.auth, payload))
   );
