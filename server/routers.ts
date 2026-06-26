@@ -741,6 +741,7 @@ export const appRouter = router({
         flightNumber: string;
         status: "pending" | "sent" | "past";
         minutesUntilAlert: number;
+        _alertTimeMs?: number; // ⚡ Bolt: Fast sorting property
       }> = [];
 
       const issuedWeeks = weeks.filter(w => w.isTicketIssued);
@@ -775,10 +776,11 @@ export const appRouter = router({
           const depTimeMs = departureTime.getTime();
           if (!isNaN(depTimeMs)) {
             const depPast = depTimeMs < nowMs;
+            const depDiffMs = depTimeMs - nowMs;
             for (const aviso of precalculatedAvisos) {
               const alertTimeMs = depTimeMs - aviso.targetMs;
               const minutesUntilAlert = Math.round(
-                (alertTimeMs - nowMs) / 60000
+                (depDiffMs - aviso.targetMs) / 60000
               );
 
               let status: "pending" | "sent" | "past" = "pending";
@@ -800,6 +802,7 @@ export const appRouter = router({
                 flightNumber: week.departureFlightNumber ?? "",
                 status,
                 minutesUntilAlert,
+                _alertTimeMs: alertTimeMs,
               });
             }
           }
@@ -810,10 +813,11 @@ export const appRouter = router({
           const retTimeMs = returnTime.getTime();
           if (!isNaN(retTimeMs)) {
             const retPast = retTimeMs < nowMs;
+            const retDiffMs = retTimeMs - nowMs;
             for (const aviso of precalculatedAvisos) {
               const alertTimeMs = retTimeMs - aviso.targetMs;
               const minutesUntilAlert = Math.round(
-                (alertTimeMs - nowMs) / 60000
+                (retDiffMs - aviso.targetMs) / 60000
               );
 
               let status: "pending" | "sent" | "past" = "pending";
@@ -835,18 +839,22 @@ export const appRouter = router({
                 flightNumber: week.returnFlightNumber ?? "",
                 status,
                 minutesUntilAlert,
+                _alertTimeMs: alertTimeMs,
               });
             }
           }
         }
       }
 
-      // Ordenar por data do alerta
+      // Ordenar por data do alerta de forma otimizada
       scheduledAlerts.sort(
-        (a, b) =>
-          new Date(a.alertDatetime).getTime() -
-          new Date(b.alertDatetime).getTime()
+        (a, b) => (a._alertTimeMs ?? 0) - (b._alertTimeMs ?? 0)
       );
+
+      // Remover a propriedade temporária usando a abordagem apropriada no TS
+      scheduledAlerts.forEach(alert => {
+        delete alert._alertTimeMs;
+      });
 
       return {
         settings,
