@@ -145,10 +145,13 @@ export async function checkAndNotifyUpcomingFlights(): Promise<void> {
   ensureVapidConfigured();
   if (!vapidConfigured) return;
 
-  const weeks = await getAllFlightWeeks();
-  const settings = await getNotificationSettings();
-  // Buscar subscriptions uma única vez antes do loop para evitar N+1 queries ao banco
-  const pushSubscriptions = await getAllPushSubscriptions();
+  // ⚡ Bolt: Execute DB queries in parallel to reduce overall network/IO latency
+  const [weeks, settings, pushSubscriptions] = await Promise.all([
+    getAllFlightWeeks(),
+    getNotificationSettings(),
+    // Buscar subscriptions uma única vez antes do loop para evitar N+1 queries ao banco
+    getAllPushSubscriptions(),
+  ]);
   const now = new Date();
 
   const airlineNames: Record<string, string> = {
