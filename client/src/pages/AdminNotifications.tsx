@@ -730,6 +730,7 @@ function TicketNotificationEmailsSection() {
             <input
               type="email"
               placeholder="E-mail"
+              aria-label="E-mail do novo destinatário"
               value={newEmail}
               onChange={e => setNewEmail(e.target.value)}
               className="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
@@ -738,6 +739,7 @@ function TicketNotificationEmailsSection() {
             <input
               type="text"
               placeholder="Nome (opcional)"
+              aria-label="Nome do novo destinatário (opcional)"
               value={newName}
               onChange={e => setNewName(e.target.value)}
               className="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
@@ -824,6 +826,7 @@ function TicketNotificationEmailsSection() {
               <input
                 type="email"
                 placeholder="E-mail para teste"
+                aria-label="E-mail para envio de teste"
                 value={testEmail}
                 onChange={e => setTestEmail(e.target.value)}
                 className="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
