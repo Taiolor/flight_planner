@@ -59,6 +59,8 @@ async function startServer() {
   app.set("trust proxy", 1);
 
   // Security headers via Helmet
+  // Em dev, permitir iframe para o emulador/preview funcionar
+  const isDev = process.env.NODE_ENV === "development";
   app.use(
     helmet({
       contentSecurityPolicy: {
@@ -68,18 +70,16 @@ async function startServer() {
           styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
           fontSrc: ["'self'", "https://fonts.gstatic.com"],
           imgSrc: ["'self'", "data:", "https:"],
-          connectSrc: ["'self'", "https:"],
+          connectSrc: ["'self'", "https:", ...(isDev ? ["ws:", "wss:"] : [])],
           frameSrc: ["'none'"],
           objectSrc: ["'none'"],
           baseUri: ["'self'"],
           formAction: ["'self'"],
-          frameAncestors: ["'none'"],
+          frameAncestors: isDev ? ["*"] : ["https://*.manus.space", "https://*.manus.computer"],
         },
       },
       crossOriginEmbedderPolicy: false,
-      frameguard: {
-        action: "deny",
-      },
+      frameguard: isDev ? false : { action: "sameorigin" },
     })
   );
 
