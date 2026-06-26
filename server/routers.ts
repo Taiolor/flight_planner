@@ -886,19 +886,7 @@ export const appRouter = router({
       let nextAlert: NextAlert | null = null;
       let minTimeUntilAlert = Infinity;
 
-      // ⚡ Bolt: Hoist date parsing outside the nested loops for nextAlert logic too
-      const parsedAlertWeeks = weeks
-        .filter(w => w.isTicketIssued)
-        .map(w => ({
-          week: w,
-          departureTime: w.departureFlightDatetime
-            ? parseBrasiliaDatetime(w.departureFlightDatetime)
-            : null,
-          returnTime: w.returnFlightDatetime
-            ? parseBrasiliaDatetime(w.returnFlightDatetime)
-            : null,
-        }));
-
+      // ⚡ Bolt: Eliminate intermediate parsedAlertWeeks array to reduce allocations
       const nowMsNext = now.getTime();
 
       const precalculatedAvisosNext = avisos.map(aviso => {
@@ -908,9 +896,14 @@ export const appRouter = router({
         };
       });
 
-      for (const { week, departureTime, returnTime } of parsedAlertWeeks) {
+      for (const week of weeks) {
+        if (!week.isTicketIssued) continue;
+
         // Voo de ida
-        if (departureTime) {
+        if (week.departureFlightDatetime) {
+          const departureTime = parseBrasiliaDatetime(
+            week.departureFlightDatetime
+          );
           const depTimeMs = departureTime.getTime();
           if (!isNaN(depTimeMs) && depTimeMs > nowMsNext) {
             for (const aviso of precalculatedAvisosNext) {
@@ -940,7 +933,8 @@ export const appRouter = router({
         }
 
         // Voo de volta
-        if (returnTime) {
+        if (week.returnFlightDatetime) {
+          const returnTime = parseBrasiliaDatetime(week.returnFlightDatetime);
           const retTimeMs = returnTime.getTime();
           if (!isNaN(retTimeMs) && retTimeMs > nowMsNext) {
             for (const aviso of precalculatedAvisosNext) {
