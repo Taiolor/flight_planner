@@ -380,6 +380,7 @@ const WeekCard = ({
   onSaveManual,
   onDelete,
   isLoadingApi,
+  todayInt,
 }: {
   week: { semana: number; ida: { data: string }; retorno: { data: string } };
   quotes: Array<{
@@ -409,6 +410,7 @@ const WeekCard = ({
   ) => void;
   onDelete: (id: number) => void;
   isLoadingApi: boolean;
+  todayInt: number;
 }) => {
   const [expanded, setExpanded] = useState(false);
   const [showManualDetails, setShowManualDetails] = useState(false);
@@ -423,7 +425,7 @@ const WeekCard = ({
   const kayakUrl = buildKayakUrl(week.ida.data, week.retorno.data);
   const apiLimitReached = apiUsage.requestsUsed >= apiUsage.requestsLimit;
 
-  const status = getWeekStatus(week.ida.data, week.retorno.data);
+  const status = getWeekStatus(week.ida.data, week.retorno.data, todayInt);
   const isPast = status === "past";
   const isCurrent = status === "current";
 
@@ -933,18 +935,21 @@ export default function FlightQuotes() {
         ? "bg-amber-500"
         : "bg-emerald-500";
 
+  // ⚡ Bolt: Pre-calculate todayInt once per render to avoid calling new Date()
+  // and performing string allocations multiple times in child components.
+  const todayInt = useMemo(() => {
+    const today = new Date();
+    const y = today.getFullYear();
+    const m = String(today.getMonth() + 1).padStart(2, "0");
+    const d = String(today.getDate()).padStart(2, "0");
+    return parseInt(`${y}${m}${d}`, 10);
+  }, []);
+
   // Contar semanas por status para exibir no header
   const weekCounts = useMemo(() => {
     let past = 0,
       current = 0,
       future = 0;
-
-    // ⚡ Bolt: Pre-calculate todayInt outside the loop to avoid calling new Date() multiple times
-    const today = new Date();
-    const y = today.getFullYear();
-    const m = String(today.getMonth() + 1).padStart(2, "0");
-    const d = String(today.getDate()).padStart(2, "0");
-    const todayInt = parseInt(`${y}${m}${d}`, 10);
 
     for (const w of flightData) {
       const s = getWeekStatus(w.ida.data, w.retorno.data, todayInt);
@@ -953,7 +958,7 @@ export default function FlightQuotes() {
       else future++;
     }
     return { past, current, future };
-  }, []);
+  }, [todayInt]);
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-900 transition-colors duration-300">
@@ -1054,6 +1059,7 @@ export default function FlightQuotes() {
               onSaveManual={handleSaveManual}
               onDelete={handleDelete}
               isLoadingApi={loadingWeek === week.semana}
+              todayInt={todayInt}
             />
           ))}
         </div>
