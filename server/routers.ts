@@ -378,9 +378,18 @@ export const appRouter = router({
               ? input.isTicketIssued === 1
               : wasIssued;
 
-          if (!wasIssued && nowIssued) {
+          const isMarkedAsIssued = !wasIssued && nowIssued;
+          const isDeleted = wasIssued && !nowIssued;
+          const isUpdated = wasIssued && nowIssued;
+
+          // Optimization: Only query DB for recipients once if we actually need to send an email
+          const needsEmail = isMarkedAsIssued || isDeleted || isUpdated;
+          const recipients = needsEmail
+            ? await getTicketNotificationEmails()
+            : [];
+
+          if (isMarkedAsIssued) {
             // Ticket was just marked as issued - send email with full details
-            const recipients = await getTicketNotificationEmails();
             if (
               recipients.length > 0 &&
               input.departureFlightNumber &&
@@ -504,9 +513,8 @@ export const appRouter = router({
                 );
               }
             }
-          } else if (wasIssued && !nowIssued) {
+          } else if (isDeleted) {
             // Ticket was deleted
-            const recipients = await getTicketNotificationEmails();
             if (recipients.length > 0) {
               const recipientEmails = recipients.map(r => r.email);
 
@@ -558,9 +566,8 @@ export const appRouter = router({
                 });
               }
             }
-          } else if (wasIssued && nowIssued) {
+          } else if (isUpdated) {
             // Ticket was updated - detect changes
-            const recipients = await getTicketNotificationEmails();
             if (recipients.length > 0) {
               const recipientEmails = recipients.map(r => r.email);
               const changes: Record<string, any> = {};

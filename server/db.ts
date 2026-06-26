@@ -628,9 +628,23 @@ export async function incrementApiUsage(
 /**
  * Get all ticket notification email recipients
  */
+let cachedEmails: TicketNotificationEmail[] | null = null;
+let emailsCacheTimestamp = 0;
+const CACHE_TTL = 60 * 1000; // 1 minute cache TTL
+
+export function invalidateEmailsCache() {
+  cachedEmails = null;
+  emailsCacheTimestamp = 0;
+}
+
 export async function getTicketNotificationEmails(): Promise<
   TicketNotificationEmail[]
 > {
+  const now = Date.now();
+  if (cachedEmails && now - emailsCacheTimestamp < CACHE_TTL) {
+    return cachedEmails;
+  }
+
   const db = await getDb();
   if (!db) {
     console.warn(
@@ -646,6 +660,10 @@ export async function getTicketNotificationEmails(): Promise<
       .from(ticketNotificationEmails)
       .where(eq(ticketNotificationEmails.active, 1))
       .orderBy(desc(ticketNotificationEmails.createdAt));
+
+    // Update cache
+    cachedEmails = rows;
+    emailsCacheTimestamp = now;
     console.log(
       "[Database] Found",
       rows.length,
@@ -717,6 +735,8 @@ export async function addTicketNotificationEmail(
       .from(ticketNotificationEmails)
       .where(eq(ticketNotificationEmails.email, email.toLowerCase().trim()));
 
+    invalidateEmailsCache();
+    invalidateEmailsCache();
     return rows[0] || null;
   } catch (error) {
     console.error("[Database] Error adding ticket notification email:", error);
@@ -742,6 +762,7 @@ export async function removeTicketNotificationEmail(
     await db
       .delete(ticketNotificationEmails)
       .where(eq(ticketNotificationEmails.id, emailId));
+    invalidateEmailsCache();
     return true;
   } catch (error) {
     console.error(
