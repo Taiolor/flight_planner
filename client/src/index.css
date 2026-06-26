@@ -264,11 +264,21 @@
 
   /* Gradientes */
   .gradient-modern {
-    background: linear-gradient(135deg, var(--primary) 0%, var(--purple) 50%, var(--cyan) 100%);
+    background: linear-gradient(
+      135deg,
+      var(--primary) 0%,
+      var(--purple) 50%,
+      var(--cyan) 100%
+    );
   }
 
   .gradient-modern-animated {
-    background: linear-gradient(135deg, var(--primary) 0%, var(--purple) 50%, var(--cyan) 100%);
+    background: linear-gradient(
+      135deg,
+      var(--primary) 0%,
+      var(--purple) 50%,
+      var(--cyan) 100%
+    );
     background-size: 200% 200%;
     animation: gradientShift 8s ease infinite;
   }
@@ -283,7 +293,7 @@
   }
 
   .ripple::after {
-    content: '';
+    content: "";
     position: absolute;
     top: 50%;
     left: 50%;
@@ -308,9 +318,15 @@
 }
 
 @keyframes gradientShift {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
 }
 
 @keyframes rippleEffect {
@@ -322,7 +338,8 @@
 }
 
 @keyframes pulseGlow {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 1;
   }
   50% {

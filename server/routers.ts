@@ -211,7 +211,7 @@ export const appRouter = router({
     }),
 
     // Salvar subscription do dispositivo
-    subscribe: publicProcedure
+    subscribe: flightProtectedProcedure
       .input(
         z.object({
           endpoint: z.string(),
@@ -220,14 +220,7 @@ export const appRouter = router({
           userAgent: z.string().optional(),
         })
       )
-      .mutation(async ({ input, ctx }) => {
-        const session = await getSessionFromCookie(ctx.req);
-        if (!session) {
-          throw new TRPCError({
-            code: "UNAUTHORIZED",
-            message: "Faça login para ativar notificações.",
-          });
-        }
+      .mutation(async ({ input }) => {
         await savePushSubscription({
           endpoint: input.endpoint,
           p256dh: input.p256dh,
@@ -254,14 +247,7 @@ export const appRouter = router({
       }),
 
     // Enviar notificação de teste
-    sendTest: publicProcedure.mutation(async ({ ctx }) => {
-      const session = await getSessionFromCookie(ctx.req);
-      if (!session) {
-        throw new TRPCError({
-          code: "UNAUTHORIZED",
-          message: "Faça login para testar notificações.",
-        });
-      }
+    sendTest: flightProtectedProcedure.mutation(async () => {
       const { sendPushToAll } = await import("./pushNotifications");
       const sent = await sendPushToAll({
         title: "✈️ Smart Fly — Teste",
@@ -298,14 +284,7 @@ export const appRouter = router({
     }),
 
     // Buscar todos os preços
-    getPrices: publicProcedure.query(async ({ ctx }) => {
-      const session = await getSessionFromCookie(ctx.req);
-      if (!session) {
-        throw new TRPCError({
-          code: "UNAUTHORIZED",
-          message: "Faça login para acessar os preços.",
-        });
-      }
+    getPrices: flightProtectedProcedure.query(async () => {
       return getAllFlightPrices();
     }),
 
@@ -314,7 +293,7 @@ export const appRouter = router({
     }),
 
     // Inicializar semanas com dados padrão (só roda se não houver dados)
-    initWeeks: publicProcedure
+    initWeeks: flightProtectedProcedure
       .input(
         z.array(
           z.object({
@@ -327,15 +306,7 @@ export const appRouter = router({
           })
         )
       )
-      .mutation(async ({ input, ctx }) => {
-        // Requer autenticação para evitar reinicialização não autorizada das semanas
-        const session = await getSessionFromCookie(ctx.req);
-        if (!session) {
-          throw new TRPCError({
-            code: "UNAUTHORIZED",
-            message: "Faça login para inicializar semanas.",
-          });
-        }
+      .mutation(async ({ input }) => {
         await initFlightWeeks(
           input.map(w => ({
             weekNumber: w.weekNumber,
@@ -353,7 +324,7 @@ export const appRouter = router({
       }),
 
     // Atualizar status de uma semana (requer autenticação)
-    updateWeekStatus: publicProcedure
+    updateWeekStatus: flightProtectedProcedure
       .input(
         z.object({
           year: z.number().default(2026).optional(),
@@ -376,15 +347,7 @@ export const appRouter = router({
           latamPassPoints: z.number().nullable().optional(),
         })
       )
-      .mutation(async ({ input, ctx }) => {
-        const session = await getSessionFromCookie(ctx.req);
-        if (!session) {
-          throw new TRPCError({
-            code: "UNAUTHORIZED",
-            message: "Faça login para editar.",
-          });
-        }
-
+      .mutation(async ({ input }) => {
         // Get the week before update to detect changes
         const weekBefore = await getFlightWeek(input.weekNumber);
 
@@ -694,7 +657,7 @@ export const appRouter = router({
       }),
 
     // Editar datas de uma semana (requer autenticação)
-    updateWeekDates: publicProcedure
+    updateWeekDates: flightProtectedProcedure
       .input(
         z.object({
           weekNumber: z.number(),
@@ -704,14 +667,7 @@ export const appRouter = router({
           returnDayOfWeek: z.string(),
         })
       )
-      .mutation(async ({ input, ctx }) => {
-        const session = await getSessionFromCookie(ctx.req);
-        if (!session) {
-          throw new TRPCError({
-            code: "UNAUTHORIZED",
-            message: "Faça login para editar.",
-          });
-        }
+      .mutation(async ({ input }) => {
         await updateFlightWeekStatus(input.weekNumber, {
           departureDate: input.departureDate,
           returnDate: input.returnDate,
@@ -722,7 +678,7 @@ export const appRouter = router({
       }),
 
     // Salvar preço de uma companhia para uma semana (requer autenticação)
-    savePrice: publicProcedure
+    savePrice: flightProtectedProcedure
       .input(
         z.object({
           weekNumber: z.number(),
@@ -730,14 +686,7 @@ export const appRouter = router({
           price: z.string(),
         })
       )
-      .mutation(async ({ input, ctx }) => {
-        const session = await getSessionFromCookie(ctx.req);
-        if (!session) {
-          throw new TRPCError({
-            code: "UNAUTHORIZED",
-            message: "Faça login para editar.",
-          });
-        }
+      .mutation(async ({ input }) => {
         if (input.price === "") {
           await deleteFlightPrice(input.weekNumber, input.airline);
         } else {
@@ -752,14 +701,7 @@ export const appRouter = router({
   // =====================
   adminNotifications: router({
     // Retorna status completo do sistema de notificações para o painel admin
-    getStatus: publicProcedure.query(async ({ ctx }) => {
-      const session = await getSessionFromCookie(ctx.req);
-      if (!session)
-        throw new TRPCError({
-          code: "UNAUTHORIZED",
-          message: "Faça login para acessar.",
-        });
-
+    getStatus: flightProtectedProcedure.query(async () => {
       const [weeks, settings, subscriptions] = await Promise.all([
         getAllFlightWeeks(),
         getNotificationSettings(),
@@ -922,14 +864,7 @@ export const appRouter = router({
     }),
 
     // Enviar notificação de teste do próximo alerta agendado
-    sendNextAlert: publicProcedure.mutation(async ({ ctx }) => {
-      const session = await getSessionFromCookie(ctx.req);
-      if (!session)
-        throw new TRPCError({
-          code: "UNAUTHORIZED",
-          message: "Faça login para testar.",
-        });
-
+    sendNextAlert: flightProtectedProcedure.mutation(async () => {
       const weeks = await getAllFlightWeeks();
       const settings = await getNotificationSettings();
       const now = new Date();
@@ -1084,15 +1019,9 @@ export const appRouter = router({
     }),
 
     // Retorna histórico persistente de envios
-    getLogs: publicProcedure
+    getLogs: flightProtectedProcedure
       .input(z.object({ limit: z.number().min(1).max(500).optional() }))
-      .query(async ({ input, ctx }) => {
-        const session = await getSessionFromCookie(ctx.req);
-        if (!session)
-          throw new TRPCError({
-            code: "UNAUTHORIZED",
-            message: "Faça login para acessar.",
-          });
+      .query(async ({ input }) => {
         const logs = await getNotificationLogs(input?.limit ?? 100);
         return logs;
       }),
@@ -1103,30 +1032,18 @@ export const appRouter = router({
   // =====================
   notificationSettings: router({
     // Buscar configurações atuais de agendamento
-    get: publicProcedure.query(async ({ ctx }) => {
-      const session = await getSessionFromCookie(ctx.req);
-      if (!session)
-        throw new TRPCError({
-          code: "UNAUTHORIZED",
-          message: "Faça login para acessar.",
-        });
+    get: flightProtectedProcedure.query(async () => {
       return getNotificationSettings();
     }),
     // Salvar configurações de agendamento
-    update: publicProcedure
+    update: flightProtectedProcedure
       .input(
         z.object({
           aviso1Minutes: z.number().min(0).max(2880),
           aviso2Minutes: z.number().min(0).max(2880),
         })
       )
-      .mutation(async ({ input, ctx }) => {
-        const session = await getSessionFromCookie(ctx.req);
-        if (!session)
-          throw new TRPCError({
-            code: "UNAUTHORIZED",
-            message: "Faça login para editar.",
-          });
+      .mutation(async ({ input }) => {
         await updateNotificationSettings(
           input.aviso1Minutes,
           input.aviso2Minutes

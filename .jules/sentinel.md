@@ -9,3 +9,9 @@
 **Vulnerability:** Insecure JWT Secret Fallback in Development
 **Learning:** Relying on a dynamically generated random string (e.g., `randomBytes(32)`) as a fallback for a missing `JWT_SECRET` in development is insecure and error-prone. It causes session invalidation upon every server restart and creates a risk that local or testing environments don't properly simulate production security constraints.
 **Prevention:** Strictly require the `JWT_SECRET` environment variable in all environments (including development) and throw a runtime Error if it is missing, rather than using random fallbacks.
+
+## 2024-05-18 - [Standardize Authentication Middleware]
+
+**Vulnerability:** Several TRPC endpoints (`publicProcedure`) were handling authorization via manual `getSessionFromCookie` checks inside the route handlers instead of relying on standard middleware. This is an anti-pattern that can easily lead to authorization bypasses if a developer forgets to add the manual check.
+**Learning:** In TRPC, relying on repetitive manual checks inside resolvers instead of utilizing middlewares (e.g. `flightProtectedProcedure`) causes security gaps. While no explicit bypasses were found currently, standardizing access control into the router definition layer is a fundamental defense-in-depth practice.
+**Prevention:** Always use defined protected procedure middlewares (like `flightProtectedProcedure` or `protectedProcedure`) to wrap secure endpoints. Never fall back to manual session validation via `publicProcedure` unless truly implementing an unprotected route.

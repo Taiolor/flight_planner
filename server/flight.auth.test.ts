@@ -183,6 +183,6 @@ describe("flights.updateWeekStatus with airline fields", () => {
         weekNumber: 5,
         departureAirline: "latam",
       })
-    ).rejects.toThrow("Faça login para editar.");
+    ).rejects.toThrow("Faça login para acessar.");
   });
 });
