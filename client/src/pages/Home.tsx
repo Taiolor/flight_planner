@@ -572,7 +572,7 @@ export default function Home() {
 
   // Estado para rastrear última atualização
   const [lastUpdateTime, setLastUpdateTime] = useState<Date | null>(null);
-  
+
   // Atualizar timestamp quando os dados forem atualizados
   useEffect(() => {
     if (weeksQuery.data && weeksQuery.data.length > 0) {
@@ -582,24 +582,24 @@ export default function Home() {
 
   // Formatar data/hora da última atualização
   const formatLastUpdate = (date: Date | null) => {
-    if (!date) return 'Nunca';
+    if (!date) return "Nunca";
     const now = new Date();
     const diffMs = now.getTime() - date.getTime();
     const diffMins = Math.floor(diffMs / 60000);
     const diffHours = Math.floor(diffMs / 3600000);
     const diffDays = Math.floor(diffMs / 86400000);
 
-    if (diffMins < 1) return 'Agora';
+    if (diffMins < 1) return "Agora";
     if (diffMins < 60) return `${diffMins}min atrás`;
     if (diffHours < 24) return `${diffHours}h atrás`;
-    if (diffDays === 1) return 'Ontem';
+    if (diffDays === 1) return "Ontem";
     if (diffDays < 7) return `${diffDays}d atrás`;
-    
-    return date.toLocaleDateString('pt-BR', {
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
+
+    return date.toLocaleDateString("pt-BR", {
+      month: "short",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
     });
   };
 
@@ -1461,11 +1461,13 @@ export default function Home() {
   const isLoading = weeksQuery.isLoading || pricesQuery.isLoading;
 
   return (
-    <div className={`min-h-screen font-sans tracking-tight transition-colors duration-300 ${
-      theme === 'dark'
-        ? 'bg-slate-900 text-slate-100'
-        : 'bg-slate-50 text-slate-800'
-    }`}>
+    <div
+      className={`min-h-screen font-sans tracking-tight transition-colors duration-300 ${
+        theme === "dark"
+          ? "bg-slate-900 text-slate-100"
+          : "bg-slate-50 text-slate-800"
+      }`}
+    >
       {/* Pull-to-refresh indicator */}
       {(isPulling || isRefreshing) && (
         <div
@@ -1502,16 +1504,16 @@ export default function Home() {
       {/* Last Update Timestamp */}
       <div
         className={`text-center text-xs transition-all duration-300 ${
-          theme === 'dark' ? 'text-slate-400' : 'text-slate-500'
+          theme === "dark" ? "text-slate-400" : "text-slate-500"
         }`}
         style={{
-          paddingTop: '8px',
-          paddingBottom: '8px',
-          minHeight: '24px',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          gap: '6px',
+          paddingTop: "8px",
+          paddingBottom: "8px",
+          minHeight: "24px",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: "6px",
         }}
       >
         {weeksQuery.isLoading ? (
@@ -1528,9 +1530,12 @@ export default function Home() {
       {/* Hero Header */}
       <header
         className={`relative shadow-xl sticky top-0 z-40 overflow-hidden transition-colors duration-300 ${
-          theme === 'dark' ? 'bg-slate-800' : 'bg-white'
+          theme === "dark" ? "bg-slate-800" : "bg-white"
         }`}
-        style={{ paddingTop: `calc(env(safe-area-inset-top) + ${Math.max(pullDistance, 0)}px)`, transition: 'padding-top 0.1s ease-out' }}
+        style={{
+          paddingTop: `calc(env(safe-area-inset-top) + ${Math.max(pullDistance, 0)}px)`,
+          transition: "padding-top 0.1s ease-out",
+        }}
       >
         {/* Background with Preset Gradient */}
         <div
@@ -1933,22 +1938,28 @@ export default function Home() {
         </Card>
 
         {/* Filtros */}
-        <Card className={`p-4 sm:p-6 mb-4 sm:mb-8 backdrop-blur-md border rounded-2xl shadow-xl transition-colors duration-300 ${
-          theme === 'dark'
-            ? 'bg-slate-800/80 border-slate-700/30'
-            : 'bg-white/80 border-white/20'
-        }`}>
-          <h2 className={`text-base sm:text-xl font-bold mb-3 sm:mb-6 transition-colors duration-300 ${
-            theme === 'dark' ? 'text-slate-100' : 'text-slate-900'
-          }`}>
+        <Card
+          className={`p-4 sm:p-6 mb-4 sm:mb-8 backdrop-blur-md border rounded-2xl shadow-xl transition-colors duration-300 ${
+            theme === "dark"
+              ? "bg-slate-800/80 border-slate-700/30"
+              : "bg-white/80 border-white/20"
+          }`}
+        >
+          <h2
+            className={`text-base sm:text-xl font-bold mb-3 sm:mb-6 transition-colors duration-300 ${
+              theme === "dark" ? "text-slate-100" : "text-slate-900"
+            }`}
+          >
             Filtros e Controles
           </h2>
           {/* Linha 1: Mês, Companhia, Ordenar por, Filtro de Preço, Status do Bilhete */}
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
             <div>
-              <label className={`text-sm font-semibold mb-2 block transition-colors duration-300 ${
-                theme === 'dark' ? 'text-slate-300' : 'text-slate-700'
-              }`}>
+              <label
+                className={`text-sm font-semibold mb-2 block transition-colors duration-300 ${
+                  theme === "dark" ? "text-slate-300" : "text-slate-700"
+                }`}
+              >
                 Mês
               </label>
               <Select value={filterMonth} onValueChange={setFilterMonth}>
@@ -1995,9 +2006,11 @@ export default function Home() {
             </div>
 
             <div>
-              <label className={`text-sm font-semibold mb-2 block transition-colors duration-300 ${
-                theme === 'dark' ? 'text-slate-300' : 'text-slate-700'
-              }`}>
+              <label
+                className={`text-sm font-semibold mb-2 block transition-colors duration-300 ${
+                  theme === "dark" ? "text-slate-300" : "text-slate-700"
+                }`}
+              >
                 Companhia
               </label>
               <Select value={filterAirline} onValueChange={setFilterAirline}>
@@ -2019,9 +2032,11 @@ export default function Home() {
             </div>
 
             <div>
-              <label className={`text-sm font-semibold mb-2 block transition-colors duration-300 ${
-                theme === 'dark' ? 'text-slate-300' : 'text-slate-700'
-              }`}>
+              <label
+                className={`text-sm font-semibold mb-2 block transition-colors duration-300 ${
+                  theme === "dark" ? "text-slate-300" : "text-slate-700"
+                }`}
+              >
                 Ordenar por
               </label>
               <Select value={sortBy} onValueChange={setSortBy}>
@@ -2036,9 +2051,11 @@ export default function Home() {
             </div>
 
             <div>
-              <label className={`text-sm font-semibold mb-2 block transition-colors duration-300 ${
-                theme === 'dark' ? 'text-slate-300' : 'text-slate-700'
-              }`}>
+              <label
+                className={`text-sm font-semibold mb-2 block transition-colors duration-300 ${
+                  theme === "dark" ? "text-slate-300" : "text-slate-700"
+                }`}
+              >
                 Filtro de Preço
               </label>
               <div className="flex items-center gap-2 mt-1">
@@ -2050,7 +2067,7 @@ export default function Home() {
                 <label
                   htmlFor="cheap-filter"
                   className={`text-sm cursor-pointer select-none transition-colors duration-300 ${
-                    theme === 'dark' ? 'text-slate-400' : 'text-slate-600'
+                    theme === "dark" ? "text-slate-400" : "text-slate-600"
                   }`}
                 >
                   Apenas os mais baratos
@@ -2059,9 +2076,11 @@ export default function Home() {
             </div>
 
             <div>
-              <label className={`text-sm font-semibold mb-2 block transition-colors duration-300 ${
-                theme === 'dark' ? 'text-slate-300' : 'text-slate-700'
-              }`}>
+              <label
+                className={`text-sm font-semibold mb-2 block transition-colors duration-300 ${
+                  theme === "dark" ? "text-slate-300" : "text-slate-700"
+                }`}
+              >
                 Status do Bilhete
               </label>
               <Select
@@ -3241,14 +3260,20 @@ export default function Home() {
                                     <div className="flex flex-col lg:flex-row gap-3 sm:gap-4 mt-2">
                                       {/* Coluna esquerda: Buscadores de preços */}
                                       <div className="lg:w-72 xl:w-80 flex-shrink-0">
-                                        <div className={`rounded-xl border overflow-hidden transition-colors duration-300 ${
-                                          theme === 'dark'
-                                            ? 'border-slate-600 bg-slate-800'
-                                            : 'border-slate-200 bg-slate-50'
-                                        }`}>
-                                          <div className={`px-3 py-2 flex items-center gap-2 transition-colors duration-300 ${
-                                            theme === 'dark' ? 'bg-slate-700' : 'bg-slate-700'
-                                          }`}>
+                                        <div
+                                          className={`rounded-xl border overflow-hidden transition-colors duration-300 ${
+                                            theme === "dark"
+                                              ? "border-slate-600 bg-slate-800"
+                                              : "border-slate-200 bg-slate-50"
+                                          }`}
+                                        >
+                                          <div
+                                            className={`px-3 py-2 flex items-center gap-2 transition-colors duration-300 ${
+                                              theme === "dark"
+                                                ? "bg-slate-700"
+                                                : "bg-slate-700"
+                                            }`}
+                                          >
                                             <Plane className="w-3.5 h-3.5 text-white" />
                                             <span className="text-xs font-bold text-white uppercase tracking-wider">
                                               Consulta de Preços
@@ -3274,12 +3299,20 @@ export default function Home() {
                                               return (
                                                 <>
                                                   {/* Separador */}
-                                                  <div className={`border-t pt-2 mt-1 transition-colors duration-300 ${
-                                                    theme === 'dark' ? 'border-slate-600' : 'border-slate-200'
-                                                  }`}>
-                                                    <span className={`text-[10px] font-semibold uppercase tracking-wider transition-colors duration-300 ${
-                                                      theme === 'dark' ? 'text-slate-400' : 'text-slate-500'
-                                                    }`}>
+                                                  <div
+                                                    className={`border-t pt-2 mt-1 transition-colors duration-300 ${
+                                                      theme === "dark"
+                                                        ? "border-slate-600"
+                                                        : "border-slate-200"
+                                                    }`}
+                                                  >
+                                                    <span
+                                                      className={`text-[10px] font-semibold uppercase tracking-wider transition-colors duration-300 ${
+                                                        theme === "dark"
+                                                          ? "text-slate-400"
+                                                          : "text-slate-500"
+                                                      }`}
+                                                    >
                                                       Pagamento em Milhas
                                                     </span>
                                                   </div>
@@ -5113,28 +5146,36 @@ export default function Home() {
         <Card
           id="price-chart-section"
           className={`mt-8 p-6 border rounded-3xl scroll-mt-4 transition-colors duration-300 ${
-            theme === 'dark'
-              ? 'border-slate-700/60 shadow-xl shadow-slate-900/40 bg-slate-800'
-              : 'border-slate-200/60 shadow-xl shadow-slate-200/40 bg-white'
+            theme === "dark"
+              ? "border-slate-700/60 shadow-xl shadow-slate-900/40 bg-slate-800"
+              : "border-slate-200/60 shadow-xl shadow-slate-200/40 bg-white"
           }`}
         >
           <div className="flex items-center gap-3 mb-6">
-            <div className={`p-2 rounded-lg transition-colors duration-300 ${
-              theme === 'dark' ? 'bg-blue-900/40' : 'bg-blue-100'
-            }`}>
-              <TrendingUp className={`w-5 h-5 transition-colors duration-300 ${
-                theme === 'dark' ? 'text-blue-400' : 'text-blue-600'
-              }`} />
+            <div
+              className={`p-2 rounded-lg transition-colors duration-300 ${
+                theme === "dark" ? "bg-blue-900/40" : "bg-blue-100"
+              }`}
+            >
+              <TrendingUp
+                className={`w-5 h-5 transition-colors duration-300 ${
+                  theme === "dark" ? "text-blue-400" : "text-blue-600"
+                }`}
+              />
             </div>
             <div>
-              <h2 className={`text-xl font-bold transition-colors duration-300 ${
-                theme === 'dark' ? 'text-slate-100' : 'text-slate-900'
-              }`}>
+              <h2
+                className={`text-xl font-bold transition-colors duration-300 ${
+                  theme === "dark" ? "text-slate-100" : "text-slate-900"
+                }`}
+              >
                 Variação de Preços por Mês
               </h2>
-              <p className={`text-sm transition-colors duration-300 ${
-                theme === 'dark' ? 'text-slate-400' : 'text-slate-500'
-              }`}>
+              <p
+                className={`text-sm transition-colors duration-300 ${
+                  theme === "dark" ? "text-slate-400" : "text-slate-500"
+                }`}
+              >
                 Média dos preços registrados por todas as empresas e buscadores
                 em cada mês
               </p>
@@ -5142,15 +5183,19 @@ export default function Home() {
           </div>
 
           {/* Filtro de empresas do gráfico - sempre visível */}
-          <div className={`mb-6 p-4 rounded-xl border transition-colors duration-300 ${
-            theme === 'dark'
-              ? 'bg-slate-700/50 border-slate-600'
-              : 'bg-slate-50 border-slate-200'
-          }`}>
+          <div
+            className={`mb-6 p-4 rounded-xl border transition-colors duration-300 ${
+              theme === "dark"
+                ? "bg-slate-700/50 border-slate-600"
+                : "bg-slate-50 border-slate-200"
+            }`}
+          >
             <div className="flex items-center justify-between mb-3">
-              <span className={`text-sm font-semibold transition-colors duration-300 ${
-                theme === 'dark' ? 'text-slate-300' : 'text-slate-700'
-              }`}>
+              <span
+                className={`text-sm font-semibold transition-colors duration-300 ${
+                  theme === "dark" ? "text-slate-300" : "text-slate-700"
+                }`}
+              >
                 Filtrar Empresas no Gráfico
               </span>
               <div className="flex gap-2">
@@ -5232,9 +5277,11 @@ export default function Home() {
             <div className="space-y-8">
               {/* Gráfico de Barras por Companhia */}
               <div>
-                <h3 className={`text-sm font-semibold mb-4 uppercase tracking-wide transition-colors duration-300 ${
-                  theme === 'dark' ? 'text-slate-400' : 'text-slate-600'
-                }`}>
+                <h3
+                  className={`text-sm font-semibold mb-4 uppercase tracking-wide transition-colors duration-300 ${
+                    theme === "dark" ? "text-slate-400" : "text-slate-600"
+                  }`}
+                >
                   Preço Médio por Companhia (R$)
                 </h3>
                 <ResponsiveContainer
@@ -5273,7 +5320,10 @@ export default function Home() {
                             : "2px solid #06b6d4",
                         borderRadius: 12,
                         color: theme === "dark" ? "#f1f5f9" : "#1e293b",
-                        boxShadow: theme === "dark" ? "0 8px 16px rgba(124, 58, 237, 0.2)" : "0 8px 16px rgba(6, 182, 212, 0.2)",
+                        boxShadow:
+                          theme === "dark"
+                            ? "0 8px 16px rgba(124, 58, 237, 0.2)"
+                            : "0 8px 16px rgba(6, 182, 212, 0.2)",
                         padding: "12px 16px",
                       }}
                       formatter={(value: number) => [
@@ -5285,7 +5335,12 @@ export default function Home() {
                         fontWeight: 700,
                         fontSize: 14,
                       }}
-                      cursor={{ fill: theme === "dark" ? "rgba(124, 58, 237, 0.1)" : "rgba(6, 182, 212, 0.1)" }}
+                      cursor={{
+                        fill:
+                          theme === "dark"
+                            ? "rgba(124, 58, 237, 0.1)"
+                            : "rgba(6, 182, 212, 0.1)",
+                      }}
                     />
                     <Legend
                       wrapperStyle={{
@@ -5352,9 +5407,11 @@ export default function Home() {
 
               {/* Gráfico de Linha - Menor Preço e Média */}
               <div>
-                <h3 className={`text-sm font-semibold mb-4 uppercase tracking-wide transition-colors duration-300 ${
-                  theme === 'dark' ? 'text-slate-400' : 'text-slate-600'
-                }`}>
+                <h3
+                  className={`text-sm font-semibold mb-4 uppercase tracking-wide transition-colors duration-300 ${
+                    theme === "dark" ? "text-slate-400" : "text-slate-600"
+                  }`}
+                >
                   Menor Preço vs. Preço Médio por Mês (R$)
                 </h3>
                 <ResponsiveContainer
@@ -5393,7 +5450,10 @@ export default function Home() {
                             : "2px solid #06b6d4",
                         borderRadius: 12,
                         color: theme === "dark" ? "#f1f5f9" : "#1e293b",
-                        boxShadow: theme === "dark" ? "0 8px 16px rgba(124, 58, 237, 0.2)" : "0 8px 16px rgba(6, 182, 212, 0.2)",
+                        boxShadow:
+                          theme === "dark"
+                            ? "0 8px 16px rgba(124, 58, 237, 0.2)"
+                            : "0 8px 16px rgba(6, 182, 212, 0.2)",
                         padding: "12px 16px",
                       }}
                       formatter={(value: number) => [
@@ -5405,7 +5465,12 @@ export default function Home() {
                         fontWeight: 700,
                         fontSize: 14,
                       }}
-                      cursor={{ fill: theme === "dark" ? "rgba(124, 58, 237, 0.1)" : "rgba(6, 182, 212, 0.1)" }}
+                      cursor={{
+                        fill:
+                          theme === "dark"
+                            ? "rgba(124, 58, 237, 0.1)"
+                            : "rgba(6, 182, 212, 0.1)",
+                      }}
                     />
                     <Legend
                       wrapperStyle={{
@@ -5418,8 +5483,18 @@ export default function Home() {
                       name="Menor Preço"
                       stroke="#16a34a"
                       strokeWidth={3}
-                      dot={{ r: 6, fill: "#16a34a", strokeWidth: 2, stroke: "#ffffff" }}
-                      activeDot={{ r: 8, fill: "#16a34a", strokeWidth: 2, stroke: "#ffffff" }}
+                      dot={{
+                        r: 6,
+                        fill: "#16a34a",
+                        strokeWidth: 2,
+                        stroke: "#ffffff",
+                      }}
+                      activeDot={{
+                        r: 8,
+                        fill: "#16a34a",
+                        strokeWidth: 2,
+                        stroke: "#ffffff",
+                      }}
                       connectNulls
                       isAnimationActive={true}
                     />
@@ -5430,8 +5505,18 @@ export default function Home() {
                       stroke="#f97316"
                       strokeWidth={3}
                       strokeDasharray="5 5"
-                      dot={{ r: 5, fill: "#f97316", strokeWidth: 2, stroke: "#ffffff" }}
-                      activeDot={{ r: 7, fill: "#f97316", strokeWidth: 2, stroke: "#ffffff" }}
+                      dot={{
+                        r: 5,
+                        fill: "#f97316",
+                        strokeWidth: 2,
+                        stroke: "#ffffff",
+                      }}
+                      activeDot={{
+                        r: 7,
+                        fill: "#f97316",
+                        strokeWidth: 2,
+                        stroke: "#ffffff",
+                      }}
                       connectNulls
                       isAnimationActive={true}
                     />
