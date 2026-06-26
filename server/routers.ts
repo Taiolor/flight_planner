@@ -873,8 +873,10 @@ export const appRouter = router({
 
     // Enviar notificação de teste do próximo alerta agendado
     sendNextAlert: flightProtectedProcedure.mutation(async () => {
-      const weeks = await getAllFlightWeeks();
-      const settings = await getNotificationSettings();
+      const [weeks, settings] = await Promise.all([
+        getAllFlightWeeks(),
+        getNotificationSettings(),
+      ]);
       const now = new Date();
 
       // Função para parsear datetime no fuso de Brasília
