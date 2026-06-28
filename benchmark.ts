@@ -1,5 +1,5 @@
-import { getAllFlightWeeks, getNotificationSettings } from './server/db.js';
-import { db } from './server/db.js';
+import { getAllFlightWeeks, getNotificationSettings } from "./server/db.js";
+import { db } from "./server/db.js";
 
 async function run() {
   const start = performance.now();
@@ -18,4 +18,6 @@ async function run() {
   console.log(`Parallel: ${end2 - start2} ms`);
 }
 
-run().then(() => process.exit(0)).catch(console.error);
+run()
+  .then(() => process.exit(0))
+  .catch(console.error);

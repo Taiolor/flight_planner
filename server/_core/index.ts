@@ -66,8 +66,17 @@ async function startServer() {
       contentSecurityPolicy: {
         directives: {
           defaultSrc: ["'self'"],
-          scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://cdn.jsdelivr.net"],
-          styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+          scriptSrc: [
+            "'self'",
+            "'unsafe-inline'",
+            "'unsafe-eval'",
+            "https://cdn.jsdelivr.net",
+          ],
+          styleSrc: [
+            "'self'",
+            "'unsafe-inline'",
+            "https://fonts.googleapis.com",
+          ],
           fontSrc: ["'self'", "https://fonts.gstatic.com"],
           imgSrc: ["'self'", "data:", "https:"],
           connectSrc: ["'self'", "https:", ...(isDev ? ["ws:", "wss:"] : [])],
@@ -75,7 +84,9 @@ async function startServer() {
           objectSrc: ["'none'"],
           baseUri: ["'self'"],
           formAction: ["'self'"],
-          frameAncestors: isDev ? ["*"] : ["https://*.manus.space", "https://*.manus.computer"],
+          frameAncestors: isDev
+            ? ["*"]
+            : ["https://*.manus.space", "https://*.manus.computer"],
         },
       },
       crossOriginEmbedderPolicy: false,
