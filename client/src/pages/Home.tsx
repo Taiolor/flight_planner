@@ -2717,11 +2717,14 @@ export default function Home() {
                                             {/* Ida */}
                                             <div className="flex items-center gap-2 flex-wrap">
                                               <Calendar className="w-4 h-4 text-slate-400 flex-shrink-0" />
-                                              <span className="text-sm font-medium text-slate-600 dark:text-slate-300">
+                                              <label
+                                                htmlFor={`ida-date-${week.weekNumber}`}
+                                                className="text-sm font-medium text-slate-600 dark:text-slate-300"
+                                              >
                                                 Ida:
-                                              </span>
+                                              </label>
                                               <input
-                                                aria-label="Data de Ida"
+                                                id={`ida-date-${week.weekNumber}`}
                                                 type="date"
                                                 defaultValue={depIso}
                                                 key={`dep-${week.weekNumber}-${depIso}`}
@@ -2759,11 +2762,14 @@ export default function Home() {
                                             {/* Retorno */}
                                             <div className="flex items-center gap-2 flex-wrap">
                                               <Calendar className="w-4 h-4 text-slate-400 flex-shrink-0" />
-                                              <span className="text-sm font-medium text-slate-600 dark:text-slate-300">
+                                              <label
+                                                htmlFor={`volta-date-${week.weekNumber}`}
+                                                className="text-sm font-medium text-slate-600 dark:text-slate-300"
+                                              >
                                                 Retorno:
-                                              </span>
+                                              </label>
                                               <input
-                                                aria-label="Data de Retorno"
+                                                id={`volta-date-${week.weekNumber}`}
                                                 type="date"
                                                 defaultValue={retIso}
                                                 key={`ret-${week.weekNumber}-${retIso}`}
