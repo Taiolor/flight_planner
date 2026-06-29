@@ -3805,10 +3805,14 @@ export default function Home() {
                                                   </Select>
                                                 </div>
                                                 <div className="flex flex-col gap-1">
-                                                  <label className="text-[10px] font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wide">
+                                                  <label
+                                                    htmlFor={`departure-datetime-${week.weekNumber}`}
+                                                    className="text-[10px] font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wide"
+                                                  >
                                                     Data e Hora do Voo
                                                   </label>
                                                   <input
+                                                    id={`departure-datetime-${week.weekNumber}`}
                                                     type="datetime-local"
                                                     className="h-8 text-xs border border-blue-200 dark:border-blue-600 rounded-md px-2 bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-400 dark:focus:ring-blue-500 w-full"
                                                     value={
@@ -3881,7 +3885,10 @@ export default function Home() {
                                                 </div>
                                                 <div className="flex flex-col gap-1">
                                                   <div className="flex items-center justify-between">
-                                                    <label className="text-[10px] font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wide">
+                                                    <label
+                                                      htmlFor={`departure-flight-number-${week.weekNumber}`}
+                                                      className="text-[10px] font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wide"
+                                                    >
                                                       Número do Voo
                                                     </label>
                                                     {suggestedDepartureFlightNumber[
@@ -3897,6 +3904,7 @@ export default function Home() {
                                                     )}
                                                   </div>
                                                   <input
+                                                    id={`departure-flight-number-${week.weekNumber}`}
                                                     type="text"
                                                     maxLength={10}
                                                     placeholder="Ex: LA3045"
@@ -3932,7 +3940,10 @@ export default function Home() {
                                                 </div>
                                                 <div className="flex flex-col gap-1">
                                                   <div className="flex items-center justify-between">
-                                                    <label className="text-[10px] font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wide">
+                                                    <label
+                                                      htmlFor={`departure-locator-${week.weekNumber}`}
+                                                      className="text-[10px] font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wide"
+                                                    >
                                                       Localizador (PNR)
                                                     </label>
                                                     {(
@@ -3976,6 +3987,7 @@ export default function Home() {
                                                     )}
                                                   </div>
                                                   <input
+                                                    id={`departure-locator-${week.weekNumber}`}
                                                     type="text"
                                                     maxLength={20}
                                                     placeholder="Ex: ABC123"
@@ -4230,10 +4242,14 @@ export default function Home() {
                                                     </Select>
                                                   </div>
                                                   <div className="flex flex-col gap-1">
-                                                    <label className="text-[10px] font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wide">
+                                                    <label
+                                                      htmlFor={`return-datetime-${week.weekNumber}`}
+                                                      className="text-[10px] font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wide"
+                                                    >
                                                       Data e Hora do Voo
                                                     </label>
                                                     <input
+                                                      id={`return-datetime-${week.weekNumber}`}
                                                       type="datetime-local"
                                                       className="h-8 text-xs border border-orange-200 rounded-md px-2 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-orange-400 w-full"
                                                       value={
@@ -4320,7 +4336,10 @@ export default function Home() {
                                                   </div>
                                                   <div className="flex flex-col gap-1">
                                                     <div className="flex items-center justify-between">
-                                                      <label className="text-[10px] font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wide">
+                                                      <label
+                                                        htmlFor={`return-flight-number-${week.weekNumber}`}
+                                                        className="text-[10px] font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wide"
+                                                      >
                                                         Número do Voo
                                                       </label>
                                                       {suggestedReturnFlightNumber[
@@ -4336,6 +4355,7 @@ export default function Home() {
                                                       )}
                                                     </div>
                                                     <input
+                                                      id={`return-flight-number-${week.weekNumber}`}
                                                       type="text"
                                                       maxLength={10}
                                                       placeholder="Ex: G31234"
@@ -4370,10 +4390,14 @@ export default function Home() {
                                                     />
                                                   </div>
                                                   <div className="flex flex-col gap-1">
-                                                    <label className="text-[10px] font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wide">
+                                                    <label
+                                                      htmlFor={`return-locator-${week.weekNumber}`}
+                                                      className="text-[10px] font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wide"
+                                                    >
                                                       Localizador (PNR)
                                                     </label>
                                                     <input
+                                                      id={`return-locator-${week.weekNumber}`}
                                                       type="text"
                                                       maxLength={20}
                                                       placeholder="Ex: XYZ456"
