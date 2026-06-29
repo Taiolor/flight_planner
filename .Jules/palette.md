@@ -42,3 +42,7 @@
 
 **Learning:** Input fields that rely solely on `placeholder` attributes for visual context without a linked `<label>` tag fail WCAG accessibility standards, as screen readers may not consistently announce placeholders as labels.
 **Action:** Always ensure every `<input>` has either a linked `<label htmlFor="id">` or an explicitly defined `aria-label` attribute that clearly describes its purpose.
+## 2026-06-27 - Missing labels on Home inputs
+
+**Learning:** Raw HTML `<input>` elements in complex grid layouts (like those in `Home.tsx` used for flight dates/PNR entries) are grouped under visual label-like elements, but lack a formal `id` + `htmlFor` association, making them inaccessible to screen readers.
+**Action:** Add localized `aria-label` tags (e.g., "Data de Ida") explicitly mapping the intended field semantic to every isolated `<input>` to satisfy keyboard navigation and screen reader constraints.
