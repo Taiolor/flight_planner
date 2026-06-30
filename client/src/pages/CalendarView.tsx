@@ -1,4 +1,6 @@
 import { useMemo, useState, useEffect, useRef } from "react";
+import BrazilWorldCupPanel from "@/components/BrazilWorldCupPanel";
+import { brazilMatchByDate } from "@/lib/worldCup2026";
 import { Link } from "wouter";
 import { trpc } from "@/lib/trpc";
 import {
@@ -575,6 +577,7 @@ export default function CalendarView() {
   const [selectedMark, setSelectedMark] = useState<DayMark | null>(null);
   const [showOnlyHolidaysAndWeekends, setShowOnlyHolidaysAndWeekends] =
     useState(false);
+  const [showCupPanel, setShowCupPanel] = useState(true);
 
   const today = useMemo(() => {
     const d = new Date();
@@ -696,7 +699,13 @@ export default function CalendarView() {
             Calendário de Voos 2026
           </h1>
         </div>
-        <div className="ml-auto flex items-center gap-4 text-xs">
+        <button
+          onClick={() => setShowCupPanel(v => !v)}
+          className="ml-auto flex items-center gap-1.5 bg-green-500/20 hover:bg-green-500/40 border border-green-400/40 text-white text-xs font-semibold px-3 py-1.5 rounded-full transition-colors"
+        >
+          🇧🇷 {showCupPanel ? "Ocultar Copa" : "Ver Copa 2026"}
+        </button>
+        <div className="flex items-center gap-4 text-xs">
           <span className="flex items-center gap-1.5">
             <span className="w-3 h-3 rounded-full bg-emerald-400 inline-block" />
             Emitido (futuro)
@@ -708,6 +717,10 @@ export default function CalendarView() {
           <span className="flex items-center gap-1.5">
             <span className="w-3 h-3 rounded-full bg-amber-300 inline-block" />
             Feriado
+          </span>
+          <span className="flex items-center gap-1.5">
+            <span className="w-3 h-3 rounded-full bg-emerald-200 border border-emerald-400 inline-block" />
+            ⚽ Brasil
           </span>
         </div>
       </header>
@@ -728,6 +741,13 @@ export default function CalendarView() {
           </label>
         </div>
       </div>
+
+      {/* Painel Copa Brasil */}
+      {showCupPanel && (
+        <div className="px-4 pt-4 pb-2 max-w-7xl mx-auto">
+          <BrazilWorldCupPanel />
+        </div>
+      )}
 
       {/* Grade anual */}
       <main className="px-4 py-6 max-w-7xl mx-auto">
@@ -780,6 +800,7 @@ export default function CalendarView() {
                         const key = toKey(dateObj);
                         const mark = markedDays[key];
                         const holiday = HOLIDAYS[key];
+                        const cupMatch = brazilMatchByDate[key];
                         const isToday = key === toKey(today);
                         const isSunday = di === 0;
                         const isSaturday = di === 6;
@@ -818,10 +839,36 @@ export default function CalendarView() {
                           textColor = "text-purple-700";
                         }
 
+                        // Destacar dias de jogo do Brasil no calendário
+                        if (cupMatch && !mark) {
+                          if (cupMatch.status === "finished") {
+                            if (cupMatch.brazilResult === "win") {
+                              cellBg = "bg-emerald-200";
+                              textColor = "text-emerald-800 font-bold";
+                            } else if (cupMatch.brazilResult === "draw") {
+                              cellBg = "bg-amber-200";
+                              textColor = "text-amber-800 font-bold";
+                            } else if (cupMatch.brazilResult === "loss") {
+                              cellBg = "bg-red-200";
+                              textColor = "text-red-800 font-bold";
+                            }
+                          } else if (cupMatch.status === "upcoming") {
+                            cellBg = "bg-yellow-200 ring-1 ring-yellow-400";
+                            textColor = "text-yellow-800 font-bold";
+                          }
+                        }
+
                         // Construir tooltip com informação do feriado
                         let tooltipText: string | undefined = undefined;
                         if (mark) {
                           tooltipText = `Semana ${mark.week.weekNumber} — clique para detalhes`;
+                        } else if (cupMatch) {
+                          const isBrazilHome = cupMatch.homeTeam === "Brasil" || cupMatch.homeTeam.includes("Brasil");
+                          const opponent = isBrazilHome ? cupMatch.awayTeam : cupMatch.homeTeam;
+                          const score = cupMatch.status === "finished"
+                            ? ` ${isBrazilHome ? cupMatch.homeScore : cupMatch.awayScore}×${isBrazilHome ? cupMatch.awayScore : cupMatch.homeScore}`
+                            : " — Em breve";
+                          tooltipText = `⚽ Brasil × ${opponent}${score} (${cupMatch.phaseLabel})`;
                         } else if (holiday) {
                           tooltipText = `${holiday.name} (${holiday.type === "national" ? "Feriado Nacional" : holiday.type === "municipal" ? "Feriado Municipal" : holiday.type === "state" ? "Feriado Estadual" : "Observância"})`;
                         } else if (isExtendedWeekend) {
@@ -850,7 +897,12 @@ export default function CalendarView() {
                             `}
                           >
                             <span>{day}</span>
-                            {holiday && !mark && (
+                            {cupMatch && !mark && (
+                              <span className="absolute bottom-0.5 left-1/2 -translate-x-1/2 text-[6px] leading-none">
+                                {cupMatch.status === "finished" ? (cupMatch.brazilResult === "win" ? "✓" : cupMatch.brazilResult === "draw" ? "—" : "✗") : "⚽"}
+                              </span>
+                            )}
+                            {holiday && !mark && !cupMatch && (
                               <span
                                 className={`absolute bottom-0.5 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full ${holidayDotColor}`}
                               />
