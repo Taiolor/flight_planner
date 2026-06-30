@@ -3551,11 +3551,29 @@ export default function Home() {
                                           >
                                             {/* Card IDA */}
                                             <div className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-700/50 overflow-hidden shadow-sm dark:shadow-slate-900/40">
-                                              <div className="bg-slate-100/50 dark:bg-slate-700 border-b border-slate-200 dark:border-slate-600 px-4 py-2 flex items-center gap-2">
-                                                <Plane className="w-4 h-4 text-slate-400" />
-                                                <span className="text-[11px] font-bold text-slate-600 dark:text-slate-200 uppercase tracking-widest">
-                                                  Ida
-                                                </span>
+                                              <div className="bg-slate-100/50 dark:bg-slate-700 border-b border-slate-200 dark:border-slate-600 px-4 py-2 flex items-center justify-between gap-2">
+                                                <div className="flex items-center gap-2">
+                                                  <Plane className="w-4 h-4 text-slate-400" />
+                                                  <span className="text-[11px] font-bold text-slate-600 dark:text-slate-200 uppercase tracking-widest">
+                                                    Ida
+                                                  </span>
+                                                </div>
+                                                <button
+                                                  type="button"
+                                                  onClick={() => {
+                                                    setTempDepartureAirport((prev: any) => ({ ...prev, [week.weekNumber]: "" }));
+                                                    setTempDepartureAirline((prev: any) => ({ ...prev, [week.weekNumber]: "" }));
+                                                    setTempDepartureDatetime((prev: any) => ({ ...prev, [week.weekNumber]: "" }));
+                                                    setTempDepartureFlightNumber((prev: any) => ({ ...prev, [week.weekNumber]: "" }));
+                                                    setTempDepartureLocator((prev: any) => ({ ...prev, [week.weekNumber]: "" }));
+                                                    setSuggestedDepartureFlightNumber((prev: any) => ({ ...prev, [week.weekNumber]: false }));
+                                                  }}
+                                                  className="px-2 py-1 text-[10px] font-semibold text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-blue-400"
+                                                  title="Limpar dados do voo de ida"
+                                                  aria-label="Limpar dados do voo de ida"
+                                                >
+                                                  🗑️ Limpar
+                                                </button>
                                               </div>
                                               <div className="p-3 flex flex-col gap-2.5">
                                                 <div className="flex flex-col gap-1">
@@ -4023,11 +4041,29 @@ export default function Home() {
                                             {(tempTicketType[week.weekNumber] ??
                                               "roundtrip") === "roundtrip" && (
                                               <div className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-700/50 overflow-hidden shadow-sm dark:shadow-slate-900/40">
-                                                <div className="bg-slate-100/50 dark:bg-slate-700 border-b border-slate-200 dark:border-slate-600 px-4 py-2 flex items-center gap-2">
-                                                  <Plane className="w-4 h-4 text-slate-400 rotate-180" />
-                                                  <span className="text-[11px] font-bold text-slate-600 dark:text-slate-200 uppercase tracking-widest">
-                                                    Volta
-                                                  </span>
+                                                <div className="bg-slate-100/50 dark:bg-slate-700 border-b border-slate-200 dark:border-slate-600 px-4 py-2 flex items-center justify-between gap-2">
+                                                  <div className="flex items-center gap-2">
+                                                    <Plane className="w-4 h-4 text-slate-400 rotate-180" />
+                                                    <span className="text-[11px] font-bold text-slate-600 dark:text-slate-200 uppercase tracking-widest">
+                                                      Volta
+                                                    </span>
+                                                  </div>
+                                                  <button
+                                                    type="button"
+                                                    onClick={() => {
+                                                      setTempReturnAirport((prev: any) => ({ ...prev, [week.weekNumber]: "" }));
+                                                      setTempReturnAirline((prev: any) => ({ ...prev, [week.weekNumber]: "" }));
+                                                      setTempReturnDatetime((prev: any) => ({ ...prev, [week.weekNumber]: "" }));
+                                                      setTempReturnFlightNumber((prev: any) => ({ ...prev, [week.weekNumber]: "" }));
+                                                      setTempReturnLocator((prev: any) => ({ ...prev, [week.weekNumber]: "" }));
+                                                      setSuggestedReturnFlightNumber((prev: any) => ({ ...prev, [week.weekNumber]: false }));
+                                                    }}
+                                                    className="px-2 py-1 text-[10px] font-semibold text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-orange-400"
+                                                    title="Limpar dados do voo de volta"
+                                                    aria-label="Limpar dados do voo de volta"
+                                                  >
+                                                    🗑️ Limpar
+                                                  </button>
                                                 </div>
                                                 <div className="p-3 flex flex-col gap-2.5">
                                                   <div className="flex flex-col gap-1">
