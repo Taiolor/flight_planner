@@ -210,9 +210,8 @@ export function getBrazilStats() {
   let losses = 0;
   let goalsFor = 0;
   let goalsAgainst = 0;
-  let nextMatch: WorldCupMatch | undefined;
+  let nextMatch: WorldCupMatch | undefined = undefined;
 
-  // ⚡ Bolt: Single-pass iteration to calculate stats instead of multiple .filter(), .reduce(), and .find()
   for (const m of brazilMatches) {
     if (!m.isBrazilMatch) continue;
 
