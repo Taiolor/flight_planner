@@ -177,17 +177,23 @@ export default function BrazilWorldCupPanel() {
   const stats = useMemo(() => getBrazilStats(), []);
   const currentPhase = useMemo(() => getBrazilCurrentPhase(), []);
 
-  // Separar jogos por status
-  const finishedMatches = brazilMatches.filter(
-    (m) => m.isBrazilMatch && m.status === "finished"
-  );
-  const upcomingMatches = brazilMatches.filter(
-    (m) =>
-      m.isBrazilMatch && (m.status === "upcoming" || m.status === "live")
-  );
-  const tbdMatches = brazilMatches.filter(
-    (m) => m.isBrazilMatch && m.status === "tbd"
-  );
+  // ⚡ Bolt Optimization: Single-pass iteration to categorize matches
+  // Replaces 3x O(N) .filter() array iterations with 1x O(N) pass inside a useMemo
+  const { finishedMatches, upcomingMatches, tbdMatches } = useMemo(() => {
+    const finished: WorldCupMatch[] = [];
+    const upcoming: WorldCupMatch[] = [];
+    const tbd: WorldCupMatch[] = [];
+
+    for (const m of brazilMatches) {
+      if (m.isBrazilMatch) {
+        if (m.status === "finished") finished.push(m);
+        else if (m.status === "upcoming" || m.status === "live") upcoming.push(m);
+        else if (m.status === "tbd") tbd.push(m);
+      }
+    }
+
+    return { finishedMatches: finished, upcomingMatches: upcoming, tbdMatches: tbd };
+  }, [brazilMatches]);
 
   return (
     <div className="bg-white rounded-2xl border border-green-200 shadow-lg overflow-hidden">
