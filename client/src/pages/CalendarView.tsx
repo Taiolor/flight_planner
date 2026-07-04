@@ -585,6 +585,8 @@ export default function CalendarView() {
     return d;
   }, []);
 
+  const todayKey = useMemo(() => toKey(today), [today]);
+
   const extendedWeekends = useMemo(() => {
     return getExtendedWeekends(HOLIDAYS);
   }, []);
@@ -796,12 +798,11 @@ export default function CalendarView() {
                       {week.map((day, di) => {
                         if (!day) return <div key={di} />;
 
-                        const dateObj = new Date(YEAR, monthIdx, day);
-                        const key = toKey(dateObj);
+                        const key = `${YEAR}-${String(monthIdx + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
                         const mark = markedDays[key];
                         const holiday = HOLIDAYS[key];
                         const cupMatch = brazilMatchByDate[key];
-                        const isToday = key === toKey(today);
+                        const isToday = key === todayKey;
                         const isSunday = di === 0;
                         const isSaturday = di === 6;
 
