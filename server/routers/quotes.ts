@@ -9,7 +9,8 @@
 
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
-import { protectedProcedure, router } from "../_core/trpc";
+import { router } from "../_core/trpc";
+import { flightProtectedProcedure as protectedProcedure } from "../flightAuthMiddleware";
 import {
   getAllFlightQuotes,
   getFlightQuotesByWeek,
