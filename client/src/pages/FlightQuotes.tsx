@@ -226,13 +226,12 @@ const QuoteRow = ({
               <TooltipTrigger asChild>
                 <AlertDialogTrigger asChild>
                   <Button
-                    type="button"
                     variant="ghost"
                     size="icon"
-                    className="h-8 w-8 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:text-red-400 dark:hover:bg-red-950/50"
+                    className="h-6 w-6 rounded text-slate-400 hover:bg-transparent hover:text-red-500 dark:hover:text-red-400 transition-colors focus-visible:ring-2 focus-visible:ring-red-500"
                     aria-label="Excluir cotação"
                   >
-                    <Trash2 className="w-4 h-4" />
+                    <Trash2 className="w-3.5 h-3.5" />
                   </Button>
                 </AlertDialogTrigger>
               </TooltipTrigger>
@@ -514,7 +513,11 @@ const WeekCard = ({
         onClick={() => setExpanded(!expanded)}
         className={`w-full flex items-center justify-between px-4 py-3 transition-colors focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-inset ${headerHover}`}
         aria-expanded={expanded}
-        aria-label={expanded ? "Recolher detalhes" : "Expandir detalhes"}
+        aria-label={
+          expanded
+            ? `Recolher detalhes da semana ${week.semana}`
+            : `Expandir detalhes da semana ${week.semana}`
+        }
         aria-controls={`quote-content-${week.semana}`}
       >
         <div className="flex items-center gap-3">
