@@ -226,13 +226,13 @@ const QuoteRow = ({
               <TooltipTrigger asChild>
                 <AlertDialogTrigger asChild>
                   <Button
-                    type="button"
                     variant="ghost"
                     size="icon"
-                    className="h-8 w-8 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:text-red-400 dark:hover:bg-red-950/50"
-                    aria-label="Excluir cotação"
+                    type="button"
+                    className="h-6 w-6 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:text-red-400 dark:hover:bg-red-950/30 transition-colors focus-visible:ring-2 focus-visible:ring-red-500"
+                    aria-label={`Excluir cotação ${quote.id}`}
                   >
-                    <Trash2 className="w-4 h-4" />
+                    <Trash2 className="w-3.5 h-3.5" />
                   </Button>
                 </AlertDialogTrigger>
               </TooltipTrigger>
@@ -514,7 +514,7 @@ const WeekCard = ({
         onClick={() => setExpanded(!expanded)}
         className={`w-full flex items-center justify-between px-4 py-3 transition-colors focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-inset ${headerHover}`}
         aria-expanded={expanded}
-        aria-label={expanded ? "Recolher detalhes" : "Expandir detalhes"}
+        aria-label={expanded ? `Recolher detalhes da semana ${week.semana}` : `Expandir detalhes da semana ${week.semana}`}
         aria-controls={`quote-content-${week.semana}`}
       >
         <div className="flex items-center gap-3">
@@ -720,13 +720,16 @@ const WeekCard = ({
                   size="sm"
                   onClick={() => setShowManualDetails(!showManualDetails)}
                   className="h-8 text-xs border-slate-200 dark:border-slate-600"
+                  aria-expanded={showManualDetails}
+                  aria-controls={`manual-details-${week.semana}`}
+                  aria-label={showManualDetails ? `Ocultar detalhes da inserção manual da semana ${week.semana}` : `Mostrar detalhes da inserção manual da semana ${week.semana}`}
                 >
                   {showManualDetails ? "Menos detalhes" : "Mais detalhes"}
                 </Button>
               </div>
 
               {showManualDetails && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3 rounded-lg bg-slate-50 dark:bg-slate-700/30 border border-slate-200 dark:border-slate-600 mt-2 animate-in fade-in slide-in-from-top-1 duration-200">
+                <div id={`manual-details-${week.semana}`} className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3 rounded-lg bg-slate-50 dark:bg-slate-700/30 border border-slate-200 dark:border-slate-600 mt-2 animate-in fade-in slide-in-from-top-1 duration-200">
                   <div className="space-y-1.5">
                     <label
                       htmlFor={`outbound-airline-${week.semana}`}
