@@ -3838,6 +3838,7 @@ export default function Home() {
                                                     Data e Hora do Voo
                                                   </label>
                                                   <input
+                                                    id={`departure-datetime-${week.weekNumber}`}
                                                     aria-label="Data e Hora do Voo de Ida"
                                                     type="datetime-local"
                                                     className="h-8 text-xs border border-blue-200 dark:border-blue-600 rounded-md px-2 bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-400 dark:focus:ring-blue-500 w-full"
@@ -3930,6 +3931,7 @@ export default function Home() {
                                                     )}
                                                   </div>
                                                   <input
+                                                    id={`departure-flight-number-${week.weekNumber}`}
                                                     aria-label="Número do Voo de Ida"
                                                     type="text"
                                                     maxLength={10}
@@ -4013,6 +4015,7 @@ export default function Home() {
                                                     )}
                                                   </div>
                                                   <input
+                                                    id={`departure-locator-${week.weekNumber}`}
                                                     aria-label="Localizador do Voo de Ida"
                                                     type="text"
                                                     maxLength={20}
@@ -4293,6 +4296,7 @@ export default function Home() {
                                                       Data e Hora do Voo
                                                     </label>
                                                     <input
+                                                      id={`return-datetime-${week.weekNumber}`}
                                                       aria-label="Data e Hora do Voo de Volta"
                                                       type="datetime-local"
                                                       className="h-8 text-xs border border-orange-200 rounded-md px-2 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-orange-400 w-full"
@@ -4399,6 +4403,7 @@ export default function Home() {
                                                       )}
                                                     </div>
                                                     <input
+                                                      id={`return-flight-number-${week.weekNumber}`}
                                                       aria-label="Número do Voo de Volta"
                                                       type="text"
                                                       maxLength={10}
@@ -4441,6 +4446,7 @@ export default function Home() {
                                                       Localizador (PNR)
                                                     </label>
                                                     <input
+                                                      id={`return-locator-${week.weekNumber}`}
                                                       aria-label="Localizador do Voo de Volta"
                                                       type="text"
                                                       maxLength={20}
