@@ -204,31 +204,35 @@ brazilMatches.forEach((m) => {
 
 // Estatísticas do Brasil na Copa 2026
 export function getBrazilStats() {
-  const played = brazilMatches.filter(
-    (m) => m.status === "finished" && m.isBrazilMatch
-  );
-  const wins = played.filter((m) => m.brazilResult === "win").length;
-  const draws = played.filter((m) => m.brazilResult === "draw").length;
-  const losses = played.filter((m) => m.brazilResult === "loss").length;
+  let played = 0;
+  let wins = 0;
+  let draws = 0;
+  let losses = 0;
+  let goalsFor = 0;
+  let goalsAgainst = 0;
+  let nextMatch: WorldCupMatch | undefined;
 
-  const goalsFor = played.reduce((acc, m) => {
-    const isBrazilHome =
-      m.homeTeam === "Brasil" || m.homeTeam.includes("Brasil");
-    return acc + (isBrazilHome ? (m.homeScore ?? 0) : (m.awayScore ?? 0));
-  }, 0);
+  // ⚡ Bolt: Single-pass iteration to calculate stats instead of multiple .filter(), .reduce(), and .find()
+  for (const m of brazilMatches) {
+    if (!m.isBrazilMatch) continue;
 
-  const goalsAgainst = played.reduce((acc, m) => {
-    const isBrazilHome =
-      m.homeTeam === "Brasil" || m.homeTeam.includes("Brasil");
-    return acc + (isBrazilHome ? (m.awayScore ?? 0) : (m.homeScore ?? 0));
-  }, 0);
+    if (m.status === "finished") {
+      played++;
 
-  const nextMatch = brazilMatches.find(
-    (m) => m.isBrazilMatch && (m.status === "upcoming" || m.status === "live")
-  );
+      if (m.brazilResult === "win") wins++;
+      else if (m.brazilResult === "draw") draws++;
+      else if (m.brazilResult === "loss") losses++;
+
+      const isBrazilHome = m.homeTeam === "Brasil" || m.homeTeam.includes("Brasil");
+      goalsFor += isBrazilHome ? (m.homeScore ?? 0) : (m.awayScore ?? 0);
+      goalsAgainst += isBrazilHome ? (m.awayScore ?? 0) : (m.homeScore ?? 0);
+    } else if (!nextMatch && (m.status === "upcoming" || m.status === "live")) {
+      nextMatch = m;
+    }
+  }
 
   return {
-    played: played.length,
+    played,
     wins,
     draws,
     losses,
