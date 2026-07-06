@@ -47,3 +47,8 @@
 
 **Learning:** When rendering form inputs inside a mapped list (like weekly flight dates), visually associating them with a `span` fails WCAG. We must use a `<label>` and explicitly bind it to the input using globally unique IDs (e.g., combining field name and week number).
 **Action:** Always use `<label htmlFor="unique-id">` and `<input id="unique-id">` when rendering form fields inside a loop to ensure screen readers announce the correct field name.
+
+## 2026-07-06 - Combining Tooltips and AlertDialogTriggers
+
+**Learning:** When stacking multiple Radix UI primitives like `TooltipTrigger` and `AlertDialogTrigger`, using the `asChild` prop on both wrappers and passing a single custom component (like a Shadcn `Button`) inside works perfectly, provided the custom component uses `React.forwardRef`. This ensures event listeners and accessibility attributes are correctly passed down.
+**Action:** When replacing native elements with custom components inside stacked Radix primitives, use `asChild` and verify the custom component properly forwards refs to ensure a11y attributes and click handlers are preserved.
