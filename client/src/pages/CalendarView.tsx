@@ -677,6 +677,14 @@ export default function CalendarView() {
     return weeks;
   }
 
+  // ⚡ Bolt: Pre-calculate the grid layout for all 12 months once since YEAR is static.
+  // Prevents allocating new nested arrays and Date objects 12 times per render cycle.
+  const monthGrids = useMemo(() => {
+    const grids: (number | null)[][][] = [];
+    for (let i = 0; i < 12; i++) grids.push(buildMonthGrid(YEAR, i));
+    return grids;
+  }, []);
+
   return (
     <div className="min-h-screen bg-slate-50">
       {/* Popup flutuante */}
@@ -755,7 +763,7 @@ export default function CalendarView() {
       <main className="px-4 py-6 max-w-7xl mx-auto">
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-5">
           {MONTHS.map((monthName, monthIdx) => {
-            const grid = buildMonthGrid(YEAR, monthIdx);
+            const grid = monthGrids[monthIdx];
             const issuedCount = issuedPerMonth[monthIdx];
 
             return (

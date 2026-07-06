@@ -7,3 +7,7 @@
 
 **Learning:** When executing multiple independent asynchronous data fetching functions consecutively (like database queries), using sequential `await` introduces unnecessary latency. Converting them to a concurrent execution using `await Promise.all()` significantly decreases the total execution time since the queries run in parallel.
 **Action:** When working on performance enhancements that involve multiple independent asynchronous requests (such as DB queries or HTTP requests), search for sequential `await` patterns and refactor them to `Promise.all` to reduce latency.
+
+## 2024-07-06 - Pre-calculate static nested maps in render function
+**Learning:** Functions that generate static complex structures (like nested arrays for calendar grids) are often called directly inside `Array.map` during a React render cycle, causing multiple O(N) allocations of arrays and objects like `Date`.
+**Action:** When you spot static generating functions called inside a render `.map()`, hoist the calculation out to the component level wrapped in a `useMemo` and map over the pre-calculated array via an index lookup to eliminate O(N) allocation per map iteration.
