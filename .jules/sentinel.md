@@ -15,3 +15,9 @@
 **Vulnerability:** Several TRPC endpoints (`publicProcedure`) were handling authorization via manual `getSessionFromCookie` checks inside the route handlers instead of relying on standard middleware. This is an anti-pattern that can easily lead to authorization bypasses if a developer forgets to add the manual check.
 **Learning:** In TRPC, relying on repetitive manual checks inside resolvers instead of utilizing middlewares (e.g. `flightProtectedProcedure`) causes security gaps. While no explicit bypasses were found currently, standardizing access control into the router definition layer is a fundamental defense-in-depth practice.
 **Prevention:** Always use defined protected procedure middlewares (like `flightProtectedProcedure` or `protectedProcedure`) to wrap secure endpoints. Never fall back to manual session validation via `publicProcedure` unless truly implementing an unprotected route.
+
+## 2024-05-25 - Standardize Domain-Specific Authentication Middleware
+
+**Vulnerability:** Authorization bypass via mixed middleware contexts. The `quotesRouter` in `server/routers/quotes.ts` was using the global `protectedProcedure` (which validates general OAuth users) instead of the domain-specific `flightProtectedProcedure` (which validates flight planner app-specific session cookies).
+**Learning:** Using the wrong middleware allows cross-domain authorization bypasses. Even if a user is authenticated globally via Manus OAuth, they should not automatically have access to domain-specific features (like the flight planner) unless they pass that domain's specific auth checks (`flightAuth`).
+**Prevention:** Always verify that the chosen protected procedure matches the intended domain of the router. For flight planner features, strictly import and use `flightProtectedProcedure` from `server/flightAuthMiddleware.ts`. Ensure middleware definitions are extracted into dedicated files to prevent circular dependencies when referenced across multiple routers.

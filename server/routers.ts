@@ -52,8 +52,11 @@ import {
 } from "./_core/calendarHelper";
 import { ENV } from "./_core/env";
 import { parse as parseCookie } from "cookie";
-
-const SESSION_COOKIE = "flight_session";
+import {
+  SESSION_COOKIE,
+  getSessionFromCookie,
+  flightProtectedProcedure,
+} from "./flightAuthMiddleware";
 
 interface NextAlert {
   weekNumber: number;
@@ -66,33 +69,6 @@ interface NextAlert {
   arrivalAirport: string | null;
   flightDatetime: string;
 }
-
-// Helper para verificar se a sessão é válida
-async function getSessionFromCookie(
-  req: any
-): Promise<{ email: string } | null> {
-  const cookieHeader = req.headers?.cookie ?? "";
-  const cookies = parseCookie(cookieHeader);
-  const sessionToken = cookies[SESSION_COOKIE];
-  if (!sessionToken) return null;
-  return validateAuthSession(sessionToken);
-}
-
-const flightProtectedProcedure = publicProcedure.use(async ({ ctx, next }) => {
-  const session = await getSessionFromCookie(ctx.req);
-  if (!session) {
-    throw new TRPCError({
-      code: "UNAUTHORIZED",
-      message: "Faça login para acessar.",
-    });
-  }
-  return next({
-    ctx: {
-      ...ctx,
-      flightSession: session,
-    },
-  });
-});
 
 export const appRouter = router({
   system: systemRouter,
