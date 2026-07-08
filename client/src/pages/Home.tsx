@@ -2939,13 +2939,13 @@ export default function Home() {
                                       className="focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded-full p-1 hover:bg-slate-100 transition-colors"
                                       title={
                                         expandedWeekCards.has(week.weekNumber)
-                                          ? "Recolher"
-                                          : "Expandir"
+                                          ? `Recolher semana ${week.weekNumber}`
+                                          : `Expandir semana ${week.weekNumber}`
                                       }
                                       aria-label={
                                         expandedWeekCards.has(week.weekNumber)
-                                          ? "Recolher"
-                                          : "Expandir"
+                                          ? `Recolher semana ${week.weekNumber}`
+                                          : `Expandir semana ${week.weekNumber}`
                                       }
                                       aria-expanded={expandedWeekCards.has(
                                         week.weekNumber
