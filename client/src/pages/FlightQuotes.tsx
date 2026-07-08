@@ -225,13 +225,15 @@ const QuoteRow = ({
             <Tooltip>
               <TooltipTrigger asChild>
                 <AlertDialogTrigger asChild>
-                  <button
+                  <Button
                     type="button"
-                    className="p-1 rounded text-slate-400 hover:text-red-500 dark:hover:text-red-400 transition-colors focus-visible:ring-2 focus-visible:ring-red-500"
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:text-red-400 dark:hover:bg-red-950/50"
                     aria-label="Excluir cotação"
                   >
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </button>
+                    <Trash2 className="w-4 h-4" />
+                  </Button>
                 </AlertDialogTrigger>
               </TooltipTrigger>
               <TooltipContent>Excluir cotação</TooltipContent>
