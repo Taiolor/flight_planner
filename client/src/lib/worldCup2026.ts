@@ -210,22 +210,24 @@ export function getBrazilStats() {
   let losses = 0;
   let goalsFor = 0;
   let goalsAgainst = 0;
-  let nextMatch: WorldCupMatch | undefined = undefined;
+  let nextMatch: WorldCupMatch | undefined;
 
+  // ⚡ Bolt: Single-pass iteration to calculate stats instead of multiple .filter(), .reduce(), and .find()
   for (const m of brazilMatches) {
-    if (m.isBrazilMatch) {
-      if (m.status === "finished") {
-        played++;
-        if (m.brazilResult === "win") wins++;
-        else if (m.brazilResult === "draw") draws++;
-        else if (m.brazilResult === "loss") losses++;
+    if (!m.isBrazilMatch) continue;
 
-        const isBrazilHome = m.homeTeam === "Brasil" || m.homeTeam.includes("Brasil");
-        goalsFor += isBrazilHome ? (m.homeScore ?? 0) : (m.awayScore ?? 0);
-        goalsAgainst += isBrazilHome ? (m.awayScore ?? 0) : (m.homeScore ?? 0);
-      } else if (!nextMatch && (m.status === "upcoming" || m.status === "live")) {
-        nextMatch = m;
-      }
+    if (m.status === "finished") {
+      played++;
+
+      if (m.brazilResult === "win") wins++;
+      else if (m.brazilResult === "draw") draws++;
+      else if (m.brazilResult === "loss") losses++;
+
+      const isBrazilHome = m.homeTeam === "Brasil" || m.homeTeam.includes("Brasil");
+      goalsFor += isBrazilHome ? (m.homeScore ?? 0) : (m.awayScore ?? 0);
+      goalsAgainst += isBrazilHome ? (m.awayScore ?? 0) : (m.homeScore ?? 0);
+    } else if (!nextMatch && (m.status === "upcoming" || m.status === "live")) {
+      nextMatch = m;
     }
   }
 
