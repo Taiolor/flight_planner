@@ -2897,8 +2897,8 @@ export default function Home() {
                                           variant="outline"
                                           size="sm"
                                           className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                                          title="Excluir semana"
-                                          aria-label="Excluir semana"
+                                          title={`Excluir semana ${week.weekNumber}`}
+                                          aria-label={`Excluir semana ${week.weekNumber}`}
                                         >
                                           <Trash2 className="w-4 h-4" />
                                         </Button>
@@ -2931,22 +2931,16 @@ export default function Home() {
                                       </AlertDialogContent>
                                     </AlertDialog>
                                     {/* Expandir/Recolher */}
-                                    <button
+                                    <Button
+                                      variant="ghost"
+                                      size="icon"
                                       type="button"
                                       onClick={() =>
                                         toggleWeekCard(week.weekNumber)
                                       }
                                       className="focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded-full p-1 hover:bg-slate-100 transition-colors"
-                                      title={
-                                        expandedWeekCards.has(week.weekNumber)
-                                          ? `Recolher semana ${week.weekNumber}`
-                                          : `Expandir semana ${week.weekNumber}`
-                                      }
-                                      aria-label={
-                                        expandedWeekCards.has(week.weekNumber)
-                                          ? `Recolher semana ${week.weekNumber}`
-                                          : `Expandir semana ${week.weekNumber}`
-                                      }
+                                      title={expandedWeekCards.has(week.weekNumber) ? `Recolher semana ${week.weekNumber}` : `Expandir semana ${week.weekNumber}`}
+                                      aria-label={expandedWeekCards.has(week.weekNumber) ? `Recolher semana ${week.weekNumber}` : `Expandir semana ${week.weekNumber}`}
                                       aria-expanded={expandedWeekCards.has(
                                         week.weekNumber
                                       )}
@@ -2955,7 +2949,7 @@ export default function Home() {
                                       <ChevronDown
                                         className={`w-5 h-5 text-slate-400 transition-transform duration-200 ${expandedWeekCards.has(week.weekNumber) ? "rotate-180" : ""}`}
                                       />
-                                    </button>
+                                    </Button>
                                   </div>
                                 </div>
 
