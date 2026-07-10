@@ -578,7 +578,7 @@ export default function CalendarView() {
   const [selectedMark, setSelectedMark] = useState<DayMark | null>(null);
   const [showOnlyHolidaysAndWeekends, setShowOnlyHolidaysAndWeekends] =
     useState(false);
-  const [showCupPanel, setShowCupPanel] = useState(true);
+  const [showCupPanel, setShowCupPanel] = useState(false);
 
   const today = useMemo(() => {
     const d = new Date();
@@ -712,13 +712,10 @@ export default function CalendarView() {
         </div>
         <button
           onClick={() => setShowCupPanel(v => !v)}
-          className="ml-auto flex items-center gap-1.5 bg-transparent hover:bg-slate-100/50 border border-slate-200 text-slate-600 hover:text-slate-800 text-xs font-medium px-2 py-1 rounded transition-all duration-200"
+          className="ml-auto flex items-center gap-1 bg-transparent hover:bg-slate-50 border border-slate-300/50 text-slate-400 hover:text-slate-600 text-xs px-1.5 py-0.5 rounded transition-all duration-200"
           title={showCupPanel ? "Ocultar Copa 2026" : "Mostrar Copa 2026"}
         >
-          <span className="text-sm">🇧🇷</span>
-          <ChevronDown className={`w-4 h-4 transition-transform duration-300 ${
-            showCupPanel ? "rotate-180" : "rotate-0"
-          }`} />
+          <span className="text-xs">🇧🇷</span>
         </button>
         <div className="flex items-center gap-4 text-xs">
           <span className="flex items-center gap-1.5">
