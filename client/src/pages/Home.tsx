@@ -1597,7 +1597,7 @@ export default function Home() {
                 value={colorPreset}
                 onValueChange={value => setColorPreset(value as ColorPreset)}
               >
-                <SelectTrigger className="w-auto border-white/40 text-white hover:bg-white/20 backdrop-blur-sm bg-white/10">
+                <SelectTrigger aria-label="Preset de cores" className="w-auto border-white/40 text-white hover:bg-white/20 backdrop-blur-sm bg-white/10">
                   <Sparkles className="w-4 h-4 mr-2" />
                   <SelectValue />
                 </SelectTrigger>
@@ -1963,7 +1963,7 @@ export default function Home() {
                 Mês
               </label>
               <Select value={filterMonth} onValueChange={setFilterMonth}>
-                <SelectTrigger>
+                <SelectTrigger aria-label="Filtrar por Mês">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -2014,7 +2014,7 @@ export default function Home() {
                 Companhia
               </label>
               <Select value={filterAirline} onValueChange={setFilterAirline}>
-                <SelectTrigger>
+                <SelectTrigger aria-label="Filtrar por Companhia Aérea">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -2040,7 +2040,7 @@ export default function Home() {
                 Ordenar por
               </label>
               <Select value={sortBy} onValueChange={setSortBy}>
-                <SelectTrigger>
+                <SelectTrigger aria-label="Ordenar Resultados">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -2087,7 +2087,7 @@ export default function Home() {
                 value={filterTicketStatus}
                 onValueChange={setFilterTicketStatus}
               >
-                <SelectTrigger>
+                <SelectTrigger aria-label="Filtrar por Status do Bilhete">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -3590,7 +3590,7 @@ export default function Home() {
                                                       )
                                                     }
                                                   >
-                                                    <SelectTrigger className="h-8 text-xs bg-white dark:bg-slate-700 border-blue-200 dark:border-blue-600 w-full dark:text-slate-100">
+                                                    <SelectTrigger aria-label={`Aeroporto de Ida, semana ${week.weekNumber}`} className="h-8 text-xs bg-white dark:bg-slate-700 border-blue-200 dark:border-blue-600 w-full dark:text-slate-100">
                                                       <SelectValue placeholder="Selecionar aeroporto" />
                                                     </SelectTrigger>
                                                     <SelectContent>
@@ -3743,7 +3743,7 @@ export default function Home() {
                                                       }
                                                     }}
                                                   >
-                                                    <SelectTrigger className="h-8 text-xs bg-white dark:bg-slate-700 border-blue-200 dark:border-blue-600 w-full dark:text-slate-100">
+                                                    <SelectTrigger aria-label={`Companhia Aérea de Ida, semana ${week.weekNumber}`} className="h-8 text-xs bg-white dark:bg-slate-700 border-blue-200 dark:border-blue-600 w-full dark:text-slate-100">
                                                       <SelectValue placeholder="Selecionar companhia">
                                                         {tempDepartureAirline[
                                                           week.weekNumber
@@ -4083,7 +4083,7 @@ export default function Home() {
                                                         )
                                                       }
                                                     >
-                                                      <SelectTrigger className="h-8 text-xs bg-white dark:bg-slate-700 border-orange-200 dark:border-orange-600 w-full dark:text-slate-100">
+                                                      <SelectTrigger aria-label={`Aeroporto de Volta, semana ${week.weekNumber}`} className="h-8 text-xs bg-white dark:bg-slate-700 border-orange-200 dark:border-orange-600 w-full dark:text-slate-100">
                                                         <SelectValue placeholder="Selecionar aeroporto" />
                                                       </SelectTrigger>
                                                       <SelectContent>
@@ -4200,7 +4200,7 @@ export default function Home() {
                                                         }
                                                       }}
                                                     >
-                                                      <SelectTrigger className="h-8 text-xs bg-white dark:bg-slate-700 border-orange-200 dark:border-orange-600 w-full dark:text-slate-100">
+                                                      <SelectTrigger aria-label={`Companhia Aérea de Volta, semana ${week.weekNumber}`} className="h-8 text-xs bg-white dark:bg-slate-700 border-orange-200 dark:border-orange-600 w-full dark:text-slate-100">
                                                         <SelectValue placeholder="Selecionar companhia">
                                                           {tempReturnAirline[
                                                             week.weekNumber

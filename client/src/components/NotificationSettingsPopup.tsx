@@ -133,7 +133,7 @@ export function NotificationSettingsPopup({
           value={String(aviso1)}
           onValueChange={v => setAviso1(Number(v))}
         >
-          <SelectTrigger className="bg-slate-800 border-slate-600 text-white h-10 text-sm w-full">
+          <SelectTrigger aria-label="Dias antes do voo (ida)" className="bg-slate-800 border-slate-600 text-white h-10 text-sm w-full">
             <SelectValue />
           </SelectTrigger>
           <SelectContent className="bg-slate-800 border-slate-600 text-white">
@@ -168,7 +168,7 @@ export function NotificationSettingsPopup({
           value={String(aviso2)}
           onValueChange={v => setAviso2(Number(v))}
         >
-          <SelectTrigger className="bg-slate-800 border-slate-600 text-white h-10 text-sm w-full">
+          <SelectTrigger aria-label="Dias antes do voo (volta)" className="bg-slate-800 border-slate-600 text-white h-10 text-sm w-full">
             <SelectValue />
           </SelectTrigger>
           <SelectContent className="bg-slate-800 border-slate-600 text-white">
