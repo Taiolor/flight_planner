@@ -12,6 +12,7 @@ import {
   CalendarPlus,
   Download,
   ExternalLink,
+  ChevronDown,
 } from "lucide-react";
 import {
   getGoogleCalendarLink,
@@ -711,11 +712,13 @@ export default function CalendarView() {
         </div>
         <button
           onClick={() => setShowCupPanel(v => !v)}
-          className="ml-auto flex items-center gap-1 bg-transparent hover:bg-slate-100/50 border border-slate-200 text-slate-600 hover:text-slate-800 text-xs font-medium px-2 py-1 rounded transition-all duration-200"
+          className="ml-auto flex items-center gap-1.5 bg-transparent hover:bg-slate-100/50 border border-slate-200 text-slate-600 hover:text-slate-800 text-xs font-medium px-2 py-1 rounded transition-all duration-200"
           title={showCupPanel ? "Ocultar Copa 2026" : "Mostrar Copa 2026"}
         >
           <span className="text-sm">🇧🇷</span>
-          <span className="text-[10px]">{showCupPanel ? "−" : "+"}</span>
+          <ChevronDown className={`w-4 h-4 transition-transform duration-300 ${
+            showCupPanel ? "rotate-180" : "rotate-0"
+          }`} />
         </button>
         <div className="flex items-center gap-4 text-xs">
           <span className="flex items-center gap-1.5">
