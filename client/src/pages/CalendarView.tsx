@@ -711,9 +711,11 @@ export default function CalendarView() {
         </div>
         <button
           onClick={() => setShowCupPanel(v => !v)}
-          className="ml-auto flex items-center gap-1.5 bg-green-500/20 hover:bg-green-500/40 border border-green-400/40 text-white text-xs font-semibold px-3 py-1.5 rounded-full transition-colors"
+          className="ml-auto flex items-center gap-1 bg-transparent hover:bg-slate-100/50 border border-slate-200 text-slate-600 hover:text-slate-800 text-xs font-medium px-2 py-1 rounded transition-all duration-200"
+          title={showCupPanel ? "Ocultar Copa 2026" : "Mostrar Copa 2026"}
         >
-          🇧🇷 {showCupPanel ? "Ocultar Copa" : "Ver Copa 2026"}
+          <span className="text-sm">🇧🇷</span>
+          <span className="text-[10px]">{showCupPanel ? "−" : "+"}</span>
         </button>
         <div className="flex items-center gap-4 text-xs">
           <span className="flex items-center gap-1.5">
@@ -752,12 +754,14 @@ export default function CalendarView() {
         </div>
       </div>
 
-      {/* Painel Copa Brasil */}
-      {showCupPanel && (
-        <div className="px-4 pt-4 pb-2 max-w-7xl mx-auto">
+      {/* Painel Copa Brasil - Sanfona Discreto */}
+      <div className="px-4 max-w-7xl mx-auto">
+        <div className={`overflow-hidden transition-all duration-300 ease-in-out ${
+          showCupPanel ? "max-h-96 py-3" : "max-h-0 py-0"
+        }`}>
           <BrazilWorldCupPanel />
         </div>
-      )}
+      </div>
 
       {/* Grade anual */}
       <main className="px-4 py-6 max-w-7xl mx-auto">
