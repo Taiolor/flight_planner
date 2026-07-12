@@ -255,8 +255,25 @@ export const appRouter = router({
   // =====================
   flights: router({
     // Buscar todas as semanas (público)
-    getWeeks: publicProcedure.query(async () => {
-      return getAllFlightWeeks();
+    getWeeks: publicProcedure.query(async ({ ctx }) => {
+      const weeks = await getAllFlightWeeks();
+      const session = await getSessionFromCookie(ctx.req);
+      if (session) {
+        return weeks;
+      }
+
+      // Se não estiver autenticado, omitir dados sensíveis
+      return weeks.map(w => ({
+        ...w,
+        departureLocator: null,
+        returnLocator: null,
+        departureFlightNumber: null,
+        returnFlightNumber: null,
+        departureTerminal: null,
+        returnTerminal: null,
+        smilesPoints: null,
+        latamPassPoints: null,
+      }));
     }),
 
     // Buscar todos os preços

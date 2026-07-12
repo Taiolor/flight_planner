@@ -2937,8 +2937,16 @@ export default function Home() {
                                         toggleWeekCard(week.weekNumber)
                                       }
                                       className="focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded-full p-1 hover:bg-slate-100 transition-colors"
-                                      title={expandedWeekCards.has(week.weekNumber) ? `Recolher semana ${week.weekNumber}` : `Expandir semana ${week.weekNumber}`}
-                                      aria-label={expandedWeekCards.has(week.weekNumber) ? `Recolher semana ${week.weekNumber}` : `Expandir semana ${week.weekNumber}`}
+                                      title={
+                                        expandedWeekCards.has(week.weekNumber)
+                                          ? `Recolher semana ${week.weekNumber}`
+                                          : `Expandir semana ${week.weekNumber}`
+                                      }
+                                      aria-label={
+                                        expandedWeekCards.has(week.weekNumber)
+                                          ? `Recolher semana ${week.weekNumber}`
+                                          : `Expandir semana ${week.weekNumber}`
+                                      }
                                       aria-expanded={expandedWeekCards.has(
                                         week.weekNumber
                                       )}
@@ -3553,12 +3561,42 @@ export default function Home() {
                                                 <button
                                                   type="button"
                                                   onClick={() => {
-                                                    setTempDepartureAirport((prev: any) => ({ ...prev, [week.weekNumber]: "" }));
-                                                    setTempDepartureAirline((prev: any) => ({ ...prev, [week.weekNumber]: "" }));
-                                                    setTempDepartureDatetime((prev: any) => ({ ...prev, [week.weekNumber]: "" }));
-                                                    setTempDepartureFlightNumber((prev: any) => ({ ...prev, [week.weekNumber]: "" }));
-                                                    setTempDepartureLocator((prev: any) => ({ ...prev, [week.weekNumber]: "" }));
-                                                    setSuggestedDepartureFlightNumber((prev: any) => ({ ...prev, [week.weekNumber]: false }));
+                                                    setTempDepartureAirport(
+                                                      (prev: any) => ({
+                                                        ...prev,
+                                                        [week.weekNumber]: "",
+                                                      })
+                                                    );
+                                                    setTempDepartureAirline(
+                                                      (prev: any) => ({
+                                                        ...prev,
+                                                        [week.weekNumber]: "",
+                                                      })
+                                                    );
+                                                    setTempDepartureDatetime(
+                                                      (prev: any) => ({
+                                                        ...prev,
+                                                        [week.weekNumber]: "",
+                                                      })
+                                                    );
+                                                    setTempDepartureFlightNumber(
+                                                      (prev: any) => ({
+                                                        ...prev,
+                                                        [week.weekNumber]: "",
+                                                      })
+                                                    );
+                                                    setTempDepartureLocator(
+                                                      (prev: any) => ({
+                                                        ...prev,
+                                                        [week.weekNumber]: "",
+                                                      })
+                                                    );
+                                                    setSuggestedDepartureFlightNumber(
+                                                      (prev: any) => ({
+                                                        ...prev,
+                                                        [week.weekNumber]: false,
+                                                      })
+                                                    );
                                                   }}
                                                   className="px-2 py-1 text-[10px] font-semibold text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-blue-400"
                                                   title="Limpar dados do voo de ida"
@@ -4046,12 +4084,42 @@ export default function Home() {
                                                   <button
                                                     type="button"
                                                     onClick={() => {
-                                                      setTempReturnAirport((prev: any) => ({ ...prev, [week.weekNumber]: "" }));
-                                                      setTempReturnAirline((prev: any) => ({ ...prev, [week.weekNumber]: "" }));
-                                                      setTempReturnDatetime((prev: any) => ({ ...prev, [week.weekNumber]: "" }));
-                                                      setTempReturnFlightNumber((prev: any) => ({ ...prev, [week.weekNumber]: "" }));
-                                                      setTempReturnLocator((prev: any) => ({ ...prev, [week.weekNumber]: "" }));
-                                                      setSuggestedReturnFlightNumber((prev: any) => ({ ...prev, [week.weekNumber]: false }));
+                                                      setTempReturnAirport(
+                                                        (prev: any) => ({
+                                                          ...prev,
+                                                          [week.weekNumber]: "",
+                                                        })
+                                                      );
+                                                      setTempReturnAirline(
+                                                        (prev: any) => ({
+                                                          ...prev,
+                                                          [week.weekNumber]: "",
+                                                        })
+                                                      );
+                                                      setTempReturnDatetime(
+                                                        (prev: any) => ({
+                                                          ...prev,
+                                                          [week.weekNumber]: "",
+                                                        })
+                                                      );
+                                                      setTempReturnFlightNumber(
+                                                        (prev: any) => ({
+                                                          ...prev,
+                                                          [week.weekNumber]: "",
+                                                        })
+                                                      );
+                                                      setTempReturnLocator(
+                                                        (prev: any) => ({
+                                                          ...prev,
+                                                          [week.weekNumber]: "",
+                                                        })
+                                                      );
+                                                      setSuggestedReturnFlightNumber(
+                                                        (prev: any) => ({
+                                                          ...prev,
+                                                          [week.weekNumber]: false,
+                                                        })
+                                                      );
                                                     }}
                                                     className="px-2 py-1 text-[10px] font-semibold text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-orange-400"
                                                     title="Limpar dados do voo de volta"
