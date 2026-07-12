@@ -1,6 +1,4 @@
-⚡ Bolt: Hoisted static arrays and Date objects in Home component
-
-💡 What: Moved the static `todosJogos` and `todasFases` arrays, along with the `parseISO` function and "today's date" (`hojeTempo`) calculation to the module level in `client/src/pages/Home.tsx`. We also pre-parsed their string dates into cached Date objects/timestamps.
-🎯 Why: Inside the `Home` component's `monthWeeks.map` rendering loop, expanding week cards resulted in those static World Cup arrays being re-created and string dates re-parsed repeatedly (O(N) operations inside a loop inside a React component render path).
-📊 Impact: Eliminates multiple array allocations, string substring manipulations, and `new Date()` instantiations during every re-render when World Cup weeks are expanded.
-🔬 Measurement: Verify rendering performance and memory allocation using React Profiler when toggling World Cup week cards.
+💡 What: Consolidated two separate `useMemo` hooks calculating annual metrics and totals from the `weeksData` array into a single `useMemo` block in `Home.tsx`.
+🎯 Why: To avoid redundant O(N) array allocations and improve React rendering performance when computing metrics that iterate over the same data sequentially.
+📊 Impact: Halves the O(N) iteration overhead during render cycles across the primary data array (`weeksData`) when generating annual summary points and metrics. Prevents redundant object allocations.
+🔬 Measurement: Verify by loading the primary dashboard and observing identical metric values, but with fewer execution cycles during re-renders. Checked functionality and passed unit tests via `pnpm check && pnpm test`.

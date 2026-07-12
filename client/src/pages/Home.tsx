@@ -1231,9 +1231,15 @@ export default function Home() {
 
   const hasChartData = chartData.some(d => Object.keys(d).length > 1);
 
-  // Dados do resumo anual: total emitido por mês
-  const annualSummaryData = useMemo(() => {
-    // ⚡ Bolt: Single-pass iteration to avoid .map().filter().reduce() overhead
+  // ⚡ Bolt Optimization: Consolidate multiple O(N) loops into a single pass
+  // Dados do resumo anual: total emitido por mês e totais anuais
+  const {
+    annualSummaryData,
+    annualTotalIssued,
+    annualIssuedCount,
+    annualSmilesTotal,
+    annualLatamPassTotal,
+  } = useMemo(() => {
     const MONTHS = [
       { num: "03", label: "Mar" },
       { num: "04", label: "Abr" },
@@ -1255,36 +1261,6 @@ export default function Home() {
       summaryMap[MONTHS[i].num] = { mes: MONTHS[i].label, total: 0, count: 0 };
     }
 
-    for (let i = 0; i < weeksData.length; i++) {
-      const w = weeksData[i];
-      if (!w.isDeleted && w.isTicketIssued) {
-        const monthNum = w.departureDate.substring(3, 5);
-        if (summaryMap[monthNum]) {
-          summaryMap[monthNum].total += getLowestPrice(w.weekNumber) ?? 0;
-          summaryMap[monthNum].count += 1;
-        }
-      }
-    }
-
-    const result = [];
-    for (let i = 0; i < MONTHS.length; i++) {
-      const s = summaryMap[MONTHS[i].num];
-      result.push({
-        mes: s.mes,
-        total: s.total > 0 ? Math.round(s.total * 100) / 100 : 0,
-        count: s.count,
-      });
-    }
-    return result;
-  }, [weeksData, getLowestPrice]);
-
-  // ⚡ Bolt Optimization: Consolidate multiple O(N) loops into a single pass
-  const {
-    annualTotalIssued,
-    annualIssuedCount,
-    annualSmilesTotal,
-    annualLatamPassTotal,
-  } = useMemo(() => {
     let totalIssued = 0;
     let issuedCount = 0;
     let smilesTotal = 0;
@@ -1294,15 +1270,34 @@ export default function Home() {
       const w = weeksData[i];
       if (!w.isDeleted) {
         if (w.isTicketIssued) {
-          totalIssued += getLowestPrice(w.weekNumber) ?? 0;
+          const lowest = getLowestPrice(w.weekNumber) ?? 0;
+
+          totalIssued += lowest;
           issuedCount++;
+
+          const monthNum = w.departureDate.substring(3, 5);
+          if (summaryMap[monthNum]) {
+            summaryMap[monthNum].total += lowest;
+            summaryMap[monthNum].count += 1;
+          }
         }
         if (w.smilesPoints) smilesTotal += w.smilesPoints;
         if (w.latamPassPoints) latamPassTotal += w.latamPassPoints;
       }
     }
 
+    const summaryResult = [];
+    for (let i = 0; i < MONTHS.length; i++) {
+      const s = summaryMap[MONTHS[i].num];
+      summaryResult.push({
+        mes: s.mes,
+        total: s.total > 0 ? Math.round(s.total * 100) / 100 : 0,
+        count: s.count,
+      });
+    }
+
     return {
+      annualSummaryData: summaryResult,
       annualTotalIssued: totalIssued,
       annualIssuedCount: issuedCount,
       annualSmilesTotal: smilesTotal,
