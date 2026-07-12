@@ -734,8 +734,12 @@ export default function CalendarView() {
       {/* Filtro */}
       <div className="px-4 py-4 bg-white/80 backdrop-blur-sm border-b border-purple-200/30 sticky top-16 z-9">
         <div className="max-w-7xl mx-auto flex items-center gap-3">
-          <label className="flex items-center gap-2 cursor-pointer select-none">
+          <label
+            htmlFor="holiday-filter"
+            className="flex items-center gap-2 cursor-pointer select-none"
+          >
             <input
+              id="holiday-filter"
               type="checkbox"
               checked={showOnlyHolidaysAndWeekends}
               onChange={e => setShowOnlyHolidaysAndWeekends(e.target.checked)}
