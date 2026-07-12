@@ -98,44 +98,26 @@ function getExtendedWeekends(
     const date = new Date(dateStr);
     const dayOfWeek = date.getDay();
 
-    if (dayOfWeek === 5) {
-      for (let i = 0; i < 4; i++) {
-        const d = new Date(date);
-        d.setDate(d.getDate() + i);
-        extended.add(toKey(d));
-      }
-    } else if (dayOfWeek === 1) {
-      for (let i = -2; i < 2; i++) {
-        const d = new Date(date);
-        d.setDate(d.getDate() + i);
-        extended.add(toKey(d));
-      }
-    } else if (dayOfWeek === 4) {
-      for (let i = 0; i < 5; i++) {
-        const d = new Date(date);
-        d.setDate(d.getDate() + i);
-        extended.add(toKey(d));
-      }
-    } else if (dayOfWeek === 2) {
-      for (let i = -3; i < 2; i++) {
-        const d = new Date(date);
-        d.setDate(d.getDate() + i);
-        extended.add(toKey(d));
-      }
-    } else if (dayOfWeek === 3) {
-      for (let i = -4; i < 2; i++) {
-        const d = new Date(date);
-        d.setDate(d.getDate() + i);
-        extended.add(toKey(d));
-      }
-    } else if (dayOfWeek === 0 || dayOfWeek === 6) {
-      const friday = new Date(date);
-      friday.setDate(friday.getDate() - (dayOfWeek === 0 ? 2 : 1));
-      for (let i = 0; i < 4; i++) {
-        const d = new Date(friday);
-        d.setDate(d.getDate() + i);
-        extended.add(toKey(d));
-      }
+    // Adicionar o próprio dia do feriado
+    extended.add(toKey(date));
+
+    // Se o feriado cair em um dia de semana (seg-sex), adicionar o final de semana seguinte
+    if (dayOfWeek >= 1 && dayOfWeek <= 5) {
+      // Calcular quantos dias faltam para o sábado
+      const daysUntilSaturday = 6 - dayOfWeek;
+      const saturday = new Date(date);
+      saturday.setDate(saturday.getDate() + daysUntilSaturday);
+      
+      // Adicionar sábado e domingo
+      extended.add(toKey(saturday));
+      const sunday = new Date(saturday);
+      sunday.setDate(sunday.getDate() + 1);
+      extended.add(toKey(sunday));
+    } else if (dayOfWeek === 6) {
+      // Se for sábado, adicionar domingo
+      const sunday = new Date(date);
+      sunday.setDate(sunday.getDate() + 1);
+      extended.add(toKey(sunday));
     }
   });
 
