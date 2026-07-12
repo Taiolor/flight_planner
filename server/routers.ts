@@ -727,18 +727,22 @@ export const appRouter = router({
         _alertTimeMs?: number; // ⚡ Bolt: Fast sorting property
       }> = [];
 
-      const issuedWeeks = weeks.filter(w => w.isTicketIssued);
-
-      // ⚡ Bolt: Hoist date parsing outside the nested loops to avoid O(N*M) time complexity
-      const parsedIssuedWeeks = issuedWeeks.map(w => ({
-        week: w,
-        departureTime: w.departureFlightDatetime
-          ? parseBrasiliaDatetime(w.departureFlightDatetime)
-          : null,
-        returnTime: w.returnFlightDatetime
-          ? parseBrasiliaDatetime(w.returnFlightDatetime)
-          : null,
-      }));
+      // ⚡ Bolt: Use a single pass loop to filter and map the issued weeks, reducing memory allocations
+      const parsedIssuedWeeks = [];
+      for (let i = 0; i < weeks.length; i++) {
+        const w = weeks[i];
+        if (w.isTicketIssued) {
+          parsedIssuedWeeks.push({
+            week: w,
+            departureTime: w.departureFlightDatetime
+              ? parseBrasiliaDatetime(w.departureFlightDatetime)
+              : null,
+            returnTime: w.returnFlightDatetime
+              ? parseBrasiliaDatetime(w.returnFlightDatetime)
+              : null,
+          });
+        }
+      }
 
       const nowMs = now.getTime();
 
@@ -847,7 +851,7 @@ export const appRouter = router({
           createdAt: s.createdAt,
         })),
         totalSubscriptions: subscriptions.length,
-        totalIssuedFlights: issuedWeeks.length,
+        totalIssuedFlights: parsedIssuedWeeks.length,
         scheduledAlerts,
         serverTime: now.toISOString(),
         avisos: avisos.map(a => ({ ...a, label: formatMinutes(a.minutes) })),
@@ -1252,9 +1256,14 @@ export const appRouter = router({
         `;
 
         // Extrair apenas os endereços de e-mail do array de objetos
-        const emailAddresses = emails
-          .filter(e => e.active === 1) // Apenas e-mails ativos
-          .map(e => e.email);
+        // ⚡ Bolt: Use a single pass loop to filter active emails and map them to their address
+        const emailAddresses = [];
+        for (let i = 0; i < emails.length; i++) {
+          const e = emails[i];
+          if (e.active === 1) {
+            emailAddresses.push(e.email);
+          }
+        }
 
         if (emailAddresses.length === 0) {
           throw new TRPCError({
