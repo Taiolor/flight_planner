@@ -430,7 +430,7 @@ export default function ComponentsShowcase() {
                 <div className="space-y-2">
                   <Label>Select</Label>
                   <Select>
-                    <SelectTrigger>
+                    <SelectTrigger aria-label="Selecione uma fruta">
                       <SelectValue placeholder="Select a fruit" />
                     </SelectTrigger>
                     <SelectContent>
@@ -634,7 +634,7 @@ export default function ComponentsShowcase() {
                         value={selectedMonth}
                         onValueChange={setSelectedMonth}
                       >
-                        <SelectTrigger id="month">
+                        <SelectTrigger aria-label="Mês de expiração do cartão" id="month">
                           <SelectValue placeholder="MM" />
                         </SelectTrigger>
                         <SelectContent>
@@ -659,7 +659,7 @@ export default function ComponentsShowcase() {
                         value={selectedYear}
                         onValueChange={setSelectedYear}
                       >
-                        <SelectTrigger id="year">
+                        <SelectTrigger aria-label="Ano de expiração do cartão" id="year">
                           <SelectValue placeholder="YYYY" />
                         </SelectTrigger>
                         <SelectContent>
