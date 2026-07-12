@@ -61,19 +61,11 @@ export function usePushNotifications() {
         if (existingSub) {
           setSubscription(existingSub);
           setStatus("subscribed");
-          console.log(
-            "[Push] Subscription existente encontrada:",
-            existingSub.endpoint
-          );
         } else {
           if (permission === "granted") {
             setStatus("unsubscribed");
-            console.log(
-              "[Push] Permissão concedida, mas sem subscription ativa"
-            );
           } else {
             setStatus("denied");
-            console.log("[Push] Permissão não concedida");
           }
         }
       } catch (err) {
