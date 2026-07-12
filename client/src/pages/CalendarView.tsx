@@ -578,7 +578,19 @@ export default function CalendarView() {
   const [selectedMark, setSelectedMark] = useState<DayMark | null>(null);
   const [showOnlyHolidaysAndWeekends, setShowOnlyHolidaysAndWeekends] =
     useState(false);
-  const [showCupPanel, setShowCupPanel] = useState(false);
+  const [showCupPanel, setShowCupPanel] = useState(() => {
+    // Carregar preferência do localStorage
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('showCupPanel');
+      return saved ? JSON.parse(saved) : false;
+    }
+    return false;
+  });
+
+  // Salvar preferência ao mudar
+  useEffect(() => {
+    localStorage.setItem('showCupPanel', JSON.stringify(showCupPanel));
+  }, [showCupPanel]);
 
   const today = useMemo(() => {
     const d = new Date();
@@ -711,7 +723,7 @@ export default function CalendarView() {
           </h1>
         </div>
         <button
-          onClick={() => setShowCupPanel(v => !v)}
+          onClick={() => setShowCupPanel((v: boolean) => !v)}
           className="ml-auto flex items-center gap-1 bg-transparent hover:bg-slate-50 border border-slate-300/50 text-slate-400 hover:text-slate-600 text-xs px-1.5 py-0.5 rounded transition-all duration-200"
           title={showCupPanel ? "Ocultar Copa 2026" : "Mostrar Copa 2026"}
         >
