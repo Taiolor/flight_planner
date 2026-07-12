@@ -612,8 +612,6 @@ function addCanvasToPdfHelper(
   const canvasW = canvas.width;
   const canvasH = canvas.height;
 
-  console.log("[PDF Debug] canvas dimensions:", canvasW, "x", canvasH);
-
   // Validar dimensões do canvas
   if (!canvasW || !canvasH || canvasW === 0 || canvasH === 0) {
     console.error("[PDF Debug] Canvas inválido, pulando página");
@@ -625,8 +623,6 @@ function addCanvasToPdfHelper(
   // pdfW = largura do PDF em mm (210mm para A4)
   const scale = pdfW / (canvasW / 2);
   const imgH = (canvasH / 2) * scale;
-
-  console.log("[PDF Debug] scale:", scale, "imgH:", imgH, "pdfH:", pdfH);
 
   // Tolerância de 1mm para evitar entrar no branch de múltiplas páginas por diferença de arredondamento
   const TOLERANCE_MM = 1.0;
