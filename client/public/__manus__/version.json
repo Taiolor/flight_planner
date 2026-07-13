@@ -1,10 +1,4 @@
 {
-<<<<<<< HEAD
-  "timestamp": 1783895567110,
-  "version": "613e95b2"
+  "timestamp": 1783943596128,
+  "version": "afe1d6bf"
 }
-=======
-  "timestamp": 1783686789763,
-  "version": "30a4109e"
-}
->>>>>>> d3d5b8e (🛡️ Sentinel: [HIGH] Fix IDOR in getWeeks endpoint)
