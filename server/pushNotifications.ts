@@ -168,21 +168,26 @@ export async function checkAndNotifyUpcomingFlights(): Promise<void> {
     { minutes: settings.aviso2Minutes, label: "Aviso 2" },
   ].filter(a => a.minutes > 0);
 
-  const issuedWeeks = weeks.filter(w => w.isTicketIssued);
-  console.log(
-    `[Push] Verificando ${issuedWeeks.length} voos emitidos. Avisos ativos: ${avisos.map(a => formatMinutes(a.minutes)).join(", ") || "nenhum"}. Hora atual (UTC): ${now.toISOString()}`
-  );
+  // ⚡ Bolt: Use a single pass loop to filter and map the issued weeks, reducing memory allocations
+  const parsedWeeks = [];
+  for (let i = 0; i < weeks.length; i++) {
+    const w = weeks[i];
+    if (w.isTicketIssued) {
+      parsedWeeks.push({
+        week: w,
+        departureTime: w.departureFlightDatetime
+          ? parseBrasiliaDatetime(w.departureFlightDatetime)
+          : null,
+        returnTime: w.returnFlightDatetime
+          ? parseBrasiliaDatetime(w.returnFlightDatetime)
+          : null,
+      });
+    }
+  }
 
-  // ⚡ Bolt: Hoist date parsing outside the nested loops to avoid O(N*M) time complexity
-  const parsedWeeks = issuedWeeks.map(w => ({
-    week: w,
-    departureTime: w.departureFlightDatetime
-      ? parseBrasiliaDatetime(w.departureFlightDatetime)
-      : null,
-    returnTime: w.returnFlightDatetime
-      ? parseBrasiliaDatetime(w.returnFlightDatetime)
-      : null,
-  }));
+  console.log(
+    `[Push] Verificando ${parsedWeeks.length} voos emitidos. Avisos ativos: ${avisos.map(a => formatMinutes(a.minutes)).join(", ") || "nenhum"}. Hora atual (UTC): ${now.toISOString()}`
+  );
 
   for (const aviso of avisos) {
     // Janela de ±50 min ao redor do horário configurado
