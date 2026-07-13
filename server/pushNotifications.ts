@@ -196,9 +196,6 @@ export async function checkAndNotifyUpcomingFlights(): Promise<void> {
     const windowStart = new Date(now.getTime() + targetMs - 50 * 60 * 1000);
     const windowEnd = new Date(now.getTime() + targetMs + 50 * 60 * 1000);
     const antecedenciaLabel = formatMinutes(aviso.minutes);
-    console.log(
-      `[Push] ${aviso.label} (${antecedenciaLabel}): janela ${windowStart.toISOString()} → ${windowEnd.toISOString()}`
-    );
 
     for (const { week, departureTime, returnTime } of parsedWeeks) {
       // Verificar voo de ida
