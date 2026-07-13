@@ -634,7 +634,10 @@ export default function ComponentsShowcase() {
                         value={selectedMonth}
                         onValueChange={setSelectedMonth}
                       >
-                        <SelectTrigger aria-label="Mês de expiração do cartão" id="month">
+                        <SelectTrigger
+                          aria-label="Mês de expiração do cartão"
+                          id="month"
+                        >
                           <SelectValue placeholder="MM" />
                         </SelectTrigger>
                         <SelectContent>
@@ -659,7 +662,10 @@ export default function ComponentsShowcase() {
                         value={selectedYear}
                         onValueChange={setSelectedYear}
                       >
-                        <SelectTrigger aria-label="Ano de expiração do cartão" id="year">
+                        <SelectTrigger
+                          aria-label="Ano de expiração do cartão"
+                          id="year"
+                        >
                           <SelectValue placeholder="YYYY" />
                         </SelectTrigger>
                         <SelectContent>

@@ -8,22 +8,25 @@
 
 ## 📊 Resumo das PRs com Conflitos
 
-| PR | Título | Tipo | Criticidade | Conflitos |
-|----|--------|------|-------------|-----------|
-| #182 | 🛡️ Sentinel: [HIGH] Fix IDOR in getWeeks endpoint | Segurança | 🔴 CRÍTICA | 4 arquivos |
-| #180 | 🧹 Remove leftover console.log in push notifications | Code Health | 🟡 MÉDIA | TBD |
-| #175 | 🎨 Palette: Improve accessibility of interactive elements | Acessibilidade | 🟢 BAIXA | TBD |
+| PR   | Título                                                    | Tipo           | Criticidade | Conflitos  |
+| ---- | --------------------------------------------------------- | -------------- | ----------- | ---------- |
+| #182 | 🛡️ Sentinel: [HIGH] Fix IDOR in getWeeks endpoint         | Segurança      | 🔴 CRÍTICA  | 4 arquivos |
+| #180 | 🧹 Remove leftover console.log in push notifications      | Code Health    | 🟡 MÉDIA    | TBD        |
+| #175 | 🎨 Palette: Improve accessibility of interactive elements | Acessibilidade | 🟢 BAIXA    | TBD        |
 
 ---
 
 ## 🔴 PR #182 - CRÍTICA (Segurança)
 
 ### Vulnerabilidade
+
 **IDOR (Insecure Direct Object Reference)** no endpoint `getWeeks`
+
 - Usuários não autenticados conseguem acessar dados sensíveis (localizadores, pontos)
 - Problema: endpoint público retorna objetos completos do banco sem filtro
 
 ### Solução Implementada
+
 1. Verificação de autenticação via `getSessionFromCookie(ctx.req)`
 2. Redação de campos sensíveis para usuários não autenticados
 3. Documentação em `.Jules/sentinel.md`
@@ -31,30 +34,39 @@
 ### Arquivos com Conflito
 
 #### 1️⃣ `.Jules/palette.md` (RENOMEADO para `.jules/palette.md`)
+
 **Conflito:** Arquivo foi renomeado de maiúscula para minúscula
+
 ```
 Antes: .Jules/palette.md
 Depois: .jules/palette.md
 ```
+
 **Resolução:** Manter a versão minúscula (`.jules/palette.md`)
 
 #### 2️⃣ `client/public/__manus__/version.json`
+
 **Conflito:** Versão desatualizada vs. versão atual
+
 ```
 PR #182:  "version": "30a4109e"
 Main:     "version": "c1564c5"
 ```
+
 **Resolução:** Usar versão de main (`c1564c5`)
 
 #### 3️⃣ `plan.md`
+
 **Conflito:** Mudanças no plano de projeto
 **Resolução:** Manter versão de main (mais recente)
 
 #### 4️⃣ `pr_description.md`
+
 **Conflito:** Descrição de PR desatualizada
 **Resolução:** Manter versão de main
 
 ### Arquivos Modificados (SEM CONFLITO)
+
 - ✅ `server/routers.ts` - Fix IDOR (19 adições, 2 deleções)
 - ✅ `client/src/pages/Home.tsx` - Melhorias UX (82 adições, 14 deleções)
 - ✅ `client/src/pages/FlightQuotes.tsx` - Melhorias (14 adições, 3 deleções)
@@ -66,9 +78,11 @@ Main:     "version": "c1564c5"
 ## 📋 Plano de Execução
 
 ### Fase 1: Resolver PR #182 (Segurança - CRÍTICA)
+
 **Tempo estimado:** 15 minutos
 
 **Passos:**
+
 1. ✅ Fazer checkout da branch da PR #182
 2. ✅ Rebase com main para trazer conflitos
 3. ✅ Resolver conflitos:
@@ -82,6 +96,7 @@ Main:     "version": "c1564c5"
 6. ✅ Fazer merge via GitHub
 
 **Comando:**
+
 ```bash
 cd /home/ubuntu/flight_planner
 gh pr checkout 182
@@ -94,18 +109,22 @@ gh pr merge 182 --squash
 ```
 
 ### Fase 2: Resolver PR #180 (Code Health - MÉDIA)
+
 **Tempo estimado:** 10 minutos
 
 **Passos:**
+
 1. Fazer checkout da branch da PR #180
 2. Rebase com main
 3. Resolver conflitos (provavelmente em `server/pushNotifications.ts`)
 4. Fazer merge
 
 ### Fase 3: Resolver PR #175 (Acessibilidade - BAIXA)
+
 **Tempo estimado:** 10 minutos
 
 **Passos:**
+
 1. Fazer checkout da branch da PR #175
 2. Rebase com main
 3. Resolver conflitos
@@ -152,6 +171,7 @@ gh pr merge 182 --squash
 ## 🎯 Resultado Esperado
 
 Após execução completo deste plano:
+
 - ✅ 9 PRs mergeadas (6 já feitas + 3 pendentes)
 - ✅ Vulnerabilidade IDOR corrigida
 - ✅ Código limpo de console.logs
