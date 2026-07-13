@@ -654,7 +654,6 @@ export async function getTicketNotificationEmails(): Promise<
   }
 
   try {
-    console.log("[Database] Fetching ticket notification emails...");
     const rows = await db
       .select()
       .from(ticketNotificationEmails)
@@ -664,40 +663,7 @@ export async function getTicketNotificationEmails(): Promise<
     // Update cache
     cachedEmails = rows;
     emailsCacheTimestamp = now;
-    console.log(
-      "[Database] Found",
-      rows.length,
-      "active ticket notification emails"
-    );
-    console.log(
-      "[Database] Emails:",
-      rows.map(r => ({
-        email: r.email
-          ? `${r.email.split("@")[0].slice(0, 3)}***@${r.email.split("@")[1]}`
-          : undefined,
-        active: r.active,
-        type: typeof r.active,
-      }))
-    );
-    if (rows.length === 0) {
-      console.warn(
-        "[Database] WARNING: No active emails found. Checking all emails..."
-      );
-      const allRows = await db
-        .select()
-        .from(ticketNotificationEmails)
-        .orderBy(desc(ticketNotificationEmails.createdAt));
-      console.log(
-        "[Database] All emails in DB:",
-        allRows.map(r => ({
-          email: r.email
-            ? `${r.email.split("@")[0].slice(0, 3)}***@${r.email.split("@")[1]}`
-            : undefined,
-          active: r.active,
-          type: typeof r.active,
-        }))
-      );
-    }
+
     return rows;
   } catch (error) {
     console.error(
