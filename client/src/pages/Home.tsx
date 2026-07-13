@@ -1686,11 +1686,13 @@ export default function Home() {
                     <Bell className="w-4 h-4" />
                   )}
                   <span className="hidden sm:inline ml-1">
-                    {pushStatus === "denied"
-                      ? "Bloqueado"
-                      : pushSubscribed
-                        ? "Notif. Ativas"
-                        : "Notificações"}
+                    {pushLoading
+                      ? "Aguarde..."
+                      : pushStatus === "denied"
+                        ? "Bloqueado"
+                        : pushSubscribed
+                          ? "Notif. Ativas"
+                          : "Notificações"}
                   </span>
                 </Button>
               )}
@@ -2185,6 +2187,7 @@ export default function Home() {
                 variant="outline"
                 size="sm"
                 className="w-full text-slate-700 dark:text-slate-300"
+                disabled={departureTimeFilter === 0 && returnTimeFilter === 0}
               >
                 <RotateCcw className="w-4 h-4 mr-2" />
                 Limpar Horários
