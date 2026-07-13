@@ -7,3 +7,8 @@
 
 **Learning:** Functions fetching relatively static configuration from a database (like `getTicketNotificationEmails`) can introduce N+1 or redundant DB calls if invoked multiple times per request or loop.
 **Action:** Implement a short Time-to-Live (TTL) in-memory cache for the function response, and strictly invalidate it during any corresponding mutations (`addTicketNotificationEmail`, `removeTicketNotificationEmail`, etc.). Also refactor calling code to fetch exactly once per workflow context.
+
+## 2025-03-05 - Avoid O(N*M) Array Allocations in React Render Loop
+
+**Learning:** Computations inside `.map` functions within JSX render cycles (such as array filtering and grouping logic) run on *every* component update. For dynamic forms where keystrokes trigger re-renders, this can cause significant input lag due to thousands of redundant iterations and garbage-collected intermediate array allocations per keystroke.
+**Action:** Consolidate expensive data derivations and object/array allocations into a single-pass `useMemo` block hoisted outside the render loop, tying it specifically to the lifecycle of the base data (e.g. `weeksData`), instead of placing it inside the `.map` render logic.
