@@ -105,7 +105,6 @@ export async function sendPushToAll(
   );
 
   const sent = results.filter(Boolean).length;
-  console.log(`[Push] Enviado para ${sent}/${subs.length} dispositivos.`);
   return sent;
 }
 
