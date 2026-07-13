@@ -35,6 +35,33 @@ describe("notifyOwner", () => {
     ).rejects.toThrowError(TRPCError);
   });
 
+  it("should truncate title and content if they exceed max lengths", async () => {
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+    } as Response);
+
+    const longTitle = "a".repeat(1205);
+    const longContent = "b".repeat(20005);
+
+    const result = await notifyOwner({
+      title: longTitle,
+      content: longContent,
+    });
+
+    expect(result).toBe(true);
+
+    // Check that fetch was called with truncated values
+    const fetchCall = vi.mocked(global.fetch).mock.calls[0];
+    const fetchOptions = fetchCall[1];
+    const fetchBody = JSON.parse(fetchOptions!.body as string);
+
+    expect(fetchBody.title).toHaveLength(1200);
+    expect(fetchBody.title.endsWith("...")).toBe(true);
+
+    expect(fetchBody.content).toHaveLength(20000);
+    expect(fetchBody.content.endsWith("...")).toBe(true);
+  });
+
   it("should return true when fetch is successful", async () => {
     global.fetch = vi.fn().mockResolvedValue({
       ok: true,

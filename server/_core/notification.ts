@@ -35,21 +35,15 @@ const validatePayload = (input: NotificationPayload): NotificationPayload => {
     });
   }
 
-  const title = trimValue(input.title);
-  const content = trimValue(input.content);
+  let title = trimValue(input.title);
+  let content = trimValue(input.content);
 
   if (title.length > TITLE_MAX_LENGTH) {
-    throw new TRPCError({
-      code: "BAD_REQUEST",
-      message: `Notification title must be at most ${TITLE_MAX_LENGTH} characters.`,
-    });
+    title = title.slice(0, TITLE_MAX_LENGTH - 3) + "...";
   }
 
   if (content.length > CONTENT_MAX_LENGTH) {
-    throw new TRPCError({
-      code: "BAD_REQUEST",
-      message: `Notification content must be at most ${CONTENT_MAX_LENGTH} characters.`,
-    });
+    content = content.slice(0, CONTENT_MAX_LENGTH - 3) + "...";
   }
 
   return { title, content };
@@ -58,8 +52,9 @@ const validatePayload = (input: NotificationPayload): NotificationPayload => {
 /**
  * Dispatches a project-owner notification through the Manus Notification Service.
  * Returns `true` if the request was accepted, `false` when the upstream service
- * cannot be reached (callers can fall back to email/slack). Validation errors
- * bubble up as TRPC errors so callers can fix the payload.
+ * cannot be reached (callers can fall back to email/slack). Oversized payloads
+ * are automatically truncated to fit within maximum length constraints. Empty
+ * payloads bubble up as TRPC errors.
  */
 export async function notifyOwner(
   payload: NotificationPayload
