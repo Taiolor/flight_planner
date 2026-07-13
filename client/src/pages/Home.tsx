@@ -2135,6 +2135,7 @@ export default function Home() {
                 value={departureTimeFilter}
                 onChange={e => setDepartureTimeFilter(parseInt(e.target.value))}
                 className="w-full"
+                aria-label="Filtro de Horário de Ida"
               />
             </div>
 
@@ -2175,6 +2176,7 @@ export default function Home() {
                 value={returnTimeFilter}
                 onChange={e => setReturnTimeFilter(parseInt(e.target.value))}
                 className="w-full"
+                aria-label="Filtro de Horário de Volta"
               />
             </div>
 
@@ -2227,6 +2229,7 @@ export default function Home() {
                 value={pricePercentile}
                 onChange={e => setPricePercentile(parseInt(e.target.value))}
                 className="w-full"
+                aria-label="Filtro de Percentil de Preço"
               />
               <p className="text-xs text-slate-500 mt-2">
                 Ajuste para mostrar voos mais ou menos baratos
