@@ -24,14 +24,18 @@ const queryClient = new QueryClient({
       // Retry automático para erros transitórios (servidor reiniciando após hibernação)
       retry: (failureCount, error) => {
         // Não fazer retry para erros de autenticação
-        if (error instanceof TRPCClientError && error.message === UNAUTHED_ERR_MSG) return false;
+        if (
+          error instanceof TRPCClientError &&
+          error.message === UNAUTHED_ERR_MSG
+        )
+          return false;
         // Fazer até 3 retries para erros de HTML (servidor reiniciando)
         if (isHtmlResponse(error)) return failureCount < 3;
         // Não fazer retry para outros erros tRPC
         if (error instanceof TRPCClientError) return false;
         return failureCount < 1;
       },
-      retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 10000),
+      retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 10000),
     },
   },
 });

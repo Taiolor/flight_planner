@@ -754,9 +754,11 @@ export default function CalendarView() {
 
       {/* Painel Copa Brasil - Sanfona Discreto */}
       <div className="px-4 max-w-7xl mx-auto">
-        <div className={`overflow-hidden transition-all duration-300 ease-in-out ${
-          showCupPanel ? "max-h-96 py-3" : "max-h-0 py-0"
-        }`}>
+        <div
+          className={`overflow-hidden transition-all duration-300 ease-in-out ${
+            showCupPanel ? "max-h-96 py-3" : "max-h-0 py-0"
+          }`}
+        >
           <BrazilWorldCupPanel />
         </div>
       </div>
@@ -874,11 +876,16 @@ export default function CalendarView() {
                         if (mark) {
                           tooltipText = `Semana ${mark.week.weekNumber} — clique para detalhes`;
                         } else if (cupMatch) {
-                          const isBrazilHome = cupMatch.homeTeam === "Brasil" || cupMatch.homeTeam.includes("Brasil");
-                          const opponent = isBrazilHome ? cupMatch.awayTeam : cupMatch.homeTeam;
-                          const score = cupMatch.status === "finished"
-                            ? ` ${isBrazilHome ? cupMatch.homeScore : cupMatch.awayScore}×${isBrazilHome ? cupMatch.awayScore : cupMatch.homeScore}`
-                            : " — Em breve";
+                          const isBrazilHome =
+                            cupMatch.homeTeam === "Brasil" ||
+                            cupMatch.homeTeam.includes("Brasil");
+                          const opponent = isBrazilHome
+                            ? cupMatch.awayTeam
+                            : cupMatch.homeTeam;
+                          const score =
+                            cupMatch.status === "finished"
+                              ? ` ${isBrazilHome ? cupMatch.homeScore : cupMatch.awayScore}×${isBrazilHome ? cupMatch.awayScore : cupMatch.homeScore}`
+                              : " — Em breve";
                           tooltipText = `⚽ Brasil × ${opponent}${score} (${cupMatch.phaseLabel})`;
                         } else if (holiday) {
                           tooltipText = `${holiday.name} (${holiday.type === "national" ? "Feriado Nacional" : holiday.type === "municipal" ? "Feriado Municipal" : holiday.type === "state" ? "Feriado Estadual" : "Observância"})`;
@@ -910,7 +917,13 @@ export default function CalendarView() {
                             <span>{day}</span>
                             {cupMatch && !mark && (
                               <span className="absolute bottom-0.5 left-1/2 -translate-x-1/2 text-[6px] leading-none">
-                                {cupMatch.status === "finished" ? (cupMatch.brazilResult === "win" ? "✓" : cupMatch.brazilResult === "draw" ? "—" : "✗") : "⚽"}
+                                {cupMatch.status === "finished"
+                                  ? cupMatch.brazilResult === "win"
+                                    ? "✓"
+                                    : cupMatch.brazilResult === "draw"
+                                      ? "—"
+                                      : "✗"
+                                  : "⚽"}
                               </span>
                             )}
                             {holiday && !mark && !cupMatch && (

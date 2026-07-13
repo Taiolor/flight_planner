@@ -195,7 +195,11 @@ export default function BrazilWorldCupPanel() {
       }
     }
 
-    return { finishedMatches: finished, upcomingMatches: upcoming, tbdMatches: tbd };
+    return {
+      finishedMatches: finished,
+      upcomingMatches: upcoming,
+      tbdMatches: tbd,
+    };
   }, []);
 
   return (
@@ -255,7 +259,7 @@ export default function BrazilWorldCupPanel() {
                 Próximos
               </span>
             </div>
-            {upcomingMatches.map((m) => (
+            {upcomingMatches.map(m => (
               <MatchCard key={m.id} match={m} />
             ))}
           </div>
@@ -271,7 +275,7 @@ export default function BrazilWorldCupPanel() {
               </span>
             </div>
             <div className="space-y-1.5">
-              {[...finishedMatches].reverse().map((m) => (
+              {[...finishedMatches].reverse().map(m => (
                 <MatchCard key={m.id} match={m} />
               ))}
             </div>
@@ -288,7 +292,7 @@ export default function BrazilWorldCupPanel() {
               </span>
             </div>
             <div className="space-y-1.5">
-              {tbdMatches.map((m) => (
+              {tbdMatches.map(m => (
                 <MatchCard key={m.id} match={m} />
               ))}
             </div>
@@ -298,7 +302,8 @@ export default function BrazilWorldCupPanel() {
 
       {/* Rodapé */}
       <div className="px-4 py-2 bg-green-50 border-t border-green-100 text-[9px] text-green-600 text-center">
-        Copa do Mundo FIFA 2026 • EUA, Canadá e México • Atualizado em tempo real
+        Copa do Mundo FIFA 2026 • EUA, Canadá e México • Atualizado em tempo
+        real
       </div>
     </div>
   );

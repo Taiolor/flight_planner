@@ -198,7 +198,7 @@ export const brazilMatches: WorldCupMatch[] = [
 
 // Mapa de datas para lookup rápido no calendário (YYYY-MM-DD)
 export const brazilMatchByDate: Record<string, WorldCupMatch> = {};
-brazilMatches.forEach((m) => {
+brazilMatches.forEach(m => {
   brazilMatchByDate[m.date] = m;
 });
 
@@ -222,7 +222,8 @@ export function getBrazilStats() {
       else if (m.brazilResult === "draw") draws++;
       else if (m.brazilResult === "loss") losses++;
 
-      const isBrazilHome = m.homeTeam === "Brasil" || m.homeTeam.includes("Brasil");
+      const isBrazilHome =
+        m.homeTeam === "Brasil" || m.homeTeam.includes("Brasil");
       goalsFor += isBrazilHome ? (m.homeScore ?? 0) : (m.awayScore ?? 0);
       goalsAgainst += isBrazilHome ? (m.awayScore ?? 0) : (m.homeScore ?? 0);
     } else if (!nextMatch && (m.status === "upcoming" || m.status === "live")) {
@@ -246,7 +247,7 @@ export function getBrazilStats() {
 export function getBrazilCurrentPhase(): string {
   const lastWin = [...brazilMatches]
     .reverse()
-    .find((m) => m.isBrazilMatch && m.status === "finished");
+    .find(m => m.isBrazilMatch && m.status === "finished");
   if (!lastWin) return "Fase de Grupos";
   const phaseOrder: Record<MatchPhase, string> = {
     group: "Fase de Grupos",
