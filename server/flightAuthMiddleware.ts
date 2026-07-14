@@ -1,5 +1,5 @@
 import { TRPCError } from "@trpc/server";
-import { parse as parseCookie } from "cookie";
+import { parse } from "cookie";
 import { validateAuthSession } from "./db";
 import { publicProcedure } from "./_core/trpc";
 
@@ -9,7 +9,7 @@ export async function getSessionFromCookie(
   req: any
 ): Promise<{ email: string } | null> {
   const cookieHeader = req.headers?.cookie ?? "";
-  const cookies = parseCookie(cookieHeader);
+  const cookies = parse(cookieHeader);
   const sessionToken = cookies[SESSION_COOKIE];
   if (!sessionToken) return null;
   return validateAuthSession(sessionToken);
