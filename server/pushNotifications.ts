@@ -318,8 +318,6 @@ export function startFlightNotificationJob(): void {
   const INTERVAL_MS = 60 * 60 * 1000; // 1 hora
   const CLEANUP_INTERVAL_MS = 24 * 60 * 60 * 1000; // 1 dia
 
-  console.log("[Push] Job de notificações iniciado (verificação a cada hora).");
-
   // Executar imediatamente na inicialização (com delay de 10s para o servidor estabilizar)
   setTimeout(() => {
     checkAndNotifyUpcomingFlights().catch(err =>
