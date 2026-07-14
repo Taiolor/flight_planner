@@ -70,9 +70,6 @@ export async function sendPushToOne(
     if (err instanceof webpush.WebPushError) {
       if (err.statusCode === 410 || err.statusCode === 404) {
         // Subscription expirada ou inválida — remover do banco
-        console.log(
-          `[Push] Subscription inválida (${err.statusCode}), removendo: ${endpoint.slice(0, 60)}...`
-        );
         await deletePushSubscription(endpoint);
       } else {
         console.error("[Push] Erro ao enviar notificação:", err.message);
@@ -184,10 +181,6 @@ export async function checkAndNotifyUpcomingFlights(): Promise<void> {
     }
   }
 
-  console.log(
-    `[Push] Verificando ${parsedWeeks.length} voos emitidos. Avisos ativos: ${avisos.map(a => formatMinutes(a.minutes)).join(", ") || "nenhum"}. Hora atual (UTC): ${now.toISOString()}`
-  );
-
   for (const aviso of avisos) {
     // Janela de ±50 min ao redor do horário configurado
     // (job roda a cada hora; ±50min garante que reinicializacoes do servidor nao percam a janela)
@@ -246,9 +239,6 @@ export async function checkAndNotifyUpcomingFlights(): Promise<void> {
             totalDevices: totalDepDevices,
             isTest: 0,
           });
-          console.log(
-            `[Push] ${aviso.label} (${antecedenciaLabel}) de ida enviado para semana ${week.weekNumber}`
-          );
         }
       }
 
@@ -301,9 +291,6 @@ export async function checkAndNotifyUpcomingFlights(): Promise<void> {
             totalDevices: totalRetDevices,
             isTest: 0,
           });
-          console.log(
-            `[Push] ${aviso.label} (${antecedenciaLabel}) de volta enviado para semana ${week.weekNumber}`
-          );
         }
       }
     }
