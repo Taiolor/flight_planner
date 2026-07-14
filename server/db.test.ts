@@ -26,25 +26,30 @@ describe("upsertUser", () => {
   });
 
   it("should throw an error if db insertion fails due to database rejection", async () => {
+    const dbError = new Error("Constraint violation");
     const mockDb = {
       insert: vi.fn().mockReturnThis(),
       values: vi.fn().mockReturnThis(),
-      onDuplicateKeyUpdate: vi
-        .fn()
-        .mockRejectedValue(new Error("Constraint violation")),
+      onDuplicateKeyUpdate: vi.fn().mockImplementation(async () => {
+        throw dbError;
+      }),
     };
 
     (drizzle as any).mockReturnValue(mockDb);
 
     const { upsertUser } = await import("./db");
 
-    await expect(
-      upsertUser({ openId: "invalid-duplicate-user" })
-    ).rejects.toThrow("Constraint violation");
+    let caughtError;
+    try {
+      await upsertUser({ openId: "invalid-duplicate-user" });
+    } catch (e) {
+      caughtError = e;
+    }
 
+    expect(caughtError).toBe(dbError);
     expect(console.error).toHaveBeenCalledWith(
       "[Database] Failed to upsert user:",
-      expect.any(Error)
+      dbError
     );
   });
 
