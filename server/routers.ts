@@ -51,7 +51,7 @@ import {
   formatDateToBrazilian,
 } from "./_core/calendarHelper";
 import { ENV } from "./_core/env";
-import { parse as parseCookie } from "cookie";
+import { parse } from "cookie";
 import {
   SESSION_COOKIE,
   getSessionFromCookie,
@@ -163,7 +163,7 @@ export const appRouter = router({
     // Logout da sessão de passagens
     logout: publicProcedure.mutation(async ({ ctx }) => {
       const cookieHeader = ctx.req.headers?.cookie ?? "";
-      const cookies = parseCookie(cookieHeader);
+      const cookies = parse(cookieHeader);
       const sessionToken = cookies[SESSION_COOKIE];
       if (sessionToken) {
         await deleteAuthSession(sessionToken);

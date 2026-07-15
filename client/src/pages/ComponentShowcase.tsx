@@ -170,7 +170,7 @@ import {
   X,
 } from "lucide-react";
 import { useState } from "react";
-import { toast as sonnerToast } from "sonner";
+import { toast } from "sonner";
 import { AIChatBox, type Message } from "@/components/AIChatBox";
 
 export default function ComponentsShowcase() {
@@ -194,7 +194,7 @@ export default function ComponentsShowcase() {
   const [isChatLoading, setIsChatLoading] = useState(false);
 
   const handleDialogSubmit = () => {
-    sonnerToast.success("Submitted successfully", {
+    toast.success("Submitted successfully", {
       description: `Input: ${dialogInput}`,
     });
     setDialogInput("");
@@ -634,7 +634,10 @@ export default function ComponentsShowcase() {
                         value={selectedMonth}
                         onValueChange={setSelectedMonth}
                       >
-                        <SelectTrigger aria-label="Mês de expiração do cartão" id="month">
+                        <SelectTrigger
+                          aria-label="Mês de expiração do cartão"
+                          id="month"
+                        >
                           <SelectValue placeholder="MM" />
                         </SelectTrigger>
                         <SelectContent>
@@ -659,7 +662,10 @@ export default function ComponentsShowcase() {
                         value={selectedYear}
                         onValueChange={setSelectedYear}
                       >
-                        <SelectTrigger aria-label="Ano de expiração do cartão" id="year">
+                        <SelectTrigger
+                          aria-label="Ano de expiração do cartão"
+                          id="year"
+                        >
                           <SelectValue placeholder="YYYY" />
                         </SelectTrigger>
                         <SelectContent>
@@ -1330,7 +1336,7 @@ export default function ComponentsShowcase() {
                     <Button
                       variant="outline"
                       onClick={() => {
-                        sonnerToast.success("Operation successful", {
+                        toast.success("Operation successful", {
                           description: "Your changes have been saved",
                         });
                       }}
@@ -1340,7 +1346,7 @@ export default function ComponentsShowcase() {
                     <Button
                       variant="outline"
                       onClick={() => {
-                        sonnerToast.error("Operation failed", {
+                        toast.error("Operation failed", {
                           description:
                             "Cannot complete operation, please try again",
                         });
@@ -1351,7 +1357,7 @@ export default function ComponentsShowcase() {
                     <Button
                       variant="outline"
                       onClick={() => {
-                        sonnerToast.info("Information", {
+                        toast.info("Information", {
                           description: "This is an information message",
                         });
                       }}
@@ -1361,7 +1367,7 @@ export default function ComponentsShowcase() {
                     <Button
                       variant="outline"
                       onClick={() => {
-                        sonnerToast.warning("Warning", {
+                        toast.warning("Warning", {
                           description:
                             "Please note the impact of this operation",
                         });
@@ -1372,7 +1378,7 @@ export default function ComponentsShowcase() {
                     <Button
                       variant="outline"
                       onClick={() => {
-                        sonnerToast.loading("Loading", {
+                        toast.loading("Loading", {
                           description: "Please wait",
                         });
                       }}
@@ -1385,7 +1391,7 @@ export default function ComponentsShowcase() {
                         const promise = new Promise(resolve =>
                           setTimeout(resolve, 2000)
                         );
-                        sonnerToast.promise(promise, {
+                        toast.promise(promise, {
                           loading: "Processing...",
                           success: "Processing complete!",
                           error: "Processing failed",

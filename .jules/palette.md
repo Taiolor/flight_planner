@@ -27,6 +27,7 @@
 
 **Learning:** The `title` attribute is not a reliable substitute for `aria-label` for screen reader users on icon-only links. Furthermore, do not add `aria-label` to buttons that already contain meaningful text, as it overrides the accessible name.
 **Action:** Always add explicit `aria-label` attributes to icon-only interactive elements (both buttons and links) to ensure proper screen reader announcements, and ensure that elements with text rely on their content.
+
 ## 2024-10-24 - Custom Accordion/Card Toggles Lack Keyboard Accessibility
 
 **Learning:** Custom clickable `div` elements used as card toggles or accordions in this app often rely solely on `onClick` handlers, rendering them completely inaccessible to keyboard users (no tab order, no `Enter`/`Space` activation, no focus ring).
@@ -78,6 +79,7 @@
 **Action:** Always use `<label htmlFor="unique-id">` and `<input id="unique-id">` when rendering form fields inside a loop to ensure screen readers announce the correct field name.
 
 ## 2024-05-18 - Missing ID and htmlFor attributes on standard HTML inputs
+
 **Learning:** In standard HTML inputs like `<input type="range">`, `<input type="datetime-local">`, or `<input type="text">`, the associated `<label>` text must correctly link to the `input` field via matching `htmlFor` and `id` properties. When fields are mapped inside a loop, they often have visual labels but lack the proper `id` mapping (e.g. they only use an `aria-label`).
 **Action:** When adding or reviewing form controls with native HTML elements in mapped arrays, verify that matching `id` and `htmlFor` props are explicitly set, appending unique values (e.g., `id={\`departure-datetime-\${week.weekNumber}\`}`) to ensure correct screen reader associations.
 

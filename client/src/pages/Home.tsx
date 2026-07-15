@@ -51,7 +51,6 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Label } from "@/components/ui/label";
 import {
   ChevronDown,
   Plane,
@@ -1231,6 +1230,51 @@ export default function Home() {
 
   const hasChartData = chartData.some(d => Object.keys(d).length > 1);
 
+  // ⚡ Bolt Optimization: Pre-calculate and group holidays per week once when weeksData changes.
+  // This prevents executing getFeriadosPorIntervalo (which iterates over all holidays)
+  // and allocating multiple grouped arrays 44 times on EVERY render cycle (e.g., during input typing).
+  const feriadosByWeek = useMemo(() => {
+    const map: Record<
+      number,
+      {
+        feriados: FeriadoInfo[];
+        feriadoIda: FeriadoInfo[];
+        feriadoRetorno: FeriadoInfo[];
+        feriadosIntervaloCopa: FeriadoInfo[];
+        feriadosIntervaloNaoCopa: FeriadoInfo[];
+      }
+    > = {};
+
+    for (const w of weeksData) {
+      const feriados = getFeriadosPorIntervalo(
+        w.weekNumber,
+        w.departureDate,
+        w.returnDate
+      );
+      const feriadoIda: FeriadoInfo[] = [];
+      const feriadoRetorno: FeriadoInfo[] = [];
+      const feriadosIntervaloCopa: FeriadoInfo[] = [];
+      const feriadosIntervaloNaoCopa: FeriadoInfo[] = [];
+
+      for (const f of feriados) {
+        if (f.tipo === "ida") feriadoIda.push(f);
+        else if (f.tipo === "retorno") feriadoRetorno.push(f);
+        else if (f.tipo === "intervalo") {
+          if (f.feriado.tipo === "copa") feriadosIntervaloCopa.push(f);
+          else feriadosIntervaloNaoCopa.push(f);
+        }
+      }
+      map[w.weekNumber] = {
+        feriados,
+        feriadoIda,
+        feriadoRetorno,
+        feriadosIntervaloCopa,
+        feriadosIntervaloNaoCopa,
+      };
+    }
+    return map;
+  }, [weeksData]);
+
   // ⚡ Bolt Optimization: Consolidate multiple O(N) loops into a single pass
   // Dados do resumo anual: total emitido por mês e totais anuais
   const {
@@ -1592,7 +1636,10 @@ export default function Home() {
                 value={colorPreset}
                 onValueChange={value => setColorPreset(value as ColorPreset)}
               >
-                <SelectTrigger aria-label="Preset de cores" className="w-auto border-white/40 text-white hover:bg-white/20 backdrop-blur-sm bg-white/10">
+                <SelectTrigger
+                  aria-label="Preset de cores"
+                  className="w-auto border-white/40 text-white hover:bg-white/20 backdrop-blur-sm bg-white/10"
+                >
                   <Sparkles className="w-4 h-4 mr-2" />
                   <SelectValue />
                 </SelectTrigger>
@@ -2451,12 +2498,19 @@ export default function Home() {
                               lowestPrice &&
                               lowestPrice <= priceThreshold;
 
-                            // ⚡ Bolt Optimization: Calculate holidays once per week, instead of multiple times
-                            const feriados = getFeriadosPorIntervalo(
-                              week.weekNumber,
-                              week.departureDate,
-                              week.returnDate
-                            );
+                            const {
+                              feriados,
+                              feriadoIda,
+                              feriadoRetorno,
+                              feriadosIntervaloCopa,
+                              feriadosIntervaloNaoCopa,
+                            } = feriadosByWeek[week.weekNumber] || {
+                              feriados: [],
+                              feriadoIda: [],
+                              feriadoRetorno: [],
+                              feriadosIntervaloCopa: [],
+                              feriadosIntervaloNaoCopa: [],
+                            };
 
                             return (
                               <Card
@@ -2574,30 +2628,6 @@ export default function Home() {
                                       </div>
                                       {/* Datas editáveis inline com dia da semana */}
                                       {(() => {
-                                        // ⚡ Bolt Optimization: Group all holiday types in a single pass instead of multiple .filter() calls
-                                        const feriadoIda: typeof feriados = [];
-                                        const feriadoRetorno: typeof feriados =
-                                          [];
-                                        const feriadosIntervalo: typeof feriados =
-                                          [];
-                                        const feriadosIntervaloCopa: typeof feriados =
-                                          [];
-                                        const feriadosIntervaloNaoCopa: typeof feriados =
-                                          [];
-                                        for (const f of feriados) {
-                                          if (f.tipo === "ida")
-                                            feriadoIda.push(f);
-                                          else if (f.tipo === "retorno")
-                                            feriadoRetorno.push(f);
-                                          else if (f.tipo === "intervalo") {
-                                            feriadosIntervalo.push(f);
-                                            if (f.feriado.tipo === "copa")
-                                              feriadosIntervaloCopa.push(f);
-                                            else
-                                              feriadosIntervaloNaoCopa.push(f);
-                                          }
-                                        }
-
                                         // Converte DD/MM/YYYY → YYYY-MM-DD para o input type=date
                                         const toInputDate = (d: string) => {
                                           if (!d || d.length !== 10) return "";
@@ -3629,7 +3659,10 @@ export default function Home() {
                                                       )
                                                     }
                                                   >
-                                                    <SelectTrigger aria-label={`Aeroporto de Ida, semana ${week.weekNumber}`} className="h-8 text-xs bg-white dark:bg-slate-700 border-blue-200 dark:border-blue-600 w-full dark:text-slate-100">
+                                                    <SelectTrigger
+                                                      aria-label={`Aeroporto de Ida, semana ${week.weekNumber}`}
+                                                      className="h-8 text-xs bg-white dark:bg-slate-700 border-blue-200 dark:border-blue-600 w-full dark:text-slate-100"
+                                                    >
                                                       <SelectValue placeholder="Selecionar aeroporto" />
                                                     </SelectTrigger>
                                                     <SelectContent>
@@ -3782,7 +3815,10 @@ export default function Home() {
                                                       }
                                                     }}
                                                   >
-                                                    <SelectTrigger aria-label={`Companhia Aérea de Ida, semana ${week.weekNumber}`} className="h-8 text-xs bg-white dark:bg-slate-700 border-blue-200 dark:border-blue-600 w-full dark:text-slate-100">
+                                                    <SelectTrigger
+                                                      aria-label={`Companhia Aérea de Ida, semana ${week.weekNumber}`}
+                                                      className="h-8 text-xs bg-white dark:bg-slate-700 border-blue-200 dark:border-blue-600 w-full dark:text-slate-100"
+                                                    >
                                                       <SelectValue placeholder="Selecionar companhia">
                                                         {tempDepartureAirline[
                                                           week.weekNumber
@@ -4152,7 +4188,10 @@ export default function Home() {
                                                         )
                                                       }
                                                     >
-                                                      <SelectTrigger aria-label={`Aeroporto de Volta, semana ${week.weekNumber}`} className="h-8 text-xs bg-white dark:bg-slate-700 border-orange-200 dark:border-orange-600 w-full dark:text-slate-100">
+                                                      <SelectTrigger
+                                                        aria-label={`Aeroporto de Volta, semana ${week.weekNumber}`}
+                                                        className="h-8 text-xs bg-white dark:bg-slate-700 border-orange-200 dark:border-orange-600 w-full dark:text-slate-100"
+                                                      >
                                                         <SelectValue placeholder="Selecionar aeroporto" />
                                                       </SelectTrigger>
                                                       <SelectContent>
@@ -4269,7 +4308,10 @@ export default function Home() {
                                                         }
                                                       }}
                                                     >
-                                                      <SelectTrigger aria-label={`Companhia Aérea de Volta, semana ${week.weekNumber}`} className="h-8 text-xs bg-white dark:bg-slate-700 border-orange-200 dark:border-orange-600 w-full dark:text-slate-100">
+                                                      <SelectTrigger
+                                                        aria-label={`Companhia Aérea de Volta, semana ${week.weekNumber}`}
+                                                        className="h-8 text-xs bg-white dark:bg-slate-700 border-orange-200 dark:border-orange-600 w-full dark:text-slate-100"
+                                                      >
                                                         <SelectValue placeholder="Selecionar companhia">
                                                           {tempReturnAirline[
                                                             week.weekNumber

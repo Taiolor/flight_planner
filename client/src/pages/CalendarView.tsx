@@ -107,7 +107,7 @@ function getExtendedWeekends(
       const daysUntilSaturday = 6 - dayOfWeek;
       const saturday = new Date(date);
       saturday.setDate(saturday.getDate() + daysUntilSaturday);
-      
+
       // Adicionar sábado e domingo
       extended.add(toKey(saturday));
       const sunday = new Date(saturday);
@@ -562,8 +562,8 @@ export default function CalendarView() {
     useState(false);
   const [showCupPanel, setShowCupPanel] = useState(() => {
     // Carregar preferência do localStorage
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('showCupPanel');
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("showCupPanel");
       return saved ? JSON.parse(saved) : false;
     }
     return false;
@@ -571,7 +571,7 @@ export default function CalendarView() {
 
   // Salvar preferência ao mudar
   useEffect(() => {
-    localStorage.setItem('showCupPanel', JSON.stringify(showCupPanel));
+    localStorage.setItem("showCupPanel", JSON.stringify(showCupPanel));
   }, [showCupPanel]);
 
   const today = useMemo(() => {
@@ -708,7 +708,11 @@ export default function CalendarView() {
           onClick={() => setShowCupPanel((v: boolean) => !v)}
           className="ml-auto flex items-center gap-1 bg-transparent hover:bg-slate-50 border border-slate-300/50 text-slate-400 hover:text-slate-600 text-xs px-1.5 py-0.5 rounded transition-all duration-200"
           title={showCupPanel ? "Ocultar Copa 2026" : "Mostrar Copa 2026"}
-          aria-label={showCupPanel ? "Ocultar painel da Copa do Mundo 2026" : "Mostrar painel da Copa do Mundo 2026"}
+          aria-label={
+            showCupPanel
+              ? "Ocultar painel da Copa do Mundo 2026"
+              : "Mostrar painel da Copa do Mundo 2026"
+          }
           aria-expanded={showCupPanel}
         >
           <span className="text-xs">🇧🇷</span>

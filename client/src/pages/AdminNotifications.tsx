@@ -728,7 +728,9 @@ function TicketNotificationEmailsSection() {
         <form onSubmit={handleAddRecipient} className="space-y-3">
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div>
-              <label htmlFor="new-recipient-email" className="sr-only">E-mail</label>
+              <label htmlFor="new-recipient-email" className="sr-only">
+                E-mail
+              </label>
               <input
                 id="new-recipient-email"
                 type="email"
@@ -741,7 +743,9 @@ function TicketNotificationEmailsSection() {
               />
             </div>
             <div>
-              <label htmlFor="new-recipient-name" className="sr-only">Nome (opcional)</label>
+              <label htmlFor="new-recipient-name" className="sr-only">
+                Nome (opcional)
+              </label>
               <input
                 id="new-recipient-name"
                 type="text"
@@ -831,7 +835,9 @@ function TicketNotificationEmailsSection() {
           </h3>
           <form onSubmit={handleSendTestEmail} className="space-y-3">
             <div className="flex gap-2">
-              <label htmlFor="test-email" className="sr-only">E-mail para teste</label>
+              <label htmlFor="test-email" className="sr-only">
+                E-mail para teste
+              </label>
               <input
                 id="test-email"
                 type="email"
