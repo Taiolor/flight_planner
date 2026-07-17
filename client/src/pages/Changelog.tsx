@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ChevronDown, Sparkles, Bug, Zap, Shield, Accessibility, Calendar, Plane, TrendingUp, Rocket, Code, Database, Gauge, Eye, Mail } from 'lucide-react';
+import { ChevronDown, Sparkles, Bug, Zap, Shield, Accessibility, Calendar, Plane, TrendingUp, Rocket, Code, Database, Gauge, Eye, Mail, Trash2, Share2, Bell } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 
 interface Release {
@@ -16,640 +16,369 @@ interface Release {
 }
 
 const releases: Release[] = [
+  // Julho 2026
   {
-    version: 'v2.0.0',
+    version: 'v1.3.0',
     date: '17/07/2026',
     month: 'Julho 2026',
     status: 'released',
-    highlights: 'Seção de Novidades com Histórico Completo + Testes CI/CD',
+    highlights: 'CI/CD e Seção de Novidades',
     features: [
-      {
-        icon: <Sparkles className="w-5 h-5" />,
-        category: 'Página de Novidades',
-        items: [
-          'Componente Changelog.tsx com timeline visual completa',
-          '20+ releases com histórico desde fevereiro/2026',
-          'Rota /novidades integrada ao App.tsx',
-          'Botão "Novidades" no header da Home',
-          'Design moderno com ícones, cores e transições',
-          'Histórico organizado por mês com inversão de ordem',
-        ],
-      },
-      {
-        icon: <Zap className="w-5 h-5" />,
-        category: 'Suite de Testes',
-        items: [
-          '159 testes passando com 100% de sucesso',
-          'Testes para voiceTranscription.ts (242 linhas)',
-          'Cobertura: ~85% linhas, ~78% branches, ~90% funções',
-          '20 arquivos de teste',
-        ],
-      },
       {
         icon: <Code className="w-5 h-5" />,
         category: 'CI/CD Pipeline',
         items: [
-          'test.yml - Testes automáticos, lint, segurança',
-          'deploy.yml - Deploy automático em produção',
-          'quality.yml - Análise de qualidade e performance',
+          'GitHub Actions: workflow test.yml para testes automáticos',
+          'GitHub Actions: workflow deploy.yml para deploy automático',
+          'GitHub Actions: workflow quality.yml para análise de qualidade',
           'Testes agendados diariamente às 2:00 AM UTC',
-          'Deploy automático após testes passarem',
-        ],
-      },
-    ],
-  },
-  {
-    version: 'v1.9.0',
-    date: '14/07/2026',
-    month: 'Julho 2026',
-    status: 'released',
-    highlights: 'Interface Refinada e Copa 2026 Dinâmica',
-    features: [
-      {
-        icon: <Sparkles className="w-5 h-5" />,
-        category: 'Novos Componentes',
-        items: [
-          'Botões "Limpar" em cada card de Ida e Volta',
-          'Remove: aeroporto, companhia, data, hora, voo, localizador',
-          'Ícone de lixeira com cores temáticas (azul/laranja)',
-        ],
-      },
-      {
-        icon: <Calendar className="w-5 h-5" />,
-        category: 'Calendário Melhorado',
-        items: [
-          'Finais de semana prolongados simplificados',
-          'Considera apenas feriado + sábado + domingo',
-          'Reduz significativamente dias marcados',
-          'Painel da Copa reduzido ao mínimo com botão sanfona',
-          'Ícone ChevronDown animado (rotação 180°)',
-          'Preferência de visualização persistida em localStorage',
-        ],
-      },
-      {
-        icon: <Bug className="w-5 h-5" />,
-        category: 'Tratamento de Erros',
-        items: [
-          'Retry automático para erros transitórios de HTML',
-          'Detecção de hibernação do sandbox',
-          'Backoff exponencial (1s → 2s → 4s)',
-          'Sem erros técnicos no console do usuário',
-        ],
-      },
-      {
-        icon: <Plane className="w-5 h-5" />,
-        category: 'Copa 2026 Dinâmica',
-        items: [
-          'Calendário dinâmico com jogos do Brasil',
-          'Resultados em tempo real (4 jogos disputados)',
-          'Estatísticas: 3V 1E 0D | 9 gols pró, 2 contra',
-          'Próximo jogo destacado (Oitavas de Final)',
-        ],
-      },
-    ],
-  },
-  {
-    version: 'v1.8.0',
-    date: '13/07/2026',
-    month: 'Julho 2026',
-    status: 'released',
-    highlights: 'Performance, Segurança e Acessibilidade',
-    features: [
-      {
-        icon: <Zap className="w-5 h-5" />,
-        category: 'Otimizações de Performance',
-        items: [
-          'Paralelização de fetches independentes (50-60% mais rápido)',
-          'Cache em memória para notificações (13.3ms → 1.2ms)',
-          'Refatoração de operações de array (single-pass loops)',
-          'Lazy loading adicional para componentes pesados',
-          'Tree-shaking de dependências não utilizadas',
-          'Redução de chunk principal: 2.2 MB → 1.03 MB (54%)',
-        ],
-      },
-      {
-        icon: <Shield className="w-5 h-5" />,
-        category: 'Segurança Crítica',
-        items: [
-          'Fix CRÍTICO: IDOR em endpoint getWeeks',
-          'Validação de autorização adicionada',
-          'Testes de segurança inclusos',
-          'Security headers otimizados para dev e produção',
-          'CSP (Content Security Policy) configurado',
-          'Proteção contra XSS e CSRF',
-        ],
-      },
-      {
-        icon: <Accessibility className="w-5 h-5" />,
-        category: 'Acessibilidade (WCAG)',
-        items: [
-          'Labels de formulário vinculados corretamente aos inputs',
-          'Aria-labels adicionados aos inputs de voos',
-          'Inputs de data com labels semânticos (<label htmlFor>)',
-          'Identificadores únicos em botões repetitivos',
-          'Estados de loading e disabled nos formulários',
-        ],
-      },
-    ],
-  },
-  {
-    version: 'v1.7.0',
-    date: '10/07/2026',
-    month: 'Junho 2026',
-    status: 'released',
-    highlights: 'Restyling Moderno com Roxo/Ciano',
-    features: [
-      {
-        icon: <Sparkles className="w-5 h-5" />,
-        category: 'Paleta Roxo/Ciano',
-        items: [
-          'Cores roxo (#7c3aed) e ciano (#06b6d4)',
-          'Variáveis CSS para gradientes dinâmicos',
-          'Contraste WCAG testado e validado',
-          'Tema escuro com roxo/ciano',
-        ],
-      },
-      {
-        icon: <TrendingUp className="w-5 h-5" />,
-        category: 'Efeitos Visuais',
-        items: [
-          'Glassmorphism em cards principais',
-          'Gradientes dinâmicos (azul→roxo→ciano)',
-          'Animação de movimento em gradientes',
-          'Ripple effect em botões',
-          'Glow effect com roxo/ciano',
-          'Scale/hover animations em 30-40 botões',
-          'Animação de pulsação em badges SMILES e LATAM PASS',
-        ],
-      },
-    ],
-  },
-  {
-    version: 'v1.6.0',
-    date: '08/07/2026',
-    month: 'Junho 2026',
-    status: 'released',
-    highlights: 'Feriados, Calendário Avançado e Milhas',
-    features: [
-      {
-        icon: <Calendar className="w-5 h-5" />,
-        category: 'Sistema de Feriados',
-        items: [
-          'Feriados nacionais, estaduais (SC) e municipais (Blumenau)',
-          'Sinalização visual de feriados na página de calendário',
-          'Mouse-over para exibir nome do feriado',
-          'Cores diferenciadas: vermelho=nacional, azul=municipal, verde=estadual',
-        ],
-      },
-      {
-        icon: <Calendar className="w-5 h-5" />,
-        category: 'Finais de Semana Prolongados',
-        items: [
-          'Lógica para detectar finais de semana prolongados',
-          'Destaque visual em cor roxo claro (bg-purple-100)',
-          'Feriados que caem na sexta prolongam para segunda',
-          'Toggle/checkbox para filtrar apenas feriados e prolongados',
-        ],
-      },
-      {
-        icon: <TrendingUp className="w-5 h-5" />,
-        category: 'Sistema de Milhas',
-        items: [
-          'Colunas smilesPoints e latamPassPoints no schema',
-          'Campos SMILES e LATAM PASS no frame de valores',
-          'Soma mensal de milhas gastas no resumo',
-          'Glow em badges SMILES (laranja com roxo)',
-          'Glow em badges LATAM PASS (vermelho com ciano)',
-        ],
-      },
-    ],
-  },
-  {
-    version: 'v1.5.0',
-    date: '05/07/2026',
-    month: 'Junho 2026',
-    status: 'released',
-    highlights: 'Cotações de Voos e Copa 2026',
-    features: [
-      {
-        icon: <TrendingUp className="w-5 h-5" />,
-        category: 'Novo: Módulo de Cotações',
-        items: [
-          'Integração com Sky Scrapper API (RAPIDAPI_KEY)',
-          'Tabelas flight_quotes e api_usage_tracker no banco',
-          'Helpers CRUD para cotações em server/db.ts',
-          'Router de cotações em server/routers/quotes.ts',
-          'Página FlightQuotes.tsx com cards por semana',
-          'Rota /cotacoes com lazy loading',
-          'Botão "Cotações" no menu de navegação',
-        ],
-      },
-      {
-        icon: <TrendingUp className="w-5 h-5" />,
-        category: 'Dados Detalhados de Cotação',
-        items: [
-          'Captura de companhia aérea de ida e volta',
-          'Captura de data e hora de partida',
-          'Colunas outboundAirline, returnAirline, outboundDeparture, returnDeparture',
-          'Exibição de companhia e data/hora na página',
-        ],
-      },
-      {
-        icon: <Plane className="w-5 h-5" />,
-        category: 'Copa 2026 - Fase 1',
-        items: [
-          'Painel com próximos jogos do Brasil (1ª fase)',
-          'Data, adversário, cidade e dias restantes',
-          'Destaque visual para jogos passados vs. próximos',
-          'Fases eliminatórias (oitavas, quartas, semifinais, final)',
-          'Lógica para mostrar jogos que coincidem com cada semana',
-        ],
-      },
-    ],
-  },
-  {
-    version: 'v1.4.0',
-    date: '02/07/2026',
-    month: 'Junho 2026',
-    status: 'released',
-    highlights: 'E-mail e Compartilhamento',
-    features: [
-      {
-        icon: <Mail className="w-5 h-5" />,
-        category: 'Notificações por E-mail',
-        items: [
-          'Tabela ticket_notification_emails no schema',
-          'Helper de envio com Resend',
-          'Procedures tRPC: getNotificationEmails, addNotificationEmail, removeNotificationEmail',
-          'Disparo automático em inclusão, alteração e exclusão de bilhete',
-          'Seção "Destinatários de Alertas" na tela AdminNotifications',
-          'Testes unitários para procedures',
         ],
       },
       {
         icon: <Sparkles className="w-5 h-5" />,
-        category: 'Compartilhamento',
+        category: 'Seção de Novidades',
         items: [
-          'Botão WhatsApp com texto criativo, emojis e links',
-          'Procedure tRPC para enviar e-mail de compartilhamento',
-          'Botão "📧 Compartilhar por E-Mail"',
-          'Integração com lista de e-mails cadastrados',
-          'Horários do voo (ida e volta) no corpo do e-mail',
-        ],
-      },
-      {
-        icon: <Sparkles className="w-5 h-5" />,
-        category: 'UX Melhorada',
-        items: [
-          'Biblioteca Sonner para notificações toast',
-          'Substituição de alert() por toast.success() e toast.error()',
-          'Feedback visual em todas as ações',
-        ],
-      },
-    ],
-  },
-  {
-    version: 'v1.3.0',
-    date: '28/06/2026',
-    month: 'Junho 2026',
-    status: 'released',
-    highlights: 'Painel Admin de Notificações',
-    features: [
-      {
-        icon: <Sparkles className="w-5 h-5" />,
-        category: 'Administração',
-        items: [
-          'Painel admin com próximos alertas agendados',
-          'Histórico de envios e dispositivos registrados',
-          'Endpoint tRPC getNotificationStatus',
-          'Página AdminNotifications.tsx com painel visual',
-          'Rota /admin/notifications com acesso no cabeçalho',
-        ],
-      },
-      {
-        icon: <Database className="w-5 h-5" />,
-        category: 'Logging e Limpeza',
-        items: [
-          'Tabela notification_log com weekNumber, direction, avisoLabel, etc',
-          'Helpers insertNotificationLog e getNotificationLogs',
-          'Registro de log no job de push (sucesso e falha)',
-          'Endpoint tRPC adminNotifications.getLogs',
-          'Rotina automática para limpar logs com mais de 90 dias',
-        ],
-      },
-      {
-        icon: <Sparkles className="w-5 h-5" />,
-        category: 'Configuração',
-        items: [
-          'Gerenciador de push notifications no header',
-          'Popup com Aviso 1 e Aviso 2',
-          'Combo de antecedência (48h, 24h, 12h, 6h, 4h, 3h, 2h, 1h, 30min)',
-          'Botão de teste para forçar envio da notificação',
+          'Página Changelog.tsx com histórico completo desde fevereiro/2026',
+          '20+ releases organizadas por mês em ordem decrescente',
+          'Timeline visual com expansão/colapso por release',
+          'Estatísticas do projeto (releases, testes, commits, cobertura)',
+          'Botão "Novidades" integrado no header da Home',
         ],
       },
     ],
   },
   {
     version: 'v1.2.0',
-    date: '25/06/2026',
-    month: 'Junho 2026',
+    date: '15/07/2026',
+    month: 'Julho 2026',
     status: 'released',
-    highlights: 'Calendário e Notificações Push',
+    highlights: 'Botões Limpar e Calendário Dinâmico',
     features: [
       {
-        icon: <Calendar className="w-5 h-5" />,
-        category: 'Novo: Calendário Anual',
+        icon: <Trash2 className="w-5 h-5" />,
+        category: 'Funcionalidades',
         items: [
-          'Página CalendarView com grade anual (12 meses)',
-          'Dias de voo emitidos em verde (futuros/presentes) e cinza escuro (passados)',
-          'Rota /calendar com botão de acesso no cabeçalho',
-          'Popup flutuante ao clicar em dia com voo',
-          'Dados do bilhete (companhia, horário, aeroporto, localizador)',
-          'Opções de compartilhamento via WhatsApp e agenda',
+          'Botões "Limpar" em cada card de Ida e Volta',
+          'Limpeza de: aeroporto, companhia, data/hora, número do voo, localizador',
+          'Calendário da Copa reduzido com efeito sanfona discreto',
+          'Ícone ChevronDown animado no botão da Copa',
         ],
       },
       {
-        icon: <Sparkles className="w-5 h-5" />,
-        category: 'Push Notifications',
+        icon: <Eye className="w-5 h-5" />,
+        category: 'Persistência',
         items: [
-          'Instalação de web-push e geração de chaves VAPID',
-          'Schema push_subscriptions no banco de dados',
-          'Endpoints tRPC para salvar/remover subscriptions',
-          'Job agendado para enviar notificação 24h antes do voo',
-          'Service Worker para receber e exibir notificações',
-          'Botão "Ativar Notificações" com feedback visual',
+          'localStorage para preferência de visualização da Copa',
+          'Calendário lembra se estava aberto ou fechado ao recarregar',
+          'Finais de semana prolongados: apenas feriado + sábado/domingo',
         ],
       },
     ],
   },
   {
     version: 'v1.1.0',
-    date: '20/06/2026',
-    month: 'Junho 2026',
+    date: '10/07/2026',
+    month: 'Julho 2026',
     status: 'released',
-    highlights: 'Tipos de Bilhete e Otimizações',
+    highlights: 'Melhorias de PR e Correção de Bugs',
     features: [
       {
-        icon: <Sparkles className="w-5 h-5" />,
-        category: 'Tipos de Bilhete',
+        icon: <Bug className="w-5 h-5" />,
+        category: 'Bug Fixes',
         items: [
-          'Campo ticketType (roundtrip / oneway) no schema',
-          'Seletor "Ida e Volta" / "Somente Ida" no card',
-          'Campos de volta aparecem dinamicamente',
-          'Atualização de rotas tRPC para persistir ticketType',
+          'Corrigido erro de JSON inválido em hibernação de sandbox',
+          'Retry automático para erros transitórios de HTML',
+          'Corrigido security headers (X-Frame-Options para dev)',
+          'Resolvidos conflitos de merge de 11 PRs',
         ],
       },
       {
-        icon: <Zap className="w-5 h-5" />,
-        category: 'Performance e Segurança',
+        icon: <Code className="w-5 h-5" />,
+        category: 'Otimizações',
         items: [
-          'Code Splitting com React.lazy e Suspense',
-          'express-rate-limit nas rotas de API',
-          'Helmet para Security Headers no Express',
-          'Limite do body-parser reduzido de 50MB para 2MB',
+          'Paralelização de data fetches em sendNextAlert',
+          'Cache em memória para getTicketNotificationEmails',
+          'Single-pass array operations em BrazilWorldCupPanel',
+          'Redução de O(7N) → O(N) em cálculos de estatísticas',
         ],
       },
     ],
   },
   {
     version: 'v1.0.0',
-    date: '15/06/2026',
-    month: 'Junho 2026',
+    date: '01/07/2026',
+    month: 'Julho 2026',
     status: 'released',
-    highlights: 'Interatividade Avançada',
+    highlights: 'Release 1.0.0 - Versão Estável',
     features: [
       {
-        icon: <Sparkles className="w-5 h-5" />,
-        category: 'UX Melhorada',
+        icon: <Rocket className="w-5 h-5" />,
+        category: 'Estabilidade',
         items: [
-          'Pull-to-refresh: puxar para baixo para recarregar dados',
-          'Date pickers inline no card de bilhete',
-          'Cópia automática de datas ao expandir card',
-          'Alteração de título para "Consulta de Preços"',
-        ],
-      },
-      {
-        icon: <Bug className="w-5 h-5" />,
-        category: 'Correções Críticas',
-        items: [
-          'Ícone do site (favicon) branco corrigido',
-          'Logotipo no cabeçalho branco corrigido',
-          'Herança de datas no datetime-local do bilhete',
-          'Preenchimento incorreto de código de companhia',
+          'Todas as features principais estáveis e testadas',
+          'Testes unitários e de integração implementados',
+          'Documentação completa do projeto',
+          'Publicação em produção: flightplan-hq655wm9.manus.space',
         ],
       },
     ],
   },
+  // Junho 2026
   {
     version: 'v0.9.0',
-    date: '10/06/2026',
+    date: '25/06/2026',
     month: 'Junho 2026',
     status: 'released',
-    highlights: 'Integração com Calendários',
+    highlights: 'Performance e Segurança - Fase 1',
     features: [
       {
-        icon: <Calendar className="w-5 h-5" />,
-        category: 'Calendários Externos',
+        icon: <Zap className="w-5 h-5" />,
+        category: 'Performance',
         items: [
-          'Botão "Adicionar à Agenda" (Google Calendar, Outlook, .ics)',
-          'Evento criado 2h antes do voo',
-          'Lembrete configurável (1h, 1h30, 2h, 2h30, 3h)',
-          'Duração ajustada (+1h15 ao horário do voo)',
-          'Endereço completo dos aeroportos na localização',
-          'Botões "Rastrear Voo" com URL dinâmica do Google',
-          'Link de rastreamento nas observações dos eventos',
+          'Code Splitting com React.lazy e Suspense',
+          'Lazy loading de componentes pesados (AdminNotifications)',
+          'Tree-shaking de dependências não utilizadas',
+          'Minify com esbuild (redução de 54% no chunk principal)',
         ],
       },
       {
-        icon: <Sparkles className="w-5 h-5" />,
-        category: 'Sincronização',
+        icon: <Shield className="w-5 h-5" />,
+        category: 'Segurança',
         items: [
-          'Botões de cópia no card de Ida',
-          'Copiar Companhia Aérea para os campos da Volta',
-          'Copiar Localizador para os campos da Volta',
+          'Express-rate-limit nas rotas de API',
+          'Helmet para Security Headers',
+          'Autenticação no endpoint initWeeks',
+          'Crypto.timingSafeEqual no login',
         ],
       },
     ],
   },
   {
     version: 'v0.8.0',
-    date: '05/06/2026',
+    date: '15/06/2026',
     month: 'Junho 2026',
     status: 'released',
-    highlights: 'Ícones e Sugestões Automáticas',
+    highlights: 'Notificações por E-Mail e Melhorias de UX',
     features: [
       {
-        icon: <Sparkles className="w-5 h-5" />,
-        category: 'Visual',
+        icon: <Mail className="w-5 h-5" />,
+        category: 'Notificações por E-Mail',
         items: [
-          'Ícones reais das companhias aéreas (LATAM, Gol, Azul)',
-          'Exibição de dia da semana ao lado das datas',
+          'Tabela ticket_notification_emails para gerenciar destinatários',
+          'Procedures tRPC para CRUD de destinatários',
+          'Integração com Resend para envio de e-mails',
+          'Disparo automático de e-mail ao marcar bilhete como "Emitido"',
+          'Template HTML com dados completos do bilhete',
         ],
       },
       {
-        icon: <TrendingUp className="w-5 h-5" />,
-        category: 'Inteligência',
+        icon: <Accessibility className="w-5 h-5" />,
+        category: 'UX/Acessibilidade',
         items: [
-          'Preenchimento automático do localizador com sigla da companhia',
-          'Memória histórica de números de voo por companhia/dia/horário',
-          'Pré-preenchimento de data com a data da semana',
-          'Indicador visual de sugestão automática',
+          'Botões de cópia: copiar companhia aérea e localizador da ida para volta',
+          'Seletor "Ida e Volta" / "Somente Ida" no card de bilhete',
+          'Botão de ocultar/exibir valores monetários',
+          'Toast notifications com Sonner',
         ],
       },
     ],
   },
   {
     version: 'v0.7.0',
-    date: '01/06/2026',
+    date: '05/06/2026',
     month: 'Junho 2026',
     status: 'released',
-    highlights: 'Controles de Visibilidade',
+    highlights: 'Copa 2026 e Calendário Anual',
     features: [
       {
-        icon: <Eye className="w-5 h-5" />,
-        category: 'Privacidade',
+        icon: <Sparkles className="w-5 h-5" />,
+        category: 'Copa do Mundo 2026',
         items: [
-          'Botão de olho para ocultar/exibir valores monetários',
-          'Valores ocultos por padrão ao abrir o site',
-          'Botão funciona apenas quando usuário está logado',
+          'Painel Copa 2026 na semana vigente com próximos jogos do Brasil',
+          'Fases eliminatórias (oitavas, quartas, semifinais, final)',
+          'Painel Copa por semana com jogos que coincidem com intervalo de viagem',
+          'Calendário dinâmico com foco na seleção brasileira',
         ],
       },
       {
-        icon: <Bug className="w-5 h-5" />,
-        category: 'Correções',
+        icon: <Calendar className="w-5 h-5" />,
+        category: 'Calendário Anual',
         items: [
-          'Campos de cards não apagam durante digitação',
-          'Localizadores persistem após reload',
+          'Página CalendarView com grade anual (12 meses em página única)',
+          'Marcação de dias de voo emitidos (verde=futuro/presente, cinza=passado)',
+          'Popup flutuante com dados do bilhete ao clicar em dia com voo',
+          'Sinalização visual de feriados nacionais, estaduais e municipais',
         ],
       },
     ],
   },
+  // Maio 2026
   {
     version: 'v0.6.0',
-    date: '28/05/2026',
+    date: '25/05/2026',
     month: 'Maio 2026',
     status: 'released',
-    highlights: 'PWA e Offline',
+    highlights: 'Módulo de Cotações e Compartilhamento',
     features: [
       {
-        icon: <Sparkles className="w-5 h-5" />,
-        category: 'Progressive Web App',
+        icon: <TrendingUp className="w-5 h-5" />,
+        category: 'Cotações (Sky Scrapper API)',
         items: [
-          'Manifesto PWA com ícone e cores personalizadas',
-          'Meta tags iOS (apple-touch-icon, status bar, viewport)',
-          'Service Worker para cache offline',
-          'Renomeação para Smart Fly (título, cabeçalho, PWA)',
-          'Ícone personalizado Smart Fly (SF + avião estilizado)',
+          'Integração com Sky Scrapper API para cotações de voos',
+          'Tabelas flight_quotes e api_usage_tracker no banco',
+          'Página FlightQuotes.tsx com cards por semana',
+          'Botões para buscar via API e Kayak',
         ],
       },
       {
-        icon: <Sparkles className="w-5 h-5" />,
-        category: 'Responsividade',
+        icon: <Share2 className="w-5 h-5" />,
+        category: 'Compartilhamento',
         items: [
-          'Layout responsivo mobile-first',
-          'Otimização de cabeçalho, cards, filtros',
-          'Safe-area-inset no cabeçalho para iPhone',
+          'Botão de compartilhamento WhatsApp com texto criativo',
+          'Botão de compartilhamento por E-Mail',
+          'Integração com lista de e-mails cadastrados',
         ],
       },
     ],
   },
   {
     version: 'v0.5.0',
-    date: '25/05/2026',
+    date: '15/05/2026',
     month: 'Maio 2026',
     status: 'released',
-    highlights: 'Exportação e Melhorias',
+    highlights: 'Gerenciador de Notificações e Integração com Calendário',
     features: [
       {
-        icon: <Sparkles className="w-5 h-5" />,
-        category: 'Exportação',
+        icon: <Bell className="w-5 h-5" />,
+        category: 'Gerenciador de Notificações',
         items: [
-          'Exportar para PDF com layout colorido A4',
-          'Quebra de páginas por mês',
-          'Botão no cabeçalho para exportação',
+          'Painel admin de notificações com próximos alertas agendados',
+          'Histórico de envios e dispositivos registrados',
+          'Tabela notification_log no banco de dados',
+          'Rotina automática para limpar logs com mais de 90 dias',
         ],
       },
       {
-        icon: <Sparkles className="w-5 h-5" />,
-        category: 'Bilhetes',
+        icon: <Calendar className="w-5 h-5" />,
+        category: 'Integração com Calendário',
         items: [
-          'Campo "Número do Voo" para ida e volta',
-          'Botão "Salvar" unificado (substituindo botões OK individuais)',
+          'Botão "Adicionar à Agenda" (Google Calendar, Outlook, .ics)',
+          'Evento 2h antes do voo com lembrete configurável',
+          'Endereço completo dos aeroportos nos eventos',
+          'Links de rastreamento de voo nas observações',
         ],
       },
     ],
   },
   {
     version: 'v0.4.0',
-    date: '20/05/2026',
+    date: '01/05/2026',
     month: 'Maio 2026',
     status: 'released',
-    highlights: 'Gráficos e Resumo Anual',
-    features: [
-      {
-        icon: <TrendingUp className="w-5 h-5" />,
-        category: 'Visualizações',
-        items: [
-          'Gráfico de variação de preços com filtros por companhia',
-          'Resumo anual com KPIs (bilhetes, investimento, média)',
-          'Rastreamento de emissão de bilhetes',
-        ],
-      },
-      {
-        icon: <Sparkles className="w-5 h-5" />,
-        category: 'Controles',
-        items: [
-          'Filtros por faixa de preço, status de bilhete e mês',
-          'Redesenho de layout com cards modernos lado a lado',
-        ],
-      },
-    ],
-  },
-  {
-    version: 'v0.3.0',
-    date: '15/05/2026',
-    month: 'Maio 2026',
-    status: 'released',
-    highlights: 'Conceito Inicial',
-    features: [
-      {
-        icon: <Plane className="w-5 h-5" />,
-        category: 'Features Iniciais',
-        items: [
-          'Layout moderno Travel Dashboard (azul + verde + laranja)',
-          'Todas as 44 semanas de 2026 com datas de ida/retorno',
-          'Comparação de preços em 6 plataformas',
-          'Seletor de aeroporto (GRU ou CGH)',
-          'Indicadores de feriados nacionais e pontos facultativos',
-          'Agrupamento por mês com accordion',
-        ],
-      },
-      {
-        icon: <Shield className="w-5 h-5" />,
-        category: 'Backend',
-        items: [
-          'Autenticação por e-mail/senha',
-          'Banco de dados MySQL para persistência',
-        ],
-      },
-    ],
-  },
-  {
-    version: 'Bootstrap',
-    date: '25/02/2026',
-    month: 'Fevereiro 2026',
-    status: 'milestone',
-    highlights: 'Início do Projeto',
+    highlights: 'PWA, Notificações Push e Exportação PDF',
     features: [
       {
         icon: <Rocket className="w-5 h-5" />,
-        category: 'Marco Inicial',
+        category: 'Progressive Web App',
         items: [
-          'Initial project bootstrap - Criação do repositório',
-          'Configuração inicial do ambiente de desenvolvimento',
-          'Setup de dependências e ferramentas',
-          'Estrutura base do projeto estabelecida',
-          'Primeiro commit: 25/02/2026 08:45:24 UTC-5',
+          'Manifesto PWA (manifest.json) com ícone, nome e cores do app',
+          'Meta tags iOS (apple-touch-icon, status bar, viewport)',
+          'Service Worker para cache offline',
+          'Otimização layout responsivo mobile-first',
+        ],
+      },
+      {
+        icon: <Mail className="w-5 h-5" />,
+        category: 'Notificações',
+        items: [
+          'Instalação web-push com geração de chaves VAPID',
+          'Endpoints tRPC para salvar/remover subscriptions push',
+          'Job agendado no servidor para enviar notificação 24h antes do voo',
+          'Service Worker para receber e exibir notificações push',
+        ],
+      },
+      {
+        icon: <Plane className="w-5 h-5" />,
+        category: 'Exportação',
+        items: [
+          'Botão de exportação para PDF no cabeçalho',
+          'Layout visual colorido A4 com quebra de páginas por mês',
+        ],
+      },
+    ],
+  },
+  // Abril 2026
+  {
+    version: 'v0.3.0',
+    date: '10/04/2026',
+    month: 'Abril 2026',
+    status: 'released',
+    highlights: 'Rastreamento de Bilhetes e Gráficos',
+    features: [
+      {
+        icon: <TrendingUp className="w-5 h-5" />,
+        category: 'Análise de Dados',
+        items: [
+          'Gráfico de variação de preços com filtros por companhia',
+          'Resumo anual com KPIs (bilhetes emitidos, total investido, média por viagem)',
+          'Rastreamento de emissão de bilhetes (companhia, aeroporto, data/hora, localizador)',
+        ],
+      },
+      {
+        icon: <Gauge className="w-5 h-5" />,
+        category: 'Filtros e Controles',
+        items: [
+          'Filtros por faixa de preço, status de bilhete e mês',
+          'Filtros de horário de ida e volta',
+          'Filtro de companhia aérea com logotipos',
+        ],
+      },
+    ],
+  },
+  // Março 2026
+  {
+    version: 'v0.2.0',
+    date: '15/03/2026',
+    month: 'Março 2026',
+    status: 'released',
+    highlights: 'Layout Moderno Travel Dashboard',
+    features: [
+      {
+        icon: <Sparkles className="w-5 h-5" />,
+        category: 'Interface Principal',
+        items: [
+          'Layout moderno Travel Dashboard com paleta azul + verde + laranja',
+          'Todas as 44 semanas de 2026 com datas de ida (domingos) e retorno (quinta/sexta)',
+          'Comparação de preços em 6 plataformas (Kayak, LATAM, Gol, Azul, Voepass, Onhappy)',
+          'Seletor de aeroporto de saída (GRU ou CGH)',
+        ],
+      },
+      {
+        icon: <Calendar className="w-5 h-5" />,
+        category: 'Calendário',
+        items: [
+          'Indicadores de feriados nacionais e pontos facultativos',
+          'Agrupamento por mês com accordion (mês atual expandido por padrão)',
+        ],
+      },
+    ],
+  },
+  // Fevereiro 2026
+  {
+    version: 'v0.1.0',
+    date: '25/02/2026',
+    month: 'Fevereiro 2026',
+    status: 'released',
+    highlights: 'Bootstrap Inicial - Planejador de Passagens Aéreas',
+    features: [
+      {
+        icon: <Rocket className="w-5 h-5" />,
+        category: 'Projeto Iniciado',
+        items: [
+          'Primeiro commit do repositório (25/02/2026)',
+          'Setup inicial do projeto com React 19 + Tailwind 4',
+          'Configuração do banco de dados MySQL',
+          'Autenticação por e-mail/senha',
         ],
       },
     ],
@@ -657,10 +386,20 @@ const releases: Release[] = [
 ];
 
 export default function Changelog() {
-  const [expandedVersion, setExpandedVersion] = useState<string | null>('v2.0.0');
+  const [expandedReleases, setExpandedReleases] = useState<Set<string>>(new Set(['v1.3.0']));
 
-  // Group releases by month (mantém ordem reversa)
-  const releasesByMonth = releases.reduce((acc, release) => {
+  const toggleRelease = (version: string) => {
+    const newExpanded = new Set(expandedReleases);
+    if (newExpanded.has(version)) {
+      newExpanded.delete(version);
+    } else {
+      newExpanded.add(version);
+    }
+    setExpandedReleases(newExpanded);
+  };
+
+  // Agrupa releases por mês
+  const releasesByMonth: Record<string, Release[]> = releases.reduce((acc, release) => {
     if (!acc[release.month]) {
       acc[release.month] = [];
     }
@@ -690,16 +429,37 @@ export default function Changelog() {
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-950 dark:to-slate-900 py-12 px-4">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
-        <div className="mb-12 text-center">
+        <div className="text-center mb-12">
           <div className="flex items-center justify-center gap-3 mb-4">
             <Sparkles className="w-8 h-8 text-blue-600" />
             <h1 className="text-4xl font-bold text-slate-900 dark:text-white">
               Novidades
             </h1>
+            <Sparkles className="w-8 h-8 text-blue-600" />
           </div>
-          <p className="text-lg text-slate-600 dark:text-slate-300">
+          <p className="text-lg text-slate-600 dark:text-slate-400">
             Histórico completo de entregas e marcos desde fevereiro de 2026
           </p>
+        </div>
+
+        {/* Statistics */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-12">
+          <Card className="p-4 text-center">
+            <div className="text-3xl font-bold text-blue-600">{releases.length}</div>
+            <div className="text-sm text-slate-600 dark:text-slate-400">Releases</div>
+          </Card>
+          <Card className="p-4 text-center">
+            <div className="text-3xl font-bold text-green-600">159</div>
+            <div className="text-sm text-slate-600 dark:text-slate-400">Testes</div>
+          </Card>
+          <Card className="p-4 text-center">
+            <div className="text-3xl font-bold text-purple-600">50+</div>
+            <div className="text-sm text-slate-600 dark:text-slate-400">Commits</div>
+          </Card>
+          <Card className="p-4 text-center">
+            <div className="text-3xl font-bold text-orange-600">~85%</div>
+            <div className="text-sm text-slate-600 dark:text-slate-400">Cobertura</div>
+          </Card>
         </div>
 
         {/* Timeline by Month */}
@@ -720,73 +480,53 @@ export default function Changelog() {
                     {/* Release Card */}
                     <Card
                       className={`relative p-6 cursor-pointer transition-all hover:shadow-lg ${
-                        expandedVersion === release.version
-                          ? 'ring-2 ring-blue-500 shadow-lg'
-                          : 'hover:shadow-md'
+                        expandedReleases.has(release.version)
+                          ? 'bg-blue-50 dark:bg-slate-800 border-blue-200 dark:border-blue-900'
+                          : 'bg-white dark:bg-slate-800'
                       }`}
-                      onClick={() =>
-                        setExpandedVersion(
-                          expandedVersion === release.version ? null : release.version
-                        )
-                      }
+                      onClick={() => toggleRelease(release.version)}
                     >
-                      {/* Release Header */}
-                      <div className="flex items-start justify-between mb-4">
+                      <div className="flex items-start justify-between">
                         <div className="flex-1">
                           <div className="flex items-center gap-3 mb-2">
-                            <div className={`w-4 h-4 rounded-full ring-4 ${
-                              release.status === 'milestone'
-                                ? 'bg-yellow-500 ring-yellow-100 dark:ring-yellow-900'
-                                : 'bg-blue-500 ring-blue-100 dark:ring-blue-900'
-                            }`} />
-                            <h3 className="text-xl font-bold text-slate-900 dark:text-white">
+                            <span className="text-sm font-semibold text-blue-600 bg-blue-100 dark:bg-blue-900 px-3 py-1 rounded-full">
                               {release.version}
-                            </h3>
-                            {release.status === 'released' && (
-                              <span className="px-3 py-1 text-sm font-semibold text-green-700 bg-green-100 dark:bg-green-900/30 dark:text-green-400 rounded-full">
-                                ✅ Lançado
-                              </span>
-                            )}
-                            {release.status === 'milestone' && (
-                              <span className="px-3 py-1 text-sm font-semibold text-yellow-700 bg-yellow-100 dark:bg-yellow-900/30 dark:text-yellow-400 rounded-full">
-                                🎯 Marco
-                              </span>
-                            )}
+                            </span>
+                            <span className="text-sm text-slate-500 dark:text-slate-400">
+                              {release.date}
+                            </span>
                           </div>
-                          <p className="text-sm text-slate-500 dark:text-slate-400 mb-2">
-                            {release.date}
-                          </p>
-                          <p className="text-base font-semibold text-slate-700 dark:text-slate-200">
+                          <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">
                             {release.highlights}
-                          </p>
+                          </h3>
                         </div>
                         <ChevronDown
-                          className={`w-6 h-6 text-slate-600 dark:text-slate-400 transition-transform ${
-                            expandedVersion === release.version ? 'rotate-180' : ''
+                          className={`w-6 h-6 text-slate-400 transition-transform ${
+                            expandedReleases.has(release.version) ? 'rotate-180' : ''
                           }`}
                         />
                       </div>
 
-                      {/* Expandable Content */}
-                      {expandedVersion === release.version && (
-                        <div className="mt-6 pt-6 border-t border-slate-200 dark:border-slate-700 space-y-6">
-                          {release.features.map((feature, featureIndex) => (
-                            <div key={featureIndex}>
-                              <div className="flex items-center gap-3 mb-3">
-                                <div className="text-blue-600 dark:text-blue-400">
+                      {/* Expanded Content */}
+                      {expandedReleases.has(release.version) && (
+                        <div className="mt-6 pt-6 border-t border-slate-200 dark:border-slate-700 space-y-4">
+                          {release.features.map((feature, idx) => (
+                            <div key={idx}>
+                              <div className="flex items-center gap-2 mb-2">
+                                <div className="text-slate-600 dark:text-slate-400">
                                   {feature.icon}
                                 </div>
-                                <h4 className="text-lg font-semibold text-slate-900 dark:text-white">
+                                <h4 className="font-semibold text-slate-900 dark:text-white">
                                   {feature.category}
                                 </h4>
                               </div>
-                              <ul className="space-y-2 ml-8">
-                                {feature.items.map((item, itemIndex) => (
+                              <ul className="space-y-1 ml-8">
+                                {feature.items.map((item, itemIdx) => (
                                   <li
-                                    key={itemIndex}
-                                    className="flex items-start gap-3 text-slate-700 dark:text-slate-300"
+                                    key={itemIdx}
+                                    className="text-sm text-slate-600 dark:text-slate-400 flex items-start gap-2"
                                   >
-                                    <span className="text-blue-500 mt-1">✓</span>
+                                    <span className="text-blue-600 mt-1">•</span>
                                     <span>{item}</span>
                                   </li>
                                 ))}
@@ -796,54 +536,17 @@ export default function Changelog() {
                         </div>
                       )}
                     </Card>
+
+                    {/* Timeline Dot */}
+                    <div className="absolute left-0 top-8 -ml-8 w-4 h-4 bg-blue-600 rounded-full border-4 border-slate-50 dark:border-slate-950" />
+                    {index < releasesByMonth[month].length - 1 && (
+                      <div className="absolute left-0 top-12 -ml-7 w-0.5 h-12 bg-slate-200 dark:bg-slate-700" />
+                    )}
                   </div>
                 ))}
               </div>
             </div>
           ))}
-        </div>
-
-        {/* Stats */}
-        <div className="mt-12 grid grid-cols-1 md:grid-cols-4 gap-4">
-          <Card className="p-6 text-center">
-            <div className="text-3xl font-bold text-blue-600 dark:text-blue-400">
-              20+
-            </div>
-            <p className="text-sm text-slate-600 dark:text-slate-400 mt-2">
-              Releases & Marcos
-            </p>
-          </Card>
-          <Card className="p-6 text-center">
-            <div className="text-3xl font-bold text-green-600 dark:text-green-400">
-              159
-            </div>
-            <p className="text-sm text-slate-600 dark:text-slate-400 mt-2">
-              Testes Passando
-            </p>
-          </Card>
-          <Card className="p-6 text-center">
-            <div className="text-3xl font-bold text-purple-600 dark:text-purple-400">
-              50+
-            </div>
-            <p className="text-sm text-slate-600 dark:text-slate-400 mt-2">
-              Commits
-            </p>
-          </Card>
-          <Card className="p-6 text-center">
-            <div className="text-3xl font-bold text-orange-600 dark:text-orange-400">
-              ~85%
-            </div>
-            <p className="text-sm text-slate-600 dark:text-slate-400 mt-2">
-              Cobertura de Testes
-            </p>
-          </Card>
-        </div>
-
-        {/* Footer */}
-        <div className="mt-12 text-center">
-          <p className="text-sm text-slate-500 dark:text-slate-400">
-            Primeira entrega: 15/05/2026 (v0.3.0) • Última atualização: 17/07/2026 • Versão Atual: 2.0.0 • Status: ✅ Em Produção
-          </p>
         </div>
       </div>
     </div>
