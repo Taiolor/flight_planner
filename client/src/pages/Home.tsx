@@ -1781,6 +1781,16 @@ export default function Home() {
                   <DollarSign className="w-4 h-4 mr-1" /> Cotações
                 </Button>
               </Link>
+              <Link href="/novidades">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="bg-white bg-opacity-10 border-white text-white hover:bg-white hover:text-blue-700 btn-glow-cyan transition-all"
+                  title="Histórico de Novidades"
+                >
+                  <Sparkles className="w-4 h-4 mr-1" /> Novidades
+                </Button>
+              </Link>
               {isAuthenticated && (
                 <Link href="/admin/notifications">
                   <Button
