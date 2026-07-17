@@ -40,6 +40,7 @@ export const flightWeeks = mysqlTable(
   "flight_weeks",
   {
     id: int("id").autoincrement().primaryKey(),
+    year: int("year").default(2026).notNull(),
     weekNumber: int("weekNumber").notNull(),
     departureDate: varchar("departureDate", { length: 20 }).notNull(),
     returnDate: varchar("returnDate", { length: 20 }).notNull(),
@@ -70,6 +71,7 @@ export const flightWeeks = mysqlTable(
   },
   table => [
     // Índice para consultas por número de semana (filtros, lookups)
+    index("idx_flight_weeks_year").on(table.year),
     index("idx_flight_weeks_weekNumber").on(table.weekNumber),
     // Índice para filtros por status de emissão de bilhete
     index("idx_flight_weeks_isTicketIssued").on(table.isTicketIssued),
@@ -97,6 +99,7 @@ export type InsertFlightWeek = typeof flightWeeks.$inferInsert;
  */
 export const flightPrices = mysqlTable("flight_prices", {
   id: int("id").autoincrement().primaryKey(),
+  year: int("year").default(2026).notNull(),
   weekNumber: int("weekNumber").notNull(),
   airline: varchar("airline", { length: 50 }).notNull(),
   price: varchar("price", { length: 20 }).notNull(),
@@ -112,6 +115,7 @@ export type InsertFlightPrice = typeof flightPrices.$inferInsert;
  */
 export const public_prices = mysqlTable("public_prices", {
   id: int("id").autoincrement().primaryKey(),
+  year: int("year").default(2026).notNull(),
   weekNumber: int("weekNumber").notNull(),
   airline: varchar("airline", { length: 50 }).notNull(),
   price: varchar("price", { length: 20 }).notNull(),

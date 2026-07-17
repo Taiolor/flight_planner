@@ -387,8 +387,8 @@
 
 ## Implementação Multi-Ano (2026, 2027, 2028...)
 
-- [ ] Refatorar schema do banco de dados para incluir coluna 'year' em todas as tabelas
-- [ ] Atualizar procedures tRPC para aceitar parâmetro 'year' e filtrar dados por ano
+- [x] Refatorar schema do banco de dados para incluir coluna 'year' em todas as tabelas (flightWeeks, flightPrices, public_prices)
+- [x] Atualizar procedures tRPC para aceitar parâmetro 'year' e filtrar dados por ano (getAllFlightWeeks, getAllFlightPrices, getPublicPrices)
 - [ ] Implementar seletor de ano no cabeçalho (dropdown/tabs) com URL dinâmica
 - [ ] Refatorar página Home.tsx para carregar dados baseado no ano selecionado
 - [ ] Refatorar página CalendarView.tsx para suportar múltiplos anos com navegação entre anos

@@ -169,6 +169,13 @@
       "when": 1784316850656,
       "tag": "0023_complete_scarecrow",
       "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "5",
+      "when": 1784318832130,
+      "tag": "0024_striped_sleeper",
+      "breakpoints": true
     }
   ]
 }
