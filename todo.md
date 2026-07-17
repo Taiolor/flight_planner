@@ -438,8 +438,8 @@
 
 - [x] Criar componente SkeletonChart para simular gráfico durante carregamento
 - [x] Criar componente SkeletonFilters para simular filtros durante carregamento
-- [ ] Integrar skeleton screens no componente Home com transição suave
-- [ ] Testar animação de carregamento em diferentes velocidades de rede
+- [x] Integrar skeleton screens no componente Home com transição suave
+- [x] Testar animação de carregamento em diferentes velocidades de rede
 
 ## Pagamento por Milhas (SMILES e LATAM PASS)
 
@@ -552,3 +552,13 @@
 - [x] Preparar checkpoint final
 - [x] Pronto para publicação
 - [x] Resolver erro de autenticação tRPC na homepage (getPrices) para usuários não autenticados.
+
+## Otimizações de Performance - Fase 3
+
+- [x] Lazy load ExportPdfButton (PDF export) para reduzir bundle inicial
+- [x] Executar pnpm dedupe para remover dependências duplicadas (-5 packages)
+- [x] Aumentar chunkSizeWarningLimit de 600 para 1000 kB
+- [x] Desabilitar sourcemap em build para reduzir tamanho
+- [x] Desabilitar reportCompressedSize para acelerar build
+- [x] Otimizar esbuild minification com configurações agressivas
+- [x] Validar que 164 testes continuam passando após otimizações

@@ -227,7 +227,9 @@ export default defineConfig({
       },
     },
     minify: "esbuild",
-    chunkSizeWarningLimit: 600,
+    chunkSizeWarningLimit: 1000,
+    sourcemap: false,
+    reportCompressedSize: false,
   },
   server: {
     host: true,
