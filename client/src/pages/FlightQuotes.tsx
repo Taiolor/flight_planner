@@ -43,7 +43,9 @@ import {
   Loader2,
   DollarSign,
   Clock,
+  ArrowLeft,
 } from "lucide-react";
+import { Link } from "wouter";
 import { useTheme } from "@/contexts/ThemeContext";
 
 // ─── Utilitários de data ─────────────────────────────────────────────────────
@@ -978,6 +980,22 @@ export default function FlightQuotes() {
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-900 transition-colors duration-300">
+      {/* Cabeçalho com botão voltar */}
+      <header className="bg-gradient-to-r from-blue-600 via-purple-600 to-cyan-500 text-white px-4 py-3 flex items-center gap-3 shadow-lg sticky top-0 z-10">
+        <Link href="/">
+          <button className="flex items-center gap-1.5 text-white/80 hover:text-white transition-colors text-sm font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-blue-700 rounded-sm">
+            <ArrowLeft className="w-4 h-4" />
+            Voltar
+          </button>
+        </Link>
+        <div className="flex items-center gap-2 ml-2">
+          <Plane className="w-5 h-5" />
+          <h1 className="text-base font-bold tracking-wide">
+            Cotações de Passagens
+          </h1>
+        </div>
+      </header>
+
       {/* Header da página */}
       <div className="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 px-4 py-4 mb-6">
         <div className="max-w-4xl mx-auto">
