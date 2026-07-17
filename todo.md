@@ -438,7 +438,7 @@
 
 - [x] Criar componente SkeletonChart para simular gráfico durante carregamento
 - [x] Criar componente SkeletonFilters para simular filtros durante carregamento
-- [x] Integrar skeleton screens no componente Home com transição suave
+- [x] Integrar skeleton screens no componente Home com transição suave (Resumo Anual e Filtros)
 - [x] Testar animação de carregamento em diferentes velocidades de rede
 
 ## Pagamento por Milhas (SMILES e LATAM PASS)

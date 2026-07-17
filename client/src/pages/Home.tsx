@@ -105,6 +105,8 @@ import {
 import { usePullToRefresh } from "@/hooks/usePullToRefresh";
 import { usePushNotifications } from "@/hooks/usePushNotifications";
 import { ExportPdfButton } from "@/components/FlightPdfExport";
+import { SkeletonFilters } from "@/components/SkeletonFilters";
+import { SkeletonChart } from "@/components/SkeletonChart";
 import { NotificationSettingsPopup } from "@/components/NotificationSettingsPopup";
 import { trpc } from "@/lib/trpc";
 import { LoginModal } from "@/components/auth/LoginModal";
@@ -1844,6 +1846,9 @@ export default function Home() {
 
       <main className="container py-4 sm:py-8">
         {/* Resumo Anual */}
+        {weeksQuery.isLoading ? (
+          <SkeletonChart />
+        ) : (
         <Card className="p-4 sm:p-6 mb-4 sm:mb-8 gradient-modern-animated text-white rounded-3xl relative overflow-hidden shadow-2xl">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-4 sm:mb-6">
             <div>
@@ -1999,8 +2004,12 @@ export default function Home() {
             </div>
           )}
         </Card>
+        )}
 
         {/* Filtros */}
+        {weeksQuery.isLoading ? (
+          <SkeletonFilters />
+        ) : (
         <Card
           className={`p-4 sm:p-6 mb-4 sm:mb-8 backdrop-blur-md border rounded-2xl shadow-xl transition-colors duration-300 ${
             theme === "dark"
@@ -2303,6 +2312,7 @@ export default function Home() {
             </div>
           )}
         </Card>
+        )}
 
         {/* Avisos de filtros ativos */}
         {(showCheapestOnly || filterTicketStatus !== "all") && (
