@@ -669,7 +669,22 @@ export default function Changelog() {
   }, {} as Record<string, Release[]>);
 
   // Ordena meses em ordem reversa (mais recentes primeiro)
-  const months = Object.keys(releasesByMonth).sort().reverse();
+  // Converte 'Mês YYYY' para data para ordenação correta
+  const months = Object.keys(releasesByMonth).sort((a, b) => {
+    const monthMap: Record<string, number> = {
+      'Janeiro': 1, 'Fevereiro': 2, 'Março': 3, 'Abril': 4,
+      'Maio': 5, 'Junho': 6, 'Julho': 7, 'Agosto': 8,
+      'Setembro': 9, 'Outubro': 10, 'Novembro': 11, 'Dezembro': 12
+    };
+    
+    const [monthA, yearA] = a.split(' ');
+    const [monthB, yearB] = b.split(' ');
+    
+    const dateA = new Date(parseInt(yearA), (monthMap[monthA] || 1) - 1);
+    const dateB = new Date(parseInt(yearB), (monthMap[monthB] || 1) - 1);
+    
+    return dateB.getTime() - dateA.getTime(); // Decrescente (mais recentes primeiro)
+  });
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-950 dark:to-slate-900 py-12 px-4">
