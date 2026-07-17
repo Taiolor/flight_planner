@@ -1,12 +1,12 @@
 import { useState } from 'react';
-import { ChevronDown, Sparkles, Bug, Zap, Shield, Accessibility, Calendar, Plane, TrendingUp } from 'lucide-react';
+import { ChevronDown, Sparkles, Bug, Zap, Shield, Accessibility, Calendar, Plane, TrendingUp, Rocket } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 
 interface Release {
   version: string;
   date: string;
   month: string;
-  status: 'released' | 'planned';
+  status: 'released' | 'milestone' | 'planned';
   highlights: string;
   features: Array<{
     icon: React.ReactNode;
@@ -28,11 +28,11 @@ const releases: Release[] = [
         category: 'Novo: Página de Novidades',
         items: [
           'Componente Changelog.tsx com timeline visual',
-          '19 releases (v0.1.0 a v1.9.0) com histórico completo',
+          '20+ releases com histórico completo desde fevereiro/2026',
           'Rota /novidades integrada ao App.tsx',
           'Botão "Novidades" no header da Home',
           'Design moderno com ícones, cores e transições',
-          'Histórico organizado por mês desde fevereiro/2026',
+          'Histórico organizado por mês com inversão de ordem',
         ],
       },
     ],
@@ -652,12 +652,32 @@ const releases: Release[] = [
       },
     ],
   },
+  {
+    version: 'Bootstrap',
+    date: '25/02/2026',
+    month: 'Fevereiro 2026',
+    status: 'milestone',
+    highlights: 'Início do Projeto',
+    features: [
+      {
+        icon: <Rocket className="w-5 h-5" />,
+        category: 'Marco Inicial',
+        items: [
+          'Initial project bootstrap - Criação do repositório',
+          'Configuração inicial do ambiente de desenvolvimento',
+          'Setup de dependências e ferramentas',
+          'Estrutura base do projeto estabelecida',
+          'Primeiro commit: 25/02/2026 08:45:24 UTC-5',
+        ],
+      },
+    ],
+  },
 ];
 
 export default function Changelog() {
   const [expandedVersion, setExpandedVersion] = useState<string | null>('v1.9.0');
 
-  // Group releases by month
+  // Group releases by month (mantém ordem reversa)
   const releasesByMonth = releases.reduce((acc, release) => {
     if (!acc[release.month]) {
       acc[release.month] = [];
@@ -666,7 +686,8 @@ export default function Changelog() {
     return acc;
   }, {} as Record<string, Release[]>);
 
-  const months = Object.keys(releasesByMonth).reverse();
+  // Ordena meses em ordem reversa (mais recentes primeiro)
+  const months = Object.keys(releasesByMonth).sort().reverse();
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-950 dark:to-slate-900 py-12 px-4">
@@ -680,7 +701,7 @@ export default function Changelog() {
             </h1>
           </div>
           <p className="text-lg text-slate-600 dark:text-slate-300">
-            Histórico completo de releases desde fevereiro de 2026
+            Histórico completo de entregas e marcos desde fevereiro de 2026
           </p>
         </div>
 
@@ -712,13 +733,22 @@ export default function Changelog() {
                       <div className="flex items-start justify-between mb-4">
                         <div className="flex-1">
                           <div className="flex items-center gap-3 mb-2">
-                            <div className="w-4 h-4 rounded-full bg-blue-500 ring-4 ring-blue-100 dark:ring-blue-900" />
+                            <div className={`w-4 h-4 rounded-full ring-4 ${
+                              release.status === 'milestone'
+                                ? 'bg-yellow-500 ring-yellow-100 dark:ring-yellow-900'
+                                : 'bg-blue-500 ring-blue-100 dark:ring-blue-900'
+                            }`} />
                             <h3 className="text-xl font-bold text-slate-900 dark:text-white">
                               {release.version}
                             </h3>
                             {release.status === 'released' && (
                               <span className="px-3 py-1 text-sm font-semibold text-green-700 bg-green-100 dark:bg-green-900/30 dark:text-green-400 rounded-full">
                                 ✅ Lançado
+                              </span>
+                            )}
+                            {release.status === 'milestone' && (
+                              <span className="px-3 py-1 text-sm font-semibold text-yellow-700 bg-yellow-100 dark:bg-yellow-900/30 dark:text-yellow-400 rounded-full">
+                                🎯 Marco
                               </span>
                             )}
                           </div>
@@ -776,10 +806,10 @@ export default function Changelog() {
         <div className="mt-12 grid grid-cols-1 md:grid-cols-4 gap-4">
           <Card className="p-6 text-center">
             <div className="text-3xl font-bold text-blue-600 dark:text-blue-400">
-              19
+              20+
             </div>
             <p className="text-sm text-slate-600 dark:text-slate-400 mt-2">
-              Versões Lançadas
+              Releases & Marcos
             </p>
           </Card>
           <Card className="p-6 text-center">
@@ -811,7 +841,7 @@ export default function Changelog() {
         {/* Footer */}
         <div className="mt-12 text-center">
           <p className="text-sm text-slate-500 dark:text-slate-400">
-            Última atualização: 17/07/2026 • Versão Atual: 1.9.0 • Status: ✅ Em Produção
+            Primeira entrega: 15/05/2026 (v0.1.0) • Última atualização: 17/07/2026 • Versão Atual: 1.9.0 • Status: ✅ Em Produção
           </p>
         </div>
       </div>
