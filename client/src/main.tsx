@@ -44,7 +44,7 @@ const redirectToLoginIfUnauthorized = (error: unknown) => {
   if (!(error instanceof TRPCClientError)) return;
   if (typeof window === "undefined") return;
 
-  const isUnauthorized = error.message === UNAUTHED_ERR_MSG;
+  const isUnauthorized = error.message === UNAUTHED_ERR_MSG || error.message === "Faça login para acessar.";
 
   if (!isUnauthorized) return;
 

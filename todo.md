@@ -551,3 +551,4 @@
 - [x] Criar guia de manutenção
 - [x] Preparar checkpoint final
 - [x] Pronto para publicação
+- [x] Resolver erro de autenticação tRPC na homepage (getPrices) para usuários não autenticados.

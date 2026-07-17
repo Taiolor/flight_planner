@@ -265,7 +265,7 @@ export async function getAllFlightPrices(): Promise<
 export async function getPublicPrices() {
   const db = await getDb();
   if (!db) return [];
-  return db.select().from(public_prices);
+  return db.select({ id: public_prices.id, weekNumber: public_prices.weekNumber, airline: public_prices.airline, price: public_prices.price, createdAt: public_prices.createdAt, updatedAt: public_prices.updatedAt }).from(public_prices);
 }
 
 export async function upsertFlightPrice(

@@ -112,6 +112,7 @@ export type InsertFlightPrice = typeof flightPrices.$inferInsert;
  */
 export const public_prices = mysqlTable("public_prices", {
   id: int("id").autoincrement().primaryKey(),
+  weekNumber: int("weekNumber").notNull(),
   airline: varchar("airline", { length: 50 }).notNull(),
   price: varchar("price", { length: 20 }).notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),

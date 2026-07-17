@@ -1,0 +1,1 @@
+ALTER TABLE `public_prices` ADD `weekNumber` int NOT NULL;

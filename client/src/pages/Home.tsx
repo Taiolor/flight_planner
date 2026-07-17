@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect, useCallback, useRef } from "react";
+import type { FlightPrice, PublicPrice } from "../../../drizzle/schema";
 import {
   BarChart,
   Bar,
@@ -549,9 +550,17 @@ export default function Home() {
 
   // tRPC queries
   const weeksQuery = trpc.flights.getWeeks.useQuery();
-  const pricesQuery = trpc.flights.getPrices.useQuery(undefined, {
+    const pricesQuery = trpc.flights.getPrices.useQuery(undefined, {
     enabled: isAuthenticated,
   });
+
+  const publicPricesQuery = trpc.flights.getPublicPrices.useQuery(undefined, {
+    enabled: !isAuthenticated,
+  });
+
+    const currentPricesData: (FlightPrice | PublicPrice)[] | undefined = isAuthenticated
+    ? pricesQuery.data as FlightPrice[] | undefined
+    : publicPricesQuery.data as PublicPrice[] | undefined;
   const utils = trpc.useUtils();
 
   // Pull-to-refresh: puxar para baixo no topo da página para recarregar os dados
@@ -768,14 +777,14 @@ export default function Home() {
   // Build price map from DB
   const priceMap: PriceMap = useMemo(() => {
     const map: PriceMap = {};
-    if (pricesQuery.data) {
-      for (const p of pricesQuery.data) {
+    if (currentPricesData) {
+      for (const p of currentPricesData) {
         if (!map[p.weekNumber]) map[p.weekNumber] = {};
         map[p.weekNumber][p.airline] = p.price;
       }
     }
     return map;
-  }, [pricesQuery.data]);
+  }, [currentPricesData]);
 
   // Use DB data if available, otherwise fallback to static data
   const weeksData: WeekData[] = useMemo(() => {
@@ -1497,7 +1506,7 @@ export default function Home() {
     );
   };
 
-  const isLoading = weeksQuery.isLoading || pricesQuery.isLoading;
+  const isLoading = weeksQuery.isLoading || pricesQuery.isLoading || publicPricesQuery.isLoading;
 
   return (
     <div
