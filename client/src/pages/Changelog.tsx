@@ -696,7 +696,11 @@ export default function Changelog() {
                 {month}
               </h2>
               <div className="space-y-4 ml-4">
-                {releasesByMonth[month].map((release, index) => (
+                {releasesByMonth[month].sort((a, b) => {
+                  const dateA = new Date(a.date.split('/').reverse().join('-')).getTime();
+                  const dateB = new Date(b.date.split('/').reverse().join('-')).getTime();
+                  return dateB - dateA; // Decrescente (mais recentes primeiro)
+                }).map((release, index) => (
                   <div key={release.version} className="relative">
                     {/* Release Card */}
                     <Card
