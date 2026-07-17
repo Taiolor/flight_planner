@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ChevronDown, Sparkles, Bug, Zap, Shield, Accessibility, Calendar, Plane, TrendingUp, Rocket } from 'lucide-react';
+import { ChevronDown, Sparkles, Bug, Zap, Shield, Accessibility, Calendar, Plane, TrendingUp, Rocket, Code, Database, Gauge, Eye, Mail } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 
 interface Release {
@@ -17,35 +17,26 @@ interface Release {
 
 const releases: Release[] = [
   {
-    version: 'v1.9.0',
+    version: 'v2.0.0',
     date: '17/07/2026',
     month: 'Julho 2026',
     status: 'released',
-    highlights: 'Seção de Novidades com Histórico Completo',
+    highlights: 'Seção de Novidades com Histórico Completo + Testes CI/CD',
     features: [
       {
         icon: <Sparkles className="w-5 h-5" />,
-        category: 'Novo: Página de Novidades',
+        category: 'Página de Novidades',
         items: [
-          'Componente Changelog.tsx com timeline visual',
-          '20+ releases com histórico completo desde fevereiro/2026',
+          'Componente Changelog.tsx com timeline visual completa',
+          '20+ releases com histórico desde fevereiro/2026',
           'Rota /novidades integrada ao App.tsx',
           'Botão "Novidades" no header da Home',
           'Design moderno com ícones, cores e transições',
           'Histórico organizado por mês com inversão de ordem',
         ],
       },
-    ],
-  },
-  {
-    version: 'v1.8.0',
-    date: '16/07/2026',
-    month: 'Julho 2026',
-    status: 'released',
-    highlights: 'Testes Completos e CI/CD Pipeline',
-    features: [
       {
-        icon: <Sparkles className="w-5 h-5" />,
+        icon: <Zap className="w-5 h-5" />,
         category: 'Suite de Testes',
         items: [
           '159 testes passando com 100% de sucesso',
@@ -55,7 +46,7 @@ const releases: Release[] = [
         ],
       },
       {
-        icon: <Zap className="w-5 h-5" />,
+        icon: <Code className="w-5 h-5" />,
         category: 'CI/CD Pipeline',
         items: [
           'test.yml - Testes automáticos, lint, segurança',
@@ -65,20 +56,10 @@ const releases: Release[] = [
           'Deploy automático após testes passarem',
         ],
       },
-      {
-        icon: <Calendar className="w-5 h-5" />,
-        category: 'Documentação',
-        items: [
-          'GUIA_EXECUCAO_TESTES.md - Guia completo de testes',
-          'CI_CD_SETUP.md - Configuração de CI/CD',
-          'RELEASE_HISTORY.md - Histórico de releases',
-          'PLANO_RESOLUCAO_CONFLITOS.md - Plano de resolução',
-        ],
-      },
     ],
   },
   {
-    version: 'v1.7.0',
+    version: 'v1.9.0',
     date: '14/07/2026',
     month: 'Julho 2026',
     status: 'released',
@@ -100,6 +81,9 @@ const releases: Release[] = [
           'Finais de semana prolongados simplificados',
           'Considera apenas feriado + sábado + domingo',
           'Reduz significativamente dias marcados',
+          'Painel da Copa reduzido ao mínimo com botão sanfona',
+          'Ícone ChevronDown animado (rotação 180°)',
+          'Preferência de visualização persistida em localStorage',
         ],
       },
       {
@@ -119,15 +103,13 @@ const releases: Release[] = [
           'Calendário dinâmico com jogos do Brasil',
           'Resultados em tempo real (4 jogos disputados)',
           'Estatísticas: 3V 1E 0D | 9 gols pró, 2 contra',
-          'Painel reduzido ao mínimo com botão sanfona',
-          'Ícone ChevronDown animado (rotação 180°)',
-          'Preferência de visualização persistida em localStorage',
+          'Próximo jogo destacado (Oitavas de Final)',
         ],
       },
     ],
   },
   {
-    version: 'v1.6.0',
+    version: 'v1.8.0',
     date: '13/07/2026',
     month: 'Julho 2026',
     status: 'released',
@@ -171,7 +153,7 @@ const releases: Release[] = [
     ],
   },
   {
-    version: 'v1.5.0',
+    version: 'v1.7.0',
     date: '10/07/2026',
     month: 'Junho 2026',
     status: 'released',
@@ -203,7 +185,7 @@ const releases: Release[] = [
     ],
   },
   {
-    version: 'v1.4.0',
+    version: 'v1.6.0',
     date: '08/07/2026',
     month: 'Junho 2026',
     status: 'released',
@@ -243,7 +225,7 @@ const releases: Release[] = [
     ],
   },
   {
-    version: 'v1.3.0',
+    version: 'v1.5.0',
     date: '05/07/2026',
     month: 'Junho 2026',
     status: 'released',
@@ -286,14 +268,14 @@ const releases: Release[] = [
     ],
   },
   {
-    version: 'v1.2.0',
+    version: 'v1.4.0',
     date: '02/07/2026',
     month: 'Junho 2026',
     status: 'released',
     highlights: 'E-mail e Compartilhamento',
     features: [
       {
-        icon: <Sparkles className="w-5 h-5" />,
+        icon: <Mail className="w-5 h-5" />,
         category: 'Notificações por E-mail',
         items: [
           'Tabela ticket_notification_emails no schema',
@@ -327,7 +309,7 @@ const releases: Release[] = [
     ],
   },
   {
-    version: 'v1.1.0',
+    version: 'v1.3.0',
     date: '28/06/2026',
     month: 'Junho 2026',
     status: 'released',
@@ -345,7 +327,7 @@ const releases: Release[] = [
         ],
       },
       {
-        icon: <Sparkles className="w-5 h-5" />,
+        icon: <Database className="w-5 h-5" />,
         category: 'Logging e Limpeza',
         items: [
           'Tabela notification_log com weekNumber, direction, avisoLabel, etc',
@@ -368,7 +350,7 @@ const releases: Release[] = [
     ],
   },
   {
-    version: 'v1.0.0',
+    version: 'v1.2.0',
     date: '25/06/2026',
     month: 'Junho 2026',
     status: 'released',
@@ -401,7 +383,7 @@ const releases: Release[] = [
     ],
   },
   {
-    version: 'v0.9.0',
+    version: 'v1.1.0',
     date: '20/06/2026',
     month: 'Junho 2026',
     status: 'released',
@@ -430,7 +412,7 @@ const releases: Release[] = [
     ],
   },
   {
-    version: 'v0.8.0',
+    version: 'v1.0.0',
     date: '15/06/2026',
     month: 'Junho 2026',
     status: 'released',
@@ -459,7 +441,7 @@ const releases: Release[] = [
     ],
   },
   {
-    version: 'v0.7.0',
+    version: 'v0.9.0',
     date: '10/06/2026',
     month: 'Junho 2026',
     status: 'released',
@@ -490,7 +472,7 @@ const releases: Release[] = [
     ],
   },
   {
-    version: 'v0.6.0',
+    version: 'v0.8.0',
     date: '05/06/2026',
     month: 'Junho 2026',
     status: 'released',
@@ -517,14 +499,14 @@ const releases: Release[] = [
     ],
   },
   {
-    version: 'v0.5.0',
+    version: 'v0.7.0',
     date: '01/06/2026',
     month: 'Junho 2026',
     status: 'released',
     highlights: 'Controles de Visibilidade',
     features: [
       {
-        icon: <Sparkles className="w-5 h-5" />,
+        icon: <Eye className="w-5 h-5" />,
         category: 'Privacidade',
         items: [
           'Botão de olho para ocultar/exibir valores monetários',
@@ -543,7 +525,7 @@ const releases: Release[] = [
     ],
   },
   {
-    version: 'v0.4.0',
+    version: 'v0.6.0',
     date: '28/05/2026',
     month: 'Maio 2026',
     status: 'released',
@@ -572,7 +554,7 @@ const releases: Release[] = [
     ],
   },
   {
-    version: 'v0.3.0',
+    version: 'v0.5.0',
     date: '25/05/2026',
     month: 'Maio 2026',
     status: 'released',
@@ -598,7 +580,7 @@ const releases: Release[] = [
     ],
   },
   {
-    version: 'v0.2.0',
+    version: 'v0.4.0',
     date: '20/05/2026',
     month: 'Maio 2026',
     status: 'released',
@@ -624,7 +606,7 @@ const releases: Release[] = [
     ],
   },
   {
-    version: 'v0.1.0',
+    version: 'v0.3.0',
     date: '15/05/2026',
     month: 'Maio 2026',
     status: 'released',
@@ -675,7 +657,7 @@ const releases: Release[] = [
 ];
 
 export default function Changelog() {
-  const [expandedVersion, setExpandedVersion] = useState<string | null>('v1.9.0');
+  const [expandedVersion, setExpandedVersion] = useState<string | null>('v2.0.0');
 
   // Group releases by month (mantém ordem reversa)
   const releasesByMonth = releases.reduce((acc, release) => {
@@ -841,7 +823,7 @@ export default function Changelog() {
         {/* Footer */}
         <div className="mt-12 text-center">
           <p className="text-sm text-slate-500 dark:text-slate-400">
-            Primeira entrega: 15/05/2026 (v0.1.0) • Última atualização: 17/07/2026 • Versão Atual: 1.9.0 • Status: ✅ Em Produção
+            Primeira entrega: 15/05/2026 (v0.3.0) • Última atualização: 17/07/2026 • Versão Atual: 2.0.0 • Status: ✅ Em Produção
           </p>
         </div>
       </div>
