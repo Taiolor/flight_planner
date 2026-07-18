@@ -112,6 +112,7 @@ import { trpc } from "@/lib/trpc";
 import { LoginModal } from "@/components/auth/LoginModal";
 import { useTheme, COLOR_PRESETS } from "@/contexts/ThemeContext";
 import type { ColorPreset } from "@/contexts/ThemeContext";
+import { useYear } from "@/contexts/YearContext";
 
 /**
  * Memória histórica de números de voo.
@@ -550,16 +551,8 @@ export default function Home() {
       return saved ? parseInt(saved, 10) : 75;
     });
 
-  // Ano selecionado (persiste no dispositivo)
-  const [selectedYear, setSelectedYear] = useState<number>(() => {
-    const saved = localStorage.getItem("selectedYear");
-    return saved ? parseInt(saved, 10) : new Date().getFullYear();
-  });
-
-  // Atualizar localStorage quando o ano muda
-  useEffect(() => {
-    localStorage.setItem("selectedYear", selectedYear.toString());
-  }, [selectedYear]);
+  // Usar contexto de ano compartilhado
+  const { selectedYear, setSelectedYear } = useYear();
 
   // Gerar lista de anos disponíveis (2026-2030)
   const availableYears = [2026, 2027, 2028, 2029, 2030];

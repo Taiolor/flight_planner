@@ -8,10 +8,18 @@ interface YearContextType {
 const YearContext = createContext<YearContextType | undefined>(undefined);
 
 export function YearProvider({ children }: { children: ReactNode }) {
-  const [selectedYear, setSelectedYear] = useState(2026);
+  const [selectedYear, setSelectedYear] = useState<number>(() => {
+    const saved = localStorage.getItem("selectedYear");
+    return saved ? parseInt(saved, 10) : new Date().getFullYear();
+  });
+
+  const handleSetSelectedYear = (year: number) => {
+    setSelectedYear(year);
+    localStorage.setItem("selectedYear", year.toString());
+  };
 
   return (
-    <YearContext.Provider value={{ selectedYear, setSelectedYear }}>
+    <YearContext.Provider value={{ selectedYear, setSelectedYear: handleSetSelectedYear }}>
       {children}
     </YearContext.Provider>
   );
