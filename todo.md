@@ -261,13 +261,8 @@
 
 ### 3. Publicar o Site
 
-<<<<<<< Updated upstream
-
-- [ ] Clicar em "Publish" no painel de gerenciamento
-- [ ] # Validar que o site está disponível em flightplan-hq655wm9.manus.space
 - [x] Clicar em "Publish" no painel de gerenciamento
 - [x] Validar que o site está disponível em flightplan-hq655wm9.manus.space
-  > > > > > > > Stashed changes
 
 ## Implementação das 3 Sugestões
 
@@ -286,15 +281,9 @@
 
 ### 3. Publicar o Site
 
-<<<<<<< Updated upstream
-
-- [ ] Clicar em "Publish" no painel de gerenciamento
-- [ ] Validar que o site está disponível em flightplan-hq655wm9.manus.space
-- [ ] # Testar funcionalidades principais em produção
 - [x] Clicar em "Publish" no painel de gerenciamento
 - [x] Validar que o site está disponível em flightplan-hq655wm9.manus.space
 - [x] Testar funcionalidades principais em produção
-  > > > > > > > Stashed changes
 
 ## Feature: Compartilhar por E-Mail
 
@@ -320,15 +309,9 @@
 
 ### 3. Publicar o Site em Produção
 
-<<<<<<< Updated upstream
-
-- [ ] Clicar em "Publish" no painel de gerenciamento
-- [ ] Validar que o site está disponível em flightplan-hq655wm9.manus.space
-- [ ] # Testar funcionalidades principais em produção
 - [x] Clicar em "Publish" no painel de gerenciamento
 - [x] Validar que o site está disponível em flightplan-hq655wm9.manus.space
 - [x] Testar funcionalidades principais em produção
-  > > > > > > > Stashed changes
 - [x] Implementar envio automático de e-mail ao marcar bilhete como 'Emitido'
 
 ## Ajustes no E-mail de Compartilhamento
@@ -392,8 +375,8 @@
 - [x] Implementar seletor de ano no cabeçalho (dropdown/tabs) com URL dinâmica
 - [x] Refatorar página Home.tsx para usar YearContext e passar selectedYear ao CalendarView
 - [x] Refatorar página CalendarView.tsx para suportar múltiplos anos com navegação entre anos
-- [ ] Atualizar dados de feriados para incluir anos futuros (2027, 2028, 2029)
-- [ ] Testar fluxos multi-ano e salvar checkpoint
+- [x] Atualizar dados de feriados para incluir anos futuros (2027, 2028, 2029, 2030)
+- [x] Testar fluxos multi-ano e salvar checkpoint
 
 ## Resolução do PR #125 no GitHub
 
@@ -428,14 +411,6 @@
 
 ## UI/UX - Skeleton Screen para Carregamento
 
-- [ ] Criar componente SkeletonChart para simular gráfico durante carregamento
-- [ ] Criar componente SkeletonFilters para simular filtros durante carregamento
-- [ ] Adicionar estado de loading ao componente Home
-- [ ] Mostrar skeleton screens enquanto dados estão sendo carregados
-- [ ] Adicionar transição suave entre skeleton e conteúdo real
-
-## UI/UX - Skeleton Screen para Carregamento
-
 - [x] Criar componente SkeletonChart para simular gráfico durante carregamento
 - [x] Criar componente SkeletonFilters para simular filtros durante carregamento
 - [x] Integrar skeleton screens no componente Home com transição suave (Resumo Anual e Filtros)
@@ -449,7 +424,7 @@
 - [x] Atualizar routers.ts para aceitar e retornar campos de milhas
 - [x] Adicionar campos SMILES e LATAM PASS no frame de valores da UI (input em pontos)
 - [x] Implementar soma mensal de milhas gastas no resumo por mês
-- [ ] Atualizar notificações por email para incluir dados de milhas
+- [x] Atualizar notificações por email para incluir dados de milhas
 - [x] Testar fluxo completo de entrada e exibição de milhas (158 testes passando)
 
 ## Restyling Opção 2 (Moderna) - Paleta Roxo/Ciano
