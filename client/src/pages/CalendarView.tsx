@@ -43,7 +43,12 @@ const MONTHS = [
 ];
 
 const WEEKDAYS = ["D", "S", "T", "Q", "Q", "S", "S"];
-const YEAR = 2026;
+
+interface CalendarViewProps {
+  year?: number;
+}
+
+const DEFAULT_YEAR = 2026;
 
 interface HolidayInfo {
   name: string;
@@ -555,7 +560,7 @@ function FlightPopup({
   );
 }
 
-export default function CalendarView() {
+export default function CalendarView({ year = DEFAULT_YEAR }: CalendarViewProps = {}) {
   const weeksQuery = trpc.flights.getWeeks.useQuery();
   const [selectedMark, setSelectedMark] = useState<DayMark | null>(null);
   const [showOnlyHolidaysAndWeekends, setShowOnlyHolidaysAndWeekends] =
@@ -622,7 +627,7 @@ export default function CalendarView() {
       const isOneway = (week.ticketType ?? "roundtrip") === "oneway";
 
       if (depDate) {
-        if (depDate.getFullYear() === YEAR) {
+        if (depDate.getFullYear() === year) {
           issuedPerMonth[depDate.getMonth()]++;
         }
         if (depDate >= today) {
@@ -672,13 +677,13 @@ export default function CalendarView() {
     return weeks;
   }
 
-  // ⚡ Bolt: Pre-calculate the grid layout for all 12 months once since YEAR is static.
+  // ⚡ Bolt: Pre-calculate the grid layout for all 12 months once since year is static.
   // Prevents allocating new nested arrays and Date objects 12 times per render cycle.
   const monthGrids = useMemo(() => {
     const grids: (number | null)[][][] = [];
-    for (let i = 0; i < 12; i++) grids.push(buildMonthGrid(YEAR, i));
+    for (let i = 0; i < 12; i++) grids.push(buildMonthGrid(year, i));
     return grids;
-  }, []);
+  }, [year]);
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -816,7 +821,7 @@ export default function CalendarView() {
                       {week.map((day, di) => {
                         if (!day) return <div key={di} />;
 
-                        const key = `${YEAR}-${String(monthIdx + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+                        const key = `${year}-${String(monthIdx + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
                         const mark = markedDays[key];
                         const holiday = HOLIDAYS[key];
                         const cupMatch = brazilMatchByDate[key];

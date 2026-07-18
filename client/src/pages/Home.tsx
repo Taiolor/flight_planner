@@ -550,6 +550,20 @@ export default function Home() {
       return saved ? parseInt(saved, 10) : 75;
     });
 
+  // Ano selecionado (persiste no dispositivo)
+  const [selectedYear, setSelectedYear] = useState<number>(() => {
+    const saved = localStorage.getItem("selectedYear");
+    return saved ? parseInt(saved, 10) : new Date().getFullYear();
+  });
+
+  // Atualizar localStorage quando o ano muda
+  useEffect(() => {
+    localStorage.setItem("selectedYear", selectedYear.toString());
+  }, [selectedYear]);
+
+  // Gerar lista de anos disponíveis (2026-2030)
+  const availableYears = [2026, 2027, 2028, 2029, 2030];
+
   // tRPC queries
   const weeksQuery = trpc.flights.getWeeks.useQuery();
     const pricesQuery = trpc.flights.getPrices.useQuery(undefined, {
@@ -1621,7 +1635,7 @@ export default function Home() {
                   Smart Fly
                 </h1>
                 <p className="text-slate-200 text-xs sm:text-sm font-medium tracking-wide">
-                  {departureAirport} → NVT • 2026
+                  {departureAirport} → NVT • {selectedYear}
                 </p>
               </div>
             </div>
@@ -1641,6 +1655,23 @@ export default function Home() {
                   <Moon className="w-4 h-4" />
                 )}
               </Button>
+
+              {/* Seletor de Ano */}
+              <Select value={selectedYear.toString()} onValueChange={val => setSelectedYear(parseInt(val))}>
+                <SelectTrigger
+                  className="border-white/40 text-white hover:bg-white/20 backdrop-blur-sm bg-white/10 btn-glow-cyan transition-all w-auto"
+                  aria-label="Selecionar ano"
+                >
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {availableYears.map(year => (
+                    <SelectItem key={year} value={year.toString()}>
+                      {year}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
 
               {/* Seletor de Presets de Cores */}
               <Select
