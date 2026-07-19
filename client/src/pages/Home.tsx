@@ -1281,6 +1281,8 @@ export default function Home() {
         feriadoRetorno: FeriadoInfo[];
         feriadosIntervaloCopa: FeriadoInfo[];
         feriadosIntervaloNaoCopa: FeriadoInfo[];
+        jogosDosBrasil: typeof todosJogosParsed;
+        fasesEliminatorias: typeof todasFasesParsed;
       }
     > = {};
 
@@ -1303,12 +1305,35 @@ export default function Home() {
           else feriadosIntervaloNaoCopa.push(f);
         }
       }
+
+      const semanaInicio = parseBR(w.departureDate);
+      const semanaFimViagem = parseBR(w.returnDate);
+      const semanaFim = new Date(semanaInicio);
+      semanaFim.setDate(semanaFim.getDate() + 6);
+      const semanaFimEfetivo =
+        semanaFimViagem > semanaFim ? semanaFimViagem : semanaFim;
+
+      const semanaInicioMs = semanaInicio.getTime();
+      const semanaFimEfetivoMs = semanaFimEfetivo.getTime();
+
+      const jogosDosBrasil = todosJogosParsed.filter(
+        jogo =>
+          jogo.dataMs >= semanaInicioMs && jogo.dataMs <= semanaFimEfetivoMs
+      );
+
+      const fasesEliminatorias = todasFasesParsed.filter(
+        fase =>
+          fase.inicioMs <= semanaFimEfetivoMs && fase.fimMs >= semanaInicioMs
+      );
+
       map[w.weekNumber] = {
         feriados,
         feriadoIda,
         feriadoRetorno,
         feriadosIntervaloCopa,
         feriadosIntervaloNaoCopa,
+        jogosDosBrasil,
+        fasesEliminatorias,
       };
     }
     return map;
@@ -2578,12 +2603,16 @@ export default function Home() {
                               feriadoRetorno,
                               feriadosIntervaloCopa,
                               feriadosIntervaloNaoCopa,
+                              jogosDosBrasil,
+                              fasesEliminatorias,
                             } = feriadosByWeek[week.weekNumber] || {
                               feriados: [],
                               feriadoIda: [],
                               feriadoRetorno: [],
                               feriadosIntervaloCopa: [],
                               feriadosIntervaloNaoCopa: [],
+                              jogosDosBrasil: [],
+                              fasesEliminatorias: [],
                             };
 
                             return (
@@ -3078,52 +3107,6 @@ export default function Home() {
                                 >
                                     {/* Painel Copa 2026 — apenas semanas com jogos/fases no intervalo */}
                                     {(() => {
-                                      const semanaInicio = parseBR(
-                                        week.departureDate
-                                      );
-                                      const semanaFimViagem = parseBR(
-                                        week.returnDate
-                                      );
-                                      // Ampliar o fim para cobrir a semana calendário completa:
-                                      // a semana começa no domingo (ida) e vai até o sábado seguinte (+6 dias)
-                                      const semanaFim = new Date(semanaInicio);
-                                      semanaFim.setDate(
-                                        semanaFim.getDate() + 6
-                                      );
-                                      // Usar o maior dos dois (retorno ou sábado da semana)
-                                      const semanaFimEfetivo =
-                                        semanaFimViagem > semanaFim
-                                          ? semanaFimViagem
-                                          : semanaFim;
-
-                                      // Todos os jogos da 1ª fase (Hoisted)
-
-                                      // Filtrar jogos que caem dentro da semana calendário (dom-sáb)
-                                      const semanaInicioMs =
-                                        semanaInicio.getTime();
-                                      const semanaFimEfetivoMs =
-                                        semanaFimEfetivo.getTime();
-                                      const jogosDosBrasil =
-                                        todosJogosParsed.filter(jogo => {
-                                          return (
-                                            jogo.dataMs >= semanaInicioMs &&
-                                            jogo.dataMs <= semanaFimEfetivoMs
-                                          );
-                                        });
-
-                                      // Fases eliminatórias: janelas de datas (Hoisted)
-
-                                      // Filtrar fases eliminatórias que se sobrepõem à semana calendário
-                                      const fasesEliminatorias =
-                                        todasFasesParsed.filter(fase => {
-                                          // Sobreposição: faseInicio <= semanaFimEfetivo E faseFim >= semanaInicio
-                                          return (
-                                            fase.inicioMs <=
-                                              semanaFimEfetivoMs &&
-                                            fase.fimMs >= semanaInicioMs
-                                          );
-                                        });
-
                                       // Só renderiza o painel se houver jogos ou fases no intervalo
                                       if (
                                         jogosDosBrasil.length === 0 &&
