@@ -543,3 +543,10 @@
 - [x] Identificar causa raiz: updateFlightWeekStatus não filtrava por year
 - [x] Corrigir updateFlightWeekStatus para filtrar por year + weekNumber
 - [x] Validar com testes (164 testes passando)
+
+## Accordion de Semanas
+
+- [x] Implementar accordion por semana (abrir/fechar) com animação suave
+- [x] Semanas passadas iniciam fechadas ao carregar o site
+- [x] Semanas futuras/atuais iniciam abertas ao carregar o site
+- [x] Botão de expandir/recolher visível no cabeçalho de cada semana

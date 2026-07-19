@@ -1108,18 +1108,39 @@ export default function Home() {
     return null;
   }, [weeksData]);
 
-  const [expandedWeekCards, setExpandedWeekCards] = useState<Set<number>>(
-    () => {
-      return currentWeekNumber ? new Set([currentWeekNumber]) : new Set();
+  // Inicializa o accordion: semanas futuras/atuais abertas, passadas fechadas
+  const getInitialExpandedWeeks = () => {
+    const now = new Date();
+    now.setHours(0, 0, 0, 0);
+    const expanded = new Set<number>();
+    for (const w of weeksData) {
+      if (w.departureDate && w.departureDate.length === 10) {
+        const dep = parseBR(w.departureDate);
+        // Abre semanas cujo voo de ida ainda não passou (ou é hoje)
+        if (!isNaN(dep.getTime()) && dep >= now) {
+          expanded.add(w.weekNumber);
+        }
+      }
     }
-  );
+    // Se nenhuma semana futura, abre apenas a mais recente
+    if (expanded.size === 0 && currentWeekNumber) {
+      expanded.add(currentWeekNumber);
+    }
+    return expanded;
+  };
 
-  // Atualizar semana expandida quando currentWeekNumber mudar (dados carregados)
+  const [expandedWeekCards, setExpandedWeekCards] = useState<Set<number>>(
+    () => new Set<number>()
+  );
+  const weekCardsInitialized = useRef(false);
+
+  // Inicializa accordion quando os dados de semanas carregarem
   useEffect(() => {
-    if (currentWeekNumber && expandedWeekCards.size === 0) {
-      setExpandedWeekCards(new Set([currentWeekNumber]));
+    if (!weekCardsInitialized.current && weeksData.length > 0) {
+      weekCardsInitialized.current = true;
+      setExpandedWeekCards(getInitialExpandedWeeks());
     }
-  }, [currentWeekNumber]);
+  }, [weeksData]);
 
   const toggleWeekCard = (weekNumber: number) => {
     setExpandedWeekCards(prev => {
@@ -3045,12 +3066,16 @@ export default function Home() {
                                   </div>
                                 </div>
 
-                                {/* Conteúdo expansível da semana */}
-                                {expandedWeekCards.has(week.weekNumber) && (
-                                  <div
-                                    id={`week-content-${week.weekNumber}`}
-                                    className="mt-3 sm:mt-4"
-                                  >
+                                {/* Conteúdo expansível da semana com animação suave */}
+                                <div
+                                  id={`week-content-${week.weekNumber}`}
+                                  className={`overflow-hidden transition-all duration-300 ease-in-out ${
+                                    expandedWeekCards.has(week.weekNumber)
+                                      ? "max-h-[9999px] opacity-100 mt-3 sm:mt-4"
+                                      : "max-h-0 opacity-0 pointer-events-none"
+                                  }`}
+                                  aria-hidden={!expandedWeekCards.has(week.weekNumber)}
+                                >
                                     {/* Painel Copa 2026 — apenas semanas com jogos/fases no intervalo */}
                                     {(() => {
                                       const semanaInicio = parseBR(
@@ -5329,8 +5354,7 @@ export default function Home() {
                                         </div>
                                       )}
                                     </div>
-                                  </div>
-                                )}
+                                </div>
                               </Card>
                             );
                           })}
