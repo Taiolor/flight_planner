@@ -537,3 +537,9 @@
 - [x] Desabilitar reportCompressedSize para acelerar build
 - [x] Otimizar esbuild minification com configurações agressivas
 - [x] Validar que 164 testes continuam passando após otimizações
+
+## Bug Fix - Localizadores e Números de Voos Não Exibidos
+
+- [x] Identificar causa raiz: updateFlightWeekStatus não filtrava por year
+- [x] Corrigir updateFlightWeekStatus para filtrar por year + weekNumber
+- [x] Validar com testes (164 testes passando)

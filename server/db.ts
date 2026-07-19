@@ -191,6 +191,7 @@ export async function upsertFlightWeek(week: InsertFlightWeek) {
 export async function updateFlightWeekStatus(
   weekNumber: number,
   data: {
+    year?: number;
     isDeleted?: number;
     isTicketIssued?: number;
     isSelected?: number;
@@ -216,10 +217,17 @@ export async function updateFlightWeekStatus(
   const db = await getDb();
   if (!db) return;
 
+  const currentYear = data.year ?? new Date().getFullYear();
+
   const existing = await db
     .select()
     .from(flightWeeks)
-    .where(eq(flightWeeks.weekNumber, weekNumber))
+    .where(
+      and(
+        eq(flightWeeks.weekNumber, weekNumber),
+        eq(flightWeeks.year, currentYear)
+      )
+    )
     .limit(1);
 
   if (existing.length === 0) return;
@@ -227,7 +235,12 @@ export async function updateFlightWeekStatus(
   await db
     .update(flightWeeks)
     .set(data)
-    .where(eq(flightWeeks.weekNumber, weekNumber));
+    .where(
+      and(
+        eq(flightWeeks.weekNumber, weekNumber),
+        eq(flightWeeks.year, currentYear)
+      )
+    );
 }
 
 export async function initFlightWeeks(weeks: InsertFlightWeek[]) {
