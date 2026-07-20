@@ -49,6 +49,91 @@ function phaseColor(phase: WorldCupMatch["phase"]) {
   }
 }
 
+function MatchCardHeader({ match, isTbd, weekday, dateStr }: { match: WorldCupMatch, isTbd: boolean, weekday: string, dateStr: string }) {
+  return (
+    <div className="px-3 pt-2 pb-1 flex items-center justify-between">
+      <span
+        className={`text-[9px] font-semibold px-1.5 py-0.5 rounded-full border ${phaseColor(match.phase)}`}
+      >
+        {match.phaseLabel}
+      </span>
+      <div className="flex items-center gap-1 text-[9px] text-slate-400">
+        <span className="capitalize">{weekday}</span>
+        <span>{dateStr}</span>
+        {!isTbd && (
+          <span className="text-slate-500 font-medium">
+            {match.timeLocal}
+          </span>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function MatchCardScoreboard({
+  match,
+  isFinished,
+  isUpcoming,
+  brazilScore,
+  opponentScore,
+  opponentTeam,
+  opponentFlag
+}: {
+  match: WorldCupMatch,
+  isFinished: boolean,
+  isUpcoming: boolean,
+  brazilScore: number | null,
+  opponentScore: number | null,
+  opponentTeam: string,
+  opponentFlag: string
+}) {
+  return (
+    <div className="px-3 pb-2 flex items-center gap-2">
+      {/* Brasil */}
+      <div className="flex items-center gap-1.5 flex-1 min-w-0">
+        <span className="text-lg leading-none">🇧🇷</span>
+        <span className="text-xs font-bold text-slate-800 truncate">
+          Brasil
+        </span>
+      </div>
+
+      {/* Placar central */}
+      <div className="flex items-center gap-1 shrink-0">
+        {isFinished ? (
+          <>
+            <span
+              className={`text-sm font-black w-5 text-center ${match.brazilResult === "win" ? "text-emerald-600" : match.brazilResult === "loss" ? "text-red-500" : "text-amber-600"}`}
+            >
+              {brazilScore}
+            </span>
+            <span className="text-slate-400 text-xs font-bold">×</span>
+            <span
+              className={`text-sm font-black w-5 text-center ${match.brazilResult === "loss" ? "text-emerald-600" : match.brazilResult === "win" ? "text-red-500" : "text-amber-600"}`}
+            >
+              {opponentScore}
+            </span>
+            {resultBadge(match.brazilResult)}
+          </>
+        ) : isUpcoming ? (
+          <span className="text-[10px] font-bold text-yellow-600 bg-yellow-100 px-2 py-0.5 rounded-full animate-pulse">
+            Em breve
+          </span>
+        ) : (
+          <span className="text-[10px] text-slate-400">A definir</span>
+        )}
+      </div>
+
+      {/* Adversário */}
+      <div className="flex items-center gap-1.5 flex-1 min-w-0 justify-end">
+        <span className="text-xs font-bold text-slate-800 truncate text-right">
+          {opponentTeam}
+        </span>
+        <span className="text-lg leading-none">{opponentFlag}</span>
+      </div>
+    </div>
+  );
+}
+
 function MatchCard({ match }: { match: WorldCupMatch }) {
   const isFinished = match.status === "finished";
   const isUpcoming = match.status === "upcoming";
@@ -82,68 +167,22 @@ function MatchCard({ match }: { match: WorldCupMatch }) {
         ${!match.isBrazilMatch ? "border-slate-200 bg-white" : ""}
       `}
     >
-      {/* Fase */}
-      <div className="px-3 pt-2 pb-1 flex items-center justify-between">
-        <span
-          className={`text-[9px] font-semibold px-1.5 py-0.5 rounded-full border ${phaseColor(match.phase)}`}
-        >
-          {match.phaseLabel}
-        </span>
-        <div className="flex items-center gap-1 text-[9px] text-slate-400">
-          <span className="capitalize">{weekday}</span>
-          <span>{dateStr}</span>
-          {!isTbd && (
-            <span className="text-slate-500 font-medium">
-              {match.timeLocal}
-            </span>
-          )}
-        </div>
-      </div>
+      <MatchCardHeader
+        match={match}
+        isTbd={isTbd}
+        weekday={weekday}
+        dateStr={dateStr}
+      />
 
-      {/* Placar */}
-      <div className="px-3 pb-2 flex items-center gap-2">
-        {/* Brasil */}
-        <div className="flex items-center gap-1.5 flex-1 min-w-0">
-          <span className="text-lg leading-none">🇧🇷</span>
-          <span className="text-xs font-bold text-slate-800 truncate">
-            Brasil
-          </span>
-        </div>
-
-        {/* Placar central */}
-        <div className="flex items-center gap-1 shrink-0">
-          {isFinished ? (
-            <>
-              <span
-                className={`text-sm font-black w-5 text-center ${match.brazilResult === "win" ? "text-emerald-600" : match.brazilResult === "loss" ? "text-red-500" : "text-amber-600"}`}
-              >
-                {brazilScore}
-              </span>
-              <span className="text-slate-400 text-xs font-bold">×</span>
-              <span
-                className={`text-sm font-black w-5 text-center ${match.brazilResult === "loss" ? "text-emerald-600" : match.brazilResult === "win" ? "text-red-500" : "text-amber-600"}`}
-              >
-                {opponentScore}
-              </span>
-              {resultBadge(match.brazilResult)}
-            </>
-          ) : isUpcoming ? (
-            <span className="text-[10px] font-bold text-yellow-600 bg-yellow-100 px-2 py-0.5 rounded-full animate-pulse">
-              Em breve
-            </span>
-          ) : (
-            <span className="text-[10px] text-slate-400">A definir</span>
-          )}
-        </div>
-
-        {/* Adversário */}
-        <div className="flex items-center gap-1.5 flex-1 min-w-0 justify-end">
-          <span className="text-xs font-bold text-slate-800 truncate text-right">
-            {opponentTeam}
-          </span>
-          <span className="text-lg leading-none">{opponentFlag}</span>
-        </div>
-      </div>
+      <MatchCardScoreboard
+        match={match}
+        isFinished={isFinished}
+        isUpcoming={isUpcoming}
+        brazilScore={brazilScore}
+        opponentScore={opponentScore}
+        opponentTeam={opponentTeam}
+        opponentFlag={opponentFlag}
+      />
 
       {/* Local */}
       {!isTbd && (
