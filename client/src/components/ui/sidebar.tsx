@@ -300,26 +300,14 @@ function Sidebar({
   };
 
   if (collapsible === "none") {
-    return (
-      <SidebarStatic {...sidebarProps}>
-        {children}
-      </SidebarStatic>
-    );
+    return <SidebarStatic {...sidebarProps}>{children}</SidebarStatic>;
   }
 
   if (isMobile) {
-    return (
-      <SidebarMobile {...sidebarProps}>
-        {children}
-      </SidebarMobile>
-    );
+    return <SidebarMobile {...sidebarProps}>{children}</SidebarMobile>;
   }
 
-  return (
-    <SidebarDesktop {...sidebarProps}>
-      {children}
-    </SidebarDesktop>
-  );
+  return <SidebarDesktop {...sidebarProps}>{children}</SidebarDesktop>;
 }
 
 function SidebarTrigger({

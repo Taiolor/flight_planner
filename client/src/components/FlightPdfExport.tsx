@@ -378,6 +378,92 @@ function CoverPage({
   );
 }
 
+function WeekFlightCard({
+  week,
+  isLast,
+  prices,
+}: {
+  week: WeekData;
+  isLast: boolean;
+  prices: { [airline: string]: string };
+}) {
+  const depAirlineKey = week.departureAirline?.toLowerCase() ?? "";
+  const retAirlineKey = week.returnAirline?.toLowerCase() ?? "";
+  const depPrice =
+    depAirlineKey && prices[depAirlineKey]
+      ? parseFloat(prices[depAirlineKey])
+      : null;
+  const depAirlineInfo = AIRLINE_COLORS[depAirlineKey];
+  const retAirlineInfo = AIRLINE_COLORS[retAirlineKey];
+
+  return (
+    <div
+      style={{
+        background: "#fff",
+        borderRadius: "12px",
+        border: "1px solid #e2e8f0",
+        marginBottom: isLast ? "0" : "16px",
+        overflow: "hidden",
+      }}
+    >
+      <div
+        style={{
+          background: "linear-gradient(90deg, #1e3a8a 0%, #1d4ed8 100%)",
+          color: "#fff",
+          padding: "10px 20px",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+        }}
+      >
+        <div style={{ fontWeight: 700, fontSize: "14px" }}>
+          Semana {week.weekNumber} — {week.departureDate} → {week.returnDate}
+        </div>
+        {depPrice !== null && !isNaN(depPrice) && (
+          <div
+            style={{
+              background: "rgba(255,255,255,0.2)",
+              borderRadius: "6px",
+              padding: "3px 12px",
+              fontSize: "13px",
+              fontWeight: 700,
+            }}
+          >
+            R${" "}
+            {depPrice.toLocaleString("pt-BR", {
+              minimumFractionDigits: 2,
+            })}
+          </div>
+        )}
+      </div>
+
+      <div style={{ display: "flex" }}>
+        <FlightDetailsSection
+          title="→ IDA"
+          titleColor="#1d4ed8"
+          borderRight={true}
+          airline={week.departureAirline}
+          airlineInfo={depAirlineInfo}
+          flightNumber={week.departureFlightNumber}
+          locator={week.departureLocator}
+          flightDatetime={week.departureFlightDatetime}
+          airport={week.departureAirport}
+        />
+        <FlightDetailsSection
+          title="↩ VOLTA"
+          titleColor="#ea580c"
+          airline={week.returnAirline}
+          airlineInfo={retAirlineInfo}
+          flightNumber={week.returnFlightNumber}
+          locator={week.returnLocator}
+          flightDatetime={week.returnFlightDatetime}
+          airport={week.returnAirport}
+        />
+      </div>
+    </div>
+  );
+}
+
 function MonthPage({
   monthLabel,
   weeks,
@@ -442,86 +528,14 @@ function MonthPage({
         )}
       </div>
 
-      {weeks.map((week, wi) => {
-        const prices = priceMap[week.weekNumber] || {};
-        const depAirlineKey = week.departureAirline?.toLowerCase() ?? "";
-        const retAirlineKey = week.returnAirline?.toLowerCase() ?? "";
-        const depPrice =
-          depAirlineKey && prices[depAirlineKey]
-            ? parseFloat(prices[depAirlineKey])
-            : null;
-        const depAirlineInfo = AIRLINE_COLORS[depAirlineKey];
-        const retAirlineInfo = AIRLINE_COLORS[retAirlineKey];
-
-        return (
-          <div
-            key={week.weekNumber}
-            style={{
-              background: "#fff",
-              borderRadius: "12px",
-              border: "1px solid #e2e8f0",
-              marginBottom: wi < weeks.length - 1 ? "16px" : "0",
-              overflow: "hidden",
-            }}
-          >
-            <div
-              style={{
-                background: "linear-gradient(90deg, #1e3a8a 0%, #1d4ed8 100%)",
-                color: "#fff",
-                padding: "10px 20px",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-              }}
-            >
-              <div style={{ fontWeight: 700, fontSize: "14px" }}>
-                Semana {week.weekNumber} — {week.departureDate} →{" "}
-                {week.returnDate}
-              </div>
-              {depPrice !== null && !isNaN(depPrice) && (
-                <div
-                  style={{
-                    background: "rgba(255,255,255,0.2)",
-                    borderRadius: "6px",
-                    padding: "3px 12px",
-                    fontSize: "13px",
-                    fontWeight: 700,
-                  }}
-                >
-                  R${" "}
-                  {depPrice.toLocaleString("pt-BR", {
-                    minimumFractionDigits: 2,
-                  })}
-                </div>
-              )}
-            </div>
-
-            <div style={{ display: "flex" }}>
-              <FlightDetailsSection
-                title="→ IDA"
-                titleColor="#1d4ed8"
-                borderRight={true}
-                airline={week.departureAirline}
-                airlineInfo={depAirlineInfo}
-                flightNumber={week.departureFlightNumber}
-                locator={week.departureLocator}
-                flightDatetime={week.departureFlightDatetime}
-                airport={week.departureAirport}
-              />
-              <FlightDetailsSection
-                title="↩ VOLTA"
-                titleColor="#ea580c"
-                airline={week.returnAirline}
-                airlineInfo={retAirlineInfo}
-                flightNumber={week.returnFlightNumber}
-                locator={week.returnLocator}
-                flightDatetime={week.returnFlightDatetime}
-                airport={week.returnAirport}
-              />
-            </div>
-          </div>
-        );
-      })}
+      {weeks.map((week, wi) => (
+        <WeekFlightCard
+          key={week.weekNumber}
+          week={week}
+          isLast={wi === weeks.length - 1}
+          prices={priceMap[week.weekNumber] || {}}
+        />
+      ))}
 
       <div
         style={{
