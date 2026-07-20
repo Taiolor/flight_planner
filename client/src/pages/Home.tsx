@@ -652,63 +652,63 @@ export default function Home() {
       setTempDepartureLocator(prev => {
         const next = { ...prev };
         newWeeks.forEach(w => {
-          next[w.weekNumber] = (w as any).departureLocator ?? "";
+          next[w.weekNumber] = w.departureLocator ?? "";
         });
         return next;
       });
       setTempReturnLocator(prev => {
         const next = { ...prev };
         newWeeks.forEach(w => {
-          next[w.weekNumber] = (w as any).returnLocator ?? "";
+          next[w.weekNumber] = w.returnLocator ?? "";
         });
         return next;
       });
       setTempDepartureFlightNumber(prev => {
         const next = { ...prev };
         newWeeks.forEach(w => {
-          next[w.weekNumber] = (w as any).departureFlightNumber ?? "";
+          next[w.weekNumber] = w.departureFlightNumber ?? "";
         });
         return next;
       });
       setTempReturnFlightNumber(prev => {
         const next = { ...prev };
         newWeeks.forEach(w => {
-          next[w.weekNumber] = (w as any).returnFlightNumber ?? "";
+          next[w.weekNumber] = w.returnFlightNumber ?? "";
         });
         return next;
       });
       setTempDepartureAirport(prev => {
         const next = { ...prev };
         newWeeks.forEach(w => {
-          next[w.weekNumber] = (w as any).departureAirport ?? "";
+          next[w.weekNumber] = w.departureAirport ?? "";
         });
         return next;
       });
       setTempReturnAirport(prev => {
         const next = { ...prev };
         newWeeks.forEach(w => {
-          next[w.weekNumber] = (w as any).returnAirport ?? "";
+          next[w.weekNumber] = w.returnAirport ?? "";
         });
         return next;
       });
       setTempDepartureAirline(prev => {
         const next = { ...prev };
         newWeeks.forEach(w => {
-          next[w.weekNumber] = (w as any).departureAirline ?? "";
+          next[w.weekNumber] = w.departureAirline ?? "";
         });
         return next;
       });
       setTempReturnAirline(prev => {
         const next = { ...prev };
         newWeeks.forEach(w => {
-          next[w.weekNumber] = (w as any).returnAirline ?? "";
+          next[w.weekNumber] = w.returnAirline ?? "";
         });
         return next;
       });
       setTempTicketType(prev => {
         const next = { ...prev };
         newWeeks.forEach(w => {
-          next[w.weekNumber] = (w as any).ticketType ?? "roundtrip";
+          next[w.weekNumber] = w.ticketType ?? "roundtrip";
         });
         return next;
       });
@@ -721,7 +721,7 @@ export default function Home() {
     setTempDepartureDatetime(prev => {
       const next = { ...prev };
       weeksQuery.data!.forEach(w => {
-        const saved = (w as any).departureFlightDatetime ?? "";
+        const saved = w.departureFlightDatetime ?? "";
         if (saved) {
           // Valor já salvo no banco: usar como está (formato: YYYY-MM-DDTHH:mm)
           next[w.weekNumber] = saved;
@@ -741,7 +741,7 @@ export default function Home() {
     setTempReturnDatetime(prev => {
       const next = { ...prev };
       weeksQuery.data!.forEach(w => {
-        const saved = (w as any).returnFlightDatetime ?? "";
+        const saved = w.returnFlightDatetime ?? "";
         if (saved) {
           // Valor já salvo no banco: usar como está (formato: YYYY-MM-DDTHH:mm)
           next[w.weekNumber] = saved;
@@ -812,15 +812,15 @@ export default function Home() {
         returnAirline: w.returnAirline ?? null,
         departureFlightDatetime: w.departureFlightDatetime ?? null,
         returnFlightDatetime: w.returnFlightDatetime ?? null,
-        departureAirport: (w as any).departureAirport ?? null,
-        returnAirport: (w as any).returnAirport ?? null,
-        departureLocator: (w as any).departureLocator ?? null,
-        returnLocator: (w as any).returnLocator ?? null,
-        departureFlightNumber: (w as any).departureFlightNumber ?? null,
-        returnFlightNumber: (w as any).returnFlightNumber ?? null,
-        ticketType: (w as any).ticketType ?? "roundtrip",
-        smilesPoints: (w as any).smilesPoints ?? null,
-        latamPassPoints: (w as any).latamPassPoints ?? null,
+        departureAirport: w.departureAirport ?? null,
+        returnAirport: w.returnAirport ?? null,
+        departureLocator: w.departureLocator ?? null,
+        returnLocator: w.returnLocator ?? null,
+        departureFlightNumber: w.departureFlightNumber ?? null,
+        returnFlightNumber: w.returnFlightNumber ?? null,
+        ticketType: w.ticketType ?? "roundtrip",
+        smilesPoints: w.smilesPoints ?? null,
+        latamPassPoints: w.latamPassPoints ?? null,
       }));
     }
     // Fallback to static data
