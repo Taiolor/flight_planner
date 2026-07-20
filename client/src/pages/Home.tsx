@@ -54,6 +54,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import {
   ChevronDown,
+  ChevronUp,
   Plane,
   Calendar,
   Clock,
@@ -1147,6 +1148,25 @@ export default function Home() {
       else next.add(weekNumber);
       return next;
     });
+  };
+
+  const expandAllWeeks = () => {
+    const allWeekNumbers = new Set(
+      weeksData.map(w => w.weekNumber)
+    );
+    setExpandedWeekCards(allWeekNumbers);
+  };
+
+  const collapseAllWeeks = () => {
+    setExpandedWeekCards(new Set());
+  };
+
+  const toggleAllWeeks = () => {
+    if (expandedWeekCards.size === weeksData.length) {
+      collapseAllWeeks();
+    } else {
+      expandAllWeeks();
+    }
   };
   // ⚡ Bolt Optimization: Combine selectedWeeks, issuedCount, and totalCost into a single pass
   // to avoid multiple O(N) loops and intermediate array allocations (.filter, .reduce)
@@ -2411,6 +2431,28 @@ export default function Home() {
         )}
 
         {/* Lista de Semanas agrupada por Mês */}
+        {!isLoading && weeksData.length > 0 && (
+          <div className="flex justify-end mb-3">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={toggleAllWeeks}
+              className="gap-2 text-xs sm:text-sm"
+            >
+              {expandedWeekCards.size === weeksData.length ? (
+                <>
+                  <ChevronUp className="w-4 h-4" />
+                  Recolher Tudo
+                </>
+              ) : (
+                <>
+                  <ChevronDown className="w-4 h-4" />
+                  Expandir Tudo
+                </>
+              )}
+            </Button>
+          </div>
+        )}
         {!isLoading && (
           <div className="space-y-3">
             {sortedWeeks.length === 0 ? (
