@@ -2658,13 +2658,17 @@ export default function Home() {
                             return (
                               <Card
                                 key={week.weekNumber}
-                                className={`p-3 sm:p-6 border-0 shadow-md transition-all hover:shadow-lg dark:bg-slate-800 dark:shadow-slate-900/40 rounded-lg ${
+                                className={`p-3 sm:p-6 border-0 shadow-md transition-all hover:shadow-lg dark:bg-slate-800 dark:shadow-slate-900/40 rounded-lg relative ${
                                   week.isSelected
                                     ? "ring-2 ring-green-500 bg-green-50 dark:bg-green-900/30"
                                     : week.isTicketIssued
                                       ? "bg-blue-50 dark:bg-blue-900/30"
                                       : "bg-white dark:bg-slate-800"
-                                } ${isCheap ? "border-l-4 border-l-orange-400" : ""}`}
+                                } ${isCheap ? "border-l-4 border-l-orange-400" : ""} ${
+                                  week.weekNumber === currentWeekNumber
+                                    ? "ring-2 ring-purple-500 ring-offset-2 dark:ring-offset-slate-900"
+                                    : ""
+                                }`}
                               >
                                 {/* Cabeçalho da semana - sempre visível, clicável para expandir/recolher */}
                                 <div
@@ -2717,9 +2721,16 @@ export default function Home() {
                                     />
                                     <div className="flex-1">
                                       <div className="flex flex-wrap items-center gap-2 mb-2">
-                                        <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">
-                                          Semana {week.weekNumber}
-                                        </h3>
+                                        <div className="flex items-center gap-2">
+                                          <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">
+                                            Semana {week.weekNumber}
+                                          </h3>
+                                          {week.weekNumber === currentWeekNumber && (
+                                            <span className="text-xs bg-purple-500 text-white px-2 py-1 rounded-full font-semibold animate-pulse">
+                                              🔴 Atual
+                                            </span>
+                                          )}
+                                        </div>
                                         {week.holiday && (
                                           <span className="text-xs bg-orange-100 text-orange-800 dark:bg-orange-900/40 dark:text-orange-200 px-2 py-1 rounded">
                                             🎉 {week.holiday}
