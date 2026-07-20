@@ -54,6 +54,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import {
   ChevronDown,
+  ChevronUp,
   Plane,
   Calendar,
   Clock,
@@ -633,7 +634,7 @@ export default function Home() {
 
   // Ref que rastreia quais semanas já foram inicializadas — evita sobrescrever
   // o que o usuário está digitando quando o tRPC faz refetch em background.
-  const initializedWeeks = useRef<Set<number>>(new Set());
+
 
   // Sincronizar campos do banco para estado local.
   // Regra: campos de texto (localizador, número do voo, etc.) só são inicializados
@@ -644,84 +645,82 @@ export default function Home() {
     if (!weeksQuery.data) return;
 
     // Semanas novas (nunca inicializadas) — inicializar todos os campos
-    const newWeeks = weeksQuery.data.filter(
-      w => !initializedWeeks.current.has(w.weekNumber)
-    );
+    // Campos de texto (localizador, número do voo, aeroporto, companhia aérea, tipo de bilhete):
+    // Sempre re-sincronizar com o banco para TODAS as semanas.
+    // Isso garante que valores já salvos aparecem ao abrir o card, mesmo após refetch ou login.
+    // Apenas os campos de data/hora já tinham essa lógica, agora estendida para os demais.
 
-    if (newWeeks.length > 0) {
       setTempDepartureLocator(prev => {
         const next = { ...prev };
-        newWeeks.forEach(w => {
-          next[w.weekNumber] = w.departureLocator ?? "";
+        weeksQuery.data!.forEach(w => {
+          next[w.weekNumber] = (w as any).departureLocator ?? "";
         });
         return next;
       });
       setTempReturnLocator(prev => {
         const next = { ...prev };
-        newWeeks.forEach(w => {
-          next[w.weekNumber] = w.returnLocator ?? "";
+        weeksQuery.data!.forEach(w => {
+          next[w.weekNumber] = (w as any).returnLocator ?? "";
         });
         return next;
       });
       setTempDepartureFlightNumber(prev => {
         const next = { ...prev };
-        newWeeks.forEach(w => {
-          next[w.weekNumber] = w.departureFlightNumber ?? "";
+        weeksQuery.data!.forEach(w => {
+          next[w.weekNumber] = (w as any).departureFlightNumber ?? "";
         });
         return next;
       });
       setTempReturnFlightNumber(prev => {
         const next = { ...prev };
-        newWeeks.forEach(w => {
-          next[w.weekNumber] = w.returnFlightNumber ?? "";
+        weeksQuery.data!.forEach(w => {
+          next[w.weekNumber] = (w as any).returnFlightNumber ?? "";
         });
         return next;
       });
       setTempDepartureAirport(prev => {
         const next = { ...prev };
-        newWeeks.forEach(w => {
-          next[w.weekNumber] = w.departureAirport ?? "";
+        weeksQuery.data!.forEach(w => {
+          next[w.weekNumber] = (w as any).departureAirport ?? "";
         });
         return next;
       });
       setTempReturnAirport(prev => {
         const next = { ...prev };
-        newWeeks.forEach(w => {
-          next[w.weekNumber] = w.returnAirport ?? "";
+        weeksQuery.data!.forEach(w => {
+          next[w.weekNumber] = (w as any).returnAirport ?? "";
         });
         return next;
       });
       setTempDepartureAirline(prev => {
         const next = { ...prev };
-        newWeeks.forEach(w => {
-          next[w.weekNumber] = w.departureAirline ?? "";
+        weeksQuery.data!.forEach(w => {
+          next[w.weekNumber] = (w as any).departureAirline ?? "";
         });
         return next;
       });
       setTempReturnAirline(prev => {
         const next = { ...prev };
-        newWeeks.forEach(w => {
-          next[w.weekNumber] = w.returnAirline ?? "";
+        weeksQuery.data!.forEach(w => {
+          next[w.weekNumber] = (w as any).returnAirline ?? "";
         });
         return next;
       });
       setTempTicketType(prev => {
         const next = { ...prev };
-        newWeeks.forEach(w => {
-          next[w.weekNumber] = w.ticketType ?? "roundtrip";
+        weeksQuery.data!.forEach(w => {
+          next[w.weekNumber] = (w as any).ticketType ?? "roundtrip";
         });
         return next;
       });
-      // Marcar estas semanas como inicializadas
-      newWeeks.forEach(w => initializedWeeks.current.add(w.weekNumber));
-    }
+
 
     // Campos de data/hora: sempre re-sincronizar com o banco para TODAS as semanas
     // Isso garante que valores já salvos aparecem ao abrir o card, mesmo após refetch
     setTempDepartureDatetime(prev => {
       const next = { ...prev };
       weeksQuery.data!.forEach(w => {
-        const saved = w.departureFlightDatetime ?? "";
+        const saved = (w as any).departureFlightDatetime ?? "";
         if (saved) {
           // Valor já salvo no banco: usar como está (formato: YYYY-MM-DDTHH:mm)
           next[w.weekNumber] = saved;
@@ -741,7 +740,7 @@ export default function Home() {
     setTempReturnDatetime(prev => {
       const next = { ...prev };
       weeksQuery.data!.forEach(w => {
-        const saved = w.returnFlightDatetime ?? "";
+        const saved = (w as any).returnFlightDatetime ?? "";
         if (saved) {
           // Valor já salvo no banco: usar como está (formato: YYYY-MM-DDTHH:mm)
           next[w.weekNumber] = saved;
@@ -812,15 +811,15 @@ export default function Home() {
         returnAirline: w.returnAirline ?? null,
         departureFlightDatetime: w.departureFlightDatetime ?? null,
         returnFlightDatetime: w.returnFlightDatetime ?? null,
-        departureAirport: w.departureAirport ?? null,
-        returnAirport: w.returnAirport ?? null,
-        departureLocator: w.departureLocator ?? null,
-        returnLocator: w.returnLocator ?? null,
-        departureFlightNumber: w.departureFlightNumber ?? null,
-        returnFlightNumber: w.returnFlightNumber ?? null,
-        ticketType: w.ticketType ?? "roundtrip",
-        smilesPoints: w.smilesPoints ?? null,
-        latamPassPoints: w.latamPassPoints ?? null,
+        departureAirport: (w as any).departureAirport ?? null,
+        returnAirport: (w as any).returnAirport ?? null,
+        departureLocator: (w as any).departureLocator ?? null,
+        returnLocator: (w as any).returnLocator ?? null,
+        departureFlightNumber: (w as any).departureFlightNumber ?? null,
+        returnFlightNumber: (w as any).returnFlightNumber ?? null,
+        ticketType: (w as any).ticketType ?? "roundtrip",
+        smilesPoints: (w as any).smilesPoints ?? null,
+        latamPassPoints: (w as any).latamPassPoints ?? null,
       }));
     }
     // Fallback to static data
@@ -1149,6 +1148,25 @@ export default function Home() {
       else next.add(weekNumber);
       return next;
     });
+  };
+
+  const expandAllWeeks = () => {
+    const allWeekNumbers = new Set(
+      weeksData.map(w => w.weekNumber)
+    );
+    setExpandedWeekCards(allWeekNumbers);
+  };
+
+  const collapseAllWeeks = () => {
+    setExpandedWeekCards(new Set());
+  };
+
+  const toggleAllWeeks = () => {
+    if (expandedWeekCards.size === weeksData.length) {
+      collapseAllWeeks();
+    } else {
+      expandAllWeeks();
+    }
   };
   // ⚡ Bolt Optimization: Combine selectedWeeks, issuedCount, and totalCost into a single pass
   // to avoid multiple O(N) loops and intermediate array allocations (.filter, .reduce)
@@ -2413,6 +2431,28 @@ export default function Home() {
         )}
 
         {/* Lista de Semanas agrupada por Mês */}
+        {!isLoading && weeksData.length > 0 && (
+          <div className="flex justify-end mb-3">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={toggleAllWeeks}
+              className="gap-2 text-xs sm:text-sm"
+            >
+              {expandedWeekCards.size === weeksData.length ? (
+                <>
+                  <ChevronUp className="w-4 h-4" />
+                  Recolher Tudo
+                </>
+              ) : (
+                <>
+                  <ChevronDown className="w-4 h-4" />
+                  Expandir Tudo
+                </>
+              )}
+            </Button>
+          </div>
+        )}
         {!isLoading && (
           <div className="space-y-3">
             {sortedWeeks.length === 0 ? (
@@ -2618,13 +2658,17 @@ export default function Home() {
                             return (
                               <Card
                                 key={week.weekNumber}
-                                className={`p-3 sm:p-6 border-0 shadow-md transition-all hover:shadow-lg dark:bg-slate-800 dark:shadow-slate-900/40 rounded-lg ${
+                                className={`p-3 sm:p-6 border-0 shadow-md transition-all hover:shadow-lg dark:bg-slate-800 dark:shadow-slate-900/40 rounded-lg relative ${
                                   week.isSelected
                                     ? "ring-2 ring-green-500 bg-green-50 dark:bg-green-900/30"
                                     : week.isTicketIssued
                                       ? "bg-blue-50 dark:bg-blue-900/30"
                                       : "bg-white dark:bg-slate-800"
-                                } ${isCheap ? "border-l-4 border-l-orange-400" : ""}`}
+                                } ${isCheap ? "border-l-4 border-l-orange-400" : ""} ${
+                                  week.weekNumber === currentWeekNumber
+                                    ? "ring-2 ring-purple-500 ring-offset-2 dark:ring-offset-slate-900"
+                                    : ""
+                                }`}
                               >
                                 {/* Cabeçalho da semana - sempre visível, clicável para expandir/recolher */}
                                 <div
@@ -2677,9 +2721,16 @@ export default function Home() {
                                     />
                                     <div className="flex-1">
                                       <div className="flex flex-wrap items-center gap-2 mb-2">
-                                        <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">
-                                          Semana {week.weekNumber}
-                                        </h3>
+                                        <div className="flex items-center gap-2">
+                                          <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">
+                                            Semana {week.weekNumber}
+                                          </h3>
+                                          {week.weekNumber === currentWeekNumber && (
+                                            <span className="text-xs bg-purple-500 text-white px-2 py-1 rounded-full font-semibold animate-pulse">
+                                              🔴 Atual
+                                            </span>
+                                          )}
+                                        </div>
                                         {week.holiday && (
                                           <span className="text-xs bg-orange-100 text-orange-800 dark:bg-orange-900/40 dark:text-orange-200 px-2 py-1 rounded">
                                             🎉 {week.holiday}
