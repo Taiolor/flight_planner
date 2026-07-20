@@ -166,7 +166,12 @@ export async function upsertFlightWeek(week: InsertFlightWeek) {
   const existing = await db
     .select()
     .from(flightWeeks)
-    .where(and(eq(flightWeeks.weekNumber, week.weekNumber), eq(flightWeeks.year, yearToUse)))
+    .where(
+      and(
+        eq(flightWeeks.weekNumber, week.weekNumber),
+        eq(flightWeeks.year, yearToUse)
+      )
+    )
     .limit(1);
 
   if (existing.length > 0) {
@@ -182,7 +187,12 @@ export async function upsertFlightWeek(week: InsertFlightWeek) {
         isTicketIssued: week.isTicketIssued,
         isSelected: week.isSelected,
       })
-      .where(and(eq(flightWeeks.weekNumber, week.weekNumber), eq(flightWeeks.year, yearToUse)));
+      .where(
+        and(
+          eq(flightWeeks.weekNumber, week.weekNumber),
+          eq(flightWeeks.year, yearToUse)
+        )
+      );
   } else {
     await db.insert(flightWeeks).values(week);
   }
@@ -271,7 +281,10 @@ export async function getAllFlightPrices(): Promise<
       const db = await getDb();
       if (!db) return [];
       const currentYear = new Date().getFullYear();
-      return await db.select().from(flightPrices).where(eq(flightPrices.year, currentYear));
+      return await db
+        .select()
+        .from(flightPrices)
+        .where(eq(flightPrices.year, currentYear));
     } finally {
       _flightPricesPromise = null;
     }
@@ -284,7 +297,18 @@ export async function getPublicPrices() {
   const db = await getDb();
   if (!db) return [];
   const currentYear = new Date().getFullYear();
-  return db.select({ id: public_prices.id, year: public_prices.year, weekNumber: public_prices.weekNumber, airline: public_prices.airline, price: public_prices.price, createdAt: public_prices.createdAt, updatedAt: public_prices.updatedAt }).from(public_prices).where(eq(public_prices.year, currentYear));
+  return db
+    .select({
+      id: public_prices.id,
+      year: public_prices.year,
+      weekNumber: public_prices.weekNumber,
+      airline: public_prices.airline,
+      price: public_prices.price,
+      createdAt: public_prices.createdAt,
+      updatedAt: public_prices.updatedAt,
+    })
+    .from(public_prices)
+    .where(eq(public_prices.year, currentYear));
 }
 
 export async function upsertFlightPrice(

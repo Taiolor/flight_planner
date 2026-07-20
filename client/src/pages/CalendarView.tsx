@@ -628,7 +628,9 @@ function FlightPopup({
   );
 }
 
-export default function CalendarView({ year = DEFAULT_YEAR }: CalendarViewProps = {}) {
+export default function CalendarView({
+  year = DEFAULT_YEAR,
+}: CalendarViewProps = {}) {
   const weeksQuery = trpc.flights.getWeeks.useQuery();
   const [selectedMark, setSelectedMark] = useState<DayMark | null>(null);
   const [showOnlyHolidaysAndWeekends, setShowOnlyHolidaysAndWeekends] =

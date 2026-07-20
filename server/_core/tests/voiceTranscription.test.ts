@@ -22,12 +22,12 @@ describe("voiceTranscription", () => {
 
     // The fetch in step 2 correctly fetches the audio, then step 4 fails on FormData due to some unexpected issue
     // Wait, the only way to hit the outer catch block is if fetch doesn't throw but something else does, OR we stub FormData
-    global.fetch = vi.fn().mockImplementation(async (url) => {
-      if (typeof url === 'string' && url.includes('audio.mp3')) {
+    global.fetch = vi.fn().mockImplementation(async url => {
+      if (typeof url === "string" && url.includes("audio.mp3")) {
         return {
           ok: true,
           arrayBuffer: async () => new ArrayBuffer(8),
-          headers: new Map([['content-type', 'audio/mpeg']]),
+          headers: new Map([["content-type", "audio/mpeg"]]),
         };
       }
       return Promise.reject(new Error("Simulated unexpected network error"));
@@ -54,12 +54,12 @@ describe("voiceTranscription", () => {
 
     const { transcribeAudio } = await import("../voiceTranscription");
 
-    global.fetch = vi.fn().mockImplementation(async (url) => {
-      if (typeof url === 'string' && url.includes('audio.mp3')) {
+    global.fetch = vi.fn().mockImplementation(async url => {
+      if (typeof url === "string" && url.includes("audio.mp3")) {
         return {
           ok: true,
           arrayBuffer: async () => new ArrayBuffer(8),
-          headers: new Map([['content-type', 'audio/mpeg']]),
+          headers: new Map([["content-type", "audio/mpeg"]]),
         };
       }
       return Promise.reject("String error");
