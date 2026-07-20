@@ -49,7 +49,13 @@ interface NotificationOptionProps {
   ariaLabel: string;
 }
 
-function NotificationOption({ label, value, onChange, index, ariaLabel }: NotificationOptionProps) {
+function NotificationOption({
+  label,
+  value,
+  onChange,
+  index,
+  ariaLabel,
+}: NotificationOptionProps) {
   const isFirst = index === 1;
   const gradientClass = isFirst
     ? "from-purple-500 to-cyan-500"
@@ -59,24 +65,35 @@ function NotificationOption({ label, value, onChange, index, ariaLabel }: Notifi
   return (
     <div className="space-y-1.5">
       <div className="flex items-center gap-2">
-        <div className={`w-5 h-5 rounded-full bg-gradient-to-br ${gradientClass} flex items-center justify-center text-xs font-bold text-white flex-shrink-0`}>
+        <div
+          className={`w-5 h-5 rounded-full bg-gradient-to-br ${gradientClass} flex items-center justify-center text-xs font-bold text-white flex-shrink-0`}
+        >
           {index}
         </div>
         <label className="text-sm font-medium text-slate-200">{label}</label>
         {value > 0 && (
-          <span className={`ml-auto text-xs flex items-center gap-1 ${textClass}`}>
+          <span
+            className={`ml-auto text-xs flex items-center gap-1 ${textClass}`}
+          >
             <Clock className="w-3 h-3" />
             {getAvisoLabel(value)}
           </span>
         )}
       </div>
       <Select value={String(value)} onValueChange={v => onChange(Number(v))}>
-        <SelectTrigger aria-label={ariaLabel} className="bg-slate-800 border-slate-600 text-white h-10 text-sm w-full">
+        <SelectTrigger
+          aria-label={ariaLabel}
+          className="bg-slate-800 border-slate-600 text-white h-10 text-sm w-full"
+        >
           <SelectValue />
         </SelectTrigger>
         <SelectContent className="bg-slate-800 border-slate-600 text-white">
           {ANTECEDENCIA_OPTIONS.map(opt => (
-            <SelectItem key={opt.value} value={String(opt.value)} className="text-sm focus:bg-slate-700 focus:text-white">
+            <SelectItem
+              key={opt.value}
+              value={String(opt.value)}
+              className="text-sm focus:bg-slate-700 focus:text-white"
+            >
               {opt.label}
             </SelectItem>
           ))}

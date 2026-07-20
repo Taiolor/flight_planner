@@ -1,7 +1,5 @@
 import { useMemo, useState, useEffect, useRef } from "react";
 import BrazilWorldCupPanel from "@/components/BrazilWorldCupPanel";
-import { WeekRow, DayMark } from "@/components/flights/types";
-import FlightPopup from "@/components/flights/FlightPopup";
 import { brazilMatchByDate } from "@/lib/worldCup2026";
 import { Link } from "wouter";
 import { trpc } from "@/lib/trpc";
@@ -216,10 +214,11 @@ function toIsoDate(dateStr: string): string {
   return dateStr;
 }
 
-
-
-
-export default function CalendarView({ year = DEFAULT_YEAR }: CalendarViewProps = {}) {
+import { WeekRow, DayMark } from "@/components/flights/types";
+import FlightPopup from "@/components/flights/FlightPopup";
+export default function CalendarView({
+  year = DEFAULT_YEAR,
+}: CalendarViewProps = {}) {
   const weeksQuery = trpc.flights.getWeeks.useQuery();
   const [selectedMark, setSelectedMark] = useState<DayMark | null>(null);
   const [showOnlyHolidaysAndWeekends, setShowOnlyHolidaysAndWeekends] =

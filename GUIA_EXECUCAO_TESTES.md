@@ -11,11 +11,13 @@ O Flight Planner utiliza **Vitest** como framework de testes, com cobertura comp
 ### 1️⃣ **Execução Local (Linha de Comando)**
 
 #### Executar todos os testes
+
 ```bash
 pnpm test
 ```
 
 **Resultado esperado:**
+
 ```
 ✓ 20 arquivos de teste
 ✓ 159 testes passaram
@@ -23,16 +25,19 @@ pnpm test
 ```
 
 #### Executar testes de um arquivo específico
+
 ```bash
 pnpm test server/auth.logout.test.ts
 ```
 
 #### Executar testes com padrão de nome
+
 ```bash
 pnpm test --grep "voiceTranscription"
 ```
 
 #### Executar em modo watch (desenvolvimento)
+
 ```bash
 pnpm test:watch
 ```
@@ -45,25 +50,25 @@ Neste modo, os testes são re-executados automaticamente quando você modifica o
 
 ### Arquivos de Teste Principais
 
-| Arquivo | Tipo | Testes | Status |
-|---------|------|--------|--------|
-| `server/auth.logout.test.ts` | Unit | 1 | ✅ |
-| `server/flight.auth.test.ts` | Unit | 7 | ✅ |
-| `server/db.test.ts` | Integration | 7 | ✅ |
-| `server/quotes.test.ts` | Unit | 16 | ✅ |
-| `server/pushNotifications.test.ts` | Unit | 9 | ✅ |
-| `server/storage.test.ts` | Unit | 6 | ✅ |
-| `server/resend.test.ts` | Unit | 2 | ✅ |
-| `server/_core/tests/emailNotification.test.ts` | Unit | 12 | ✅ |
-| `server/_core/tests/imageGeneration.test.ts` | Unit | 6 | ✅ |
-| `server/_core/tests/notification.test.ts` | Unit | 6 | ✅ |
-| `server/_core/tests/voiceTranscription.test.ts` | Unit | 10 | ✅ |
-| `client/src/lib/flightData.test.ts` | Unit | 7 | ✅ |
-| `client/src/lib/calendarHelper.test.ts` | Unit | 3 | ✅ |
-| `client/src/lib/utils.test.ts` | Unit | 6 | ✅ |
-| `client/src/components/admin-notifications/utils.test.ts` | Unit | 6 | ✅ |
-| `shared/_core/errors.test.ts` | Unit | 5 | ✅ |
-| `server/env.test.ts` | Unit | 3 | ✅ |
+| Arquivo                                                   | Tipo        | Testes | Status |
+| --------------------------------------------------------- | ----------- | ------ | ------ |
+| `server/auth.logout.test.ts`                              | Unit        | 1      | ✅     |
+| `server/flight.auth.test.ts`                              | Unit        | 7      | ✅     |
+| `server/db.test.ts`                                       | Integration | 7      | ✅     |
+| `server/quotes.test.ts`                                   | Unit        | 16     | ✅     |
+| `server/pushNotifications.test.ts`                        | Unit        | 9      | ✅     |
+| `server/storage.test.ts`                                  | Unit        | 6      | ✅     |
+| `server/resend.test.ts`                                   | Unit        | 2      | ✅     |
+| `server/_core/tests/emailNotification.test.ts`            | Unit        | 12     | ✅     |
+| `server/_core/tests/imageGeneration.test.ts`              | Unit        | 6      | ✅     |
+| `server/_core/tests/notification.test.ts`                 | Unit        | 6      | ✅     |
+| `server/_core/tests/voiceTranscription.test.ts`           | Unit        | 10     | ✅     |
+| `client/src/lib/flightData.test.ts`                       | Unit        | 7      | ✅     |
+| `client/src/lib/calendarHelper.test.ts`                   | Unit        | 3      | ✅     |
+| `client/src/lib/utils.test.ts`                            | Unit        | 6      | ✅     |
+| `client/src/components/admin-notifications/utils.test.ts` | Unit        | 6      | ✅     |
+| `shared/_core/errors.test.ts`                             | Unit        | 5      | ✅     |
+| `server/env.test.ts`                                      | Unit        | 3      | ✅     |
 
 ---
 
@@ -118,7 +123,9 @@ describe("minhaFuncao", () => {
   });
 
   it("deve lançar erro quando parâmetro é inválido", async () => {
-    await expect(minhaFuncao({ param: "" })).rejects.toThrow("Parâmetro inválido");
+    await expect(minhaFuncao({ param: "" })).rejects.toThrow(
+      "Parâmetro inválido"
+    );
   });
 });
 ```
@@ -225,6 +232,7 @@ Se um teste falhar:
 ```
 
 **Passos para resolver:**
+
 1. Leia a mensagem de erro
 2. Verifique o arquivo de teste (linha indicada)
 3. Corrija a lógica ou o teste
