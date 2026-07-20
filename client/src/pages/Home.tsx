@@ -633,7 +633,7 @@ export default function Home() {
 
   // Ref que rastreia quais semanas já foram inicializadas — evita sobrescrever
   // o que o usuário está digitando quando o tRPC faz refetch em background.
-  const initializedWeeks = useRef<Set<number>>(new Set());
+
 
   // Sincronizar campos do banco para estado local.
   // Regra: campos de texto (localizador, número do voo, etc.) só são inicializados
@@ -644,77 +644,75 @@ export default function Home() {
     if (!weeksQuery.data) return;
 
     // Semanas novas (nunca inicializadas) — inicializar todos os campos
-    const newWeeks = weeksQuery.data.filter(
-      w => !initializedWeeks.current.has(w.weekNumber)
-    );
+    // Campos de texto (localizador, número do voo, aeroporto, companhia aérea, tipo de bilhete):
+    // Sempre re-sincronizar com o banco para TODAS as semanas.
+    // Isso garante que valores já salvos aparecem ao abrir o card, mesmo após refetch ou login.
+    // Apenas os campos de data/hora já tinham essa lógica, agora estendida para os demais.
 
-    if (newWeeks.length > 0) {
       setTempDepartureLocator(prev => {
         const next = { ...prev };
-        newWeeks.forEach(w => {
+        weeksQuery.data!.forEach(w => {
           next[w.weekNumber] = (w as any).departureLocator ?? "";
         });
         return next;
       });
       setTempReturnLocator(prev => {
         const next = { ...prev };
-        newWeeks.forEach(w => {
+        weeksQuery.data!.forEach(w => {
           next[w.weekNumber] = (w as any).returnLocator ?? "";
         });
         return next;
       });
       setTempDepartureFlightNumber(prev => {
         const next = { ...prev };
-        newWeeks.forEach(w => {
+        weeksQuery.data!.forEach(w => {
           next[w.weekNumber] = (w as any).departureFlightNumber ?? "";
         });
         return next;
       });
       setTempReturnFlightNumber(prev => {
         const next = { ...prev };
-        newWeeks.forEach(w => {
+        weeksQuery.data!.forEach(w => {
           next[w.weekNumber] = (w as any).returnFlightNumber ?? "";
         });
         return next;
       });
       setTempDepartureAirport(prev => {
         const next = { ...prev };
-        newWeeks.forEach(w => {
+        weeksQuery.data!.forEach(w => {
           next[w.weekNumber] = (w as any).departureAirport ?? "";
         });
         return next;
       });
       setTempReturnAirport(prev => {
         const next = { ...prev };
-        newWeeks.forEach(w => {
+        weeksQuery.data!.forEach(w => {
           next[w.weekNumber] = (w as any).returnAirport ?? "";
         });
         return next;
       });
       setTempDepartureAirline(prev => {
         const next = { ...prev };
-        newWeeks.forEach(w => {
+        weeksQuery.data!.forEach(w => {
           next[w.weekNumber] = (w as any).departureAirline ?? "";
         });
         return next;
       });
       setTempReturnAirline(prev => {
         const next = { ...prev };
-        newWeeks.forEach(w => {
+        weeksQuery.data!.forEach(w => {
           next[w.weekNumber] = (w as any).returnAirline ?? "";
         });
         return next;
       });
       setTempTicketType(prev => {
         const next = { ...prev };
-        newWeeks.forEach(w => {
+        weeksQuery.data!.forEach(w => {
           next[w.weekNumber] = (w as any).ticketType ?? "roundtrip";
         });
         return next;
       });
-      // Marcar estas semanas como inicializadas
-      newWeeks.forEach(w => initializedWeeks.current.add(w.weekNumber));
-    }
+
 
     // Campos de data/hora: sempre re-sincronizar com o banco para TODAS as semanas
     // Isso garante que valores já salvos aparecem ao abrir o card, mesmo após refetch
