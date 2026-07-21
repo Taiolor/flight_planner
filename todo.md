@@ -550,3 +550,9 @@
 - [x] Semanas passadas iniciam fechadas ao carregar o site
 - [x] Semanas futuras/atuais iniciam abertas ao carregar o site
 - [x] Botão de expandir/recolher visível no cabeçalho de cada semana
+
+## Bug Fix - Soma de Gastos por Semana
+
+- [x] Corrigir cálculo de valor acumulado por semana: somar TODOS os valores em dinheiro pagos (todas as companhias), não apenas o menor preço
+- [x] Somar pontos de milhas separadamente (nunca misturar com dinheiro)
+- [x] Exibir ambos os totais no cabeçalho da semana e no resumo geral

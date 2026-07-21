@@ -911,6 +911,35 @@ export default function Home() {
     [lowestPriceMap]
   );
 
+  // Soma TODOS os valores em dinheiro pagos na semana (todas as companhias)
+  const totalWeekCostMap = useMemo(() => {
+    const map: Record<number, number> = {};
+    for (const weekStr in priceMap) {
+      const weekNumber = parseInt(weekStr);
+      const weekPrices = priceMap[weekNumber];
+      if (!weekPrices) continue;
+      let total = 0;
+      let found = false;
+      for (const key in weekPrices) {
+        const val = parseFloat(weekPrices[key] as string);
+        if (!isNaN(val) && val > 0) {
+          total += val;
+          found = true;
+        }
+      }
+      if (found) map[weekNumber] = total;
+    }
+    return map;
+  }, [priceMap]);
+
+  const getTotalWeekCost = useCallback(
+    (weekNumber: number): number | null => {
+      const total = totalWeekCostMap[weekNumber];
+      return total !== undefined ? total : null;
+    },
+    [totalWeekCostMap]
+  );
+
   // Calculate price percentile
   const priceThreshold = useMemo(() => {
     const allPrices: number[] = [];
@@ -1071,7 +1100,7 @@ export default function Home() {
       for (const w of group.weeks) {
         if (w.isTicketIssued) {
           issuedCount++;
-          issuedTotal += getLowestPrice(w.weekNumber) ?? 0;
+          issuedTotal += getTotalWeekCost(w.weekNumber) ?? 0;
         }
         if (w.isSelected) {
           selectedCount++;
@@ -1096,7 +1125,7 @@ export default function Home() {
     }
 
     return groups;
-  }, [sortedWeeks, getLowestPrice]);
+  }, [sortedWeeks, getTotalWeekCost]);
 
   // Mês corrente para iniciar expandido
   const currentMonthKey = useMemo(() => {
@@ -1213,10 +1242,12 @@ export default function Home() {
   };
   // ⚡ Bolt Optimization: Combine selectedWeeks, issuedCount, and totalCost into a single pass
   // to avoid multiple O(N) loops and intermediate array allocations (.filter, .reduce)
-  const { selectedWeeks, issuedCount, totalCost } = useMemo(() => {
+  const { selectedWeeks, issuedCount, totalCost, totalSmiles, totalLatamPass } = useMemo(() => {
     const selected: WeekData[] = [];
     let count = 0;
     let cost = 0;
+    let smiles = 0;
+    let latamPass = 0;
 
     for (let i = 0; i < weeksData.length; i++) {
       const w = weeksData[i];
@@ -1225,12 +1256,14 @@ export default function Home() {
         if (w.isTicketIssued) {
           count++;
         }
-        cost += getLowestPrice(w.weekNumber) ?? 0;
+        cost += getTotalWeekCost(w.weekNumber) ?? 0;
+        if (w.smilesPoints) smiles += w.smilesPoints;
+        if (w.latamPassPoints) latamPass += w.latamPassPoints;
       }
     }
 
-    return { selectedWeeks: selected, issuedCount: count, totalCost: cost };
-  }, [weeksData, getLowestPrice]);
+    return { selectedWeeks: selected, issuedCount: count, totalCost: cost, totalSmiles: smiles, totalLatamPass: latamPass };
+  }, [weeksData, getTotalWeekCost]);
 
   // Dados para o gráfico de variação de preços por mês (todas as empresas)
   const chartData = useMemo(() => {
@@ -1439,14 +1472,14 @@ export default function Home() {
       const w = weeksData[i];
       if (!w.isDeleted) {
         if (w.isTicketIssued) {
-          const lowest = getLowestPrice(w.weekNumber) ?? 0;
+          const weekTotal = getTotalWeekCost(w.weekNumber) ?? 0;
 
-          totalIssued += lowest;
+          totalIssued += weekTotal;
           issuedCount++;
 
           const monthNum = w.departureDate.substring(3, 5);
           if (summaryMap[monthNum]) {
-            summaryMap[monthNum].total += lowest;
+            summaryMap[monthNum].total += weekTotal;
             summaryMap[monthNum].count += 1;
           }
         }
@@ -1472,7 +1505,7 @@ export default function Home() {
       annualSmilesTotal: smilesTotal,
       annualLatamPassTotal: latamPassTotal,
     };
-  }, [weeksData, getLowestPrice]);
+  }, [weeksData, getTotalWeekCost]);
 
   const annualHasData = annualSummaryData.some(d => d.total > 0);
 
@@ -2797,12 +2830,12 @@ export default function Home() {
                                               {f.feriado.nome}
                                             </span>
                                           ))}
-                                        {lowestPrice && (
+                                        {getTotalWeekCost(week.weekNumber) && (
                                           <span className="text-xs bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-200 px-2 py-1 rounded font-semibold">
                                             💰{" "}
                                             {hideValues
-                                              ? "••••"
-                                              : `R$ ${lowestPrice.toFixed(2)}`}
+                                              ? "\u2022\u2022\u2022\u2022"
+                                              : `R$ ${getTotalWeekCost(week.weekNumber)!.toFixed(2)}`}
                                           </span>
                                         )}
                                         {week.smilesPoints ? (
@@ -5420,12 +5453,32 @@ export default function Home() {
               </div>
               <div>
                 <p className="text-sm text-slate-600 mb-1">
-                  Custo Total (Menor Preço)
+                  Total em Dinheiro
                 </p>
                 <p className="text-3xl font-bold text-green-600">
-                  R$ {totalCost.toFixed(2)}
+                  {hideValues ? "••••" : `R$ ${totalCost.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
                 </p>
               </div>
+              {totalSmiles > 0 && (
+                <div>
+                  <p className="text-sm text-slate-600 mb-1">
+                    Total SMILES
+                  </p>
+                  <p className="text-3xl font-bold text-orange-500">
+                    {hideValues ? "••••" : `${totalSmiles.toLocaleString("pt-BR")} pts`}
+                  </p>
+                </div>
+              )}
+              {totalLatamPass > 0 && (
+                <div>
+                  <p className="text-sm text-slate-600 mb-1">
+                    Total LATAM Pass
+                  </p>
+                  <p className="text-3xl font-bold text-red-600">
+                    {hideValues ? "••••" : `${totalLatamPass.toLocaleString("pt-BR")} pts`}
+                  </p>
+                </div>
+              )}
             </div>
           </Card>
         )}
