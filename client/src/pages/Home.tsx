@@ -653,63 +653,109 @@ export default function Home() {
     setTempDepartureLocator(prev => {
       const next = { ...prev };
       weeksQuery.data!.forEach(w => {
-        next[w.weekNumber] = (w as any).departureLocator ?? "";
+        const saved = w.departureLocator ?? "";
+        if (prev[w.weekNumber] !== undefined && prev[w.weekNumber] !== saved) {
+          // Se o usuário digitou algo localmente que não foi salvo, preservar.
+          next[w.weekNumber] = prev[w.weekNumber];
+        } else {
+          next[w.weekNumber] = saved;
+        }
       });
       return next;
     });
     setTempReturnLocator(prev => {
       const next = { ...prev };
       weeksQuery.data!.forEach(w => {
-        next[w.weekNumber] = (w as any).returnLocator ?? "";
+        const saved = w.returnLocator ?? "";
+        if (prev[w.weekNumber] !== undefined && prev[w.weekNumber] !== saved) {
+          next[w.weekNumber] = prev[w.weekNumber];
+        } else {
+          next[w.weekNumber] = saved;
+        }
       });
       return next;
     });
     setTempDepartureFlightNumber(prev => {
       const next = { ...prev };
       weeksQuery.data!.forEach(w => {
-        next[w.weekNumber] = (w as any).departureFlightNumber ?? "";
+        const saved = w.departureFlightNumber ?? "";
+        if (prev[w.weekNumber] !== undefined && prev[w.weekNumber] !== saved) {
+          next[w.weekNumber] = prev[w.weekNumber];
+        } else {
+          next[w.weekNumber] = saved;
+        }
       });
       return next;
     });
     setTempReturnFlightNumber(prev => {
       const next = { ...prev };
       weeksQuery.data!.forEach(w => {
-        next[w.weekNumber] = (w as any).returnFlightNumber ?? "";
+        const saved = w.returnFlightNumber ?? "";
+        if (prev[w.weekNumber] !== undefined && prev[w.weekNumber] !== saved) {
+          next[w.weekNumber] = prev[w.weekNumber];
+        } else {
+          next[w.weekNumber] = saved;
+        }
       });
       return next;
     });
     setTempDepartureAirport(prev => {
       const next = { ...prev };
       weeksQuery.data!.forEach(w => {
-        next[w.weekNumber] = (w as any).departureAirport ?? "";
+        const saved = w.departureAirport ?? "";
+        if (prev[w.weekNumber] !== undefined && prev[w.weekNumber] !== saved) {
+          next[w.weekNumber] = prev[w.weekNumber];
+        } else {
+          next[w.weekNumber] = saved;
+        }
       });
       return next;
     });
     setTempReturnAirport(prev => {
       const next = { ...prev };
       weeksQuery.data!.forEach(w => {
-        next[w.weekNumber] = (w as any).returnAirport ?? "";
+        const saved = w.returnAirport ?? "";
+        if (prev[w.weekNumber] !== undefined && prev[w.weekNumber] !== saved) {
+          next[w.weekNumber] = prev[w.weekNumber];
+        } else {
+          next[w.weekNumber] = saved;
+        }
       });
       return next;
     });
     setTempDepartureAirline(prev => {
       const next = { ...prev };
       weeksQuery.data!.forEach(w => {
-        next[w.weekNumber] = (w as any).departureAirline ?? "";
+        const saved = w.departureAirline ?? "";
+        if (prev[w.weekNumber] !== undefined && prev[w.weekNumber] !== saved) {
+          next[w.weekNumber] = prev[w.weekNumber];
+        } else {
+          next[w.weekNumber] = saved;
+        }
       });
       return next;
     });
     setTempReturnAirline(prev => {
       const next = { ...prev };
       weeksQuery.data!.forEach(w => {
-        next[w.weekNumber] = (w as any).returnAirline ?? "";
+        const saved = w.returnAirline ?? "";
+        if (prev[w.weekNumber] !== undefined && prev[w.weekNumber] !== saved) {
+          next[w.weekNumber] = prev[w.weekNumber];
+        } else {
+          next[w.weekNumber] = saved;
+        }
       });
       return next;
     });
     setTempTicketType(prev => {
       const next = { ...prev };
       weeksQuery.data!.forEach(w => {
-        next[w.weekNumber] = (w as any).ticketType ?? "roundtrip";
+        const saved = w.ticketType ?? "roundtrip";
+        if (prev[w.weekNumber] !== undefined && prev[w.weekNumber] !== saved) {
+          next[w.weekNumber] = prev[w.weekNumber];
+        } else {
+          next[w.weekNumber] = saved;
+        }
       });
       return next;
     });
