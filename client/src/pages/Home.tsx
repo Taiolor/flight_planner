@@ -2737,11 +2737,7 @@ export default function Home() {
                                           </span>
                                         )}
                                         {/* Jogos da Copa do Mundo no intervalo da semana */}
-                                        {feriados
-                                          .filter(
-                                            f => f.feriado.tipo === "copa"
-                                          )
-                                          .map(f => (
+                                        {feriadosIntervaloCopa.map(f => (
                                             <span
                                               key={f.feriado.data + f.tipo}
                                               className="text-xs bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-200 px-2 py-1 rounded font-semibold"

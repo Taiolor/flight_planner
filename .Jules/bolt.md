@@ -12,3 +12,8 @@
 
 **Learning:** Computations inside `.map` functions within JSX render cycles (such as array filtering and grouping logic) run on *every* component update. For dynamic forms where keystrokes trigger re-renders, this can cause significant input lag due to thousands of redundant iterations and garbage-collected intermediate array allocations per keystroke.
 **Action:** Consolidate expensive data derivations and object/array allocations into a single-pass `useMemo` block hoisted outside the render loop, tying it specifically to the lifecycle of the base data (e.g. `weeksData`), instead of placing it inside the `.map` render logic.
+
+## 2025-03-05 - Direct Loop Instead of Multiple Array Filtering
+
+**Learning:** Combining `.filter().map()` inside a component render loops forces React to allocate intermediate arrays on every render and loops over the elements twice.
+**Action:** When mapping over items that were previously filtered from an array in a render loop, combine the logic into a direct `.map()` on the pre-filtered array (e.g. `feriadosIntervaloCopa.map(...)`) or use a traditional `for` loop to avoid intermediate allocations and reduce iteration count.
