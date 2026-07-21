@@ -39,6 +39,77 @@ interface Release {
 const releases: Release[] = [
   // Julho 2026
   {
+    version: "v1.4.0",
+    date: "21/07/2026",
+    month: "Julho 2026",
+    status: "released",
+    highlights: "Multi-Ano, Accordion, Otimizações e Testes Expandidos",
+    features: [
+      {
+        icon: <Calendar className="w-5 h-5" />,
+        category: "Suporte Multi-Ano",
+        items: [
+          "Suporte para múltiplos anos (2026-2030)",
+          "Seletor de ano no cabeçalho com dropdown",
+          "Feriados atualizados para todos os anos",
+          "YearContext para sincronização entre páginas",
+        ],
+      },
+      {
+        icon: <ChevronDown className="w-5 h-5" />,
+        category: "Accordion de Semanas",
+        items: [
+          "Modelo sanfona para cada semana",
+          "Semanas passadas fechadas, futuras abertas",
+          "Botão Expandir/Recolher Tudo",
+          "Indicador visual para semana atual (borda + badge)",
+          "Animação suave de transição",
+        ],
+      },
+      {
+        icon: <Zap className="w-5 h-5" />,
+        category: "Otimizações de Performance",
+        items: [
+          "Lazy load para ExportPdfButton",
+          "Skeleton screens para Resumo e Filtros",
+          "Eliminação de alocações redundantes de arrays",
+          "pnpm dedupe: 5 dependências removidas (23.1 MB liberados)",
+          "Build otimizado com minificação agressiva",
+        ],
+      },
+      {
+        icon: <Mail className="w-5 h-5" />,
+        category: "Notificações por Email",
+        items: [
+          "Templates com dados de milhas (SMILES e LATAM PASS)",
+          "Seção visual Pagamento por Milhas",
+          "Formatação com cores diferenciadas",
+        ],
+      },
+      {
+        icon: <Shield className="w-5 h-5" />,
+        category: "Segurança de Tipos e Testes",
+        items: [
+          "Remoção de type assertions 'any' em Home.tsx",
+          "Extração de componente WeekFlightCard",
+          "213 testes (49 novos adicionados)",
+          "Cobertura completa do useAuth hook",
+          "Testes para integração Google Calendar",
+        ],
+      },
+      {
+        icon: <Bug className="w-5 h-5" />,
+        category: "Correções de Bugs",
+        items: [
+          "Erro de autenticação tRPC na homepage",
+          "Localizadores/números de voos não exibidos (semana 20+)",
+          "Sincronização estado local vs servidor",
+          "Invalidação de query getWeeks após login",
+        ],
+      },
+    ],
+  },
+  {
     version: "v1.3.0",
     date: "17/07/2026",
     month: "Julho 2026",
