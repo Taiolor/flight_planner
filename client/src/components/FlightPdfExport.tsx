@@ -79,6 +79,66 @@ interface FlightDetailsProps {
   airport?: string | null;
 }
 
+function FlightDetailRow({
+  label,
+  value,
+  isAirline = false,
+  airlineInfo,
+  valueStyle,
+  hasWidth = false,
+}: {
+  label: string;
+  value?: React.ReactNode;
+  isAirline?: boolean;
+  airlineInfo?: { bg: string; text: string; label: string };
+  valueStyle?: React.CSSProperties;
+  hasWidth?: boolean;
+}) {
+  if (!value && !airlineInfo) return null;
+
+  return (
+    <tr>
+      <td
+        style={{
+          color: "#64748b",
+          paddingBottom: "6px",
+          verticalAlign: "middle",
+          width: hasWidth ? "90px" : undefined,
+        }}
+      >
+        {label}
+      </td>
+      <td
+        style={{
+          paddingBottom: "6px",
+          verticalAlign: "middle",
+          ...valueStyle,
+        }}
+      >
+        {isAirline && airlineInfo ? (
+          <span
+            style={{
+              display: "inline-block",
+              background: airlineInfo.bg,
+              color: airlineInfo.text,
+              borderRadius: "4px",
+              padding: "3px 10px",
+              fontSize: "11px",
+              fontWeight: 700,
+              minWidth: "52px",
+              textAlign: "center",
+            }}
+          >
+            {airlineInfo.label}
+          </span>
+        ) : (
+          value
+        )}
+      </td>
+    </tr>
+  );
+}
+
 function FlightDetailsSection({
   title,
   titleColor,
@@ -118,132 +178,38 @@ function FlightDetailsSection({
         }}
       >
         <tbody>
-          {airline && (
-            <tr>
-              <td
-                style={{
-                  color: "#64748b",
-                  paddingBottom: "6px",
-                  width: "90px",
-                  verticalAlign: "middle",
-                }}
-              >
-                Companhia
-              </td>
-              <td
-                style={{
-                  paddingBottom: "6px",
-                  verticalAlign: "middle",
-                }}
-              >
-                {airlineInfo ? (
-                  <span
-                    style={{
-                      display: "inline-block",
-                      background: airlineInfo.bg,
-                      color: airlineInfo.text,
-                      borderRadius: "4px",
-                      padding: "3px 10px",
-                      fontSize: "11px",
-                      fontWeight: 700,
-                      minWidth: "52px",
-                      textAlign: "center",
-                    }}
-                  >
-                    {airlineInfo.label}
-                  </span>
-                ) : (
-                  airline
-                )}
-              </td>
-            </tr>
-          )}
-          {flightNumber && (
-            <tr>
-              <td
-                style={{
-                  color: "#64748b",
-                  paddingBottom: "6px",
-                  verticalAlign: "middle",
-                }}
-              >
-                Voo
-              </td>
-              <td
-                style={{
-                  paddingBottom: "6px",
-                  fontWeight: 700,
-                  color: "#1e293b",
-                  verticalAlign: "middle",
-                }}
-              >
-                {flightNumber}
-              </td>
-            </tr>
-          )}
-          {locator && (
-            <tr>
-              <td
-                style={{
-                  color: "#64748b",
-                  paddingBottom: "6px",
-                  verticalAlign: "middle",
-                }}
-              >
-                Localizador
-              </td>
-              <td
-                style={{
-                  paddingBottom: "6px",
-                  fontWeight: 700,
-                  color: "#1e293b",
-                  fontFamily: "monospace",
-                  letterSpacing: "1px",
-                  verticalAlign: "middle",
-                }}
-              >
-                {locator}
-              </td>
-            </tr>
-          )}
-          {flightDatetime && (
-            <tr>
-              <td
-                style={{
-                  color: "#64748b",
-                  paddingBottom: "6px",
-                  verticalAlign: "middle",
-                }}
-              >
-                Data/Hora
-              </td>
-              <td
-                style={{
-                  paddingBottom: "6px",
-                  color: "#1e293b",
-                  verticalAlign: "middle",
-                }}
-              >
-                {formatDatetime(flightDatetime)}
-              </td>
-            </tr>
-          )}
-          {airport && (
-            <tr>
-              <td style={{ color: "#64748b", verticalAlign: "middle" }}>
-                Aeroporto
-              </td>
-              <td
-                style={{
-                  fontWeight: 600,
-                  color: "#1e293b",
-                  verticalAlign: "middle",
-                }}
-              >
-                {airport}
-              </td>
-            </tr>
-          )}
+          <FlightDetailRow
+            label="Companhia"
+            value={airline}
+            isAirline
+            airlineInfo={airlineInfo}
+            hasWidth
+          />
+          <FlightDetailRow
+            label="Voo"
+            value={flightNumber}
+            valueStyle={{ fontWeight: 700, color: "#1e293b" }}
+          />
+          <FlightDetailRow
+            label="Localizador"
+            value={locator}
+            valueStyle={{
+              fontWeight: 700,
+              color: "#1e293b",
+              fontFamily: "monospace",
+              letterSpacing: "1px",
+            }}
+          />
+          <FlightDetailRow
+            label="Data/Hora"
+            value={flightDatetime ? formatDatetime(flightDatetime) : undefined}
+            valueStyle={{ color: "#1e293b" }}
+          />
+          <FlightDetailRow
+            label="Aeroporto"
+            value={airport}
+            valueStyle={{ fontWeight: 600, color: "#1e293b" }}
+          />
         </tbody>
       </table>
     </div>
