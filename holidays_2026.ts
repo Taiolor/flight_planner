@@ -29,6 +29,10 @@ export const holidays2026: Holiday[] = [
   { date: "02/09", name: "Aniversário de Blumenau", type: "municipal" },
 ];
 
+const holidaysMap = new Map<string, Holiday>(
+  holidays2026.map(h => [h.date, h])
+);
+
 /**
  * Função para verificar se uma data é feriado
  * @param day - dia (1-31)
@@ -40,7 +44,7 @@ export function getHolidayByDate(
   month: number
 ): Holiday | undefined {
   const dateStr = `${String(day).padStart(2, "0")}/${String(month).padStart(2, "0")}`;
-  return holidays2026.find(h => h.date === dateStr);
+  return holidaysMap.get(dateStr);
 }
 
 /**
