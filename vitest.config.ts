@@ -13,13 +13,18 @@ export default defineConfig({
     },
   },
   test: {
-    environment: "node",
+    environmentMatchGlobs: [
+      ["client/**", "jsdom"],
+      ["server/**", "node"],
+      ["shared/**", "node"],
+    ],
     setupFiles: ["./vitest.setup.ts"],
     include: [
       "server/**/*.test.ts",
       "server/**/*.spec.ts",
       "shared/**/*.test.ts",
       "client/**/*.test.ts",
+      "client/**/*.test.tsx",
     ],
   },
 });

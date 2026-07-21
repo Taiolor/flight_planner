@@ -25,6 +25,21 @@ interface ShareByEmailButtonProps {
   returnTerminal?: string;
 }
 
+// Extrair hora do datetime (formato: "YYYY-MM-DD HH:mm")
+const extractTime = (datetime: string): string => {
+  if (!datetime) return "";
+  // Formato esperado: YYYY-MM-DD HH:mm (hora está na posição 11-16)
+  if (datetime.length >= 16) {
+    return datetime.slice(11, 16);
+  }
+  // Fallback: tentar split por espaço
+  const parts = datetime.split(" ");
+  if (parts.length > 1) {
+    return parts[1].split(":").slice(0, 2).join(":");
+  }
+  return "";
+};
+
 export function ShareByEmailButton({
   weekNumber,
   departureDate,
@@ -53,21 +68,6 @@ export function ShareByEmailButton({
 
     setIsLoading(true);
     try {
-      // Extrair hora do datetime (formato: "YYYY-MM-DD HH:mm")
-      const extractTime = (datetime: string): string => {
-        if (!datetime) return "";
-        // Formato esperado: YYYY-MM-DD HH:mm (hora está na posição 11-16)
-        if (datetime.length >= 16) {
-          return datetime.slice(11, 16);
-        }
-        // Fallback: tentar split por espaço
-        const parts = datetime.split(" ");
-        if (parts.length > 1) {
-          return parts[1].split(":").slice(0, 2).join(":");
-        }
-        return "";
-      };
-
       const weekLabel = `Semana ${weekNumber}`;
       const departureTime = extractTime(departureDatetime);
       const returnTime = extractTime(returnDatetime);
