@@ -19,7 +19,9 @@ export function YearProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <YearContext.Provider value={{ selectedYear, setSelectedYear: handleSetSelectedYear }}>
+    <YearContext.Provider
+      value={{ selectedYear, setSelectedYear: handleSetSelectedYear }}
+    >
       {children}
     </YearContext.Provider>
   );

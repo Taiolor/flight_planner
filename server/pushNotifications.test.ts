@@ -1,7 +1,7 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import {
-  sendPushToAll,
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import {  sendPushToAll,
   sendPushToOne,
+  checkAndNotifyUpcomingFlights,
   type PushPayload,
 } from "./pushNotifications";
 import * as db from "./db";
@@ -186,9 +186,146 @@ describe("pushNotifications", () => {
 
       const result = await sendPushToAll(payload, subs);
 
-      expect(result).toBe(1);
-      expect(db.getAllPushSubscriptions).not.toHaveBeenCalled();
+      expect(result).toBe(1);      expect(db.getAllPushSubscriptions).not.toHaveBeenCalled();
       expect(webpush.sendNotification).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe("checkAndNotifyUpcomingFlights", () => {
+    beforeEach(() => {
+      vi.useFakeTimers();
+      // Set fixed time for deterministic tests
+      vi.setSystemTime(new Date("2023-10-10T15:00:00.000Z"));
+    });
+
+    afterEach(() => {
+      vi.useRealTimers();
+    });
+
+    it("should do nothing if there are no configured flights or settings", async () => {
+      vi.mocked(db.getAllFlightWeeks).mockResolvedValue([]);
+      vi.mocked(db.getNotificationSettings).mockResolvedValue({ aviso1Minutes: 0, aviso2Minutes: 0 } as any);
+      vi.mocked(db.getAllPushSubscriptions).mockResolvedValue([]);
+
+      await checkAndNotifyUpcomingFlights();
+
+      expect(db.insertNotificationLog).not.toHaveBeenCalled();
+      expect(webpush.sendNotification).not.toHaveBeenCalled();
+    });
+
+    it("should notify about a departure flight within the warning window", async () => {
+      vi.mocked(db.getNotificationSettings).mockResolvedValue({ aviso1Minutes: 60, aviso2Minutes: 0 } as any);
+      vi.mocked(db.getAllPushSubscriptions).mockResolvedValue([
+        { id: 1, endpoint: "endpoint1", p256dh: "p1", auth: "a1", createdAt: new Date() }
+      ]);
+
+      // Current time is 15:00Z.
+      // Flight departure is at 16:00Z. Notice is 60m (1h) before, which is exactly at 15:00Z.
+      // 16:00Z corresponds to 13:00 in Brasilia time (-03:00).
+      vi.mocked(db.getAllFlightWeeks).mockResolvedValue([
+        {
+          weekNumber: "1",
+          isTicketIssued: 1,
+          departureAirline: "LATAM",
+          departureFlightNumber: "LA1234",
+          departureFlightDatetime: "2023-10-10T13:00:00", // Brasilia time
+          returnAirline: null,
+          returnFlightNumber: null,
+          returnFlightDatetime: null
+        } as any
+      ]);
+
+      vi.mocked(webpush.sendNotification).mockResolvedValue({} as any);
+
+      await checkAndNotifyUpcomingFlights();
+
+      // Should send push notification
+      expect(webpush.sendNotification).toHaveBeenCalledTimes(1);
+      const expectedPayload = JSON.stringify({
+        title: "✈️ 1h antes — LATAM LA1234",
+        body: "Voo de ida GRU → NVT: terça-feira, 10/10 às 13:00. Prepare-se! 🧳",
+        icon: "/icons/icon-192.png",
+        badge: "/icons/icon-192.png",
+        tag: "departure-week-1-aviso60",
+        data: { weekNumber: "1", direction: "departure" }
+      });
+      expect(webpush.sendNotification).toHaveBeenCalledWith(
+        { endpoint: "endpoint1", keys: { p256dh: "p1", auth: "a1" } },
+        expectedPayload,
+        { TTL: 86400 }
+      );
+
+      // Should log the notification
+      expect(db.insertNotificationLog).toHaveBeenCalledWith({
+        weekNumber: 1,
+        direction: "ida",
+        avisoLabel: "Aviso 1",
+        avisoMinutes: 60,
+        airline: "LATAM",
+        flightNumber: "LA1234",
+        flightDatetime: "2023-10-10T13:00:00",
+        status: "success",
+        devicesReached: 1,
+        totalDevices: 1,
+        isTest: 0
+      });
+    });
+
+    it("should notify about a return flight within the warning window", async () => {
+      vi.mocked(db.getNotificationSettings).mockResolvedValue({ aviso1Minutes: 0, aviso2Minutes: 1440 } as any); // 1440m = 24h
+      vi.mocked(db.getAllPushSubscriptions).mockResolvedValue([
+        { id: 1, endpoint: "endpoint1", p256dh: "p1", auth: "a1", createdAt: new Date() }
+      ]);
+
+      // Current time is 2023-10-10T15:00:00.000Z.
+      // Flight return is exactly 24h later: 2023-10-11T15:00:00.000Z
+      // 15:00Z corresponds to 12:00 in Brasilia time (-03:00).
+      vi.mocked(db.getAllFlightWeeks).mockResolvedValue([
+        {
+          weekNumber: "2",
+          isTicketIssued: 1,
+          departureAirline: null,
+          departureFlightNumber: null,
+          departureFlightDatetime: null,
+          returnAirline: "AZUL",
+          returnFlightNumber: "AD4321",
+          returnFlightDatetime: "2023-10-11T12:00:00" // Brasilia time
+        } as any
+      ]);
+
+      vi.mocked(webpush.sendNotification).mockResolvedValue({} as any);
+
+      await checkAndNotifyUpcomingFlights();
+
+      expect(webpush.sendNotification).toHaveBeenCalledTimes(1);
+      const expectedPayload = JSON.stringify({
+        title: "🏠 24h antes — Azul AD4321",
+        body: "Voo de volta NVT → GRU: quarta-feira, 11/10 às 12:00. Boa viagem! ✈️",
+        icon: "/icons/icon-192.png",
+        badge: "/icons/icon-192.png",
+        tag: "return-week-2-aviso1440",
+        data: { weekNumber: "2", direction: "return" }
+      });
+      expect(webpush.sendNotification).toHaveBeenCalledWith(
+        { endpoint: "endpoint1", keys: { p256dh: "p1", auth: "a1" } },
+        expectedPayload,
+        { TTL: 86400 }
+      );
+
+      // Should log the notification
+      expect(db.insertNotificationLog).toHaveBeenCalledWith({
+        weekNumber: 2,
+        direction: "volta",
+        avisoLabel: "Aviso 2",
+        avisoMinutes: 1440,
+        airline: "AZUL",
+        flightNumber: "AD4321",
+        flightDatetime: "2023-10-11T12:00:00",
+        status: "success",
+        devicesReached: 1,
+        totalDevices: 1,
+        isTest: 0
+      });
     });
   });
 });

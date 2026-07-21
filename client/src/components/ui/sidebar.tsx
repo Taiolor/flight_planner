@@ -150,7 +150,71 @@ function SidebarProvider({
   );
 }
 
-function Sidebar({
+type SidebarProps = React.ComponentProps<"div"> & {
+  side?: "left" | "right";
+  variant?: "sidebar" | "floating" | "inset";
+  collapsible?: "offcanvas" | "icon" | "none";
+  disableTransition?: boolean;
+};
+
+function SidebarStatic({
+  side,
+  variant,
+  collapsible,
+  disableTransition,
+  className,
+  children,
+  ...props
+}: SidebarProps) {
+  return (
+    <div
+      data-slot="sidebar"
+      className={cn(
+        "bg-sidebar text-sidebar-foreground flex h-full w-(--sidebar-width) flex-col",
+        className
+      )}
+      {...props}
+    >
+      {children}
+    </div>
+  );
+}
+
+function SidebarMobile({
+  side = "left",
+  variant,
+  collapsible,
+  disableTransition,
+  children,
+  ...props
+}: SidebarProps) {
+  const { openMobile, setOpenMobile } = useSidebar();
+
+  return (
+    <Sheet open={openMobile} onOpenChange={setOpenMobile} {...props}>
+      <SheetContent
+        data-sidebar="sidebar"
+        data-slot="sidebar"
+        data-mobile="true"
+        className="bg-sidebar text-sidebar-foreground w-(--sidebar-width) p-0 [&>button]:hidden"
+        style={
+          {
+            "--sidebar-width": SIDEBAR_WIDTH_MOBILE,
+          } as React.CSSProperties
+        }
+        side={side}
+      >
+        <SheetHeader className="sr-only">
+          <SheetTitle>Sidebar</SheetTitle>
+          <SheetDescription>Displays the mobile sidebar.</SheetDescription>
+        </SheetHeader>
+        <div className="flex h-full w-full flex-col">{children}</div>
+      </SheetContent>
+    </Sheet>
+  );
+}
+
+function SidebarDesktop({
   side = "left",
   variant = "sidebar",
   collapsible = "offcanvas",
@@ -158,53 +222,8 @@ function Sidebar({
   className,
   children,
   ...props
-}: React.ComponentProps<"div"> & {
-  side?: "left" | "right";
-  variant?: "sidebar" | "floating" | "inset";
-  collapsible?: "offcanvas" | "icon" | "none";
-  disableTransition?: boolean;
-}) {
-  const { isMobile, state, openMobile, setOpenMobile } = useSidebar();
-
-  if (collapsible === "none") {
-    return (
-      <div
-        data-slot="sidebar"
-        className={cn(
-          "bg-sidebar text-sidebar-foreground flex h-full w-(--sidebar-width) flex-col",
-          className
-        )}
-        {...props}
-      >
-        {children}
-      </div>
-    );
-  }
-
-  if (isMobile) {
-    return (
-      <Sheet open={openMobile} onOpenChange={setOpenMobile} {...props}>
-        <SheetContent
-          data-sidebar="sidebar"
-          data-slot="sidebar"
-          data-mobile="true"
-          className="bg-sidebar text-sidebar-foreground w-(--sidebar-width) p-0 [&>button]:hidden"
-          style={
-            {
-              "--sidebar-width": SIDEBAR_WIDTH_MOBILE,
-            } as React.CSSProperties
-          }
-          side={side}
-        >
-          <SheetHeader className="sr-only">
-            <SheetTitle>Sidebar</SheetTitle>
-            <SheetDescription>Displays the mobile sidebar.</SheetDescription>
-          </SheetHeader>
-          <div className="flex h-full w-full flex-col">{children}</div>
-        </SheetContent>
-      </Sheet>
-    );
-  }
+}: SidebarProps) {
+  const { state } = useSidebar();
 
   return (
     <div
@@ -258,6 +277,37 @@ function Sidebar({
       </div>
     </div>
   );
+}
+
+function Sidebar({
+  side = "left",
+  variant = "sidebar",
+  collapsible = "offcanvas",
+  disableTransition = false,
+  className,
+  children,
+  ...props
+}: SidebarProps) {
+  const { isMobile } = useSidebar();
+
+  const sidebarProps = {
+    side,
+    variant,
+    collapsible,
+    disableTransition,
+    className,
+    ...props,
+  };
+
+  if (collapsible === "none") {
+    return <SidebarStatic {...sidebarProps}>{children}</SidebarStatic>;
+  }
+
+  if (isMobile) {
+    return <SidebarMobile {...sidebarProps}>{children}</SidebarMobile>;
+  }
+
+  return <SidebarDesktop {...sidebarProps}>{children}</SidebarDesktop>;
 }
 
 function SidebarTrigger({

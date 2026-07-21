@@ -3,24 +3,104 @@ import { notifyOwner } from "../notification";
 import { ENV } from "../env";
 import { TRPCError } from "@trpc/server";
 
-// Mock the environment variables so that validation passes for tests
-vi.mock("../env", () => ({
-  ENV: {
-    forgeApiUrl: "https://api.example.com/",
-    forgeApiKey: "test-api-key",
-  },
-}));
-
 describe("notifyOwner", () => {
   const originalFetch = global.fetch;
+  let originalEnv: any;
+  const originalEnvVars = process.env;
 
   beforeEach(() => {
     vi.resetModules();
+    originalEnv = { ...ENV };
+    process.env = { ...originalEnvVars };
+    ENV.forgeApiUrl = "https://api.example.com/";
+    ENV.forgeApiKey = "test-api-key";
   });
 
   afterEach(() => {
     global.fetch = originalFetch;
+    Object.assign(ENV, originalEnv);
+    process.env = originalEnvVars;
     vi.clearAllMocks();
+  });
+
+  it("should handle error when getting detail text from a non-ok response", async () => {
+    const mockWarn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: false,
+      status: 400,
+      statusText: "Bad Request",
+      text: vi.fn().mockRejectedValue(new Error("Cannot read body")),
+    } as unknown as Response);
+
+    const result = await notifyOwner({
+      title: "Test",
+      content: "Test Content",
+    });
+    expect(result).toBe(false);
+    expect(mockWarn).toHaveBeenCalledWith(
+      "[Notification] Failed to notify owner (400 Bad Request)"
+    );
+    mockWarn.mockRestore();
+  });
+
+  it("should truncate title if it is exactly max length + 1", async () => {
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+    } as Response);
+    const result = await notifyOwner({
+      title: "a".repeat(1201),
+      content: "Valid Content",
+    });
+    expect(result).toBe(true);
+    const fetchCall = vi.mocked(global.fetch).mock.calls[0];
+    const fetchOptions = fetchCall[1];
+    const fetchBody = JSON.parse(fetchOptions!.body as string);
+    expect(fetchBody.title).toHaveLength(1200);
+    expect(fetchBody.title.endsWith("...")).toBe(true);
+  });
+
+  it("should truncate content if it is exactly max length + 1", async () => {
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+    } as Response);
+    const result = await notifyOwner({
+      title: "Valid Title",
+      content: "a".repeat(20001),
+    });
+    expect(result).toBe(true);
+    const fetchCall = vi.mocked(global.fetch).mock.calls[0];
+    const fetchOptions = fetchCall[1];
+    const fetchBody = JSON.parse(fetchOptions!.body as string);
+    expect(fetchBody.content).toHaveLength(20000);
+    expect(fetchBody.content.endsWith("...")).toBe(true);
+  });
+
+  it("should handle invalid URL inside buildEndpointUrl", async () => {
+    ENV.forgeApiUrl = "invalid-url";
+    await expect(
+      notifyOwner({ title: "Test", content: "Test Content" })
+    ).rejects.toThrowError(TypeError);
+  });
+
+  it("should throw TRPCError if ENV.forgeApiUrl is not configured", async () => {
+    ENV.forgeApiUrl = "";
+    await expect(
+      notifyOwner({ title: "Test", content: "Test Content" })
+    ).rejects.toThrowError(TRPCError);
+  });
+
+  it("should handle invalid URL inside buildEndpointUrl", async () => {
+    ENV.forgeApiUrl = "invalid-url";
+    await expect(
+      notifyOwner({ title: "Test", content: "Test Content" })
+    ).rejects.toThrowError(TypeError);
+  });
+
+  it("should throw TRPCError if ENV.forgeApiKey is not configured", async () => {
+    ENV.forgeApiKey = "";
+    await expect(
+      notifyOwner({ title: "Test", content: "Test Content" })
+    ).rejects.toThrowError(TRPCError);
   });
 
   it("should throw TRPCError if title is missing", async () => {
@@ -110,5 +190,12 @@ describe("notifyOwner", () => {
       fetchError
     );
     mockWarn.mockRestore();
+  });
+
+  it("should handle invalid URL inside buildEndpointUrl", async () => {
+    ENV.forgeApiUrl = "invalid-url";
+    await expect(
+      notifyOwner({ title: "Test", content: "Test Content" })
+    ).rejects.toThrowError(TypeError);
   });
 });

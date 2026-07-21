@@ -37,6 +37,7 @@ export function LoginModal({ open, onOpenChange }: LoginModalProps) {
           setLoginEmail("");
           setLoginPassword("");
           authUtils.flightAuth.check.invalidate();
+          authUtils.flights.getWeeks.invalidate();
           toast.success("Login realizado com sucesso!");
         },
         onError: err => {

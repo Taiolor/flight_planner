@@ -36,6 +36,166 @@ const ANTECEDENCIA_OPTIONS = [
   { label: "48 horas", value: 2880 },
 ];
 
+const getAvisoLabel = (minutes: number) => {
+  const opt = ANTECEDENCIA_OPTIONS.find(o => o.value === minutes);
+  return opt ? opt.label : `${minutes}min`;
+};
+
+interface NotificationOptionProps {
+  label: string;
+  value: number;
+  onChange: (value: number) => void;
+  index: number;
+  ariaLabel: string;
+}
+
+function NotificationOption({
+  label,
+  value,
+  onChange,
+  index,
+  ariaLabel,
+}: NotificationOptionProps) {
+  const isFirst = index === 1;
+  const gradientClass = isFirst
+    ? "from-purple-500 to-cyan-500"
+    : "from-cyan-500 to-purple-500";
+  const textClass = isFirst ? "text-purple-400" : "text-cyan-400";
+
+  return (
+    <div className="space-y-1.5">
+      <div className="flex items-center gap-2">
+        <div
+          className={`w-5 h-5 rounded-full bg-gradient-to-br ${gradientClass} flex items-center justify-center text-xs font-bold text-white flex-shrink-0`}
+        >
+          {index}
+        </div>
+        <label className="text-sm font-medium text-slate-200">{label}</label>
+        {value > 0 && (
+          <span
+            className={`ml-auto text-xs flex items-center gap-1 ${textClass}`}
+          >
+            <Clock className="w-3 h-3" />
+            {getAvisoLabel(value)}
+          </span>
+        )}
+      </div>
+      <Select value={String(value)} onValueChange={v => onChange(Number(v))}>
+        <SelectTrigger
+          aria-label={ariaLabel}
+          className="bg-slate-800 border-slate-600 text-white h-10 text-sm w-full"
+        >
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent className="bg-slate-800 border-slate-600 text-white">
+          {ANTECEDENCIA_OPTIONS.map(opt => (
+            <SelectItem
+              key={opt.value}
+              value={String(opt.value)}
+              className="text-sm focus:bg-slate-700 focus:text-white"
+            >
+              {opt.label}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </div>
+  );
+}
+
+interface NotificationSettingsFormProps {
+  aviso1: number;
+  setAviso1: (val: number) => void;
+  aviso2: number;
+  setAviso2: (val: number) => void;
+  onSave: () => void;
+  isPending: boolean;
+  saved: boolean;
+}
+
+function NotificationSettingsForm({
+  aviso1,
+  setAviso1,
+  aviso2,
+  setAviso2,
+  onSave,
+  isPending,
+  saved,
+}: NotificationSettingsFormProps) {
+  return (
+    <div className="space-y-4 p-1">
+      <p className="text-xs text-slate-400 leading-relaxed">
+        Configure com quantas horas de antecedência deseja receber avisos push
+        antes de cada voo. Defina como{" "}
+        <strong className="text-slate-300">Desativado</strong> para não receber
+        aquele aviso.
+      </p>
+
+      <NotificationOption
+        label="Aviso 1"
+        value={aviso1}
+        onChange={setAviso1}
+        index={1}
+        ariaLabel="Dias antes do voo (ida)"
+      />
+
+      <NotificationOption
+        label="Aviso 2"
+        value={aviso2}
+        onChange={setAviso2}
+        index={2}
+        ariaLabel="Dias antes do voo (volta)"
+      />
+
+      {(aviso1 > 0 || aviso2 > 0) && (
+        <div className="rounded-lg bg-gradient-to-r from-purple-500/10 to-cyan-500/10 border border-purple-400/30 p-3 space-y-1.5">
+          <p className="text-xs text-slate-400 font-medium">Avisos ativos:</p>
+          {aviso1 > 0 && (
+            <div className="flex items-center gap-2 text-xs text-slate-300">
+              <div className="w-2 h-2 rounded-full bg-purple-500 flex-shrink-0" />
+              Aviso 1:{" "}
+              <span className="text-purple-400 font-medium">
+                {getAvisoLabel(aviso1)}
+              </span>{" "}
+              antes do voo
+            </div>
+          )}
+          {aviso2 > 0 && (
+            <div className="flex items-center gap-2 text-xs text-slate-300">
+              <div className="w-2 h-2 rounded-full bg-cyan-500 flex-shrink-0" />
+              Aviso 2:{" "}
+              <span className="text-cyan-400 font-medium">
+                {getAvisoLabel(aviso2)}
+              </span>{" "}
+              antes do voo
+            </div>
+          )}
+        </div>
+      )}
+
+      <Button
+        onClick={onSave}
+        disabled={isPending}
+        className="w-full h-10 text-sm font-medium bg-blue-600 hover:bg-blue-700 text-white"
+      >
+        {isPending ? (
+          <span className="flex items-center gap-2">
+            <span className="animate-spin w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full" />
+            Salvando...
+          </span>
+        ) : saved ? (
+          <span className="flex items-center gap-2">
+            <CheckCircle2 className="w-4 h-4 text-green-400" />
+            Salvo!
+          </span>
+        ) : (
+          "Salvar configurações"
+        )}
+      </Button>
+    </div>
+  );
+}
+
 interface NotificationSettingsPopupProps {
   isAuthenticated: boolean;
   onLoginRequired: () => void;
@@ -100,147 +260,6 @@ export function NotificationSettingsPopup({
     updateMutation.mutate({ aviso1Minutes: aviso1, aviso2Minutes: aviso2 });
   };
 
-  const getAvisoLabel = (minutes: number) => {
-    const opt = ANTECEDENCIA_OPTIONS.find(o => o.value === minutes);
-    return opt ? opt.label : `${minutes}min`;
-  };
-
-  // Conteúdo interno reutilizável
-  const InnerContent = () => (
-    <div className="space-y-4 p-1">
-      <p className="text-xs text-slate-400 leading-relaxed">
-        Configure com quantas horas de antecedência deseja receber avisos push
-        antes de cada voo. Defina como{" "}
-        <strong className="text-slate-300">Desativado</strong> para não receber
-        aquele aviso.
-      </p>
-
-      {/* Aviso 1 */}
-      <div className="space-y-1.5">
-        <div className="flex items-center gap-2">
-          <div className="w-5 h-5 rounded-full bg-gradient-to-br from-purple-500 to-cyan-500 flex items-center justify-center text-xs font-bold text-white flex-shrink-0">
-            1
-          </div>
-          <label className="text-sm font-medium text-slate-200">Aviso 1</label>
-          {aviso1 > 0 && (
-            <span className="ml-auto text-xs text-purple-400 flex items-center gap-1">
-              <Clock className="w-3 h-3" />
-              {getAvisoLabel(aviso1)}
-            </span>
-          )}
-        </div>
-        <Select
-          value={String(aviso1)}
-          onValueChange={v => setAviso1(Number(v))}
-        >
-          <SelectTrigger
-            aria-label="Dias antes do voo (ida)"
-            className="bg-slate-800 border-slate-600 text-white h-10 text-sm w-full"
-          >
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent className="bg-slate-800 border-slate-600 text-white">
-            {ANTECEDENCIA_OPTIONS.map(opt => (
-              <SelectItem
-                key={opt.value}
-                value={String(opt.value)}
-                className="text-sm focus:bg-slate-700 focus:text-white"
-              >
-                {opt.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-
-      {/* Aviso 2 */}
-      <div className="space-y-1.5">
-        <div className="flex items-center gap-2">
-          <div className="w-5 h-5 rounded-full bg-gradient-to-br from-cyan-500 to-purple-500 flex items-center justify-center text-xs font-bold text-white flex-shrink-0">
-            2
-          </div>
-          <label className="text-sm font-medium text-slate-200">Aviso 2</label>
-          {aviso2 > 0 && (
-            <span className="ml-auto text-xs text-cyan-400 flex items-center gap-1">
-              <Clock className="w-3 h-3" />
-              {getAvisoLabel(aviso2)}
-            </span>
-          )}
-        </div>
-        <Select
-          value={String(aviso2)}
-          onValueChange={v => setAviso2(Number(v))}
-        >
-          <SelectTrigger
-            aria-label="Dias antes do voo (volta)"
-            className="bg-slate-800 border-slate-600 text-white h-10 text-sm w-full"
-          >
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent className="bg-slate-800 border-slate-600 text-white">
-            {ANTECEDENCIA_OPTIONS.map(opt => (
-              <SelectItem
-                key={opt.value}
-                value={String(opt.value)}
-                className="text-sm focus:bg-slate-700 focus:text-white"
-              >
-                {opt.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-
-      {/* Resumo */}
-      {(aviso1 > 0 || aviso2 > 0) && (
-        <div className="rounded-lg bg-gradient-to-r from-purple-500/10 to-cyan-500/10 border border-purple-400/30 p-3 space-y-1.5">
-          <p className="text-xs text-slate-400 font-medium">Avisos ativos:</p>
-          {aviso1 > 0 && (
-            <div className="flex items-center gap-2 text-xs text-slate-300">
-              <div className="w-2 h-2 rounded-full bg-purple-500 flex-shrink-0" />
-              Aviso 1:{" "}
-              <span className="text-purple-400 font-medium">
-                {getAvisoLabel(aviso1)}
-              </span>{" "}
-              antes do voo
-            </div>
-          )}
-          {aviso2 > 0 && (
-            <div className="flex items-center gap-2 text-xs text-slate-300">
-              <div className="w-2 h-2 rounded-full bg-cyan-500 flex-shrink-0" />
-              Aviso 2:{" "}
-              <span className="text-cyan-400 font-medium">
-                {getAvisoLabel(aviso2)}
-              </span>{" "}
-              antes do voo
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Botão Salvar */}
-      <Button
-        onClick={handleSave}
-        disabled={updateMutation.isPending}
-        className="w-full h-10 text-sm font-medium bg-blue-600 hover:bg-blue-700 text-white"
-      >
-        {updateMutation.isPending ? (
-          <span className="flex items-center gap-2">
-            <span className="animate-spin w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full" />
-            Salvando...
-          </span>
-        ) : saved ? (
-          <span className="flex items-center gap-2">
-            <CheckCircle2 className="w-4 h-4 text-green-400" />
-            Salvo!
-          </span>
-        ) : (
-          "Salvar configurações"
-        )}
-      </Button>
-    </div>
-  );
-
   // Botão de abertura
   const TriggerButton = (
     <Button
@@ -269,7 +288,15 @@ export function NotificationSettingsPopup({
                 Agendamento de Avisos
               </DialogTitle>
             </DialogHeader>
-            <InnerContent />
+            <NotificationSettingsForm
+              aviso1={aviso1}
+              setAviso1={setAviso1}
+              aviso2={aviso2}
+              setAviso2={setAviso2}
+              onSave={handleSave}
+              isPending={updateMutation.isPending}
+              saved={saved}
+            />
           </DialogContent>
         </Dialog>
       </>
@@ -309,7 +336,15 @@ export function NotificationSettingsPopup({
           <Bell className="w-4 h-4 text-blue-400" />
           <span className="font-semibold text-sm">Agendamento de Avisos</span>
         </div>
-        <InnerContent />
+        <NotificationSettingsForm
+          aviso1={aviso1}
+          setAviso1={setAviso1}
+          aviso2={aviso2}
+          setAviso2={setAviso2}
+          onSave={handleSave}
+          isPending={updateMutation.isPending}
+          saved={saved}
+        />
       </PopoverContent>
     </Popover>
   );
