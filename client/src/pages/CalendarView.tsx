@@ -301,6 +301,7 @@ export default function CalendarView({
         map[key].departure = true;
         map[key].isPast = isPast;
         map[key].week = week;
+        map[key].departureRescheduled = week.departureRescheduled === 1;
       }
 
       if (!isOneway && retDate) {
@@ -309,6 +310,7 @@ export default function CalendarView({
         if (!map[key])
           map[key] = { departure: false, return: false, isPast, week };
         map[key].return = true;
+        map[key].returnRescheduled = week.returnRescheduled === 1;
         if (!map[key].departure) {
           map[key].isPast = isPast;
           map[key].week = week;
@@ -392,6 +394,10 @@ export default function CalendarView({
           <span className="flex items-center gap-1.5">
             <span className="w-3 h-3 rounded-full bg-amber-300 inline-block" />
             Feriado
+          </span>
+          <span className="flex items-center gap-1.5">
+            <span className="w-3 h-3 rounded-full bg-red-500 inline-block" />
+            Remarcado
           </span>
           <span className="flex items-center gap-1.5">
             <span className="w-3 h-3 rounded-full bg-emerald-200 border border-emerald-400 inline-block" />
@@ -509,10 +515,28 @@ export default function CalendarView({
                         }
 
                         if (mark) {
-                          cellBg = mark.isPast
-                            ? "bg-slate-500"
-                            : "bg-emerald-500";
-                          textColor = "text-white";
+                          // Verificar se TODOS os voos marcados neste dia são remarcados
+                          const allRescheduled =
+                            (mark.departure && mark.departureRescheduled && !mark.return) ||
+                            (mark.return && mark.returnRescheduled && !mark.departure) ||
+                            (mark.departure && mark.departureRescheduled && mark.return && mark.returnRescheduled);
+                          // Verificar se ALGUM voo neste dia é remarcado
+                          const anyRescheduled =
+                            (mark.departure && mark.departureRescheduled) ||
+                            (mark.return && mark.returnRescheduled);
+
+                          if (allRescheduled) {
+                            cellBg = "bg-red-500";
+                            textColor = "text-white";
+                          } else if (anyRescheduled) {
+                            cellBg = "bg-red-400";
+                            textColor = "text-white";
+                          } else {
+                            cellBg = mark.isPast
+                              ? "bg-slate-500"
+                              : "bg-emerald-500";
+                            textColor = "text-white";
+                          }
                         } else if (isToday) {
                           cellBg = "bg-blue-100";
                           textColor = "text-blue-700 font-bold";

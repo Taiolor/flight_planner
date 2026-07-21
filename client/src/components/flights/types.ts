@@ -15,6 +15,8 @@ export type WeekRow = {
   returnFlightNumber?: string | null;
   ticketType?: string | null;
   isDeleted?: number | boolean;
+  departureRescheduled?: number;
+  returnRescheduled?: number;
 };
 
 export type DayMark = {
@@ -22,4 +24,6 @@ export type DayMark = {
   return: boolean;
   isPast: boolean;
   week: WeekRow;
+  departureRescheduled?: boolean;
+  returnRescheduled?: boolean;
 };

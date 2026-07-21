@@ -251,6 +251,8 @@ interface WeekData {
   ticketType?: string | null;
   smilesPoints?: number | null;
   latamPassPoints?: number | null;
+  departureRescheduled?: number;
+  returnRescheduled?: number;
 }
 
 interface PriceMap {
@@ -865,6 +867,8 @@ export default function Home() {
         ticketType: (w as any).ticketType ?? "roundtrip",
         smilesPoints: (w as any).smilesPoints ?? null,
         latamPassPoints: (w as any).latamPassPoints ?? null,
+        departureRescheduled: (w as any).departureRescheduled ?? 0,
+        returnRescheduled: (w as any).returnRescheduled ?? 0,
       }));
     }
     // Fallback to static data
@@ -4266,7 +4270,7 @@ export default function Home() {
                                                       week.weekNumber
                                                     ] ?? ""
                                                   }
-                                                  onChange={e =>
+                                                    onChange={e =>
                                                     setTempDepartureLocator(
                                                       prev => ({
                                                         ...prev,
@@ -4276,6 +4280,46 @@ export default function Home() {
                                                     )
                                                   }
                                                 />
+                                              </div>
+                                              {/* Checkbox Voo Remarcado - Ida */}
+                                              <div className="flex items-center gap-2 pt-1">
+                                                <Checkbox
+                                                  id={`departure-rescheduled-${week.weekNumber}`}
+                                                  checked={week.departureRescheduled === 1}
+                                                  onCheckedChange={(checked) => {
+                                                    if (!isAuthenticated) {
+                                                      setShowLoginModal(true);
+                                                      return;
+                                                    }
+                                                    updateStatusMutation.mutate(
+                                                      {
+                                                        weekNumber: week.weekNumber,
+                                                        year: selectedYear,
+                                                        departureRescheduled: checked ? 1 : 0,
+                                                        isTicketIssued: week.isTicketIssued,
+                                                      },
+                                                      {
+                                                        onSuccess: () => {
+                                                          utils.flights.getWeeks.invalidate();
+                                                          toast.success(
+                                                            checked
+                                                              ? "Voo de ida marcado como remarcado"
+                                                              : "Voo de ida desmarcado como remarcado"
+                                                          );
+                                                        },
+                                                        onError: () =>
+                                                          toast.error("Erro ao atualizar status de voo remarcado"),
+                                                      }
+                                                    );
+                                                  }}
+                                                  className="border-red-400 data-[state=checked]:bg-red-500 data-[state=checked]:border-red-500"
+                                                />
+                                                <label
+                                                  htmlFor={`departure-rescheduled-${week.weekNumber}`}
+                                                  className="text-[10px] font-semibold text-red-600 dark:text-red-400 uppercase tracking-wide cursor-pointer"
+                                                >
+                                                  Voo Remarcado
+                                                </label>
                                               </div>
                                             </div>
                                           </div>
@@ -4735,6 +4779,46 @@ export default function Home() {
                                                       )
                                                     }
                                                   />
+                                                </div>
+                                                {/* Checkbox Voo Remarcado - Volta */}
+                                                <div className="flex items-center gap-2 pt-1">
+                                                  <Checkbox
+                                                    id={`return-rescheduled-${week.weekNumber}`}
+                                                    checked={week.returnRescheduled === 1}
+                                                    onCheckedChange={(checked) => {
+                                                      if (!isAuthenticated) {
+                                                        setShowLoginModal(true);
+                                                        return;
+                                                      }
+                                                      updateStatusMutation.mutate(
+                                                        {
+                                                          weekNumber: week.weekNumber,
+                                                          year: selectedYear,
+                                                          returnRescheduled: checked ? 1 : 0,
+                                                          isTicketIssued: week.isTicketIssued,
+                                                        },
+                                                        {
+                                                          onSuccess: () => {
+                                                            utils.flights.getWeeks.invalidate();
+                                                            toast.success(
+                                                              checked
+                                                                ? "Voo de volta marcado como remarcado"
+                                                                : "Voo de volta desmarcado como remarcado"
+                                                            );
+                                                          },
+                                                          onError: () =>
+                                                            toast.error("Erro ao atualizar status de voo remarcado"),
+                                                        }
+                                                      );
+                                                    }}
+                                                    className="border-red-400 data-[state=checked]:bg-red-500 data-[state=checked]:border-red-500"
+                                                  />
+                                                  <label
+                                                    htmlFor={`return-rescheduled-${week.weekNumber}`}
+                                                    className="text-[10px] font-semibold text-red-600 dark:text-red-400 uppercase tracking-wide cursor-pointer"
+                                                  >
+                                                    Voo Remarcado
+                                                  </label>
                                                 </div>
                                               </div>
                                             </div>

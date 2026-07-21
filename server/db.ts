@@ -222,6 +222,8 @@ export async function updateFlightWeekStatus(
     ticketType?: string | null;
     smilesPoints?: number | null;
     latamPassPoints?: number | null;
+    departureRescheduled?: number;
+    returnRescheduled?: number;
   }
 ) {
   const db = await getDb();

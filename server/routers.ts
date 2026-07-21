@@ -338,6 +338,8 @@ export const appRouter = router({
           ticketType: z.string().nullable().optional(),
           smilesPoints: z.number().nullable().optional(),
           latamPassPoints: z.number().nullable().optional(),
+          departureRescheduled: z.number().optional(),
+          returnRescheduled: z.number().optional(),
         })
       )
       .mutation(async ({ input }) => {
@@ -361,6 +363,8 @@ export const appRouter = router({
           ticketType: input.ticketType,
           smilesPoints: input.smilesPoints,
           latamPassPoints: input.latamPassPoints,
+          departureRescheduled: input.departureRescheduled,
+          returnRescheduled: input.returnRescheduled,
         });
 
         // Send email notifications if ticket was issued or modified

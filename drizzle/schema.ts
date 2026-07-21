@@ -66,6 +66,9 @@ export const flightWeeks = mysqlTable(
     // Campos de pagamento por milhas (pontos, não R$)
     smilesPoints: int("smilesPoints"), // pontos SMILES gastos
     latamPassPoints: int("latamPassPoints"), // pontos LATAM PASS gastos
+    // Campos de voo remarcado (0 = normal, 1 = remarcado/não será voado)
+    departureRescheduled: int("departureRescheduled").default(0).notNull(),
+    returnRescheduled: int("returnRescheduled").default(0).notNull(),
     createdAt: timestamp("createdAt").defaultNow().notNull(),
     updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
   },

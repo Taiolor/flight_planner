@@ -556,3 +556,10 @@
 - [x] Corrigir cálculo de valor acumulado por semana: somar TODOS os valores em dinheiro pagos (todas as companhias), não apenas o menor preço
 - [x] Somar pontos de milhas separadamente (nunca misturar com dinheiro)
 - [x] Exibir ambos os totais no cabeçalho da semana e no resumo geral
+
+## Voo Remarcado
+
+- [x] Adicionar campos departureRescheduled e returnRescheduled ao schema do banco
+- [x] Adicionar checkbox "Voo Remarcado" nos cards de bilhete (ida e volta)
+- [x] Persistir estado de voo remarcado via tRPC
+- [x] CalendarView: pintar voos remarcados em vermelho

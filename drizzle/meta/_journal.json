@@ -176,6 +176,13 @@
       "when": 1784318832130,
       "tag": "0024_striped_sleeper",
       "breakpoints": true
+    },
+    {
+      "idx": 25,
+      "version": "5",
+      "when": 1784669229271,
+      "tag": "0025_calm_dreadnoughts",
+      "breakpoints": true
     }
   ]
 }
