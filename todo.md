@@ -563,3 +563,7 @@
 - [x] Adicionar checkbox "Voo Remarcado" nos cards de bilhete (ida e volta)
 - [x] Persistir estado de voo remarcado via tRPC
 - [x] CalendarView: pintar voos remarcados em vermelho
+
+## Bug: Dados não carregam da base
+
+- [x] Bug: dados de data/hora, número de voo e localizador não carregam da base para algumas semanas (ex: semana 18 volta)

@@ -656,8 +656,8 @@ export default function Home() {
       const next = { ...prev };
       weeksQuery.data!.forEach(w => {
         const saved = w.departureLocator ?? "";
-        if (prev[w.weekNumber] !== undefined && prev[w.weekNumber] !== saved) {
-          // Se o usuário digitou algo localmente que não foi salvo, preservar.
+        // Só preservar valor local se ele for não-vazio (usuário digitou algo)
+        if (prev[w.weekNumber] && prev[w.weekNumber] !== saved) {
           next[w.weekNumber] = prev[w.weekNumber];
         } else {
           next[w.weekNumber] = saved;
@@ -669,7 +669,7 @@ export default function Home() {
       const next = { ...prev };
       weeksQuery.data!.forEach(w => {
         const saved = w.returnLocator ?? "";
-        if (prev[w.weekNumber] !== undefined && prev[w.weekNumber] !== saved) {
+        if (prev[w.weekNumber] && prev[w.weekNumber] !== saved) {
           next[w.weekNumber] = prev[w.weekNumber];
         } else {
           next[w.weekNumber] = saved;
@@ -681,7 +681,7 @@ export default function Home() {
       const next = { ...prev };
       weeksQuery.data!.forEach(w => {
         const saved = w.departureFlightNumber ?? "";
-        if (prev[w.weekNumber] !== undefined && prev[w.weekNumber] !== saved) {
+        if (prev[w.weekNumber] && prev[w.weekNumber] !== saved) {
           next[w.weekNumber] = prev[w.weekNumber];
         } else {
           next[w.weekNumber] = saved;
@@ -693,7 +693,7 @@ export default function Home() {
       const next = { ...prev };
       weeksQuery.data!.forEach(w => {
         const saved = w.returnFlightNumber ?? "";
-        if (prev[w.weekNumber] !== undefined && prev[w.weekNumber] !== saved) {
+        if (prev[w.weekNumber] && prev[w.weekNumber] !== saved) {
           next[w.weekNumber] = prev[w.weekNumber];
         } else {
           next[w.weekNumber] = saved;
@@ -705,7 +705,7 @@ export default function Home() {
       const next = { ...prev };
       weeksQuery.data!.forEach(w => {
         const saved = w.departureAirport ?? "";
-        if (prev[w.weekNumber] !== undefined && prev[w.weekNumber] !== saved) {
+        if (prev[w.weekNumber] && prev[w.weekNumber] !== saved) {
           next[w.weekNumber] = prev[w.weekNumber];
         } else {
           next[w.weekNumber] = saved;
@@ -717,7 +717,7 @@ export default function Home() {
       const next = { ...prev };
       weeksQuery.data!.forEach(w => {
         const saved = w.returnAirport ?? "";
-        if (prev[w.weekNumber] !== undefined && prev[w.weekNumber] !== saved) {
+        if (prev[w.weekNumber] && prev[w.weekNumber] !== saved) {
           next[w.weekNumber] = prev[w.weekNumber];
         } else {
           next[w.weekNumber] = saved;
@@ -729,7 +729,7 @@ export default function Home() {
       const next = { ...prev };
       weeksQuery.data!.forEach(w => {
         const saved = w.departureAirline ?? "";
-        if (prev[w.weekNumber] !== undefined && prev[w.weekNumber] !== saved) {
+        if (prev[w.weekNumber] && prev[w.weekNumber] !== saved) {
           next[w.weekNumber] = prev[w.weekNumber];
         } else {
           next[w.weekNumber] = saved;
@@ -741,7 +741,7 @@ export default function Home() {
       const next = { ...prev };
       weeksQuery.data!.forEach(w => {
         const saved = w.returnAirline ?? "";
-        if (prev[w.weekNumber] !== undefined && prev[w.weekNumber] !== saved) {
+        if (prev[w.weekNumber] && prev[w.weekNumber] !== saved) {
           next[w.weekNumber] = prev[w.weekNumber];
         } else {
           next[w.weekNumber] = saved;
@@ -753,7 +753,7 @@ export default function Home() {
       const next = { ...prev };
       weeksQuery.data!.forEach(w => {
         const saved = w.ticketType ?? "roundtrip";
-        if (prev[w.weekNumber] !== undefined && prev[w.weekNumber] !== saved) {
+        if (prev[w.weekNumber] && prev[w.weekNumber] !== saved) {
           next[w.weekNumber] = prev[w.weekNumber];
         } else {
           next[w.weekNumber] = saved;
