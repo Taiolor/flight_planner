@@ -25,8 +25,7 @@ async function startServer() {
 
   const port = process.env.PORT || 3000;
 
-  server.listen(port, () => {
-  });
+  server.listen(port, () => {});
 }
 
 startServer().catch(console.error);
