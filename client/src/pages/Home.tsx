@@ -3634,6 +3634,7 @@ export default function Home() {
                                               aria-label="Tipo de Bilhete"
                                             >
                                               <button
+                                                aria-label="Selecionar ida e volta"
                                                 type="button"
                                                 aria-pressed={
                                                   (tempTicketType[
@@ -3660,6 +3661,7 @@ export default function Home() {
                                                 ✈ Ida e Volta
                                               </button>
                                               <button
+                                                aria-label="Selecionar somente ida"
                                                 type="button"
                                                 aria-pressed={
                                                   (tempTicketType[
@@ -4692,6 +4694,7 @@ export default function Home() {
 
                                           {/* Botão único Salvar — persiste todos os campos de uma vez */}
                                           <button
+                                            aria-label={`Salvar dados do bilhete da semana ${week.weekNumber}`}
                                             disabled={
                                               savingTicket[week.weekNumber]
                                             }
@@ -5117,6 +5120,7 @@ export default function Home() {
                                                     </div>
                                                     {/* Download .ics */}
                                                     <button
+                                                      aria-label={`Baixar arquivo ICS para a semana ${week.weekNumber}`}
                                                       onClick={() =>
                                                         downloadICS(
                                                           allEvents,
@@ -5521,6 +5525,7 @@ export default function Home() {
                 const isSelected = chartSelectedAirlines.has(airline.id);
                 return (
                   <button
+                    aria-label={`Filtrar por companhia ${airline.name}`}
                     key={airline.id}
                     onClick={() => toggleChartAirline(airline.id)}
                     aria-pressed={isSelected}
