@@ -1246,28 +1246,35 @@ export default function Home() {
   };
   // ⚡ Bolt Optimization: Combine selectedWeeks, issuedCount, and totalCost into a single pass
   // to avoid multiple O(N) loops and intermediate array allocations (.filter, .reduce)
-  const { selectedWeeks, issuedCount, totalCost, totalSmiles, totalLatamPass } = useMemo(() => {
-    const selected: WeekData[] = [];
-    let count = 0;
-    let cost = 0;
-    let smiles = 0;
-    let latamPass = 0;
+  const { selectedWeeks, issuedCount, totalCost, totalSmiles, totalLatamPass } =
+    useMemo(() => {
+      const selected: WeekData[] = [];
+      let count = 0;
+      let cost = 0;
+      let smiles = 0;
+      let latamPass = 0;
 
-    for (let i = 0; i < weeksData.length; i++) {
-      const w = weeksData[i];
-      if (w.isSelected === 1) {
-        selected.push(w);
-        if (w.isTicketIssued) {
-          count++;
+      for (let i = 0; i < weeksData.length; i++) {
+        const w = weeksData[i];
+        if (w.isSelected === 1) {
+          selected.push(w);
+          if (w.isTicketIssued) {
+            count++;
+          }
+          cost += getTotalWeekCost(w.weekNumber) ?? 0;
+          if (w.smilesPoints) smiles += w.smilesPoints;
+          if (w.latamPassPoints) latamPass += w.latamPassPoints;
         }
-        cost += getTotalWeekCost(w.weekNumber) ?? 0;
-        if (w.smilesPoints) smiles += w.smilesPoints;
-        if (w.latamPassPoints) latamPass += w.latamPassPoints;
       }
-    }
 
-    return { selectedWeeks: selected, issuedCount: count, totalCost: cost, totalSmiles: smiles, totalLatamPass: latamPass };
-  }, [weeksData, getTotalWeekCost]);
+      return {
+        selectedWeeks: selected,
+        issuedCount: count,
+        totalCost: cost,
+        totalSmiles: smiles,
+        totalLatamPass: latamPass,
+      };
+    }, [weeksData, getTotalWeekCost]);
 
   // Dados para o gráfico de variação de preços por mês (todas as empresas)
   const chartData = useMemo(() => {
@@ -2827,13 +2834,13 @@ export default function Home() {
                                         )}
                                         {/* Jogos da Copa do Mundo no intervalo da semana */}
                                         {feriadosIntervaloCopa.map(f => (
-                                            <span
-                                              key={f.feriado.data + f.tipo}
-                                              className="text-xs bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-200 px-2 py-1 rounded font-semibold"
-                                            >
-                                              {f.feriado.nome}
-                                            </span>
-                                          ))}
+                                          <span
+                                            key={f.feriado.data + f.tipo}
+                                            className="text-xs bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-200 px-2 py-1 rounded font-semibold"
+                                          >
+                                            {f.feriado.nome}
+                                          </span>
+                                        ))}
                                         {getTotalWeekCost(week.weekNumber) && (
                                           <span className="text-xs bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-200 px-2 py-1 rounded font-semibold">
                                             💰{" "}
@@ -3704,7 +3711,7 @@ export default function Home() {
                                             aria-label="Tipo de Bilhete"
                                           >
                                             <button
-                                              aria-label="Selecionar ida e volta"
+                                              aria-label={`Selecionar ida e volta, semana ${week.weekNumber}`}
                                               type="button"
                                               aria-pressed={
                                                 (tempTicketType[
@@ -3731,7 +3738,7 @@ export default function Home() {
                                               ✈ Ida e Volta
                                             </button>
                                             <button
-                                              aria-label="Selecionar somente ida"
+                                              aria-label={`Selecionar somente ida, semana ${week.weekNumber}`}
                                               type="button"
                                               aria-pressed={
                                                 (tempTicketType[
@@ -3815,8 +3822,8 @@ export default function Home() {
                                                   );
                                                 }}
                                                 className="px-2 py-1 text-[10px] font-semibold text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-blue-400"
-                                                title="Limpar dados do voo de ida"
-                                                aria-label="Limpar dados do voo de ida"
+                                                title={`Limpar dados do voo de ida, semana ${week.weekNumber}`}
+                                                aria-label={`Limpar dados do voo de ida, semana ${week.weekNumber}`}
                                               >
                                                 🗑️ Limpar
                                               </button>
@@ -3876,8 +3883,8 @@ export default function Home() {
                                                   ] && (
                                                     <button
                                                       type="button"
-                                                      title="Copiar companhia para Volta"
-                                                      aria-label="Copiar companhia para Volta"
+                                                      title={`Copiar companhia para Volta, semana ${week.weekNumber}`}
+                                                      aria-label={`Copiar companhia para Volta, semana ${week.weekNumber}`}
                                                       onClick={() =>
                                                         setTempReturnAirline(
                                                           prev => ({
@@ -4228,8 +4235,8 @@ export default function Home() {
                                                   ).trim() && (
                                                     <button
                                                       type="button"
-                                                      title="Copiar localizador para Volta"
-                                                      aria-label="Copiar localizador para Volta"
+                                                      title={`Copiar localizador para Volta, semana ${week.weekNumber}`}
+                                                      aria-label={`Copiar localizador para Volta, semana ${week.weekNumber}`}
                                                       onClick={() =>
                                                         setTempReturnLocator(
                                                           prev => ({
@@ -4272,7 +4279,7 @@ export default function Home() {
                                                       week.weekNumber
                                                     ] ?? ""
                                                   }
-                                                    onChange={e =>
+                                                  onChange={e =>
                                                     setTempDepartureLocator(
                                                       prev => ({
                                                         ...prev,
@@ -4287,18 +4294,24 @@ export default function Home() {
                                               <div className="flex items-center gap-2 pt-1">
                                                 <Checkbox
                                                   id={`departure-rescheduled-${week.weekNumber}`}
-                                                  checked={week.departureRescheduled === 1}
-                                                  onCheckedChange={(checked) => {
+                                                  checked={
+                                                    week.departureRescheduled ===
+                                                    1
+                                                  }
+                                                  onCheckedChange={checked => {
                                                     if (!isAuthenticated) {
                                                       setShowLoginModal(true);
                                                       return;
                                                     }
                                                     updateStatusMutation.mutate(
                                                       {
-                                                        weekNumber: week.weekNumber,
+                                                        weekNumber:
+                                                          week.weekNumber,
                                                         year: selectedYear,
-                                                        departureRescheduled: checked ? 1 : 0,
-                                                        isTicketIssued: week.isTicketIssued,
+                                                        departureRescheduled:
+                                                          checked ? 1 : 0,
+                                                        isTicketIssued:
+                                                          week.isTicketIssued,
                                                       },
                                                       {
                                                         onSuccess: () => {
@@ -4310,7 +4323,9 @@ export default function Home() {
                                                           );
                                                         },
                                                         onError: () =>
-                                                          toast.error("Erro ao atualizar status de voo remarcado"),
+                                                          toast.error(
+                                                            "Erro ao atualizar status de voo remarcado"
+                                                          ),
                                                       }
                                                     );
                                                   }}
@@ -4378,8 +4393,8 @@ export default function Home() {
                                                     );
                                                   }}
                                                   className="px-2 py-1 text-[10px] font-semibold text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-orange-400"
-                                                  title="Limpar dados do voo de volta"
-                                                  aria-label="Limpar dados do voo de volta"
+                                                  title={`Limpar dados do voo de volta, semana ${week.weekNumber}`}
+                                                  aria-label={`Limpar dados do voo de volta, semana ${week.weekNumber}`}
                                                 >
                                                   🗑️ Limpar
                                                 </button>
@@ -4786,18 +4801,24 @@ export default function Home() {
                                                 <div className="flex items-center gap-2 pt-1">
                                                   <Checkbox
                                                     id={`return-rescheduled-${week.weekNumber}`}
-                                                    checked={week.returnRescheduled === 1}
-                                                    onCheckedChange={(checked) => {
+                                                    checked={
+                                                      week.returnRescheduled ===
+                                                      1
+                                                    }
+                                                    onCheckedChange={checked => {
                                                       if (!isAuthenticated) {
                                                         setShowLoginModal(true);
                                                         return;
                                                       }
                                                       updateStatusMutation.mutate(
                                                         {
-                                                          weekNumber: week.weekNumber,
+                                                          weekNumber:
+                                                            week.weekNumber,
                                                           year: selectedYear,
-                                                          returnRescheduled: checked ? 1 : 0,
-                                                          isTicketIssued: week.isTicketIssued,
+                                                          returnRescheduled:
+                                                            checked ? 1 : 0,
+                                                          isTicketIssued:
+                                                            week.isTicketIssued,
                                                         },
                                                         {
                                                           onSuccess: () => {
@@ -4809,7 +4830,9 @@ export default function Home() {
                                                             );
                                                           },
                                                           onError: () =>
-                                                            toast.error("Erro ao atualizar status de voo remarcado"),
+                                                            toast.error(
+                                                              "Erro ao atualizar status de voo remarcado"
+                                                            ),
                                                         }
                                                       );
                                                     }}
@@ -5540,20 +5563,20 @@ export default function Home() {
                 </p>
               </div>
               <div>
-                <p className="text-sm text-slate-600 mb-1">
-                  Total em Dinheiro
-                </p>
+                <p className="text-sm text-slate-600 mb-1">Total em Dinheiro</p>
                 <p className="text-3xl font-bold text-green-600">
-                  {hideValues ? "••••" : `R$ ${totalCost.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                  {hideValues
+                    ? "••••"
+                    : `R$ ${totalCost.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
                 </p>
               </div>
               {totalSmiles > 0 && (
                 <div>
-                  <p className="text-sm text-slate-600 mb-1">
-                    Total SMILES
-                  </p>
+                  <p className="text-sm text-slate-600 mb-1">Total SMILES</p>
                   <p className="text-3xl font-bold text-orange-500">
-                    {hideValues ? "••••" : `${totalSmiles.toLocaleString("pt-BR")} pts`}
+                    {hideValues
+                      ? "••••"
+                      : `${totalSmiles.toLocaleString("pt-BR")} pts`}
                   </p>
                 </div>
               )}
@@ -5563,7 +5586,9 @@ export default function Home() {
                     Total LATAM Pass
                   </p>
                   <p className="text-3xl font-bold text-red-600">
-                    {hideValues ? "••••" : `${totalLatamPass.toLocaleString("pt-BR")} pts`}
+                    {hideValues
+                      ? "••••"
+                      : `${totalLatamPass.toLocaleString("pt-BR")} pts`}
                   </p>
                 </div>
               )}

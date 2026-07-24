@@ -1,14 +1,14 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from "vitest";
 import {
   brazilMatches,
   brazilMatchByDate,
   getBrazilStats,
-  getBrazilCurrentPhase
-} from './worldCup2026';
+  getBrazilCurrentPhase,
+} from "./worldCup2026";
 
-describe('worldCup2026', () => {
-  describe('brazilMatchByDate', () => {
-    it('should map matches by their dates', () => {
+describe("worldCup2026", () => {
+  describe("brazilMatchByDate", () => {
+    it("should map matches by their dates", () => {
       expect(Object.keys(brazilMatchByDate).length).toBe(brazilMatches.length);
 
       for (const match of brazilMatches) {
@@ -16,17 +16,17 @@ describe('worldCup2026', () => {
       }
     });
 
-    it('should correctly lookup specific matches by date', () => {
+    it("should correctly lookup specific matches by date", () => {
       // 2026-06-13 is Brazil vs Morocco
-      const match = brazilMatchByDate['2026-06-13'];
+      const match = brazilMatchByDate["2026-06-13"];
       expect(match).toBeDefined();
-      expect(match.homeTeam).toBe('Brasil');
-      expect(match.awayTeam).toBe('Marrocos');
+      expect(match.homeTeam).toBe("Brasil");
+      expect(match.awayTeam).toBe("Marrocos");
     });
   });
 
-  describe('getBrazilStats', () => {
-    it('should calculate statistics correctly based on finished matches', () => {
+  describe("getBrazilStats", () => {
+    it("should calculate statistics correctly based on finished matches", () => {
       const stats = getBrazilStats();
 
       // Based on the static data:
@@ -49,25 +49,25 @@ describe('worldCup2026', () => {
       expect(stats.goalsAgainst).toBe(2);
     });
 
-    it('should identify the correct next match', () => {
+    it("should identify the correct next match", () => {
       const stats = getBrazilStats();
 
       // The next match in the static data should be "upcoming" or "live"
       // Which is Oitavas de Final (Brasil vs Costa do Marfim / Noruega)
       expect(stats.nextMatch).toBeDefined();
       if (stats.nextMatch) {
-        expect(stats.nextMatch.id).toBe('brasil-oitavas');
-        expect(stats.nextMatch.status).toBe('upcoming');
+        expect(stats.nextMatch.id).toBe("brasil-oitavas");
+        expect(stats.nextMatch.status).toBe("upcoming");
       }
     });
   });
 
-  describe('getBrazilCurrentPhase', () => {
-    it('should return the phase of the last finished match', () => {
+  describe("getBrazilCurrentPhase", () => {
+    it("should return the phase of the last finished match", () => {
       const phase = getBrazilCurrentPhase();
 
       // The last finished match in the static data is the "Rodada de 32"
-      expect(phase).toBe('Rodada de 32');
+      expect(phase).toBe("Rodada de 32");
     });
   });
 });

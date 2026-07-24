@@ -5,12 +5,16 @@ describe("airportAddresses", () => {
   describe("getAirportAddress", () => {
     it("should return the formatted address for a valid uppercase code", () => {
       const address = getAirportAddress("GRU");
-      expect(address).toBe("Aeroporto Internacional de São Paulo/Guarulhos - Avenida Monteiro de Carvalho, 1000, Guarulhos, SP 07034-902, Brasil");
+      expect(address).toBe(
+        "Aeroporto Internacional de São Paulo/Guarulhos - Avenida Monteiro de Carvalho, 1000, Guarulhos, SP 07034-902, Brasil"
+      );
     });
 
     it("should return the formatted address for a valid lowercase code", () => {
       const address = getAirportAddress("gru");
-      expect(address).toBe("Aeroporto Internacional de São Paulo/Guarulhos - Avenida Monteiro de Carvalho, 1000, Guarulhos, SP 07034-902, Brasil");
+      expect(address).toBe(
+        "Aeroporto Internacional de São Paulo/Guarulhos - Avenida Monteiro de Carvalho, 1000, Guarulhos, SP 07034-902, Brasil"
+      );
     });
 
     it("should return the code itself for an unknown code", () => {

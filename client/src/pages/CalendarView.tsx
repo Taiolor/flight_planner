@@ -517,9 +517,16 @@ export default function CalendarView({
                         if (mark) {
                           // Verificar se TODOS os voos marcados neste dia são remarcados
                           const allRescheduled =
-                            (mark.departure && mark.departureRescheduled && !mark.return) ||
-                            (mark.return && mark.returnRescheduled && !mark.departure) ||
-                            (mark.departure && mark.departureRescheduled && mark.return && mark.returnRescheduled);
+                            (mark.departure &&
+                              mark.departureRescheduled &&
+                              !mark.return) ||
+                            (mark.return &&
+                              mark.returnRescheduled &&
+                              !mark.departure) ||
+                            (mark.departure &&
+                              mark.departureRescheduled &&
+                              mark.return &&
+                              mark.returnRescheduled);
                           // Verificar se ALGUM voo neste dia é remarcado
                           const anyRescheduled =
                             (mark.departure && mark.departureRescheduled) ||

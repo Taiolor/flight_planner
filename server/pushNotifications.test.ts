@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import {  sendPushToAll,
+import {
+  sendPushToAll,
   sendPushToOne,
   checkAndNotifyUpcomingFlights,
   type PushPayload,
@@ -186,7 +187,8 @@ describe("pushNotifications", () => {
 
       const result = await sendPushToAll(payload, subs);
 
-      expect(result).toBe(1);      expect(db.getAllPushSubscriptions).not.toHaveBeenCalled();
+      expect(result).toBe(1);
+      expect(db.getAllPushSubscriptions).not.toHaveBeenCalled();
       expect(webpush.sendNotification).toHaveBeenCalledTimes(1);
     });
   });
@@ -204,7 +206,10 @@ describe("pushNotifications", () => {
 
     it("should do nothing if there are no configured flights or settings", async () => {
       vi.mocked(db.getAllFlightWeeks).mockResolvedValue([]);
-      vi.mocked(db.getNotificationSettings).mockResolvedValue({ aviso1Minutes: 0, aviso2Minutes: 0 } as any);
+      vi.mocked(db.getNotificationSettings).mockResolvedValue({
+        aviso1Minutes: 0,
+        aviso2Minutes: 0,
+      } as any);
       vi.mocked(db.getAllPushSubscriptions).mockResolvedValue([]);
 
       await checkAndNotifyUpcomingFlights();
@@ -214,9 +219,18 @@ describe("pushNotifications", () => {
     });
 
     it("should notify about a departure flight within the warning window", async () => {
-      vi.mocked(db.getNotificationSettings).mockResolvedValue({ aviso1Minutes: 60, aviso2Minutes: 0 } as any);
+      vi.mocked(db.getNotificationSettings).mockResolvedValue({
+        aviso1Minutes: 60,
+        aviso2Minutes: 0,
+      } as any);
       vi.mocked(db.getAllPushSubscriptions).mockResolvedValue([
-        { id: 1, endpoint: "endpoint1", p256dh: "p1", auth: "a1", createdAt: new Date() }
+        {
+          id: 1,
+          endpoint: "endpoint1",
+          p256dh: "p1",
+          auth: "a1",
+          createdAt: new Date(),
+        },
       ]);
 
       // Current time is 15:00Z.
@@ -231,8 +245,8 @@ describe("pushNotifications", () => {
           departureFlightDatetime: "2023-10-10T13:00:00", // Brasilia time
           returnAirline: null,
           returnFlightNumber: null,
-          returnFlightDatetime: null
-        } as any
+          returnFlightDatetime: null,
+        } as any,
       ]);
 
       vi.mocked(webpush.sendNotification).mockResolvedValue({} as any);
@@ -247,7 +261,7 @@ describe("pushNotifications", () => {
         icon: "/icons/icon-192.png",
         badge: "/icons/icon-192.png",
         tag: "departure-week-1-aviso60",
-        data: { weekNumber: "1", direction: "departure" }
+        data: { weekNumber: "1", direction: "departure" },
       });
       expect(webpush.sendNotification).toHaveBeenCalledWith(
         { endpoint: "endpoint1", keys: { p256dh: "p1", auth: "a1" } },
@@ -267,14 +281,23 @@ describe("pushNotifications", () => {
         status: "success",
         devicesReached: 1,
         totalDevices: 1,
-        isTest: 0
+        isTest: 0,
       });
     });
 
     it("should notify about a return flight within the warning window", async () => {
-      vi.mocked(db.getNotificationSettings).mockResolvedValue({ aviso1Minutes: 0, aviso2Minutes: 1440 } as any); // 1440m = 24h
+      vi.mocked(db.getNotificationSettings).mockResolvedValue({
+        aviso1Minutes: 0,
+        aviso2Minutes: 1440,
+      } as any); // 1440m = 24h
       vi.mocked(db.getAllPushSubscriptions).mockResolvedValue([
-        { id: 1, endpoint: "endpoint1", p256dh: "p1", auth: "a1", createdAt: new Date() }
+        {
+          id: 1,
+          endpoint: "endpoint1",
+          p256dh: "p1",
+          auth: "a1",
+          createdAt: new Date(),
+        },
       ]);
 
       // Current time is 2023-10-10T15:00:00.000Z.
@@ -289,8 +312,8 @@ describe("pushNotifications", () => {
           departureFlightDatetime: null,
           returnAirline: "AZUL",
           returnFlightNumber: "AD4321",
-          returnFlightDatetime: "2023-10-11T12:00:00" // Brasilia time
-        } as any
+          returnFlightDatetime: "2023-10-11T12:00:00", // Brasilia time
+        } as any,
       ]);
 
       vi.mocked(webpush.sendNotification).mockResolvedValue({} as any);
@@ -304,7 +327,7 @@ describe("pushNotifications", () => {
         icon: "/icons/icon-192.png",
         badge: "/icons/icon-192.png",
         tag: "return-week-2-aviso1440",
-        data: { weekNumber: "2", direction: "return" }
+        data: { weekNumber: "2", direction: "return" },
       });
       expect(webpush.sendNotification).toHaveBeenCalledWith(
         { endpoint: "endpoint1", keys: { p256dh: "p1", auth: "a1" } },
@@ -324,7 +347,7 @@ describe("pushNotifications", () => {
         status: "success",
         devicesReached: 1,
         totalDevices: 1,
-        isTest: 0
+        isTest: 0,
       });
     });
   });
