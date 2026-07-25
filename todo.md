@@ -588,3 +588,7 @@
 - [x] Bug crítico: Gestão Financeira - valores de preços não estão sendo somados corretamente. Faltam valores de kayak, latam, gol, azul, voepass e onhappy. Revisar cálculo de somatória geral no cabeçalho
 
 - [x] Adicionar precisão com centavos em todos os valores da Gestão Financeira (cabeçalho, KPIs, tabelas, gráficos)
+
+- [ ] Implementar comparativo de variação percentual de gastos entre semana atual e anterior na Gestão Financeira
+
+- [x] Atualizar página de Novidades com cabeçalho em layout igual ao da Gestão Financeira

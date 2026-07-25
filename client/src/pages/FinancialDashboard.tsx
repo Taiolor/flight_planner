@@ -231,9 +231,22 @@ export default function FinancialDashboard() {
 
   const weeklyTableData = useMemo(() => {
     if (!weeklyData) return [];
-    return weeklyData
+    const sorted = weeklyData
       .filter(w => w.isTicketIssued === 1)
       .sort((a, b) => a.weekNumber - b.weekNumber);
+    
+    // Calcular variação percentual entre semanas consecutivas
+    return sorted.map((week, idx) => {
+      let weekVariation = 0;
+      if (idx > 0) {
+        const prevPrice = sorted[idx - 1].paidPriceTotal ?? 0;
+        const currPrice = week.paidPriceTotal ?? 0;
+        if (prevPrice > 0) {
+          weekVariation = ((currPrice - prevPrice) / prevPrice) * 100;
+        }
+      }
+      return { ...week, weekVariation };
+    });
   }, [weeklyData]);
 
   // Tendência: comparar H1 vs H2
