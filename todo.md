@@ -586,3 +586,5 @@
 
 - [x] Remover companhia aérea Voepass de todos os locais (schema, routers, componentes, etc)
 - [x] Bug crítico: Gestão Financeira - valores de preços não estão sendo somados corretamente. Faltam valores de kayak, latam, gol, azul, voepass e onhappy. Revisar cálculo de somatória geral no cabeçalho
+
+- [x] Adicionar precisão com centavos em todos os valores da Gestão Financeira (cabeçalho, KPIs, tabelas, gráficos)
