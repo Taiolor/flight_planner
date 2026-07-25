@@ -488,7 +488,8 @@ export default function Home() {
   // Estado para ocultar valores monetários (privacidade)
   // Sempre inicia oculto (true); só pode ser alternado quando autenticado
   const [hideValues, setHideValues] = useState<boolean>(true);
-  const [expandSummaryAndFilters, setExpandSummaryAndFilters] = useState<boolean>(true);
+  const [expandSummary, setExpandSummary] = useState<boolean>(true);
+  const [expandFilters, setExpandFilters] = useState<boolean>(true);
   const toggleHideValues = () => {
     if (!isAuthenticated) {
       setShowLoginModal(true);
@@ -2037,18 +2038,18 @@ export default function Home() {
         ) : (
           <div className="mb-4 sm:mb-8">
             <button
-              onClick={() => setExpandSummaryAndFilters(!expandSummaryAndFilters)}
-              className="w-full flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 bg-gradient-to-r from-slate-900 via-blue-950 to-slate-900 text-white rounded-t-3xl hover:from-slate-800 hover:via-blue-900 hover:to-slate-800 transition-colors shadow-lg"
-              aria-label="Expandir/Recolher Resumo Anual e Filtros"
+              onClick={() => setExpandSummary(!expandSummary)}
+              className="w-full flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 bg-gradient-to-r from-slate-900 via-blue-950 to-slate-900 text-white rounded-3xl hover:from-slate-800 hover:via-blue-900 hover:to-slate-800 transition-colors shadow-lg"
+              aria-label="Expandir/Recolher Resumo Anual"
             >
-              <span className="text-lg font-bold">Resumo Anual 2026 e Filtros</span>
-              {expandSummaryAndFilters ? (
+              <span className="text-lg font-bold">Resumo Anual 2026</span>
+              {expandSummary ? (
                 <ChevronUp className="w-5 h-5" />
               ) : (
                 <ChevronDown className="w-5 h-5" />
               )}
             </button>
-            {expandSummaryAndFilters && (
+            {expandSummary && (
               <Card className="p-4 sm:p-6 mb-4 sm:mb-8 gradient-modern-animated text-white rounded-b-3xl rounded-t-none relative overflow-hidden shadow-2xl">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-4 sm:mb-6">
               <div>
@@ -2211,21 +2212,28 @@ export default function Home() {
         {/* Filtros com Accordion */}
         {weeksQuery.isLoading ? (
           <SkeletonFilters />
-        ) : expandSummaryAndFilters ? (
-          <Card
-            className={`p-4 sm:p-6 mb-4 sm:mb-8 backdrop-blur-md border rounded-b-2xl rounded-t-none shadow-xl transition-colors duration-300 ${
-              theme === "dark"
-                ? "bg-slate-800/80 border-slate-700/30"
-                : "bg-white/80 border-white/20"
-            }`}
-          >
-            <h2
-              className={`text-base sm:text-xl font-bold mb-3 sm:mb-6 transition-colors duration-300 ${
-                theme === "dark" ? "text-slate-100" : "text-slate-900"
-              }`}
+        ) : (
+          <div className="mb-4 sm:mb-8">
+            <button
+              onClick={() => setExpandFilters(!expandFilters)}
+              className="w-full flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 bg-gradient-to-r from-slate-900 via-blue-950 to-slate-900 text-white rounded-3xl hover:from-slate-800 hover:via-blue-900 hover:to-slate-800 transition-colors shadow-lg"
+              aria-label="Expandir/Recolher Filtros e Controles"
             >
-              Filtros e Controles
-            </h2>
+              <span className="text-lg font-bold">Filtros e Controles</span>
+              {expandFilters ? (
+                <ChevronUp className="w-5 h-5" />
+              ) : (
+                <ChevronDown className="w-5 h-5" />
+              )}
+            </button>
+            {expandFilters && (
+              <Card
+                className={`p-4 sm:p-6 mb-4 sm:mb-8 backdrop-blur-md border rounded-b-3xl rounded-t-none shadow-xl transition-colors duration-300 ${
+                  theme === "dark"
+                    ? "bg-slate-800/80 border-slate-700/30"
+                    : "bg-white/80 border-white/20"
+                }`}
+              >
             {/* Linha 1: Mês, Companhia, Ordenar por, Filtro de Preço, Status do Bilhete */}
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
               <div>
@@ -2515,8 +2523,10 @@ export default function Home() {
                 </p>
               </div>
             )}
-          </Card>
-        ) : null}
+              </Card>
+            )}
+          </div>
+        )}
 
         {/* Avisos de filtros ativos */}
         {(showCheapestOnly || filterTicketStatus !== "all") && (

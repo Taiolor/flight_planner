@@ -598,3 +598,5 @@
 - [x] Adicionar alertas visuais com cores na tabela de Gestão Financeira quando variação percentual ultrapassar ±20%
 
 - [x] Padronizar cabeçalhos de Novidades e Financeiro com layout, ícones e cores iguais ao do Calendário
+
+- [x] Separar Resumo Anual e Filtros em 2 acordeons independentes na tela principal
