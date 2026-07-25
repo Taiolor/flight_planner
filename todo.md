@@ -567,3 +567,16 @@
 ## Bug: Dados não carregam da base
 
 - [x] Bug: dados de data/hora, número de voo e localizador não carregam da base para algumas semanas (ex: semana 18 volta)
+
+## Página de Gestão Financeira
+
+- [x] Criar tRPC endpoint getFinancialSummary com dados agregados por semana/mês/ano
+- [x] Criar página FinancialDashboard.tsx com KPIs, gráficos e tabelas
+- [x] Seção de gastos em dinheiro: total por semana, mês, ano; comparativo por companhia
+- [x] Seção de gastos em milhas: SMILES e LATAM PASS separados por semana/mês/ano
+- [x] Gráficos de tendência (linha) e comparativo de companhias (barras/pizza)
+- [x] Tabela detalhada por semana com todos os campos financeiros
+- [x] Seção de projeções para 2027 com sazonalidade, frequência, inflação e correção monetária
+- [x] Adicionar botão "Financeiro" no cabeçalho (Home.tsx)
+- [x] Registrar rota /financeiro no App.tsx com lazy loading
+- [x] Criar testes unitários para os cálculos financeiros

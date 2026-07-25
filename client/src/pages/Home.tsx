@@ -86,6 +86,7 @@ import {
   Moon,
   DollarSign,
   MapPin,
+  BarChart2,
 } from "lucide-react";
 import { Link } from "wouter";
 import { ShareByEmailButton } from "@/components/ShareByEmailButton";
@@ -1974,6 +1975,16 @@ export default function Home() {
                   title="Histórico de Novidades"
                 >
                   <Sparkles className="w-4 h-4 mr-1" /> Novidades
+                </Button>
+              </Link>
+              <Link href="/financeiro">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="bg-white bg-opacity-10 border-white text-white hover:bg-white hover:text-green-400 btn-glow-cyan transition-all"
+                  title="Gestão Financeira"
+                >
+                  <BarChart2 className="w-4 h-4 mr-1" /> Financeiro
                 </Button>
               </Link>
               {isAuthenticated && (

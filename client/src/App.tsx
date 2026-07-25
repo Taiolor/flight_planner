@@ -8,11 +8,12 @@ import { YearProvider } from "./contexts/YearContext";
 import Home from "./pages/Home";
 import { Toaster } from "sonner";
 
-// Code splitting: carrega CalendarView, AdminNotifications, FlightQuotes e Changelog apenas quando necessário
+// Code splitting: carrega CalendarView, AdminNotifications, FlightQuotes, Changelog e FinancialDashboard apenas quando necessário
 const CalendarView = lazy(() => import("./pages/CalendarView"));
 const AdminNotifications = lazy(() => import("./pages/AdminNotifications"));
 const FlightQuotes = lazy(() => import("./pages/FlightQuotes"));
 const Changelog = lazy(() => import("./pages/Changelog"));
+const FinancialDashboard = lazy(() => import("./pages/FinancialDashboard"));
 
 // Fallback de carregamento para rotas com lazy loading
 function PageLoader() {
@@ -49,6 +50,11 @@ function Router() {
       <Route path={"/novidades"}>
         <Suspense fallback={<PageLoader />}>
           <Changelog />
+        </Suspense>
+      </Route>
+      <Route path={"/financeiro"}>
+        <Suspense fallback={<PageLoader />}>
+          <FinancialDashboard />
         </Suspense>
       </Route>
       <Route path={"/404"} component={NotFound} />
