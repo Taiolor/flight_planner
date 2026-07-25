@@ -3,7 +3,7 @@
  * tRPC router para a página de Gestão Financeira.
  * Expõe endpoints de agregação financeira (por semana, mês, ano) e projeções.
  */
-import { protectedProcedure, router } from "../_core/trpc";
+import { publicProcedure, router } from "../_core/trpc";
 import { z } from "zod";
 import {
   getFinancialDataByYear,
@@ -42,7 +42,7 @@ export const financialRouter = router({
   /**
    * Retorna todos os dados financeiros por semana para um dado ano.
    */
-  getWeeklyData: protectedProcedure
+  getWeeklyData: publicProcedure
     .input(z.object({ year: z.number().int().min(2020).max(2030).default(2026) }))
     .query(async ({ input }) => {
       return getFinancialDataByYear(input.year);
@@ -51,7 +51,7 @@ export const financialRouter = router({
   /**
    * Retorna o resumo financeiro por mês para um dado ano.
    */
-  getMonthlySummary: protectedProcedure
+  getMonthlySummary: publicProcedure
     .input(z.object({ year: z.number().int().min(2020).max(2030).default(2026) }))
     .query(async ({ input }) => {
       return getFinancialSummaryByMonth(input.year);
@@ -60,7 +60,7 @@ export const financialRouter = router({
   /**
    * Retorna o resumo financeiro anual completo (inclui por mês e por companhia).
    */
-  getYearSummary: protectedProcedure
+  getYearSummary: publicProcedure
     .input(z.object({ year: z.number().int().min(2020).max(2030).default(2026) }))
     .query(async ({ input }) => {
       return getFinancialYearSummary(input.year);
@@ -70,7 +70,7 @@ export const financialRouter = router({
    * Retorna projeções financeiras para o próximo ano.
    * Considera: média histórica, sazonalidade, inflação e frequência de viagens.
    */
-  getProjections: protectedProcedure
+  getProjections: publicProcedure
     .input(
       z.object({
         baseYear: z.number().int().min(2020).max(2030).default(2026),

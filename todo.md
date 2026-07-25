@@ -600,3 +600,5 @@
 - [x] Padronizar cabeçalhos de Novidades e Financeiro com layout, ícones e cores iguais ao do Calendário
 
 - [x] Separar Resumo Anual e Filtros em 2 acordeons independentes na tela principal
+
+- [x] Bug: Gestão Financeira no mobile está pedindo login do Manus OAuth - remover completamente qualquer referência ao Manus OAuth
