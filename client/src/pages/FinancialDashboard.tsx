@@ -918,6 +918,17 @@ export default function FinancialDashboard() {
                         ? formatBRL(w.paidPriceTotal, !showValues)
                         : <span className="text-slate-400 text-xs">sem preço</span>}
                     </td>
+                    <td className={`py-2.5 px-3 text-right font-semibold text-xs rounded-lg ${
+                      w.weekVariation !== undefined && Math.abs(w.weekVariation) > 20
+                        ? w.weekVariation > 0
+                          ? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
+                          : "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+                        : "text-slate-600 dark:text-slate-400"
+                    }`}>
+                      {w.weekVariation !== undefined && w.weekVariation !== 0
+                        ? `${w.weekVariation > 0 ? "+" : ""}${w.weekVariation.toFixed(1)}%`
+                        : ""}
+                    </td>
                     <td className="py-2.5 px-3 text-right text-orange-600 dark:text-orange-400">
                       {(w.totalMiles ?? 0) > 0 ? formatMiles(w.totalMiles!) : "—"}
                     </td>

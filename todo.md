@@ -594,3 +594,5 @@
 - [x] Atualizar página de Novidades com cabeçalho em layout igual ao da Gestão Financeira
 
 - [x] Adicionar botão accordion (expandir/recolher) para Resumo Anual 2026 e Filtros e Controles na tela principal
+
+- [x] Adicionar alertas visuais com cores na tabela de Gestão Financeira quando variação percentual ultrapassar ±20%
