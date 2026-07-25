@@ -488,6 +488,7 @@ export default function Home() {
   // Estado para ocultar valores monetários (privacidade)
   // Sempre inicia oculto (true); só pode ser alternado quando autenticado
   const [hideValues, setHideValues] = useState<boolean>(true);
+  const [expandSummaryAndFilters, setExpandSummaryAndFilters] = useState<boolean>(true);
   const toggleHideValues = () => {
     if (!isAuthenticated) {
       setShowLoginModal(true);
@@ -2030,11 +2031,25 @@ export default function Home() {
       </header>
 
       <main className="container py-4 sm:py-8">
-        {/* Resumo Anual */}
+        {/* Resumo Anual com Accordion */}
         {weeksQuery.isLoading ? (
           <SkeletonChart />
         ) : (
-          <Card className="p-4 sm:p-6 mb-4 sm:mb-8 gradient-modern-animated text-white rounded-3xl relative overflow-hidden shadow-2xl">
+          <div className="mb-4 sm:mb-8">
+            <button
+              onClick={() => setExpandSummaryAndFilters(!expandSummaryAndFilters)}
+              className="w-full flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 bg-gradient-to-r from-slate-900 via-blue-950 to-slate-900 text-white rounded-t-3xl hover:from-slate-800 hover:via-blue-900 hover:to-slate-800 transition-colors shadow-lg"
+              aria-label="Expandir/Recolher Resumo Anual e Filtros"
+            >
+              <span className="text-lg font-bold">Resumo Anual 2026 e Filtros</span>
+              {expandSummaryAndFilters ? (
+                <ChevronUp className="w-5 h-5" />
+              ) : (
+                <ChevronDown className="w-5 h-5" />
+              )}
+            </button>
+            {expandSummaryAndFilters && (
+              <Card className="p-4 sm:p-6 mb-4 sm:mb-8 gradient-modern-animated text-white rounded-b-3xl rounded-t-none relative overflow-hidden shadow-2xl">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-4 sm:mb-6">
               <div>
                 <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
@@ -2188,15 +2203,17 @@ export default function Home() {
                 </p>
               </div>
             )}
-          </Card>
+              </Card>
+            )}
+          </div>
         )}
 
-        {/* Filtros */}
+        {/* Filtros com Accordion */}
         {weeksQuery.isLoading ? (
           <SkeletonFilters />
-        ) : (
+        ) : expandSummaryAndFilters ? (
           <Card
-            className={`p-4 sm:p-6 mb-4 sm:mb-8 backdrop-blur-md border rounded-2xl shadow-xl transition-colors duration-300 ${
+            className={`p-4 sm:p-6 mb-4 sm:mb-8 backdrop-blur-md border rounded-b-2xl rounded-t-none shadow-xl transition-colors duration-300 ${
               theme === "dark"
                 ? "bg-slate-800/80 border-slate-700/30"
                 : "bg-white/80 border-white/20"
@@ -2499,7 +2516,7 @@ export default function Home() {
               </div>
             )}
           </Card>
-        )}
+        ) : null}
 
         {/* Avisos de filtros ativos */}
         {(showCheapestOnly || filterTicketStatus !== "all") && (

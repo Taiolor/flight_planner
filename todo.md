@@ -589,6 +589,8 @@
 
 - [x] Adicionar precisão com centavos em todos os valores da Gestão Financeira (cabeçalho, KPIs, tabelas, gráficos)
 
-- [ ] Implementar comparativo de variação percentual de gastos entre semana atual e anterior na Gestão Financeira
+- [x] Implementar comparativo de variação percentual de gastos entre semana atual e anterior na Gestão Financeira
 
 - [x] Atualizar página de Novidades com cabeçalho em layout igual ao da Gestão Financeira
+
+- [x] Adicionar botão accordion (expandir/recolher) para Resumo Anual 2026 e Filtros e Controles na tela principal

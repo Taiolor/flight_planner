@@ -852,6 +852,7 @@ export default function FinancialDashboard() {
                   <th className="text-left py-2 px-3 text-xs font-semibold text-slate-500 uppercase tracking-wide">Cia Ida</th>
                   <th className="text-left py-2 px-3 text-xs font-semibold text-slate-500 uppercase tracking-wide">Cia Volta</th>
                   <th className="text-right py-2 px-3 text-xs font-semibold text-slate-500 uppercase tracking-wide">Preço Pago</th>
+                  <th className="text-right py-2 px-3 text-xs font-semibold text-slate-500 uppercase tracking-wide">Variação</th>
                   <th className="text-right py-2 px-3 text-xs font-semibold text-slate-500 uppercase tracking-wide">Milhas</th>
                   <th className="text-center py-2 px-3 text-xs font-semibold text-slate-500 uppercase tracking-wide">Status</th>
                 </tr>
