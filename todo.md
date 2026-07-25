@@ -596,3 +596,5 @@
 - [x] Adicionar botão accordion (expandir/recolher) para Resumo Anual 2026 e Filtros e Controles na tela principal
 
 - [x] Adicionar alertas visuais com cores na tabela de Gestão Financeira quando variação percentual ultrapassar ±20%
+
+- [x] Padronizar cabeçalhos de Novidades e Financeiro com layout, ícones e cores iguais ao do Calendário

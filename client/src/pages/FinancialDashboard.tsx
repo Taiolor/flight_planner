@@ -279,23 +279,20 @@ export default function FinancialDashboard() {
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
       {/* Header */}
-      <div className="bg-gradient-to-r from-slate-900 via-blue-950 to-slate-900 text-white px-4 py-5 shadow-xl">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex items-center justify-between gap-3 flex-wrap">
-            <div className="flex items-center gap-3">
-              <Link href="/">
-                <button className="p-2 rounded-xl bg-white/10 hover:bg-white/20 transition-colors">
-                  <ArrowLeft className="w-4 h-4" />
-                </button>
-              </Link>
-              <div>
-                <h1 className="text-xl font-bold">Gestão Financeira</h1>
-                <p className="text-xs text-blue-300 mt-0.5">
-                  Análise de gastos, tendências e projeções
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center gap-2 flex-wrap">
+      <header className="bg-gradient-to-r from-blue-600 via-purple-600 to-cyan-500 text-white px-4 py-3 flex items-center gap-3 shadow-lg sticky top-0 z-10">
+        <Link href="/">
+          <button className="flex items-center gap-1.5 text-white/80 hover:text-white transition-colors text-sm font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-blue-700 rounded-sm">
+            <ArrowLeft className="w-4 h-4" />
+            Voltar
+          </button>
+        </Link>
+        <div className="flex items-center gap-2 ml-2">
+          <DollarSign className="w-5 h-5" />
+          <h1 className="text-base font-bold tracking-wide">
+            Gestão Financeira
+          </h1>
+        </div>
+        <div className="ml-auto flex items-center gap-2 flex-wrap">
               {/* Seletor de ano */}
               <select
                 value={selectedYear}
@@ -320,10 +317,8 @@ export default function FinancialDashboard() {
                 )}
                 {showValues ? "Ocultar" : "Mostrar"} valores
               </button>
-            </div>
-          </div>
         </div>
-      </div>
+      </header>
 
       <div className="max-w-7xl mx-auto px-4 py-8 space-y-10">
         {/* ── KPIs ── */}
