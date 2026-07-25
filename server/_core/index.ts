@@ -108,6 +108,13 @@ async function startServer() {
   registerOAuthRoutes(app);
 
   // tRPC API
+  app.use("/api/trpc", (req, res, next) => {
+    if (req.path.includes("flightAuth.login")) {
+      return authLimiter(req, res, next);
+    }
+    next();
+  });
+
   app.use(
     "/api/trpc",
     createExpressMiddleware({
