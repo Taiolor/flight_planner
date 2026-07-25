@@ -247,12 +247,28 @@ export default function FinancialDashboard() {
     });
   }, [weeklyData]);
 
+  // ⚡ Bolt Optimization: Cache filtered miles data to avoid redundant re-creations during render loop
+  const weeklyDataWithMiles = useMemo(() => {
+    return weeklyTableData.filter(w => (w.totalMiles ?? 0) > 0);
+  }, [weeklyTableData]);
+
   // Tendência: comparar H1 vs H2
   const trendData = useMemo(() => {
     if (!yearSummary?.byMonth || yearSummary.byMonth.length < 2) return null;
     const months = yearSummary.byMonth;
-    const h1 = months.filter(m => m.month <= 6).reduce((s, m) => s + m.totalCashBRL, 0);
-    const h2 = months.filter(m => m.month > 6).reduce((s, m) => s + m.totalCashBRL, 0);
+
+    let h1 = 0;
+    let h2 = 0;
+
+    // ⚡ Bolt Optimization: Single-pass iteration to avoid multiple array allocations from .filter() and .reduce()
+    for (const m of months) {
+      if (m.month <= 6) {
+        h1 += m.totalCashBRL;
+      } else {
+        h2 += m.totalCashBRL;
+      }
+    }
+
     const trend = h1 > 0 ? ((h2 - h1) / h1) * 100 : 0;
     return { h1, h2, trend };
   }, [yearSummary]);
@@ -587,9 +603,7 @@ export default function FinancialDashboard() {
                       </tr>
                     </thead>
                     <tbody>
-                      {weeklyTableData
-                        .filter(w => (w.totalMiles ?? 0) > 0)
-                        .map(w => (
+                      {weeklyDataWithMiles.map(w => (
                           <tr
                             key={w.weekNumber}
                             className="border-b border-slate-50 dark:border-slate-800/50 hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors"
@@ -622,7 +636,7 @@ export default function FinancialDashboard() {
                             </td>
                           </tr>
                         ))}
-                      {weeklyTableData.filter(w => (w.totalMiles ?? 0) > 0).length === 0 && (
+                      {weeklyDataWithMiles.length === 0 && (
                         <tr>
                           <td colSpan={6} className="py-8 text-center text-slate-400 text-sm">
                             Nenhuma viagem com milhas registrada
