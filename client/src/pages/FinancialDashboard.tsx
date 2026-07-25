@@ -170,7 +170,7 @@ function SectionHeader({
 // ─── Componente principal ─────────────────────────────────────────────────────
 
 export default function FinancialDashboard() {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, loading: authLoading } = useAuth();
   const [selectedYear, setSelectedYear] = useState(2026);
   const [showValues, setShowValues] = useState(false);
   const [inflationRate, setInflationRate] = useState(5);
@@ -260,6 +260,17 @@ export default function FinancialDashboard() {
   }, [projections]);
 
   // ─── Guard: não autenticado ────────────────────────────────────────────────
+
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 to-blue-950 flex items-center justify-center">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
+          <span className="text-slate-300 text-sm">Carregando...</span>
+        </div>
+      </div>
+    );
+  }
 
   if (!isAuthenticated) {
     return (
