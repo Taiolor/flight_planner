@@ -170,7 +170,6 @@ function SectionHeader({
 // ─── Componente principal ─────────────────────────────────────────────────────
 
 export default function FinancialDashboard() {
-  const { isAuthenticated, loading: authLoading } = useAuth();
   const [selectedYear, setSelectedYear] = useState(2026);
   const [showValues, setShowValues] = useState(false);
   const [inflationRate, setInflationRate] = useState(5);
@@ -180,13 +179,11 @@ export default function FinancialDashboard() {
 
   // ─── Queries ───────────────────────────────────────────────────────────────
   const { data: yearSummary, isLoading: loadingYear } = trpc.financial.getYearSummary.useQuery(
-    { year: selectedYear },
-    { enabled: isAuthenticated }
+    { year: selectedYear }
   );
 
   const { data: weeklyData, isLoading: loadingWeekly } = trpc.financial.getWeeklyData.useQuery(
-    { year: selectedYear },
-    { enabled: isAuthenticated }
+    { year: selectedYear }
   );
 
   const { data: projections, isLoading: loadingProjections } =
@@ -197,7 +194,7 @@ export default function FinancialDashboard() {
         inflationRate: inflationRate / 100,
         tripsPerMonth,
       },
-      { enabled: isAuthenticated && showProjections }
+      { enabled: showProjections }
     );
 
   // ─── Dados derivados ───────────────────────────────────────────────────────
@@ -259,40 +256,7 @@ export default function FinancialDashboard() {
     }));
   }, [projections]);
 
-  // ─── Guard: não autenticado ────────────────────────────────────────────────
 
-  if (authLoading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 to-blue-950 flex items-center justify-center">
-        <div className="flex flex-col items-center gap-3">
-          <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
-          <span className="text-slate-300 text-sm">Carregando...</span>
-        </div>
-      </div>
-    );
-  }
-
-  if (!isAuthenticated) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 to-blue-950 flex items-center justify-center p-6">
-        <div className="bg-white/10 backdrop-blur-sm rounded-3xl p-10 text-center max-w-md w-full">
-          <div className="w-16 h-16 rounded-2xl bg-blue-500/20 flex items-center justify-center mx-auto mb-5">
-            <DollarSign className="w-8 h-8 text-blue-400" />
-          </div>
-          <h2 className="text-2xl font-bold text-white mb-3">Gestão Financeira</h2>
-          <p className="text-blue-200 text-sm mb-6">
-            Faça login para acessar os dados financeiros das suas viagens.
-          </p>
-          <a
-            href={getLoginUrl()}
-            className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-blue-500 hover:bg-blue-400 text-white font-semibold transition-colors"
-          >
-            Entrar
-          </a>
-        </div>
-      </div>
-    );
-  }
 
   const isLoading = loadingYear || loadingWeekly;
 
