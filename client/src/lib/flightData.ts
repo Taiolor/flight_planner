@@ -27,7 +27,6 @@ export const airlines: Airline[] = [
   { id: "latam", name: "LATAM", color: "bg-blue-600", icon: "✈️" },
   { id: "gol", name: "Gol", color: "bg-yellow-500", icon: "✈️" },
   { id: "azul", name: "Azul", color: "bg-blue-400", icon: "✈️" },
-  { id: "voepass", name: "Voepass", color: "bg-purple-600", icon: "✈️" },
   { id: "onhappy", name: "Onhappy", color: "bg-green-600", icon: "😊" },
 ];
 
@@ -37,7 +36,6 @@ export const airlineIconColors: Record<string, string> = {
   latam: "text-blue-600",
   gol: "text-yellow-500",
   azul: "text-blue-400",
-  voepass: "text-purple-600",
   onhappy: "text-green-600",
 };
 
@@ -929,7 +927,6 @@ export function generateBookingLink(
     latam: "https://www.latam.com/pt_br/",
     gol: "https://www.voegol.com.br/",
     azul: "https://www.voeazul.com.br/",
-    voepass: "https://www.voepass.com.br/",
   };
 
   const baseUrl = baseUrls[airline] || baseUrls.latam;

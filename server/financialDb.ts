@@ -113,17 +113,35 @@ export async function getFinancialDataByYear(
 
   // Indexar preços por semana+companhia
   const priceMap = new Map<string, number>();
+  const weekPricesMap = new Map<number, number[]>(); // Todos os preços de uma semana
+  
   for (const p of prices) {
     const key = `${p.weekNumber}:${p.airline}`;
     const val = parseFloat(p.price.replace(",", ".").replace(/[^0-9.]/g, ""));
-    if (!isNaN(val)) priceMap.set(key, val);
+    if (!isNaN(val)) {
+      priceMap.set(key, val);
+      
+      // Agregar todos os preços da semana
+      if (!weekPricesMap.has(p.weekNumber)) {
+        weekPricesMap.set(p.weekNumber, []);
+      }
+      weekPricesMap.get(p.weekNumber)!.push(val);
+    }
   }
 
   return weeks.map(w => {
     const depAirline = w.departureAirline ?? null;
     const retAirline = w.returnAirline ?? null;
 
-    // Preço pago = preço registrado para a companhia selecionada naquela semana
+    // Preço pago = soma de TODOS os preços de TODAS as companhias daquela semana
+    // (representando o total de opções de passagens disponíveis)
+    let paidTotal: number | null = null;
+    const allWeekPrices = weekPricesMap.get(w.weekNumber) ?? [];
+    if (allWeekPrices.length > 0) {
+      paidTotal = allWeekPrices.reduce((sum, p) => sum + p, 0);
+    }
+    
+    // Preços individuais de ida e volta (para referência)
     const paidDep = depAirline
       ? (priceMap.get(`${w.weekNumber}:${depAirline}`) ?? null)
       : null;
@@ -131,20 +149,6 @@ export async function getFinancialDataByYear(
       w.ticketType === "roundtrip" && retAirline
         ? (priceMap.get(`${w.weekNumber}:${retAirline}`) ?? null)
         : null;
-
-    // Se ida e volta são a mesma companhia e mesmo preço, o preço já é o total
-    // Caso contrário, soma os dois
-    let paidTotal: number | null = null;
-    if (paidDep !== null && paidRet !== null && depAirline === retAirline) {
-      // Preço único cobre ida+volta
-      paidTotal = paidDep;
-    } else if (paidDep !== null && paidRet !== null) {
-      paidTotal = paidDep + paidRet;
-    } else if (paidDep !== null) {
-      paidTotal = paidDep;
-    } else if (paidRet !== null) {
-      paidTotal = paidRet;
-    }
 
     const totalMiles = (w.smilesPoints ?? 0) + (w.latamPassPoints ?? 0);
 

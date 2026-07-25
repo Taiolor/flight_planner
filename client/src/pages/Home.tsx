@@ -5665,7 +5665,6 @@ export default function Home() {
                   latam: "bg-blue-600",
                   gol: "bg-yellow-500",
                   azul: "bg-sky-400",
-                  voepass: "bg-purple-600",
                   onhappy: "bg-green-600",
                 };
                 const isSelected = chartSelectedAirlines.has(airline.id);
@@ -5688,7 +5687,6 @@ export default function Home() {
                               latam: "#2563eb",
                               gol: "#eab308",
                               azul: "#38bdf8",
-                              voepass: "#9333ea",
                               onhappy: "#16a34a",
                             }[airline.id],
                           }
@@ -5820,15 +5818,6 @@ export default function Home() {
                         dataKey="azul"
                         name="Azul"
                         fill="#38bdf8"
-                        radius={[8, 8, 0, 0]}
-                        isAnimationActive={true}
-                      />
-                    )}
-                    {chartSelectedAirlines.has("voepass") && (
-                      <Bar
-                        dataKey="voepass"
-                        name="Voepass"
-                        fill="#9333ea"
                         radius={[8, 8, 0, 0]}
                         isAnimationActive={true}
                       />

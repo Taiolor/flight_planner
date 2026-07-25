@@ -580,3 +580,9 @@
 - [x] Adicionar botão "Financeiro" no cabeçalho (Home.tsx)
 - [x] Registrar rota /financeiro no App.tsx com lazy loading
 - [x] Criar testes unitários para os cálculos financeiros
+
+
+## Bugs Críticos - Sessão Atual
+
+- [x] Remover companhia aérea Voepass de todos os locais (schema, routers, componentes, etc)
+- [x] Bug crítico: Gestão Financeira - valores de preços não estão sendo somados corretamente. Faltam valores de kayak, latam, gol, azul, voepass e onhappy. Revisar cálculo de somatória geral no cabeçalho

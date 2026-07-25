@@ -441,7 +441,7 @@ const releases: Release[] = [
         items: [
           "Layout moderno Travel Dashboard com paleta azul + verde + laranja",
           "Todas as 44 semanas de 2026 com datas de ida (domingos) e retorno (quinta/sexta)",
-          "Comparação de preços em 6 plataformas (Kayak, LATAM, Gol, Azul, Voepass, Onhappy)",
+          "Comparação de preços em 5 plataformas (Kayak, LATAM, Gol, Azul, Onhappy)",
           "Seletor de aeroporto de saída (GRU ou CGH)",
         ],
       },
