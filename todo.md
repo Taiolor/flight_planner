@@ -602,3 +602,5 @@
 - [x] Separar Resumo Anual e Filtros em 2 acordeons independentes na tela principal
 
 - [x] Bug: Gestão Financeira no mobile está pedindo login do Manus OAuth - remover completamente qualquer referência ao Manus OAuth
+
+- [x] Bug: Gestão Financeira não responsiva no mobile - KPIs, tabelas e gráficos ficam grandes demais e não se adaptam à tela pequena

@@ -109,13 +109,13 @@ function KpiCard({
     red: "from-red-500 to-red-700 text-white",
   };
   return (
-    <div className={`rounded-2xl bg-gradient-to-br ${colorMap[color]} p-5 shadow-lg`}>
+    <div className={`rounded-2xl bg-gradient-to-br ${colorMap[color]} p-3 sm:p-5 shadow-lg`}>
       <div className="flex items-start justify-between">
         <div className="flex-1 min-w-0">
           <p className="text-xs font-semibold uppercase tracking-wider opacity-80 mb-1">
             {title}
           </p>
-          <p className="text-2xl font-bold truncate">{value}</p>
+          <p className="text-base sm:text-2xl font-bold truncate">{value}</p>
           {subtitle && (
             <p className="text-xs opacity-75 mt-1 truncate">{subtitle}</p>
           )}
@@ -313,12 +313,12 @@ export default function FinancialDashboard() {
                 ) : (
                   <EyeOff className="w-4 h-4" />
                 )}
-                {showValues ? "Ocultar" : "Mostrar"} valores
+                <span className="hidden sm:inline">{showValues ? "Ocultar" : "Mostrar"} valores</span>
               </button>
         </div>
       </header>
 
-      <div className="max-w-7xl mx-auto px-4 py-8 space-y-10">
+      <div className="max-w-7xl mx-auto px-3 sm:px-4 py-4 sm:py-8 space-y-6 sm:space-y-10">
         {/* ── KPIs ── */}
         {isLoading ? (
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -366,12 +366,12 @@ export default function FinancialDashboard() {
 
         {/* ── Tabs de análise ── */}
         <div>
-          <div className="flex gap-1 p-1 bg-slate-200 dark:bg-slate-800 rounded-2xl w-fit mb-6">
+          <div className="flex gap-1 p-1 bg-slate-200 dark:bg-slate-800 rounded-2xl w-full sm:w-fit mb-4 sm:mb-6">
             {(["cash", "miles", "comparison"] as const).map(tab => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
-                className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all ${
+                className={`px-2 sm:px-4 py-1.5 sm:py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all flex-1 sm:flex-none whitespace-nowrap ${
                   activeTab === tab
                     ? "bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm"
                     : "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
@@ -388,7 +388,7 @@ export default function FinancialDashboard() {
           {activeTab === "cash" && (
             <div className="space-y-6">
               {/* Gráfico de barras mensal */}
-              <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 shadow-sm border border-slate-100 dark:border-slate-800">
+              <div className="bg-white dark:bg-slate-900 rounded-2xl p-3 sm:p-6 shadow-sm border border-slate-100 dark:border-slate-800">
                 <SectionHeader
                   title="Gastos Mensais em Dinheiro"
                   subtitle={`Total por mês em ${selectedYear}`}
@@ -400,8 +400,8 @@ export default function FinancialDashboard() {
                     Nenhum dado disponível para {selectedYear}
                   </div>
                 ) : (
-                  <ResponsiveContainer width="100%" height={280}>
-                    <BarChart data={monthlyChartData} margin={{ top: 5, right: 10, left: 10, bottom: 5 }}>
+                  <ResponsiveContainer width="100%" height={220}>
+                    <BarChart data={monthlyChartData} margin={{ top: 5, right: 5, left: -15, bottom: 5 }}>
                       <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
                       <XAxis dataKey="month" tick={{ fontSize: 12 }} />
                       <YAxis
@@ -424,7 +424,7 @@ export default function FinancialDashboard() {
               </div>
 
               {/* Gráfico de tendência (linha) */}
-              <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 shadow-sm border border-slate-100 dark:border-slate-800">
+              <div className="bg-white dark:bg-slate-900 rounded-2xl p-3 sm:p-6 shadow-sm border border-slate-100 dark:border-slate-800">
                 <SectionHeader
                   title="Tendência de Gastos"
                   subtitle="Evolução mensal e média acumulada"
@@ -436,8 +436,8 @@ export default function FinancialDashboard() {
                     Nenhum dado disponível
                   </div>
                 ) : (
-                  <ResponsiveContainer width="100%" height={260}>
-                    <AreaChart data={monthlyChartData} margin={{ top: 5, right: 10, left: 10, bottom: 5 }}>
+                  <ResponsiveContainer width="100%" height={200}>
+                    <AreaChart data={monthlyChartData} margin={{ top: 5, right: 5, left: -15, bottom: 5 }}>
                       <defs>
                         <linearGradient id="cashGrad" x1="0" y1="0" x2="0" y2="1">
                           <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.3} />
@@ -525,7 +525,7 @@ export default function FinancialDashboard() {
           {/* ── Tab: Milhas ── */}
           {activeTab === "miles" && (
             <div className="space-y-6">
-              <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 shadow-sm border border-slate-100 dark:border-slate-800">
+              <div className="bg-white dark:bg-slate-900 rounded-2xl p-3 sm:p-6 shadow-sm border border-slate-100 dark:border-slate-800">
                 <SectionHeader
                   title="Gastos em Milhas por Mês"
                   subtitle="SMILES + LATAM Pass (pontos)"
@@ -537,8 +537,8 @@ export default function FinancialDashboard() {
                     Nenhum dado de milhas disponível
                   </div>
                 ) : (
-                  <ResponsiveContainer width="100%" height={280}>
-                    <BarChart data={monthlyChartData} margin={{ top: 5, right: 10, left: 10, bottom: 5 }}>
+                  <ResponsiveContainer width="100%" height={220}>
+                    <BarChart data={monthlyChartData} margin={{ top: 5, right: 5, left: -15, bottom: 5 }}>
                       <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
                       <XAxis dataKey="month" tick={{ fontSize: 12 }} />
                       <YAxis
@@ -556,7 +556,7 @@ export default function FinancialDashboard() {
               </div>
 
               {/* Tabela de milhas por semana */}
-              <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 shadow-sm border border-slate-100 dark:border-slate-800">
+              <div className="bg-white dark:bg-slate-900 rounded-2xl p-3 sm:p-6 shadow-sm border border-slate-100 dark:border-slate-800">
                 <SectionHeader
                   title="Detalhe de Milhas por Semana"
                   subtitle="Semanas com passagens emitidas usando milhas"
@@ -641,7 +641,7 @@ export default function FinancialDashboard() {
             <div className="space-y-6">
               <div className="grid md:grid-cols-2 gap-6">
                 {/* Pizza de gastos por companhia */}
-                <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 shadow-sm border border-slate-100 dark:border-slate-800">
+                <div className="bg-white dark:bg-slate-900 rounded-2xl p-3 sm:p-6 shadow-sm border border-slate-100 dark:border-slate-800">
                   <SectionHeader
                     title="Distribuição por Companhia"
                     subtitle="% do total gasto em dinheiro"
@@ -686,7 +686,7 @@ export default function FinancialDashboard() {
                 </div>
 
                 {/* Barras comparativas por companhia */}
-                <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 shadow-sm border border-slate-100 dark:border-slate-800">
+                <div className="bg-white dark:bg-slate-900 rounded-2xl p-3 sm:p-6 shadow-sm border border-slate-100 dark:border-slate-800">
                   <SectionHeader
                     title="Gasto Total por Companhia"
                     subtitle="Comparativo de valores absolutos"
@@ -734,7 +734,7 @@ export default function FinancialDashboard() {
               </div>
 
               {/* Tabela comparativa detalhada */}
-              <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 shadow-sm border border-slate-100 dark:border-slate-800">
+              <div className="bg-white dark:bg-slate-900 rounded-2xl p-3 sm:p-6 shadow-sm border border-slate-100 dark:border-slate-800">
                 <SectionHeader
                   title="Comparativo Detalhado por Companhia"
                   subtitle="Viagens, gastos e médias"
@@ -828,14 +828,14 @@ export default function FinancialDashboard() {
         </div>
 
         {/* ── Tabela detalhada por semana ── */}
-        <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 shadow-sm border border-slate-100 dark:border-slate-800">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl p-3 sm:p-6 shadow-sm border border-slate-100 dark:border-slate-800">
           <SectionHeader
             title="Detalhe por Semana"
             subtitle="Todas as viagens emitidas com dados financeiros"
             icon={Calendar}
           />
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+          <div className="overflow-x-auto -mx-3 sm:mx-0 px-3 sm:px-0">
+            <table className="w-full text-sm min-w-[640px]">
               <thead>
                 <tr className="border-b border-slate-100 dark:border-slate-800">
                   <th className="text-left py-2 px-3 text-xs font-semibold text-slate-500 uppercase tracking-wide">Sem.</th>
@@ -972,7 +972,7 @@ export default function FinancialDashboard() {
         <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 overflow-hidden">
           <button
             onClick={() => setShowProjections(v => !v)}
-            className="w-full flex items-center justify-between p-6 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
+            className="w-full flex items-center justify-between p-3 sm:p-6 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
           >
             <div className="flex items-center gap-3">
               <div className="p-2 rounded-xl bg-purple-100 dark:bg-purple-900/40">
@@ -995,7 +995,7 @@ export default function FinancialDashboard() {
           </button>
 
           {showProjections && (
-            <div className="px-6 pb-6 space-y-6 border-t border-slate-100 dark:border-slate-800 pt-5">
+            <div className="px-3 sm:px-6 pb-3 sm:pb-6 space-y-4 sm:space-y-6 border-t border-slate-100 dark:border-slate-800 pt-4 sm:pt-5">
               {/* Parâmetros de projeção */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="bg-slate-50 dark:bg-slate-800/50 rounded-xl p-4">
@@ -1041,29 +1041,29 @@ export default function FinancialDashboard() {
               {/* KPIs de projeção */}
               {projections && (
                 <>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <div className="bg-purple-50 dark:bg-purple-900/20 rounded-xl p-4 text-center">
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    <div className="bg-purple-50 dark:bg-purple-900/20 rounded-xl p-3 text-center">
                       <p className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-1">
                         Total Projetado
                       </p>
-                      <p className="text-xl font-bold text-purple-700 dark:text-purple-400">
+                      <p className="text-sm sm:text-xl font-bold text-purple-700 dark:text-purple-400">
                         {formatBRL(projections.totalProjectedCash, !showValues)}
                       </p>
                     </div>
-                    <div className="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-4 text-center">
+                    <div className="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-3 text-center">
                       <p className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-1">
                         Base {selectedYear}
                       </p>
-                      <p className="text-xl font-bold text-blue-700 dark:text-blue-400">
+                      <p className="text-sm sm:text-xl font-bold text-blue-700 dark:text-blue-400">
                         {formatBRL(projections.baseSummary.totalCashBRL, !showValues)}
                       </p>
                     </div>
-                    <div className="bg-orange-50 dark:bg-orange-900/20 rounded-xl p-4 text-center">
+                    <div className="bg-orange-50 dark:bg-orange-900/20 rounded-xl p-3 text-center">
                       <p className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-1">
                         Variação Estimada
                       </p>
                       <p
-                        className={`text-xl font-bold ${
+                        className={`text-sm sm:text-xl font-bold ${
                           projections.totalProjectedCash > projections.baseSummary.totalCashBRL
                             ? "text-red-600"
                             : "text-green-600"
@@ -1079,11 +1079,11 @@ export default function FinancialDashboard() {
                           : "—"}
                       </p>
                     </div>
-                    <div className="bg-slate-50 dark:bg-slate-800/50 rounded-xl p-4 text-center">
+                    <div className="bg-slate-50 dark:bg-slate-800/50 rounded-xl p-3 text-center">
                       <p className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-1">
                         Viagens Projetadas
                       </p>
-                      <p className="text-xl font-bold text-slate-700 dark:text-slate-300">
+                      <p className="text-sm sm:text-xl font-bold text-slate-700 dark:text-slate-300">
                         {projections.totalProjectedTrips}
                       </p>
                     </div>
@@ -1094,10 +1094,10 @@ export default function FinancialDashboard() {
                     <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-3">
                       Projeção {selectedYear + 1} vs Histórico {selectedYear}
                     </h3>
-                    <ResponsiveContainer width="100%" height={260}>
+                    <ResponsiveContainer width="100%" height={200}>
                       <BarChart
                         data={projectionChartData}
-                        margin={{ top: 5, right: 10, left: 10, bottom: 5 }}
+                        margin={{ top: 5, right: 5, left: -15, bottom: 5 }}
                       >
                         <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
                         <XAxis dataKey="month" tick={{ fontSize: 12 }} />
@@ -1137,8 +1137,8 @@ export default function FinancialDashboard() {
                     <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-3">
                       Detalhe da Projeção por Mês
                     </h3>
-                    <div className="overflow-x-auto">
-                      <table className="w-full text-sm">
+                    <div className="overflow-x-auto -mx-3 sm:mx-0 px-3 sm:px-0">
+                      <table className="w-full text-sm min-w-[560px]">
                         <thead>
                           <tr className="border-b border-slate-100 dark:border-slate-800">
                             <th className="text-left py-2 px-3 text-xs font-semibold text-slate-500 uppercase tracking-wide">Mês</th>
