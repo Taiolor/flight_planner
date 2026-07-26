@@ -247,12 +247,23 @@ export default function FinancialDashboard() {
     });
   }, [weeklyData]);
 
+  // ⚡ Bolt Optimization: Cache filtered miles data to avoid O(N) array allocation on every React render
+  const milesTableData = useMemo(() => {
+    return weeklyTableData.filter(w => (w.totalMiles ?? 0) > 0);
+  }, [weeklyTableData]);
+
   // Tendência: comparar H1 vs H2
   const trendData = useMemo(() => {
     if (!yearSummary?.byMonth || yearSummary.byMonth.length < 2) return null;
-    const months = yearSummary.byMonth;
-    const h1 = months.filter(m => m.month <= 6).reduce((s, m) => s + m.totalCashBRL, 0);
-    const h2 = months.filter(m => m.month > 6).reduce((s, m) => s + m.totalCashBRL, 0);
+    // ⚡ Bolt Optimization: Replace multiple array allocations (.filter, .reduce) with single-pass .reduce
+    const { h1, h2 } = yearSummary.byMonth.reduce(
+      (acc, m) => {
+        if (m.month <= 6) acc.h1 += m.totalCashBRL;
+        else acc.h2 += m.totalCashBRL;
+        return acc;
+      },
+      { h1: 0, h2: 0 }
+    );
     const trend = h1 > 0 ? ((h2 - h1) / h1) * 100 : 0;
     return { h1, h2, trend };
   }, [yearSummary]);
@@ -587,8 +598,7 @@ export default function FinancialDashboard() {
                       </tr>
                     </thead>
                     <tbody>
-                      {weeklyTableData
-                        .filter(w => (w.totalMiles ?? 0) > 0)
+                      {milesTableData
                         .map(w => (
                           <tr
                             key={w.weekNumber}
@@ -622,7 +632,7 @@ export default function FinancialDashboard() {
                             </td>
                           </tr>
                         ))}
-                      {weeklyTableData.filter(w => (w.totalMiles ?? 0) > 0).length === 0 && (
+                      {milesTableData.length === 0 && (
                         <tr>
                           <td colSpan={6} className="py-8 text-center text-slate-400 text-sm">
                             Nenhuma viagem com milhas registrada
