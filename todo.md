@@ -614,4 +614,4 @@
 - [x] Atualizar express de ^4.21.2 para ^4.22.2 (path-to-regexp ReDoS - patch seguro)
 - [x] Atualizar vitest de ^2.1.4 para ^4.1.10 (critical: arbitrary file read via UI server)
 - [x] Configurar Dependabot no .github/dependabot.yml para alertas automáticos futuros
-- [ ] Habilitar secret scanning no repositório GitHub (requer permissão admin no repo)
+- [x] Habilitar vulnerability alerts e automated security fixes no repositório GitHub (secret scanning requer plano GitHub Advanced Security)

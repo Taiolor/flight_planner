@@ -109,15 +109,15 @@ function KpiCard({
     red: "from-red-500 to-red-700 text-white",
   };
   return (
-    <div className={`rounded-2xl bg-gradient-to-br ${colorMap[color]} p-3 sm:p-5 shadow-lg`}>
+    <div className={`rounded-2xl bg-gradient-to-br ${colorMap[color]} p-3 sm:p-5 shadow-lg overflow-hidden`}>
       <div className="flex items-start justify-between">
-        <div className="flex-1 min-w-0">
+          <div className="flex-1 min-w-0 overflow-hidden">
           <p className="text-xs font-semibold uppercase tracking-wider opacity-80 mb-1">
             {title}
           </p>
-          <p className="text-base sm:text-2xl font-bold truncate">{value}</p>
+          <p className="text-sm sm:text-2xl font-bold break-all leading-tight">{value}</p>
           {subtitle && (
-            <p className="text-xs opacity-75 mt-1 truncate">{subtitle}</p>
+            <p className="text-xs opacity-75 mt-1 line-clamp-2">{subtitle}</p>
           )}
         </div>
         <div className="ml-3 p-2 rounded-xl bg-white/20">
@@ -321,13 +321,13 @@ export default function FinancialDashboard() {
       <div className="max-w-7xl mx-auto px-3 sm:px-4 py-4 sm:py-8 space-y-6 sm:space-y-10">
         {/* ── KPIs ── */}
         {isLoading ? (
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 xs:grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
             {[...Array(4)].map((_, i) => (
               <div key={i} className="h-32 rounded-2xl bg-slate-200 dark:bg-slate-800 animate-pulse" />
             ))}
           </div>
         ) : (
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 xs:grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
             <KpiCard
               title="Total Investido"
               value={formatBRL(yearSummary?.totalCashBRL ?? 0, !showValues)}
@@ -490,13 +490,13 @@ export default function FinancialDashboard() {
                   <div className="mt-4 grid grid-cols-3 gap-3">
                     <div className="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-3 text-center">
                       <p className="text-xs text-slate-500 dark:text-slate-400">1º Semestre</p>
-                      <p className="text-base font-bold text-slate-800 dark:text-slate-100 mt-1">
+                      <p className="text-xs sm:text-base font-bold text-slate-800 dark:text-slate-100 mt-1 break-all leading-tight">
                         {formatBRL(trendData.h1, !showValues)}
                       </p>
                     </div>
                     <div className="bg-orange-50 dark:bg-orange-900/20 rounded-xl p-3 text-center">
                       <p className="text-xs text-slate-500 dark:text-slate-400">2º Semestre</p>
-                      <p className="text-base font-bold text-slate-800 dark:text-slate-100 mt-1">
+                      <p className="text-xs sm:text-base font-bold text-slate-800 dark:text-slate-100 mt-1 break-all leading-tight">
                         {formatBRL(trendData.h2, !showValues)}
                       </p>
                     </div>
@@ -949,7 +949,7 @@ export default function FinancialDashboard() {
               {weeklyTableData.length > 0 && (
                 <tfoot>
                   <tr className="border-t-2 border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50">
-                    <td colSpan={6} className="py-3 px-3 font-bold text-slate-700 dark:text-slate-300 text-sm">
+                    <td colSpan={7} className="py-3 px-3 font-bold text-slate-700 dark:text-slate-300 text-sm">
                       Total ({weeklyTableData.length} viagens)
                     </td>
                     <td className="py-3 px-3 text-right font-bold text-blue-700 dark:text-blue-400 text-sm">
@@ -1041,12 +1041,12 @@ export default function FinancialDashboard() {
               {/* KPIs de projeção */}
               {projections && (
                 <>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  <div className="grid grid-cols-1 xs:grid-cols-2 md:grid-cols-4 gap-3">
                     <div className="bg-purple-50 dark:bg-purple-900/20 rounded-xl p-3 text-center">
                       <p className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-1">
                         Total Projetado
                       </p>
-                      <p className="text-sm sm:text-xl font-bold text-purple-700 dark:text-purple-400">
+                      <p className="text-sm sm:text-xl font-bold text-purple-700 dark:text-purple-400 break-all leading-tight">
                         {formatBRL(projections.totalProjectedCash, !showValues)}
                       </p>
                     </div>
@@ -1054,7 +1054,7 @@ export default function FinancialDashboard() {
                       <p className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-1">
                         Base {selectedYear}
                       </p>
-                      <p className="text-sm sm:text-xl font-bold text-blue-700 dark:text-blue-400">
+                      <p className="text-sm sm:text-xl font-bold text-blue-700 dark:text-blue-400 break-all leading-tight">
                         {formatBRL(projections.baseSummary.totalCashBRL, !showValues)}
                       </p>
                     </div>
@@ -1063,7 +1063,7 @@ export default function FinancialDashboard() {
                         Variação Estimada
                       </p>
                       <p
-                        className={`text-sm sm:text-xl font-bold ${
+                        className={`text-sm sm:text-xl font-bold break-all leading-tight ${
                           projections.totalProjectedCash > projections.baseSummary.totalCashBRL
                             ? "text-red-600"
                             : "text-green-600"
