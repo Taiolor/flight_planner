@@ -9,3 +9,9 @@
 **Vulnerability:** Missing rate limiting on specific endpoints like `flightAuth.login` inside `/api/trpc/*`. Attackers could brute-force the email/password since general TRPC only had a `generalLimiter` configured for 200 requests/15 minutes.
 **Learning:** TRPC bundles endpoints under a single `/api/trpc/*` route. Simply placing a rate limiter on the whole `/api/trpc` applies the same rate limit broadly. To apply stricter rate limits to sensitive routes, a custom middleware before the main TRPC middleware is required to check `req.path.includes("endpoint.name")`.
 **Prevention:** For sensitive TRPC endpoints requiring customized protection (like login/auth endpoints), insert a dedicated express middleware intercepting the specific path (via `req.path.includes`) before it hits the TRPC router handler, applying specific limiters like `authLimiter`.
+
+## 2024-05-18 - Protect sensitive data in financial TRPC endpoints
+
+**Vulnerability:** Insecure Direct Object Reference (IDOR) data leak in `financialRouter` endpoints (`getWeeklyData`, `getMonthlySummary`, `getYearSummary`, `getProjections`). Unauthenticated users were able to access sensitive financial data because they were protected with `publicProcedure`.
+**Learning:** Using `publicProcedure` for sensitive financial data leaks business critical information (profits, losses, expenses, projections). Always carefully select the correct protected router middleware based on the sensitivity of the data returned.
+**Prevention:** In TRPC, specifically when returning financial summaries or projections, verify that `flightProtectedProcedure` (or an equivalent authenticated middleware) is used instead of `publicProcedure`.
