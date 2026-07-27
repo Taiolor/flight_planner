@@ -290,7 +290,10 @@ export default function FinancialDashboard() {
       {/* Header */}
       <header className="bg-gradient-to-r from-blue-600 via-purple-600 to-cyan-500 text-white px-4 py-3 flex items-center gap-3 shadow-lg sticky top-0 z-10">
         <Link href="/">
-          <button className="flex items-center gap-1.5 text-white/80 hover:text-white transition-colors text-sm font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-blue-700 rounded-sm">
+          <button
+            aria-label="Voltar para a página inicial"
+            className="flex items-center gap-1.5 text-white/80 hover:text-white transition-colors text-sm font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-blue-700 rounded-sm"
+          >
             <ArrowLeft className="w-4 h-4" />
             Voltar
           </button>
@@ -316,6 +319,7 @@ export default function FinancialDashboard() {
               </select>
               {/* Toggle mostrar/ocultar valores */}
               <button
+                aria-label={showValues ? "Ocultar valores financeiros" : "Mostrar valores financeiros"}
                 onClick={() => setShowValues(v => !v)}
                 className="flex items-center gap-2 px-3 py-2 rounded-xl bg-white/10 hover:bg-white/20 transition-colors text-sm font-medium"
               >
@@ -1019,6 +1023,7 @@ export default function FinancialDashboard() {
                       max={20}
                       step={0.5}
                       value={inflationRate}
+                      aria-label="Ajustar inflação estimada (IPCA)"
                       onChange={e => setInflationRate(Number(e.target.value))}
                       className="flex-1 accent-purple-600"
                     />
@@ -1038,6 +1043,7 @@ export default function FinancialDashboard() {
                       max={8}
                       step={1}
                       value={tripsPerMonth}
+                      aria-label="Ajustar número de viagens por mês"
                       onChange={e => setTripsPerMonth(Number(e.target.value))}
                       className="flex-1 accent-purple-600"
                     />
