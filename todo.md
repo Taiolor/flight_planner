@@ -615,3 +615,5 @@
 - [x] Atualizar vitest de ^2.1.4 para ^4.1.10 (critical: arbitrary file read via UI server)
 - [x] Configurar Dependabot no .github/dependabot.yml para alertas automáticos futuros
 - [x] Habilitar vulnerability alerts e automated security fixes no repositório GitHub (secret scanning requer plano GitHub Advanced Security)
+
+- [x] Implementar visualização em cartões para tabela de semanas no mobile (Gestão Financeira) - eliminar scroll horizontal

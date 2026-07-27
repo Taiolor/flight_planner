@@ -848,7 +848,126 @@ export default function FinancialDashboard() {
             subtitle="Todas as viagens emitidas com dados financeiros"
             icon={Calendar}
           />
-          <div className="overflow-x-auto -mx-3 sm:mx-0 px-3 sm:px-0">
+          {/* ── Vista Mobile: Cartões ── */}
+          <div className="sm:hidden space-y-3">
+            {weeklyTableData.length === 0 && !isLoading && (
+              <p className="py-8 text-center text-slate-400 text-sm">
+                Nenhuma viagem emitida em {selectedYear}
+              </p>
+            )}
+            {weeklyTableData.map(w => (
+              <div
+                key={w.weekNumber}
+                className={`rounded-xl border p-3 space-y-2.5 ${
+                  w.departureRescheduled || w.returnRescheduled
+                    ? "border-red-200 bg-red-50/50 dark:border-red-800/40 dark:bg-red-900/10 opacity-80"
+                    : "border-slate-100 bg-slate-50/50 dark:border-slate-800 dark:bg-slate-800/20"
+                }`}
+              >
+                {/* Cabeçalho do cartão */}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-bold text-slate-800 dark:text-slate-100">
+                      Semana #{w.weekNumber}
+                    </span>
+                    <span className="text-xs text-slate-500 dark:text-slate-400">
+                      {MONTH_FULL_NAMES[w.month]}
+                    </span>
+                  </div>
+                  {w.departureRescheduled || w.returnRescheduled ? (
+                    <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400">
+                      Remarcado
+                    </span>
+                  ) : (
+                    <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
+                      Emitido
+                    </span>
+                  )}
+                </div>
+
+                {/* Datas */}
+                <div className="grid grid-cols-2 gap-2 text-xs">
+                  <div>
+                    <p className="text-slate-400 uppercase tracking-wide mb-0.5">Ida</p>
+                    <p className="font-medium text-slate-700 dark:text-slate-300">{w.departureDate || "—"}</p>
+                    {w.departureAirline && (
+                      <span
+                        className="mt-1 inline-block px-2 py-0.5 rounded-full text-xs font-semibold text-white"
+                        style={{ backgroundColor: AIRLINE_COLORS[w.departureAirline] ?? "#94A3B8" }}
+                      >
+                        {AIRLINE_LABELS[w.departureAirline] ?? w.departureAirline}
+                      </span>
+                    )}
+                  </div>
+                  <div>
+                    <p className="text-slate-400 uppercase tracking-wide mb-0.5">Volta</p>
+                    {w.ticketType === "oneway" ? (
+                      <p className="italic text-slate-400">somente ida</p>
+                    ) : (
+                      <>
+                        <p className="font-medium text-slate-700 dark:text-slate-300">{w.returnDate || "—"}</p>
+                        {w.returnAirline && (
+                          <span
+                            className="mt-1 inline-block px-2 py-0.5 rounded-full text-xs font-semibold text-white"
+                            style={{ backgroundColor: AIRLINE_COLORS[w.returnAirline] ?? "#94A3B8" }}
+                          >
+                            {AIRLINE_LABELS[w.returnAirline] ?? w.returnAirline}
+                          </span>
+                        )}
+                      </>
+                    )}
+                  </div>
+                </div>
+
+                {/* Preço e Milhas */}
+                <div className="flex items-center justify-between pt-1 border-t border-slate-100 dark:border-slate-700/50">
+                  <div>
+                    <p className="text-xs text-slate-400 uppercase tracking-wide">Preço Pago</p>
+                    <p className="text-base font-bold text-slate-800 dark:text-slate-100 leading-tight">
+                      {w.paidPriceTotal !== null && w.paidPriceTotal > 0
+                        ? formatBRL(w.paidPriceTotal, !showValues)
+                        : <span className="text-slate-400 text-xs font-normal">sem preço</span>}
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    {w.weekVariation !== undefined && w.weekVariation !== 0 && (
+                      <span
+                        className={`inline-block px-2 py-0.5 rounded-full text-xs font-semibold ${
+                          Math.abs(w.weekVariation) > 20
+                            ? w.weekVariation > 0
+                              ? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
+                              : "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+                            : "bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-400"
+                        }`}
+                      >
+                        {w.weekVariation > 0 ? "+" : ""}{w.weekVariation.toFixed(1)}%
+                      </span>
+                    )}
+                    {(w.totalMiles ?? 0) > 0 && (
+                      <p className="text-xs text-orange-600 dark:text-orange-400 mt-1">
+                        {formatMiles(w.totalMiles!)}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ))}
+
+            {/* Rodapé total mobile */}
+            {weeklyTableData.length > 0 && (
+              <div className="rounded-xl border-2 border-blue-200 dark:border-blue-800/40 bg-blue-50 dark:bg-blue-900/20 p-3 flex items-center justify-between">
+                <span className="text-sm font-bold text-slate-700 dark:text-slate-300">
+                  Total ({weeklyTableData.length} viagens)
+                </span>
+                <span className="text-base font-bold text-blue-700 dark:text-blue-400">
+                  {formatBRL(yearSummary?.totalCashBRL ?? 0, !showValues)}
+                </span>
+              </div>
+            )}
+          </div>
+
+          {/* ── Vista Desktop: Tabela ── */}
+          <div className="hidden sm:block overflow-x-auto">
             <table className="w-full text-sm min-w-[640px]">
               <thead>
                 <tr className="border-b border-slate-100 dark:border-slate-800">
@@ -874,51 +993,27 @@ export default function FinancialDashboard() {
                         : ""
                     }`}
                   >
-                    <td className="py-2.5 px-3 font-bold text-slate-700 dark:text-slate-300">
-                      #{w.weekNumber}
-                    </td>
-                    <td className="py-2.5 px-3 text-slate-500 dark:text-slate-400 text-xs">
-                      {MONTH_NAMES[w.month]}
-                    </td>
-                    <td className="py-2.5 px-3 text-slate-600 dark:text-slate-400">
-                      {w.departureDate}
-                    </td>
+                    <td className="py-2.5 px-3 font-bold text-slate-700 dark:text-slate-300">#{w.weekNumber}</td>
+                    <td className="py-2.5 px-3 text-slate-500 dark:text-slate-400 text-xs">{MONTH_NAMES[w.month]}</td>
+                    <td className="py-2.5 px-3 text-slate-600 dark:text-slate-400">{w.departureDate}</td>
                     <td className="py-2.5 px-3 text-slate-600 dark:text-slate-400">
                       {w.ticketType === "oneway" ? (
                         <span className="text-xs text-slate-400 italic">somente ida</span>
-                      ) : (
-                        w.returnDate
-                      )}
+                      ) : (w.returnDate)}
                     </td>
                     <td className="py-2.5 px-3">
                       {w.departureAirline ? (
-                        <span
-                          className="px-2 py-0.5 rounded-full text-xs font-semibold text-white"
-                          style={{
-                            backgroundColor:
-                              AIRLINE_COLORS[w.departureAirline] ?? "#94A3B8",
-                          }}
-                        >
+                        <span className="px-2 py-0.5 rounded-full text-xs font-semibold text-white" style={{ backgroundColor: AIRLINE_COLORS[w.departureAirline] ?? "#94A3B8" }}>
                           {AIRLINE_LABELS[w.departureAirline] ?? w.departureAirline}
                         </span>
-                      ) : (
-                        <span className="text-slate-400 text-xs">—</span>
-                      )}
+                      ) : <span className="text-slate-400 text-xs">—</span>}
                     </td>
                     <td className="py-2.5 px-3">
                       {w.returnAirline && w.ticketType !== "oneway" ? (
-                        <span
-                          className="px-2 py-0.5 rounded-full text-xs font-semibold text-white"
-                          style={{
-                            backgroundColor:
-                              AIRLINE_COLORS[w.returnAirline] ?? "#94A3B8",
-                          }}
-                        >
+                        <span className="px-2 py-0.5 rounded-full text-xs font-semibold text-white" style={{ backgroundColor: AIRLINE_COLORS[w.returnAirline] ?? "#94A3B8" }}>
                           {AIRLINE_LABELS[w.returnAirline] ?? w.returnAirline}
                         </span>
-                      ) : (
-                        <span className="text-slate-400 text-xs">—</span>
-                      )}
+                      ) : <span className="text-slate-400 text-xs">—</span>}
                     </td>
                     <td className="py-2.5 px-3 text-right font-semibold text-slate-800 dark:text-slate-200">
                       {w.paidPriceTotal !== null && w.paidPriceTotal > 0
@@ -941,13 +1036,9 @@ export default function FinancialDashboard() {
                     </td>
                     <td className="py-2.5 px-3 text-center">
                       {w.departureRescheduled || w.returnRescheduled ? (
-                        <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400">
-                          Remarcado
-                        </span>
+                        <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400">Remarcado</span>
                       ) : (
-                        <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
-                          Emitido
-                        </span>
+                        <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">Emitido</span>
                       )}
                     </td>
                   </tr>
@@ -970,9 +1061,7 @@ export default function FinancialDashboard() {
                       {formatBRL(yearSummary?.totalCashBRL ?? 0, !showValues)}
                     </td>
                     <td className="py-3 px-3 text-right font-bold text-orange-600 dark:text-orange-400 text-sm">
-                      {(yearSummary?.totalMiles ?? 0) > 0
-                        ? formatMiles(yearSummary!.totalMiles)
-                        : "—"}
+                      {(yearSummary?.totalMiles ?? 0) > 0 ? formatMiles(yearSummary!.totalMiles) : "—"}
                     </td>
                     <td />
                   </tr>
