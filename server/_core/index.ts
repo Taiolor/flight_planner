@@ -107,6 +107,15 @@ async function startServer() {
   // OAuth callback under /api/oauth/callback
   registerOAuthRoutes(app);
 
+  // Middleware to apply rate limiting specifically to tRPC login procedures
+  app.use("/api/trpc", (req, res, next) => {
+    // tRPC passes procedure names in the path, e.g., /api/trpc/flightAuth.login
+    if (req.path.includes("flightAuth.login")) {
+      return authLimiter(req, res, next);
+    }
+    next();
+  });
+
   // tRPC API
   app.use(
     "/api/trpc",
