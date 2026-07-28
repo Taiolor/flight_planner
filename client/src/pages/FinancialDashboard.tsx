@@ -109,15 +109,15 @@ function KpiCard({
     red: "from-red-500 to-red-700 text-white",
   };
   return (
-    <div className={`rounded-2xl bg-gradient-to-br ${colorMap[color]} p-5 shadow-lg`}>
+    <div className={`rounded-2xl bg-gradient-to-br ${colorMap[color]} p-3 sm:p-5 shadow-lg overflow-hidden`}>
       <div className="flex items-start justify-between">
-        <div className="flex-1 min-w-0">
+          <div className="flex-1 min-w-0 overflow-hidden">
           <p className="text-xs font-semibold uppercase tracking-wider opacity-80 mb-1">
             {title}
           </p>
-          <p className="text-2xl font-bold truncate">{value}</p>
+          <p className="text-sm sm:text-2xl font-bold break-all leading-tight">{value}</p>
           {subtitle && (
-            <p className="text-xs opacity-75 mt-1 truncate">{subtitle}</p>
+            <p className="text-xs opacity-75 mt-1 line-clamp-2">{subtitle}</p>
           )}
         </div>
         <div className="ml-3 p-2 rounded-xl bg-white/20">
@@ -247,12 +247,23 @@ export default function FinancialDashboard() {
     });
   }, [weeklyData]);
 
+  // ⚡ Bolt Optimization: Cache filtered miles data to avoid O(N) array allocation on every React render
+  const milesTableData = useMemo(() => {
+    return weeklyTableData.filter(w => (w.totalMiles ?? 0) > 0);
+  }, [weeklyTableData]);
+
   // Tendência: comparar H1 vs H2
   const trendData = useMemo(() => {
     if (!yearSummary?.byMonth || yearSummary.byMonth.length < 2) return null;
-    const months = yearSummary.byMonth;
-    const h1 = months.filter(m => m.month <= 6).reduce((s, m) => s + m.totalCashBRL, 0);
-    const h2 = months.filter(m => m.month > 6).reduce((s, m) => s + m.totalCashBRL, 0);
+    // ⚡ Bolt Optimization: Replace multiple array allocations (.filter, .reduce) with single-pass .reduce
+    const { h1, h2 } = yearSummary.byMonth.reduce(
+      (acc, m) => {
+        if (m.month <= 6) acc.h1 += m.totalCashBRL;
+        else acc.h2 += m.totalCashBRL;
+        return acc;
+      },
+      { h1: 0, h2: 0 }
+    );
     const trend = h1 > 0 ? ((h2 - h1) / h1) * 100 : 0;
     return { h1, h2, trend };
   }, [yearSummary]);
@@ -279,7 +290,10 @@ export default function FinancialDashboard() {
       {/* Header */}
       <header className="bg-gradient-to-r from-blue-600 via-purple-600 to-cyan-500 text-white px-4 py-3 flex items-center gap-3 shadow-lg sticky top-0 z-10">
         <Link href="/">
-          <button className="flex items-center gap-1.5 text-white/80 hover:text-white transition-colors text-sm font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-blue-700 rounded-sm">
+          <button
+            aria-label="Voltar para a página inicial"
+            className="flex items-center gap-1.5 text-white/80 hover:text-white transition-colors text-sm font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-blue-700 rounded-sm"
+          >
             <ArrowLeft className="w-4 h-4" />
             Voltar
           </button>
@@ -305,6 +319,7 @@ export default function FinancialDashboard() {
               </select>
               {/* Toggle mostrar/ocultar valores */}
               <button
+                aria-label={showValues ? "Ocultar valores financeiros" : "Mostrar valores financeiros"}
                 onClick={() => setShowValues(v => !v)}
                 className="flex items-center gap-2 px-3 py-2 rounded-xl bg-white/10 hover:bg-white/20 transition-colors text-sm font-medium"
               >
@@ -313,21 +328,21 @@ export default function FinancialDashboard() {
                 ) : (
                   <EyeOff className="w-4 h-4" />
                 )}
-                {showValues ? "Ocultar" : "Mostrar"} valores
+                <span className="hidden sm:inline">{showValues ? "Ocultar" : "Mostrar"} valores</span>
               </button>
         </div>
       </header>
 
-      <div className="max-w-7xl mx-auto px-4 py-8 space-y-10">
+      <div className="max-w-7xl mx-auto px-3 sm:px-4 py-4 sm:py-8 space-y-6 sm:space-y-10">
         {/* ── KPIs ── */}
         {isLoading ? (
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 xs:grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
             {[...Array(4)].map((_, i) => (
               <div key={i} className="h-32 rounded-2xl bg-slate-200 dark:bg-slate-800 animate-pulse" />
             ))}
           </div>
         ) : (
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 xs:grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
             <KpiCard
               title="Total Investido"
               value={formatBRL(yearSummary?.totalCashBRL ?? 0, !showValues)}
@@ -366,12 +381,12 @@ export default function FinancialDashboard() {
 
         {/* ── Tabs de análise ── */}
         <div>
-          <div className="flex gap-1 p-1 bg-slate-200 dark:bg-slate-800 rounded-2xl w-fit mb-6">
+          <div className="flex gap-1 p-1 bg-slate-200 dark:bg-slate-800 rounded-2xl w-full sm:w-fit mb-4 sm:mb-6">
             {(["cash", "miles", "comparison"] as const).map(tab => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
-                className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all ${
+                className={`px-2 sm:px-4 py-1.5 sm:py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all flex-1 sm:flex-none whitespace-nowrap ${
                   activeTab === tab
                     ? "bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm"
                     : "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
@@ -388,7 +403,7 @@ export default function FinancialDashboard() {
           {activeTab === "cash" && (
             <div className="space-y-6">
               {/* Gráfico de barras mensal */}
-              <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 shadow-sm border border-slate-100 dark:border-slate-800">
+              <div className="bg-white dark:bg-slate-900 rounded-2xl p-3 sm:p-6 shadow-sm border border-slate-100 dark:border-slate-800">
                 <SectionHeader
                   title="Gastos Mensais em Dinheiro"
                   subtitle={`Total por mês em ${selectedYear}`}
@@ -400,8 +415,8 @@ export default function FinancialDashboard() {
                     Nenhum dado disponível para {selectedYear}
                   </div>
                 ) : (
-                  <ResponsiveContainer width="100%" height={280}>
-                    <BarChart data={monthlyChartData} margin={{ top: 5, right: 10, left: 10, bottom: 5 }}>
+                  <ResponsiveContainer width="100%" height={220}>
+                    <BarChart data={monthlyChartData} margin={{ top: 5, right: 5, left: -15, bottom: 5 }}>
                       <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
                       <XAxis dataKey="month" tick={{ fontSize: 12 }} />
                       <YAxis
@@ -424,7 +439,7 @@ export default function FinancialDashboard() {
               </div>
 
               {/* Gráfico de tendência (linha) */}
-              <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 shadow-sm border border-slate-100 dark:border-slate-800">
+              <div className="bg-white dark:bg-slate-900 rounded-2xl p-3 sm:p-6 shadow-sm border border-slate-100 dark:border-slate-800">
                 <SectionHeader
                   title="Tendência de Gastos"
                   subtitle="Evolução mensal e média acumulada"
@@ -436,8 +451,8 @@ export default function FinancialDashboard() {
                     Nenhum dado disponível
                   </div>
                 ) : (
-                  <ResponsiveContainer width="100%" height={260}>
-                    <AreaChart data={monthlyChartData} margin={{ top: 5, right: 10, left: 10, bottom: 5 }}>
+                  <ResponsiveContainer width="100%" height={200}>
+                    <AreaChart data={monthlyChartData} margin={{ top: 5, right: 5, left: -15, bottom: 5 }}>
                       <defs>
                         <linearGradient id="cashGrad" x1="0" y1="0" x2="0" y2="1">
                           <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.3} />
@@ -490,13 +505,13 @@ export default function FinancialDashboard() {
                   <div className="mt-4 grid grid-cols-3 gap-3">
                     <div className="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-3 text-center">
                       <p className="text-xs text-slate-500 dark:text-slate-400">1º Semestre</p>
-                      <p className="text-base font-bold text-slate-800 dark:text-slate-100 mt-1">
+                      <p className="text-xs sm:text-base font-bold text-slate-800 dark:text-slate-100 mt-1 break-all leading-tight">
                         {formatBRL(trendData.h1, !showValues)}
                       </p>
                     </div>
                     <div className="bg-orange-50 dark:bg-orange-900/20 rounded-xl p-3 text-center">
                       <p className="text-xs text-slate-500 dark:text-slate-400">2º Semestre</p>
-                      <p className="text-base font-bold text-slate-800 dark:text-slate-100 mt-1">
+                      <p className="text-xs sm:text-base font-bold text-slate-800 dark:text-slate-100 mt-1 break-all leading-tight">
                         {formatBRL(trendData.h2, !showValues)}
                       </p>
                     </div>
@@ -525,7 +540,7 @@ export default function FinancialDashboard() {
           {/* ── Tab: Milhas ── */}
           {activeTab === "miles" && (
             <div className="space-y-6">
-              <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 shadow-sm border border-slate-100 dark:border-slate-800">
+              <div className="bg-white dark:bg-slate-900 rounded-2xl p-3 sm:p-6 shadow-sm border border-slate-100 dark:border-slate-800">
                 <SectionHeader
                   title="Gastos em Milhas por Mês"
                   subtitle="SMILES + LATAM Pass (pontos)"
@@ -537,8 +552,8 @@ export default function FinancialDashboard() {
                     Nenhum dado de milhas disponível
                   </div>
                 ) : (
-                  <ResponsiveContainer width="100%" height={280}>
-                    <BarChart data={monthlyChartData} margin={{ top: 5, right: 10, left: 10, bottom: 5 }}>
+                  <ResponsiveContainer width="100%" height={220}>
+                    <BarChart data={monthlyChartData} margin={{ top: 5, right: 5, left: -15, bottom: 5 }}>
                       <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
                       <XAxis dataKey="month" tick={{ fontSize: 12 }} />
                       <YAxis
@@ -556,7 +571,7 @@ export default function FinancialDashboard() {
               </div>
 
               {/* Tabela de milhas por semana */}
-              <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 shadow-sm border border-slate-100 dark:border-slate-800">
+              <div className="bg-white dark:bg-slate-900 rounded-2xl p-3 sm:p-6 shadow-sm border border-slate-100 dark:border-slate-800">
                 <SectionHeader
                   title="Detalhe de Milhas por Semana"
                   subtitle="Semanas com passagens emitidas usando milhas"
@@ -587,8 +602,7 @@ export default function FinancialDashboard() {
                       </tr>
                     </thead>
                     <tbody>
-                      {weeklyTableData
-                        .filter(w => (w.totalMiles ?? 0) > 0)
+                      {milesTableData
                         .map(w => (
                           <tr
                             key={w.weekNumber}
@@ -622,7 +636,7 @@ export default function FinancialDashboard() {
                             </td>
                           </tr>
                         ))}
-                      {weeklyTableData.filter(w => (w.totalMiles ?? 0) > 0).length === 0 && (
+                      {milesTableData.length === 0 && (
                         <tr>
                           <td colSpan={6} className="py-8 text-center text-slate-400 text-sm">
                             Nenhuma viagem com milhas registrada
@@ -641,7 +655,7 @@ export default function FinancialDashboard() {
             <div className="space-y-6">
               <div className="grid md:grid-cols-2 gap-6">
                 {/* Pizza de gastos por companhia */}
-                <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 shadow-sm border border-slate-100 dark:border-slate-800">
+                <div className="bg-white dark:bg-slate-900 rounded-2xl p-3 sm:p-6 shadow-sm border border-slate-100 dark:border-slate-800">
                   <SectionHeader
                     title="Distribuição por Companhia"
                     subtitle="% do total gasto em dinheiro"
@@ -686,7 +700,7 @@ export default function FinancialDashboard() {
                 </div>
 
                 {/* Barras comparativas por companhia */}
-                <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 shadow-sm border border-slate-100 dark:border-slate-800">
+                <div className="bg-white dark:bg-slate-900 rounded-2xl p-3 sm:p-6 shadow-sm border border-slate-100 dark:border-slate-800">
                   <SectionHeader
                     title="Gasto Total por Companhia"
                     subtitle="Comparativo de valores absolutos"
@@ -734,7 +748,7 @@ export default function FinancialDashboard() {
               </div>
 
               {/* Tabela comparativa detalhada */}
-              <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 shadow-sm border border-slate-100 dark:border-slate-800">
+              <div className="bg-white dark:bg-slate-900 rounded-2xl p-3 sm:p-6 shadow-sm border border-slate-100 dark:border-slate-800">
                 <SectionHeader
                   title="Comparativo Detalhado por Companhia"
                   subtitle="Viagens, gastos e médias"
@@ -828,14 +842,133 @@ export default function FinancialDashboard() {
         </div>
 
         {/* ── Tabela detalhada por semana ── */}
-        <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 shadow-sm border border-slate-100 dark:border-slate-800">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl p-3 sm:p-6 shadow-sm border border-slate-100 dark:border-slate-800">
           <SectionHeader
             title="Detalhe por Semana"
             subtitle="Todas as viagens emitidas com dados financeiros"
             icon={Calendar}
           />
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+          {/* ── Vista Mobile: Cartões ── */}
+          <div className="sm:hidden space-y-3">
+            {weeklyTableData.length === 0 && !isLoading && (
+              <p className="py-8 text-center text-slate-400 text-sm">
+                Nenhuma viagem emitida em {selectedYear}
+              </p>
+            )}
+            {weeklyTableData.map(w => (
+              <div
+                key={w.weekNumber}
+                className={`rounded-xl border p-3 space-y-2.5 ${
+                  w.departureRescheduled || w.returnRescheduled
+                    ? "border-red-200 bg-red-50/50 dark:border-red-800/40 dark:bg-red-900/10 opacity-80"
+                    : "border-slate-100 bg-slate-50/50 dark:border-slate-800 dark:bg-slate-800/20"
+                }`}
+              >
+                {/* Cabeçalho do cartão */}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-bold text-slate-800 dark:text-slate-100">
+                      Semana #{w.weekNumber}
+                    </span>
+                    <span className="text-xs text-slate-500 dark:text-slate-400">
+                      {MONTH_FULL_NAMES[w.month]}
+                    </span>
+                  </div>
+                  {w.departureRescheduled || w.returnRescheduled ? (
+                    <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400">
+                      Remarcado
+                    </span>
+                  ) : (
+                    <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
+                      Emitido
+                    </span>
+                  )}
+                </div>
+
+                {/* Datas */}
+                <div className="grid grid-cols-2 gap-2 text-xs">
+                  <div>
+                    <p className="text-slate-400 uppercase tracking-wide mb-0.5">Ida</p>
+                    <p className="font-medium text-slate-700 dark:text-slate-300">{w.departureDate || "—"}</p>
+                    {w.departureAirline && (
+                      <span
+                        className="mt-1 inline-block px-2 py-0.5 rounded-full text-xs font-semibold text-white"
+                        style={{ backgroundColor: AIRLINE_COLORS[w.departureAirline] ?? "#94A3B8" }}
+                      >
+                        {AIRLINE_LABELS[w.departureAirline] ?? w.departureAirline}
+                      </span>
+                    )}
+                  </div>
+                  <div>
+                    <p className="text-slate-400 uppercase tracking-wide mb-0.5">Volta</p>
+                    {w.ticketType === "oneway" ? (
+                      <p className="italic text-slate-400">somente ida</p>
+                    ) : (
+                      <>
+                        <p className="font-medium text-slate-700 dark:text-slate-300">{w.returnDate || "—"}</p>
+                        {w.returnAirline && (
+                          <span
+                            className="mt-1 inline-block px-2 py-0.5 rounded-full text-xs font-semibold text-white"
+                            style={{ backgroundColor: AIRLINE_COLORS[w.returnAirline] ?? "#94A3B8" }}
+                          >
+                            {AIRLINE_LABELS[w.returnAirline] ?? w.returnAirline}
+                          </span>
+                        )}
+                      </>
+                    )}
+                  </div>
+                </div>
+
+                {/* Preço e Milhas */}
+                <div className="flex items-center justify-between pt-1 border-t border-slate-100 dark:border-slate-700/50">
+                  <div>
+                    <p className="text-xs text-slate-400 uppercase tracking-wide">Preço Pago</p>
+                    <p className="text-base font-bold text-slate-800 dark:text-slate-100 leading-tight">
+                      {w.paidPriceTotal !== null && w.paidPriceTotal > 0
+                        ? formatBRL(w.paidPriceTotal, !showValues)
+                        : <span className="text-slate-400 text-xs font-normal">sem preço</span>}
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    {w.weekVariation !== undefined && w.weekVariation !== 0 && (
+                      <span
+                        className={`inline-block px-2 py-0.5 rounded-full text-xs font-semibold ${
+                          Math.abs(w.weekVariation) > 20
+                            ? w.weekVariation > 0
+                              ? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
+                              : "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+                            : "bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-400"
+                        }`}
+                      >
+                        {w.weekVariation > 0 ? "+" : ""}{w.weekVariation.toFixed(1)}%
+                      </span>
+                    )}
+                    {(w.totalMiles ?? 0) > 0 && (
+                      <p className="text-xs text-orange-600 dark:text-orange-400 mt-1">
+                        {formatMiles(w.totalMiles!)}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ))}
+
+            {/* Rodapé total mobile */}
+            {weeklyTableData.length > 0 && (
+              <div className="rounded-xl border-2 border-blue-200 dark:border-blue-800/40 bg-blue-50 dark:bg-blue-900/20 p-3 flex items-center justify-between">
+                <span className="text-sm font-bold text-slate-700 dark:text-slate-300">
+                  Total ({weeklyTableData.length} viagens)
+                </span>
+                <span className="text-base font-bold text-blue-700 dark:text-blue-400">
+                  {formatBRL(yearSummary?.totalCashBRL ?? 0, !showValues)}
+                </span>
+              </div>
+            )}
+          </div>
+
+          {/* ── Vista Desktop: Tabela ── */}
+          <div className="hidden sm:block overflow-x-auto">
+            <table className="w-full text-sm min-w-[640px]">
               <thead>
                 <tr className="border-b border-slate-100 dark:border-slate-800">
                   <th className="text-left py-2 px-3 text-xs font-semibold text-slate-500 uppercase tracking-wide">Sem.</th>
@@ -860,51 +993,27 @@ export default function FinancialDashboard() {
                         : ""
                     }`}
                   >
-                    <td className="py-2.5 px-3 font-bold text-slate-700 dark:text-slate-300">
-                      #{w.weekNumber}
-                    </td>
-                    <td className="py-2.5 px-3 text-slate-500 dark:text-slate-400 text-xs">
-                      {MONTH_NAMES[w.month]}
-                    </td>
-                    <td className="py-2.5 px-3 text-slate-600 dark:text-slate-400">
-                      {w.departureDate}
-                    </td>
+                    <td className="py-2.5 px-3 font-bold text-slate-700 dark:text-slate-300">#{w.weekNumber}</td>
+                    <td className="py-2.5 px-3 text-slate-500 dark:text-slate-400 text-xs">{MONTH_NAMES[w.month]}</td>
+                    <td className="py-2.5 px-3 text-slate-600 dark:text-slate-400">{w.departureDate}</td>
                     <td className="py-2.5 px-3 text-slate-600 dark:text-slate-400">
                       {w.ticketType === "oneway" ? (
                         <span className="text-xs text-slate-400 italic">somente ida</span>
-                      ) : (
-                        w.returnDate
-                      )}
+                      ) : (w.returnDate)}
                     </td>
                     <td className="py-2.5 px-3">
                       {w.departureAirline ? (
-                        <span
-                          className="px-2 py-0.5 rounded-full text-xs font-semibold text-white"
-                          style={{
-                            backgroundColor:
-                              AIRLINE_COLORS[w.departureAirline] ?? "#94A3B8",
-                          }}
-                        >
+                        <span className="px-2 py-0.5 rounded-full text-xs font-semibold text-white" style={{ backgroundColor: AIRLINE_COLORS[w.departureAirline] ?? "#94A3B8" }}>
                           {AIRLINE_LABELS[w.departureAirline] ?? w.departureAirline}
                         </span>
-                      ) : (
-                        <span className="text-slate-400 text-xs">—</span>
-                      )}
+                      ) : <span className="text-slate-400 text-xs">—</span>}
                     </td>
                     <td className="py-2.5 px-3">
                       {w.returnAirline && w.ticketType !== "oneway" ? (
-                        <span
-                          className="px-2 py-0.5 rounded-full text-xs font-semibold text-white"
-                          style={{
-                            backgroundColor:
-                              AIRLINE_COLORS[w.returnAirline] ?? "#94A3B8",
-                          }}
-                        >
+                        <span className="px-2 py-0.5 rounded-full text-xs font-semibold text-white" style={{ backgroundColor: AIRLINE_COLORS[w.returnAirline] ?? "#94A3B8" }}>
                           {AIRLINE_LABELS[w.returnAirline] ?? w.returnAirline}
                         </span>
-                      ) : (
-                        <span className="text-slate-400 text-xs">—</span>
-                      )}
+                      ) : <span className="text-slate-400 text-xs">—</span>}
                     </td>
                     <td className="py-2.5 px-3 text-right font-semibold text-slate-800 dark:text-slate-200">
                       {w.paidPriceTotal !== null && w.paidPriceTotal > 0
@@ -927,13 +1036,9 @@ export default function FinancialDashboard() {
                     </td>
                     <td className="py-2.5 px-3 text-center">
                       {w.departureRescheduled || w.returnRescheduled ? (
-                        <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400">
-                          Remarcado
-                        </span>
+                        <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400">Remarcado</span>
                       ) : (
-                        <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
-                          Emitido
-                        </span>
+                        <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">Emitido</span>
                       )}
                     </td>
                   </tr>
@@ -955,10 +1060,9 @@ export default function FinancialDashboard() {
                     <td className="py-3 px-3 text-right font-bold text-blue-700 dark:text-blue-400 text-sm">
                       {formatBRL(yearSummary?.totalCashBRL ?? 0, !showValues)}
                     </td>
+                    <td />
                     <td className="py-3 px-3 text-right font-bold text-orange-600 dark:text-orange-400 text-sm">
-                      {(yearSummary?.totalMiles ?? 0) > 0
-                        ? formatMiles(yearSummary!.totalMiles)
-                        : "—"}
+                      {(yearSummary?.totalMiles ?? 0) > 0 ? formatMiles(yearSummary!.totalMiles) : "—"}
                     </td>
                     <td />
                   </tr>
@@ -972,7 +1076,7 @@ export default function FinancialDashboard() {
         <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 overflow-hidden">
           <button
             onClick={() => setShowProjections(v => !v)}
-            className="w-full flex items-center justify-between p-6 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
+            className="w-full flex items-center justify-between p-3 sm:p-6 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
           >
             <div className="flex items-center gap-3">
               <div className="p-2 rounded-xl bg-purple-100 dark:bg-purple-900/40">
@@ -995,7 +1099,7 @@ export default function FinancialDashboard() {
           </button>
 
           {showProjections && (
-            <div className="px-6 pb-6 space-y-6 border-t border-slate-100 dark:border-slate-800 pt-5">
+            <div className="px-3 sm:px-6 pb-3 sm:pb-6 space-y-4 sm:space-y-6 border-t border-slate-100 dark:border-slate-800 pt-4 sm:pt-5">
               {/* Parâmetros de projeção */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="bg-slate-50 dark:bg-slate-800/50 rounded-xl p-4">
@@ -1009,6 +1113,7 @@ export default function FinancialDashboard() {
                       max={20}
                       step={0.5}
                       value={inflationRate}
+                      aria-label="Ajustar inflação estimada (IPCA)"
                       onChange={e => setInflationRate(Number(e.target.value))}
                       className="flex-1 accent-purple-600"
                     />
@@ -1028,6 +1133,7 @@ export default function FinancialDashboard() {
                       max={8}
                       step={1}
                       value={tripsPerMonth}
+                      aria-label="Ajustar número de viagens por mês"
                       onChange={e => setTripsPerMonth(Number(e.target.value))}
                       className="flex-1 accent-purple-600"
                     />
@@ -1041,29 +1147,29 @@ export default function FinancialDashboard() {
               {/* KPIs de projeção */}
               {projections && (
                 <>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <div className="bg-purple-50 dark:bg-purple-900/20 rounded-xl p-4 text-center">
+                  <div className="grid grid-cols-1 xs:grid-cols-2 md:grid-cols-4 gap-3">
+                    <div className="bg-purple-50 dark:bg-purple-900/20 rounded-xl p-3 text-center">
                       <p className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-1">
                         Total Projetado
                       </p>
-                      <p className="text-xl font-bold text-purple-700 dark:text-purple-400">
+                      <p className="text-sm sm:text-xl font-bold text-purple-700 dark:text-purple-400 break-all leading-tight">
                         {formatBRL(projections.totalProjectedCash, !showValues)}
                       </p>
                     </div>
-                    <div className="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-4 text-center">
+                    <div className="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-3 text-center">
                       <p className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-1">
                         Base {selectedYear}
                       </p>
-                      <p className="text-xl font-bold text-blue-700 dark:text-blue-400">
+                      <p className="text-sm sm:text-xl font-bold text-blue-700 dark:text-blue-400 break-all leading-tight">
                         {formatBRL(projections.baseSummary.totalCashBRL, !showValues)}
                       </p>
                     </div>
-                    <div className="bg-orange-50 dark:bg-orange-900/20 rounded-xl p-4 text-center">
+                    <div className="bg-orange-50 dark:bg-orange-900/20 rounded-xl p-3 text-center">
                       <p className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-1">
                         Variação Estimada
                       </p>
                       <p
-                        className={`text-xl font-bold ${
+                        className={`text-sm sm:text-xl font-bold break-all leading-tight ${
                           projections.totalProjectedCash > projections.baseSummary.totalCashBRL
                             ? "text-red-600"
                             : "text-green-600"
@@ -1079,11 +1185,11 @@ export default function FinancialDashboard() {
                           : "—"}
                       </p>
                     </div>
-                    <div className="bg-slate-50 dark:bg-slate-800/50 rounded-xl p-4 text-center">
+                    <div className="bg-slate-50 dark:bg-slate-800/50 rounded-xl p-3 text-center">
                       <p className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-1">
                         Viagens Projetadas
                       </p>
-                      <p className="text-xl font-bold text-slate-700 dark:text-slate-300">
+                      <p className="text-sm sm:text-xl font-bold text-slate-700 dark:text-slate-300">
                         {projections.totalProjectedTrips}
                       </p>
                     </div>
@@ -1094,10 +1200,10 @@ export default function FinancialDashboard() {
                     <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-3">
                       Projeção {selectedYear + 1} vs Histórico {selectedYear}
                     </h3>
-                    <ResponsiveContainer width="100%" height={260}>
+                    <ResponsiveContainer width="100%" height={200}>
                       <BarChart
                         data={projectionChartData}
-                        margin={{ top: 5, right: 10, left: 10, bottom: 5 }}
+                        margin={{ top: 5, right: 5, left: -15, bottom: 5 }}
                       >
                         <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
                         <XAxis dataKey="month" tick={{ fontSize: 12 }} />
@@ -1137,8 +1243,8 @@ export default function FinancialDashboard() {
                     <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-3">
                       Detalhe da Projeção por Mês
                     </h3>
-                    <div className="overflow-x-auto">
-                      <table className="w-full text-sm">
+                    <div className="overflow-x-auto -mx-3 sm:mx-0 px-3 sm:px-0">
+                      <table className="w-full text-sm min-w-[560px]">
                         <thead>
                           <tr className="border-b border-slate-100 dark:border-slate-800">
                             <th className="text-left py-2 px-3 text-xs font-semibold text-slate-500 uppercase tracking-wide">Mês</th>
