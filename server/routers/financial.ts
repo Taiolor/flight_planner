@@ -3,7 +3,8 @@
  * tRPC router para a página de Gestão Financeira.
  * Expõe endpoints de agregação financeira (por semana, mês, ano) e projeções.
  */
-import { publicProcedure, router } from "../_core/trpc";
+import { router } from "../_core/trpc";
+import { flightProtectedProcedure } from "../flightAuthMiddleware";
 import { z } from "zod";
 import {
   getFinancialDataByYear,
@@ -42,7 +43,7 @@ export const financialRouter = router({
   /**
    * Retorna todos os dados financeiros por semana para um dado ano.
    */
-  getWeeklyData: publicProcedure
+  getWeeklyData: flightProtectedProcedure
     .input(z.object({ year: z.number().int().min(2020).max(2030).default(2026) }))
     .query(async ({ input }) => {
       return getFinancialDataByYear(input.year);
@@ -51,7 +52,7 @@ export const financialRouter = router({
   /**
    * Retorna o resumo financeiro por mês para um dado ano.
    */
-  getMonthlySummary: publicProcedure
+  getMonthlySummary: flightProtectedProcedure
     .input(z.object({ year: z.number().int().min(2020).max(2030).default(2026) }))
     .query(async ({ input }) => {
       return getFinancialSummaryByMonth(input.year);
@@ -60,7 +61,7 @@ export const financialRouter = router({
   /**
    * Retorna o resumo financeiro anual completo (inclui por mês e por companhia).
    */
-  getYearSummary: publicProcedure
+  getYearSummary: flightProtectedProcedure
     .input(z.object({ year: z.number().int().min(2020).max(2030).default(2026) }))
     .query(async ({ input }) => {
       return getFinancialYearSummary(input.year);
@@ -70,7 +71,7 @@ export const financialRouter = router({
    * Retorna projeções financeiras para o próximo ano.
    * Considera: média histórica, sazonalidade, inflação e frequência de viagens.
    */
-  getProjections: publicProcedure
+  getProjections: flightProtectedProcedure
     .input(
       z.object({
         baseYear: z.number().int().min(2020).max(2030).default(2026),
@@ -87,25 +88,29 @@ export const financialRouter = router({
       const monthData = yearSummary.byMonth;
 
       // Média de gasto por viagem no ano base (apenas viagens com preço registrado)
-      const weeksWithPrice = (await getFinancialDataByYear(baseYear)).filter(
-        w => w.isTicketIssued === 1 && w.paidPriceTotal !== null && w.paidPriceTotal > 0
-      );
+      // ⚡ Bolt Optimization: Cache getFinancialDataByYear to avoid duplicate DB calls and combine loops
+      const baseYearData = await getFinancialDataByYear(baseYear);
 
-      const avgPricePerTrip =
-        weeksWithPrice.length > 0
-          ? weeksWithPrice.reduce((s, w) => s + (w.paidPriceTotal ?? 0), 0) /
-            weeksWithPrice.length
-          : 0;
+      let priceTotal = 0;
+      let priceCount = 0;
+      let milesTotal = 0;
+      let milesCount = 0;
 
-      // Média de milhas por viagem no ano base
-      const weeksWithMiles = (await getFinancialDataByYear(baseYear)).filter(
-        w => w.isTicketIssued === 1 && (w.totalMiles ?? 0) > 0
-      );
-      const avgMilesPerTrip =
-        weeksWithMiles.length > 0
-          ? weeksWithMiles.reduce((s, w) => s + (w.totalMiles ?? 0), 0) /
-            weeksWithMiles.length
-          : 0;
+      for (const w of baseYearData) {
+        if (w.isTicketIssued === 1) {
+          if (w.paidPriceTotal !== null && w.paidPriceTotal > 0) {
+            priceTotal += w.paidPriceTotal;
+            priceCount++;
+          }
+          if ((w.totalMiles ?? 0) > 0) {
+            milesTotal += (w.totalMiles ?? 0);
+            milesCount++;
+          }
+        }
+      }
+
+      const avgPricePerTrip = priceCount > 0 ? priceTotal / priceCount : 0;
+      const avgMilesPerTrip = milesCount > 0 ? milesTotal / milesCount : 0;
 
       // Gerar projeção por mês para o ano alvo
       const projectedMonths = Array.from({ length: 12 }, (_, i) => {
