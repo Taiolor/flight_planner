@@ -47,7 +47,7 @@ describe("calendarIntegration", () => {
           "--input",
           expect.any(String),
         ]),
-        { encoding: "utf-8" }
+        { encoding: "utf-8", shell: false }
       );
 
       // Verify the input payload
@@ -122,6 +122,31 @@ describe("calendarIntegration", () => {
         "https://www.google.com/search?q=AZ+flight+0042+from+VCP+to+CNF,+2024-01-05"
       );
       expect(calEvent.summary).toBe("✈️ Azul 42 (Volta) - Semana 1");
+    });
+
+    it("should process events with special characters safely when shell is false", async () => {
+      vi.mocked(childProcess.execFileSync).mockReturnValue("ok");
+
+      const event: FlightEvent = {
+        weekNumber: 42,
+        airline: "M&A Airlines", // Contains &
+        flightNumber: "1234",
+        departureAirport: "GRU",
+        arrivalAirport: "SDU",
+        departureTime: new Date("2024-10-15T10:00:00Z"),
+        arrivalTime: new Date("2024-10-15T11:00:00Z"),
+        locator: "ABCDEF; rm -rf /", // Contains shell metacharacters
+        isReturn: false,
+      };
+
+      const result = await createFlightCalendarEvent(event);
+
+      expect(result).toBe(true);
+      expect(childProcess.execFileSync).toHaveBeenCalledWith(
+        "manus-mcp-cli",
+        expect.anything(),
+        { encoding: "utf-8", shell: false }
+      );
     });
 
     it("should use airport addresses if provided", async () => {

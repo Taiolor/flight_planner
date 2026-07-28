@@ -113,7 +113,7 @@ Planejador de Passagens Aéreas 2026
         "--input",
         input,
       ],
-      { encoding: "utf-8" }
+      { encoding: "utf-8", shell: false }
     );
 
     console.log(
