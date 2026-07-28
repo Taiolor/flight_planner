@@ -252,10 +252,18 @@ export async function getFinancialYearSummary(
     }
   }
 
-  const totalCashBRL = byMonth.reduce((s, m) => s + m.totalCashBRL, 0);
-  const totalSmilesPoints = byMonth.reduce((s, m) => s + m.totalSmilesPoints, 0);
-  const totalLatamPassPoints = byMonth.reduce((s, m) => s + m.totalLatamPassPoints, 0);
-  const totalMiles = byMonth.reduce((s, m) => s + m.totalMiles, 0);
+  // ⚡ Bolt Optimization: Combine four separate .reduce() calls into a single loop to reduce CPU overhead
+  let totalCashBRL = 0;
+  let totalSmilesPoints = 0;
+  let totalLatamPassPoints = 0;
+  let totalMiles = 0;
+
+  for (const m of byMonth) {
+    totalCashBRL += m.totalCashBRL;
+    totalSmilesPoints += m.totalSmilesPoints;
+    totalLatamPassPoints += m.totalLatamPassPoints;
+    totalMiles += m.totalMiles;
+  }
   const issuedCount = issued.length;
 
   return {

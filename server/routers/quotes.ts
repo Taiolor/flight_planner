@@ -126,7 +126,12 @@ async function fetchSkyScrapperPrice(
   let contextStatus: string = initData?.data?.context?.status ?? "incomplete";
   let lastData = initData;
   const MAX_POLLS = 5;
-  const POLL_DELAY_MS = 2000;
+
+  const pollUrl = new URL(
+    `https://${RAPIDAPI_HOST}/api/v2/flights/searchIncomplete`
+  );
+  pollUrl.searchParams.set("sessionId", sessionId);
+  const pollUrlString = pollUrl.toString();
 
   for (
     let attempt = 0;
@@ -134,13 +139,10 @@ async function fetchSkyScrapperPrice(
     (contextStatus !== "complete" || itineraries.length === 0);
     attempt++
   ) {
-    await sleep(POLL_DELAY_MS);
-    const pollUrl = new URL(
-      `https://${RAPIDAPI_HOST}/api/v2/flights/searchIncomplete`
-    );
-    pollUrl.searchParams.set("sessionId", sessionId);
+    const delay = 500 * Math.pow(2, attempt);
+    await sleep(delay);
 
-    const pollResponse = await fetch(pollUrl.toString(), { headers });
+    const pollResponse = await fetch(pollUrlString, { headers });
     if (!pollResponse.ok) continue; // Ignorar erros transitórios no polling
 
     const pollData = await pollResponse.json();

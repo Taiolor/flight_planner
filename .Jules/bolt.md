@@ -17,3 +17,7 @@
 
 **Learning:** Combining `.filter().map()` inside a component render loops forces React to allocate intermediate arrays on every render and loops over the elements twice.
 **Action:** When mapping over items that were previously filtered from an array in a render loop, combine the logic into a direct `.map()` on the pre-filtered array (e.g. `feriadosIntervaloCopa.map(...)`) or use a traditional `for` loop to avoid intermediate allocations and reduce iteration count.
+
+## 2026-07-28 - Optimize redundant upsert user query
+**Learning:** In MySQL/Drizzle, `INSERT ... ON DUPLICATE KEY UPDATE` does not support returning the row directly. Faking the returned object locally (e.g. setting `id: 0`) is dangerous as it corrupts internal state. To implement an optimization, the `SELECT` query must be moved into the helper function (`upsertUser`) but protected by a `returnRecord` flag so hot paths do not execute unneeded SELECT statements.
+**Action:** When asked to optimize redundant queries on MySQL upserts, avoid faking records. Use optional flags to gate follow-up queries inside the repository module to satisfy callers who need the object while keeping performance fast for callers who don't.

@@ -13,11 +13,9 @@ const mockSend = vi
 
 vi.mock("resend", () => {
   return {
-    Resend: vi.fn(() => ({
-      emails: {
-        send: mockSend,
-      },
-    })),
+    Resend: class {
+      emails = { send: mockSend };
+    },
   };
 });
 

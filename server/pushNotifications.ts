@@ -164,35 +164,44 @@ export async function checkAndNotifyUpcomingFlights(): Promise<void> {
     { minutes: settings.aviso2Minutes, label: "Aviso 2" },
   ].filter(a => a.minutes > 0);
 
-  // ⚡ Bolt: Use a single pass loop to filter and map the issued weeks, reducing memory allocations
-  const parsedWeeks = [];
-  for (let i = 0; i < weeks.length; i++) {
-    const w = weeks[i];
-    if (w.isTicketIssued) {
-      parsedWeeks.push({
-        week: w,
-        departureTime: w.departureFlightDatetime
-          ? parseBrasiliaDatetime(w.departureFlightDatetime)
-          : null,
-        returnTime: w.returnFlightDatetime
-          ? parseBrasiliaDatetime(w.returnFlightDatetime)
-          : null,
-      });
-    }
-  }
+  const nowTime = now.getTime();
 
-  for (const aviso of avisos) {
-    // Janela de ±50 min ao redor do horário configurado
-    // (job roda a cada hora; ±50min garante que reinicializacoes do servidor nao percam a janela)
+  // ⚡ Bolt: Pre-calculate windows with primitive numbers instead of Date objects to reduce inner loop allocations
+  const avisoWindows = avisos.map(aviso => {
     const targetMs = aviso.minutes * 60 * 1000;
-    const windowStart = new Date(now.getTime() + targetMs - 50 * 60 * 1000);
-    const windowEnd = new Date(now.getTime() + targetMs + 50 * 60 * 1000);
-    const antecedenciaLabel = formatMinutes(aviso.minutes);
+    const startMs = nowTime + targetMs - 50 * 60 * 1000;
+    const endMs = nowTime + targetMs + 50 * 60 * 1000;
+    return {
+      aviso,
+      antecedenciaLabel: formatMinutes(aviso.minutes),
+      startMs,
+      endMs,
+    };
+  });
 
-    for (const { week, departureTime, returnTime } of parsedWeeks) {
+  // ⚡ Bolt: Use a single pass loop combining weeks and avisos checks to reduce memory allocations and avoid O(N*M) nested Date mapping
+  for (let i = 0; i < weeks.length; i++) {
+    const week = weeks[i];
+    if (!week.isTicketIssued) continue;
+
+    const departureTime = week.departureFlightDatetime
+      ? parseBrasiliaDatetime(week.departureFlightDatetime)
+      : null;
+    const returnTime = week.returnFlightDatetime
+      ? parseBrasiliaDatetime(week.returnFlightDatetime)
+      : null;
+
+    const departureTimeMs = departureTime ? departureTime.getTime() : NaN;
+    const returnTimeMs = returnTime ? returnTime.getTime() : NaN;
+
+    if (isNaN(departureTimeMs) && isNaN(returnTimeMs)) continue;
+
+    for (let j = 0; j < avisoWindows.length; j++) {
+      const { aviso, antecedenciaLabel, startMs, endMs } = avisoWindows[j];
+
       // Verificar voo de ida
-      if (departureTime && !isNaN(departureTime.getTime())) {
-        if (departureTime >= windowStart && departureTime <= windowEnd) {
+      if (departureTime && !isNaN(departureTimeMs)) {
+        if (departureTimeMs >= startMs && departureTimeMs <= endMs) {
           const airline = week.departureAirline
             ? (airlineNames[week.departureAirline.toUpperCase()] ??
               week.departureAirline)
@@ -243,8 +252,8 @@ export async function checkAndNotifyUpcomingFlights(): Promise<void> {
       }
 
       // Verificar voo de volta
-      if (returnTime && !isNaN(returnTime.getTime())) {
-        if (returnTime >= windowStart && returnTime <= windowEnd) {
+      if (returnTime && !isNaN(returnTimeMs)) {
+        if (returnTimeMs >= startMs && returnTimeMs <= endMs) {
           const airline = week.returnAirline
             ? (airlineNames[week.returnAirline.toUpperCase()] ??
               week.returnAirline)
