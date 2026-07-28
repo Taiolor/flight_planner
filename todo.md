@@ -604,3 +604,16 @@
 - [x] Bug: Gestão Financeira no mobile está pedindo login do Manus OAuth - remover completamente qualquer referência ao Manus OAuth
 
 - [x] Bug: Gestão Financeira não responsiva no mobile - KPIs, tabelas e gráficos ficam grandes demais e não se adaptam à tela pequena
+
+## Segurança - Dependabot / Audit
+
+- [x] Atualizar axios de ^1.12.0 para ^1.18.1 (múltiplas vulnerabilidades críticas: prototype pollution, header injection, ReDoS, credential leak)
+- [x] Atualizar drizzle-orm de ^0.44.5 para ^0.45.2 (SQL injection)
+- [x] Atualizar drizzle-kit de ^0.31.4 para ^0.31.10 (dependências vulneráveis)
+- [x] Atualizar vite de ^7.1.7 para ^7.3.6 (arbitrary file read, server.fs.deny bypass - patch seguro sem breaking changes)
+- [x] Atualizar express de ^4.21.2 para ^4.22.2 (path-to-regexp ReDoS - patch seguro)
+- [x] Atualizar vitest de ^2.1.4 para ^4.1.10 (critical: arbitrary file read via UI server)
+- [x] Configurar Dependabot no .github/dependabot.yml para alertas automáticos futuros
+- [x] Habilitar vulnerability alerts e automated security fixes no repositório GitHub (secret scanning requer plano GitHub Advanced Security)
+
+- [x] Implementar visualização em cartões para tabela de semanas no mobile (Gestão Financeira) - eliminar scroll horizontal
