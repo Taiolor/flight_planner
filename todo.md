@@ -567,3 +567,53 @@
 ## Bug: Dados não carregam da base
 
 - [x] Bug: dados de data/hora, número de voo e localizador não carregam da base para algumas semanas (ex: semana 18 volta)
+
+## Página de Gestão Financeira
+
+- [x] Criar tRPC endpoint getFinancialSummary com dados agregados por semana/mês/ano
+- [x] Criar página FinancialDashboard.tsx com KPIs, gráficos e tabelas
+- [x] Seção de gastos em dinheiro: total por semana, mês, ano; comparativo por companhia
+- [x] Seção de gastos em milhas: SMILES e LATAM PASS separados por semana/mês/ano
+- [x] Gráficos de tendência (linha) e comparativo de companhias (barras/pizza)
+- [x] Tabela detalhada por semana com todos os campos financeiros
+- [x] Seção de projeções para 2027 com sazonalidade, frequência, inflação e correção monetária
+- [x] Adicionar botão "Financeiro" no cabeçalho (Home.tsx)
+- [x] Registrar rota /financeiro no App.tsx com lazy loading
+- [x] Criar testes unitários para os cálculos financeiros
+
+
+## Bugs Críticos - Sessão Atual
+
+- [x] Remover companhia aérea Voepass de todos os locais (schema, routers, componentes, etc)
+- [x] Bug crítico: Gestão Financeira - valores de preços não estão sendo somados corretamente. Faltam valores de kayak, latam, gol, azul, voepass e onhappy. Revisar cálculo de somatória geral no cabeçalho
+
+- [x] Adicionar precisão com centavos em todos os valores da Gestão Financeira (cabeçalho, KPIs, tabelas, gráficos)
+
+- [x] Implementar comparativo de variação percentual de gastos entre semana atual e anterior na Gestão Financeira
+
+- [x] Atualizar página de Novidades com cabeçalho em layout igual ao da Gestão Financeira
+
+- [x] Adicionar botão accordion (expandir/recolher) para Resumo Anual 2026 e Filtros e Controles na tela principal
+
+- [x] Adicionar alertas visuais com cores na tabela de Gestão Financeira quando variação percentual ultrapassar ±20%
+
+- [x] Padronizar cabeçalhos de Novidades e Financeiro com layout, ícones e cores iguais ao do Calendário
+
+- [x] Separar Resumo Anual e Filtros em 2 acordeons independentes na tela principal
+
+- [x] Bug: Gestão Financeira no mobile está pedindo login do Manus OAuth - remover completamente qualquer referência ao Manus OAuth
+
+- [x] Bug: Gestão Financeira não responsiva no mobile - KPIs, tabelas e gráficos ficam grandes demais e não se adaptam à tela pequena
+
+## Segurança - Dependabot / Audit
+
+- [x] Atualizar axios de ^1.12.0 para ^1.18.1 (múltiplas vulnerabilidades críticas: prototype pollution, header injection, ReDoS, credential leak)
+- [x] Atualizar drizzle-orm de ^0.44.5 para ^0.45.2 (SQL injection)
+- [x] Atualizar drizzle-kit de ^0.31.4 para ^0.31.10 (dependências vulneráveis)
+- [x] Atualizar vite de ^7.1.7 para ^7.3.6 (arbitrary file read, server.fs.deny bypass - patch seguro sem breaking changes)
+- [x] Atualizar express de ^4.21.2 para ^4.22.2 (path-to-regexp ReDoS - patch seguro)
+- [x] Atualizar vitest de ^2.1.4 para ^4.1.10 (critical: arbitrary file read via UI server)
+- [x] Configurar Dependabot no .github/dependabot.yml para alertas automáticos futuros
+- [x] Habilitar vulnerability alerts e automated security fixes no repositório GitHub (secret scanning requer plano GitHub Advanced Security)
+
+- [x] Implementar visualização em cartões para tabela de semanas no mobile (Gestão Financeira) - eliminar scroll horizontal

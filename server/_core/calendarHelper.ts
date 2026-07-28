@@ -8,7 +8,6 @@ const airlineIataCodes: Record<string, string> = {
   latam: "LA",
   gol: "G3",
   azul: "AD",
-  voepass: "VP",
   avianca: "AV",
   onhappy: "OH",
 };

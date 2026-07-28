@@ -87,35 +87,6 @@ export const AirlineIcon = ({
           <circle cx="50" cy="50" r="12" fill="white" opacity="0.8" />
         </svg>
       );
-    case "voepass":
-      return (
-        <svg
-          className={`${className} animate-pulse-glow`}
-          viewBox="0 0 100 100"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <circle
-            cx="50"
-            cy="50"
-            r="45"
-            stroke="currentColor"
-            strokeWidth="2"
-            opacity="0.3"
-          />
-          <path
-            d="M50 25 Q65 40 50 55 Q35 40 50 25"
-            fill="currentColor"
-            opacity="0.8"
-            className="transition-all duration-300"
-          />
-          <path
-            d="M50 55 Q65 60 50 75 Q35 60 50 55"
-            fill="currentColor"
-            opacity="0.5"
-          />
-        </svg>
-      );
     case "onhappy":
       return (
         <svg

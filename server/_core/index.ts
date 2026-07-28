@@ -10,6 +10,8 @@ import { serveStatic, setupVite } from "./vite";
 import { startFlightNotificationJob } from "../pushNotifications";
 import rateLimit from "express-rate-limit";
 import helmet from "helmet";
+import { ENV } from "./env";
+import { createProxyMiddleware } from "http-proxy-middleware";
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise(resolve => {
@@ -100,6 +102,33 @@ async function startServer() {
 
   // Aplicar rate limiting geral em todas as rotas /api
   app.use("/api", generalLimiter);
+  // Proxy Google Maps requests to hide API key from frontend
+  app.use(
+    "/api/maps/proxy",
+    createProxyMiddleware({
+      target: ENV.forgeApiUrl || "https://forge.butterfly-effect.dev",
+      changeOrigin: true,
+      pathRewrite: {
+        "^/api/maps/proxy": "/v1/maps/proxy",
+      },
+      on: {
+        proxyReq: (proxyReq, req, res) => {
+          if (!ENV.forgeApiKey) {
+            console.error("Maps proxy credentials missing");
+            return;
+          }
+          // The proxy library has a path property we can parse and update
+          try {
+            const url = new URL(proxyReq.path, "http://localhost");
+            url.searchParams.set("key", ENV.forgeApiKey);
+            proxyReq.path = url.pathname + url.search + url.hash;
+          } catch (e) {
+            console.error("Error setting proxy key:", e);
+          }
+        },
+      }
+    })
+  );
 
   // Rate limiting mais restrito para rotas de autenticação OAuth
   app.use("/api/oauth", authLimiter);
@@ -115,7 +144,23 @@ async function startServer() {
   // OAuth callback under /api/oauth/callback
   registerOAuthRoutes(app);
 
+  // Middleware to apply rate limiting specifically to tRPC login procedures
+  app.use("/api/trpc", (req, res, next) => {
+    // tRPC passes procedure names in the path, e.g., /api/trpc/flightAuth.login
+    if (req.path.includes("flightAuth.login")) {
+      return authLimiter(req, res, next);
+    }
+    next();
+  });
+
   // tRPC API
+  app.use("/api/trpc", (req, res, next) => {
+    if (req.path.includes("flightAuth.login")) {
+      return authLimiter(req, res, next);
+    }
+    next();
+  });
+
   app.use(
     "/api/trpc",
     createExpressMiddleware({

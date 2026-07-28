@@ -1,5 +1,6 @@
 import { COOKIE_NAME } from "@shared/const";
 import { quotesRouter } from "./routers/quotes";
+import { financialRouter } from "./routers/financial";
 import crypto from "crypto";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
@@ -1068,6 +1069,11 @@ export const appRouter = router({
   // Cotações de Passagens (Sky Scrapper API + Kayak manual)
   // =====================
   quotes: quotesRouter,
+
+  // =====================
+  // Financial Dashboard
+  // =====================
+  financial: financialRouter,
 
   // =====================
   // Ticket Notification Emails

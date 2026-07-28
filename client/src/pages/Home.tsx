@@ -86,6 +86,7 @@ import {
   Moon,
   DollarSign,
   MapPin,
+  BarChart2,
 } from "lucide-react";
 import { Link } from "wouter";
 import { ShareByEmailButton } from "@/components/ShareByEmailButton";
@@ -487,6 +488,8 @@ export default function Home() {
   // Estado para ocultar valores monetários (privacidade)
   // Sempre inicia oculto (true); só pode ser alternado quando autenticado
   const [hideValues, setHideValues] = useState<boolean>(true);
+  const [expandSummary, setExpandSummary] = useState<boolean>(true);
+  const [expandFilters, setExpandFilters] = useState<boolean>(true);
   const toggleHideValues = () => {
     if (!isAuthenticated) {
       setShowLoginModal(true);
@@ -593,6 +596,14 @@ export default function Home() {
 
   // Estado para rastrear última atualização
   const [lastUpdateTime, setLastUpdateTime] = useState<Date | null>(null);
+
+  // Escutar evento global de requer login (disparado pelo main.tsx quando query protegida falha)
+  // Garante que o modal de login proprietário seja aberto em vez do Manus OAuth externo
+  useEffect(() => {
+    const handleRequireLogin = () => setShowLoginModal(true);
+    window.addEventListener("flight:require-login", handleRequireLogin);
+    return () => window.removeEventListener("flight:require-login", handleRequireLogin);
+  }, []);
 
   // Atualizar timestamp quando os dados forem atualizados
   useEffect(() => {
@@ -1976,6 +1987,16 @@ export default function Home() {
                   <Sparkles className="w-4 h-4 mr-1" /> Novidades
                 </Button>
               </Link>
+              <Link href="/financeiro">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="bg-white bg-opacity-10 border-white text-white hover:bg-white hover:text-green-400 btn-glow-cyan transition-all"
+                  title="Gestão Financeira"
+                >
+                  <BarChart2 className="w-4 h-4 mr-1" /> Financeiro
+                </Button>
+              </Link>
               {isAuthenticated && (
                 <Link href="/admin/notifications">
                   <Button
@@ -2019,11 +2040,25 @@ export default function Home() {
       </header>
 
       <main className="container py-4 sm:py-8">
-        {/* Resumo Anual */}
+        {/* Resumo Anual com Accordion */}
         {weeksQuery.isLoading ? (
           <SkeletonChart />
         ) : (
-          <Card className="p-4 sm:p-6 mb-4 sm:mb-8 gradient-modern-animated text-white rounded-3xl relative overflow-hidden shadow-2xl">
+          <div className="mb-4 sm:mb-8">
+            <button
+              onClick={() => setExpandSummary(!expandSummary)}
+              className="w-full flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 bg-gradient-to-r from-slate-900 via-blue-950 to-slate-900 text-white rounded-3xl hover:from-slate-800 hover:via-blue-900 hover:to-slate-800 transition-colors shadow-lg"
+              aria-label="Expandir/Recolher Resumo Anual"
+            >
+              <span className="text-lg font-bold">Resumo Anual 2026</span>
+              {expandSummary ? (
+                <ChevronUp className="w-5 h-5" />
+              ) : (
+                <ChevronDown className="w-5 h-5" />
+              )}
+            </button>
+            {expandSummary && (
+              <Card className="p-4 sm:p-6 mb-4 sm:mb-8 gradient-modern-animated text-white rounded-b-3xl rounded-t-none relative overflow-hidden shadow-2xl">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-4 sm:mb-6">
               <div>
                 <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
@@ -2177,27 +2212,36 @@ export default function Home() {
                 </p>
               </div>
             )}
-          </Card>
+              </Card>
+            )}
+          </div>
         )}
 
-        {/* Filtros */}
+        {/* Filtros com Accordion */}
         {weeksQuery.isLoading ? (
           <SkeletonFilters />
         ) : (
-          <Card
-            className={`p-4 sm:p-6 mb-4 sm:mb-8 backdrop-blur-md border rounded-2xl shadow-xl transition-colors duration-300 ${
-              theme === "dark"
-                ? "bg-slate-800/80 border-slate-700/30"
-                : "bg-white/80 border-white/20"
-            }`}
-          >
-            <h2
-              className={`text-base sm:text-xl font-bold mb-3 sm:mb-6 transition-colors duration-300 ${
-                theme === "dark" ? "text-slate-100" : "text-slate-900"
-              }`}
+          <div className="mb-4 sm:mb-8">
+            <button
+              onClick={() => setExpandFilters(!expandFilters)}
+              className="w-full flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 bg-gradient-to-r from-slate-900 via-blue-950 to-slate-900 text-white rounded-3xl hover:from-slate-800 hover:via-blue-900 hover:to-slate-800 transition-colors shadow-lg"
+              aria-label="Expandir/Recolher Filtros e Controles"
             >
-              Filtros e Controles
-            </h2>
+              <span className="text-lg font-bold">Filtros e Controles</span>
+              {expandFilters ? (
+                <ChevronUp className="w-5 h-5" />
+              ) : (
+                <ChevronDown className="w-5 h-5" />
+              )}
+            </button>
+            {expandFilters && (
+              <Card
+                className={`p-4 sm:p-6 mb-4 sm:mb-8 backdrop-blur-md border rounded-b-3xl rounded-t-none shadow-xl transition-colors duration-300 ${
+                  theme === "dark"
+                    ? "bg-slate-800/80 border-slate-700/30"
+                    : "bg-white/80 border-white/20"
+                }`}
+              >
             {/* Linha 1: Mês, Companhia, Ordenar por, Filtro de Preço, Status do Bilhete */}
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
               <div>
@@ -2487,7 +2531,9 @@ export default function Home() {
                 </p>
               </div>
             )}
-          </Card>
+              </Card>
+            )}
+          </div>
         )}
 
         {/* Avisos de filtros ativos */}
@@ -3546,12 +3592,14 @@ export default function Home() {
                                                     ✦ SMILES
                                                   </span>
                                                   <div className="relative flex-1">
+                                                    <label htmlFor={`smiles-${week.weekNumber}`} className="sr-only">Pontos SMILES</label>
                                                     {hideValues ? (
                                                       <div className="h-8 rounded-md border border-input bg-muted flex items-center px-3 text-xs text-muted-foreground tracking-widest">
                                                         ••••
                                                       </div>
                                                     ) : (
                                                       <Input
+                                                        id={`smiles-${week.weekNumber}`}
                                                         type="number"
                                                         placeholder="0 pts"
                                                         aria-label="Pontos SMILES"
@@ -3580,12 +3628,14 @@ export default function Home() {
                                                     ✦ LATAM
                                                   </span>
                                                   <div className="relative flex-1">
+                                                    <label htmlFor={`latam-${week.weekNumber}`} className="sr-only">Pontos LATAM PASS</label>
                                                     {hideValues ? (
                                                       <div className="h-8 rounded-md border border-input bg-muted flex items-center px-3 text-xs text-muted-foreground tracking-widest">
                                                         ••••
                                                       </div>
                                                     ) : (
                                                       <Input
+                                                        id={`latam-${week.weekNumber}`}
                                                         type="number"
                                                         placeholder="0 pts"
                                                         aria-label="Pontos LATAM PASS"
@@ -3632,12 +3682,14 @@ export default function Home() {
                                                   {airline.icon} {airline.name}
                                                 </span>
                                                 <div className="relative flex-1">
+                                                  <label htmlFor={`airline-${airline.id}-${week.weekNumber}`} className="sr-only">Preço {airline.name}</label>
                                                   {hideValues ? (
                                                     <div className="h-8 rounded-md border border-input bg-muted flex items-center px-3 text-xs text-muted-foreground tracking-widest">
                                                       ••••
                                                     </div>
                                                   ) : (
                                                     <Input
+                                                      id={`airline-${airline.id}-${week.weekNumber}`}
                                                       type="number"
                                                       placeholder="R$ 0,00"
                                                       aria-label={`Preço ${airline.name}`}
@@ -5654,7 +5706,6 @@ export default function Home() {
                   latam: "bg-blue-600",
                   gol: "bg-yellow-500",
                   azul: "bg-sky-400",
-                  voepass: "bg-purple-600",
                   onhappy: "bg-green-600",
                 };
                 const isSelected = chartSelectedAirlines.has(airline.id);
@@ -5677,7 +5728,6 @@ export default function Home() {
                               latam: "#2563eb",
                               gol: "#eab308",
                               azul: "#38bdf8",
-                              voepass: "#9333ea",
                               onhappy: "#16a34a",
                             }[airline.id],
                           }
@@ -5809,15 +5859,6 @@ export default function Home() {
                         dataKey="azul"
                         name="Azul"
                         fill="#38bdf8"
-                        radius={[8, 8, 0, 0]}
-                        isAnimationActive={true}
-                      />
-                    )}
-                    {chartSelectedAirlines.has("voepass") && (
-                      <Bar
-                        dataKey="voepass"
-                        name="Voepass"
-                        fill="#9333ea"
                         radius={[8, 8, 0, 0]}
                         isAnimationActive={true}
                       />

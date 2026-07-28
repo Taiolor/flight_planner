@@ -441,7 +441,7 @@ const releases: Release[] = [
         items: [
           "Layout moderno Travel Dashboard com paleta azul + verde + laranja",
           "Todas as 44 semanas de 2026 com datas de ida (domingos) e retorno (quinta/sexta)",
-          "Comparação de preços em 6 plataformas (Kayak, LATAM, Gol, Azul, Voepass, Onhappy)",
+          "Comparação de preços em 5 plataformas (Kayak, LATAM, Gol, Azul, Onhappy)",
           "Seletor de aeroporto de saída (GRU ou CGH)",
         ],
       },
@@ -532,24 +532,26 @@ export default function Changelog() {
   });
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-950 dark:to-slate-900 py-12 px-4">
-      <div className="max-w-4xl mx-auto">
-        {/* Cabeçalho com botão voltar */}
-        <header className="bg-gradient-to-r from-blue-600 via-purple-600 to-cyan-500 text-white px-4 py-3 flex items-center gap-3 shadow-lg sticky top-0 z-10 -mx-4 -mt-4">
-          <Link href="/">
-            <button className="flex items-center gap-1.5 text-white/80 hover:text-white transition-colors text-sm font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-blue-700 rounded-sm">
-              <ArrowLeft className="w-4 h-4" />
-              Voltar
-            </button>
-          </Link>
-          <div className="flex items-center gap-2 ml-2">
-            <Sparkles className="w-5 h-5" />
-            <h1 className="text-base font-bold tracking-wide">Novidades</h1>
-          </div>
-        </header>
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
+      {/* Header */}
+      <header className="bg-gradient-to-r from-blue-600 via-purple-600 to-cyan-500 text-white px-4 py-3 flex items-center gap-3 shadow-lg sticky top-0 z-10">
+        <Link href="/">
+          <button className="flex items-center gap-1.5 text-white/80 hover:text-white transition-colors text-sm font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-blue-700 rounded-sm">
+            <ArrowLeft className="w-4 h-4" />
+            Voltar
+          </button>
+        </Link>
+        <div className="flex items-center gap-2 ml-2">
+          <Sparkles className="w-5 h-5" />
+          <h1 className="text-base font-bold tracking-wide">
+            Novidades
+          </h1>
+        </div>
+      </header>
 
+      <div className="max-w-7xl mx-auto px-4 py-8">
         {/* Header */}
-        <div className="text-center mb-12 mt-6">
+        <div className="text-center mb-12">
           <div className="flex items-center justify-center gap-3 mb-4">
             <Sparkles className="w-8 h-8 text-blue-600" />
             <h1 className="text-4xl font-bold text-slate-900 dark:text-white">
@@ -557,9 +559,6 @@ export default function Changelog() {
             </h1>
             <Sparkles className="w-8 h-8 text-blue-600" />
           </div>
-          <p className="text-lg text-slate-600 dark:text-slate-400">
-            Histórico completo de entregas e marcos desde fevereiro de 2026
-          </p>
         </div>
 
         {/* Statistics */}
