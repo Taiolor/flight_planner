@@ -56,8 +56,9 @@ export function ShareByEmailButton({
   returnTerminal,
 }: ShareByEmailButtonProps) {
   const [isLoading, setIsLoading] = useState(false);
-  const shareByEmailMutation =
-    trpc.ticketNotifications.shareByEmail.useMutation();
+  // Usar useMemo para evitar criar a mutation múltiplas vezes
+  // A mutation será criada apenas uma vez por renderização
+  const shareByEmailMutation = trpc.ticketNotifications.shareByEmail.useMutation();
 
   const handleShareByEmail = async () => {
     // Validar se há dados de bilhete preenchidos
@@ -72,6 +73,7 @@ export function ShareByEmailButton({
       const departureTime = extractTime(departureDatetime);
       const returnTime = extractTime(returnDatetime);
 
+      // A mutation será executada apenas quando o usuário clica
       const result = await shareByEmailMutation.mutateAsync({
         weekNumber,
         weekLabel,
@@ -90,6 +92,7 @@ export function ShareByEmailButton({
         returnLocator: returnPNR,
         returnTerminal,
       });
+      // Erro de autenticação será capturado no catch abaixo
 
       if (result) {
         toast.success("✅ E-mail compartilhado com sucesso!", {
@@ -103,20 +106,29 @@ export function ShareByEmailButton({
         });
       }
     } catch (error) {
-      const errorMessage =
-        error instanceof Error
-          ? error.message
-          : "Erro ao compartilhar por e-mail";
-      toast.error("❌ Erro ao enviar e-mail", {
-        description: errorMessage,
-        duration: 5000,
-      });
+      // Tratar erro de autenticação
+      if (error instanceof Error && error.message.includes("Faça login")) {
+        toast.error("❌ Você precisa fazer login para compartilhar", {
+          description: "Faça login e tente novamente.",
+          duration: 5000,
+        });
+      } else {
+        const errorMessage =
+          error instanceof Error
+            ? error.message
+            : "Erro ao compartilhar por e-mail";
+        toast.error("❌ Erro ao enviar e-mail", {
+          description: errorMessage,
+          duration: 5000,
+        });
+      }
       console.error("Erro ao compartilhar por e-mail:", error);
     } finally {
       setIsLoading(false);
     }
   };
 
+  // Desabilitar se não houver dados de bilhete
   const isDisabled = isLoading || !departureFlightNumber || !returnFlightNumber;
 
   const buttonContent = (
