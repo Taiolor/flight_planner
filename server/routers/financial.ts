@@ -87,25 +87,29 @@ export const financialRouter = router({
       const monthData = yearSummary.byMonth;
 
       // Média de gasto por viagem no ano base (apenas viagens com preço registrado)
-      const weeksWithPrice = (await getFinancialDataByYear(baseYear)).filter(
-        w => w.isTicketIssued === 1 && w.paidPriceTotal !== null && w.paidPriceTotal > 0
-      );
+      // ⚡ Bolt Optimization: Cache getFinancialDataByYear to avoid duplicate DB calls and combine loops
+      const baseYearData = await getFinancialDataByYear(baseYear);
 
-      const avgPricePerTrip =
-        weeksWithPrice.length > 0
-          ? weeksWithPrice.reduce((s, w) => s + (w.paidPriceTotal ?? 0), 0) /
-            weeksWithPrice.length
-          : 0;
+      let priceTotal = 0;
+      let priceCount = 0;
+      let milesTotal = 0;
+      let milesCount = 0;
 
-      // Média de milhas por viagem no ano base
-      const weeksWithMiles = (await getFinancialDataByYear(baseYear)).filter(
-        w => w.isTicketIssued === 1 && (w.totalMiles ?? 0) > 0
-      );
-      const avgMilesPerTrip =
-        weeksWithMiles.length > 0
-          ? weeksWithMiles.reduce((s, w) => s + (w.totalMiles ?? 0), 0) /
-            weeksWithMiles.length
-          : 0;
+      for (const w of baseYearData) {
+        if (w.isTicketIssued === 1) {
+          if (w.paidPriceTotal !== null && w.paidPriceTotal > 0) {
+            priceTotal += w.paidPriceTotal;
+            priceCount++;
+          }
+          if ((w.totalMiles ?? 0) > 0) {
+            milesTotal += (w.totalMiles ?? 0);
+            milesCount++;
+          }
+        }
+      }
+
+      const avgPricePerTrip = priceCount > 0 ? priceTotal / priceCount : 0;
+      const avgMilesPerTrip = milesCount > 0 ? milesTotal / milesCount : 0;
 
       // Gerar projeção por mês para o ano alvo
       const projectedMonths = Array.from({ length: 12 }, (_, i) => {
