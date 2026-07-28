@@ -3584,12 +3584,14 @@ export default function Home() {
                                                     ✦ SMILES
                                                   </span>
                                                   <div className="relative flex-1">
+                                                    <label htmlFor={`smiles-${week.weekNumber}`} className="sr-only">Pontos SMILES</label>
                                                     {hideValues ? (
                                                       <div className="h-8 rounded-md border border-input bg-muted flex items-center px-3 text-xs text-muted-foreground tracking-widest">
                                                         ••••
                                                       </div>
                                                     ) : (
                                                       <Input
+                                                        id={`smiles-${week.weekNumber}`}
                                                         type="number"
                                                         placeholder="0 pts"
                                                         aria-label="Pontos SMILES"
@@ -3618,12 +3620,14 @@ export default function Home() {
                                                     ✦ LATAM
                                                   </span>
                                                   <div className="relative flex-1">
+                                                    <label htmlFor={`latam-${week.weekNumber}`} className="sr-only">Pontos LATAM PASS</label>
                                                     {hideValues ? (
                                                       <div className="h-8 rounded-md border border-input bg-muted flex items-center px-3 text-xs text-muted-foreground tracking-widest">
                                                         ••••
                                                       </div>
                                                     ) : (
                                                       <Input
+                                                        id={`latam-${week.weekNumber}`}
                                                         type="number"
                                                         placeholder="0 pts"
                                                         aria-label="Pontos LATAM PASS"
@@ -3670,12 +3674,14 @@ export default function Home() {
                                                   {airline.icon} {airline.name}
                                                 </span>
                                                 <div className="relative flex-1">
+                                                  <label htmlFor={`airline-${airline.id}-${week.weekNumber}`} className="sr-only">Preço {airline.name}</label>
                                                   {hideValues ? (
                                                     <div className="h-8 rounded-md border border-input bg-muted flex items-center px-3 text-xs text-muted-foreground tracking-widest">
                                                       ••••
                                                     </div>
                                                   ) : (
                                                     <Input
+                                                      id={`airline-${airline.id}-${week.weekNumber}`}
                                                       type="number"
                                                       placeholder="R$ 0,00"
                                                       aria-label={`Preço ${airline.name}`}
