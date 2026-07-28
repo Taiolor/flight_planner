@@ -1054,12 +1054,13 @@ export default function FinancialDashboard() {
               {weeklyTableData.length > 0 && (
                 <tfoot>
                   <tr className="border-t-2 border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50">
-                    <td colSpan={7} className="py-3 px-3 font-bold text-slate-700 dark:text-slate-300 text-sm">
+                    <td colSpan={6} className="py-3 px-3 font-bold text-slate-700 dark:text-slate-300 text-sm">
                       Total ({weeklyTableData.length} viagens)
                     </td>
                     <td className="py-3 px-3 text-right font-bold text-blue-700 dark:text-blue-400 text-sm">
                       {formatBRL(yearSummary?.totalCashBRL ?? 0, !showValues)}
                     </td>
+                    <td />
                     <td className="py-3 px-3 text-right font-bold text-orange-600 dark:text-orange-400 text-sm">
                       {(yearSummary?.totalMiles ?? 0) > 0 ? formatMiles(yearSummary!.totalMiles) : "—"}
                     </td>
