@@ -169,6 +169,10 @@ function SectionHeader({
 // ─── Componente principal ─────────────────────────────────────────────────────
 
 export default function FinancialDashboard() {
+  // Verificar autenticação
+  const authCheckQuery = trpc.flightAuth.check.useQuery();
+  const isAuthenticated = authCheckQuery.data?.authenticated ?? false;
+
   const [selectedYear, setSelectedYear] = useState(2026);
   const [showValues, setShowValues] = useState(false);
   const [inflationRate, setInflationRate] = useState(5);
@@ -178,11 +182,13 @@ export default function FinancialDashboard() {
 
   // ─── Queries ───────────────────────────────────────────────────────────────
   const { data: yearSummary, isLoading: loadingYear } = trpc.financial.getYearSummary.useQuery(
-    { year: selectedYear }
+    { year: selectedYear },
+    { enabled: isAuthenticated }
   );
 
   const { data: weeklyData, isLoading: loadingWeekly } = trpc.financial.getWeeklyData.useQuery(
-    { year: selectedYear }
+    { year: selectedYear },
+    { enabled: isAuthenticated }
   );
 
   const { data: projections, isLoading: loadingProjections } =
