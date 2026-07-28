@@ -597,6 +597,14 @@ export default function Home() {
   // Estado para rastrear última atualização
   const [lastUpdateTime, setLastUpdateTime] = useState<Date | null>(null);
 
+  // Escutar evento global de requer login (disparado pelo main.tsx quando query protegida falha)
+  // Garante que o modal de login proprietário seja aberto em vez do Manus OAuth externo
+  useEffect(() => {
+    const handleRequireLogin = () => setShowLoginModal(true);
+    window.addEventListener("flight:require-login", handleRequireLogin);
+    return () => window.removeEventListener("flight:require-login", handleRequireLogin);
+  }, []);
+
   // Atualizar timestamp quando os dados forem atualizados
   useEffect(() => {
     if (weeksQuery.data && weeksQuery.data.length > 0) {
