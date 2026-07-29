@@ -37,6 +37,72 @@ interface Release {
 }
 
 const releases: Release[] = [
+  // Julho 2026 (Semana 3)
+  {
+    version: "v1.5.0",
+    date: "28/07/2026",
+    month: "Julho 2026",
+    status: "released",
+    highlights: "Segurança Aprimorada, Correção de Autenticação e Atualização de Dependências",
+    features: [
+      {
+        icon: <Shield className="w-5 h-5" />,
+        category: "Melhorias de Segurança",
+        items: [
+          "Rate limiting no endpoint de login (máx 5 tentativas/15min)",
+          "Proteção contra brute force com exponential backoff",
+          "Proteção IDOR nos endpoints financeiros (requer autenticação)",
+          "Prevenção de command injection no Google Calendar MCP",
+          "Comparação timing-safe para credenciais (SHA-256)",
+        ],
+      },
+      {
+        icon: <Zap className="w-5 h-5" />,
+        category: "Correção de Erros de Autenticação",
+        items: [
+          "Corrigido erro 'Faça login para acessar' na homepage",
+          "Corrigido erro de autenticação na página Financeiro",
+          "Adicionado gating de autenticação em queries protegidas",
+          "Melhorado tratamento de erro em ShareByEmailButton",
+          "Implementado enabled: isAuthenticated em FinancialDashboard",
+        ],
+      },
+      {
+        icon: <TrendingUp className="w-5 h-5" />,
+        category: "Atualização de Dependências",
+        items: [
+          "lucide-react: 0.453.0 → 1.27.0 (major update)",
+          "react-day-picker: 9.11.1 → 10.0.1 (major update)",
+          "react-resizable-panels: 3.0.6 → 4.12.2 (major update)",
+          "vite: 7.1.9 → 7.3.5 (minor update)",
+          "pnpm: 10.18.1 → 10.34.4 (minor update)",
+          "esbuild: 0.25.10 → 0.28.1 (minor update)",
+          "@vitest/coverage-v8: 2.1.9 → 4.1.10 (major update)",
+          "streamdown: 1.4.0 → 2.5.0 (major update)",
+        ],
+      },
+      {
+        icon: <Code className="w-5 h-5" />,
+        category: "Refatoração de Componentes",
+        items: [
+          "Atualizado resizable.tsx para nova API (PanelGroup → Group)",
+          "Corrigido ComponentShowcase.tsx (direction → orientation)",
+          "Melhorado tratamento de erro em ShareByEmailButton",
+          "Adicionado verificação de autenticação em FinancialDashboard",
+        ],
+      },
+      {
+        icon: <Gauge className="w-5 h-5" />,
+        category: "Qualidade e Testes",
+        items: [
+          "214 testes passando (sem regressões)",
+          "0 erros TypeScript",
+          "Todos os PRs de segurança mergeados com sucesso",
+          "Compatibilidade total com dependências atualizadas",
+        ],
+      },
+    ],
+  },
   // Julho 2026
   {
     version: "v1.4.0",
