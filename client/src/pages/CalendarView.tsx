@@ -144,18 +144,25 @@ const HOLIDAYS: Record<string, HolidayInfo> = {
 
 function parseDate(dateStr: string): Date | null {
   if (!dateStr || dateStr.length !== 10) return null;
+  let y: number, m: number, d: number;
+  
   if (dateStr.includes("/")) {
     // DD/MM/YYYY
-    const d = Number(dateStr.substring(0, 2));
-    const m = Number(dateStr.substring(3, 5)) - 1;
-    const y = Number(dateStr.substring(6, 10));
-    return new Date(y, m, d);
+    d = Number(dateStr.substring(0, 2));
+    m = Number(dateStr.substring(3, 5)) - 1;
+    y = Number(dateStr.substring(6, 10));
+  } else {
+    // YYYY-MM-DD
+    y = Number(dateStr.substring(0, 4));
+    m = Number(dateStr.substring(5, 7)) - 1;
+    d = Number(dateStr.substring(8, 10));
   }
-  // YYYY-MM-DD
-  const y = Number(dateStr.substring(0, 4));
-  const m = Number(dateStr.substring(5, 7)) - 1;
-  const d = Number(dateStr.substring(8, 10));
-  return new Date(y, m, d);
+  
+  // Criar data em UTC para evitar problemas de timezone
+  const date = new Date(Date.UTC(y, m, d));
+  // Converter para meia-noite local
+  date.setHours(0, 0, 0, 0);
+  return date;
 }
 
 function toKey(date: Date): string {
