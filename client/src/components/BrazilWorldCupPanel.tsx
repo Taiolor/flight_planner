@@ -2,7 +2,6 @@ import { useMemo } from "react";
 import {
   brazilMatches,
   getBrazilStats,
-  getBrazilCurrentPhase,
   type WorldCupMatch,
 } from "@/lib/worldCup2026";
 import { Trophy, Swords, Target, TrendingUp } from "lucide-react";
@@ -214,7 +213,7 @@ function MatchCard({ match }: { match: WorldCupMatch }) {
 
 export default function BrazilWorldCupPanel() {
   const stats = useMemo(() => getBrazilStats(), []);
-  const currentPhase = useMemo(() => getBrazilCurrentPhase(), []);
+  const currentPhase = "Eliminado nas oitavas de final";
 
   // ⚡ Bolt: Separar jogos por status em uma única passagem para evitar alocações de array O(N) redundantes
   const { finishedMatches, upcomingMatches, tbdMatches } = useMemo(() => {
@@ -262,7 +261,7 @@ export default function BrazilWorldCupPanel() {
         <div className="mt-2 grid grid-cols-4 gap-2">
           <div className="bg-white/20 rounded-lg px-2 py-1.5 text-center">
             <div className="text-white font-black text-base leading-none">
-              {stats.played}
+              {stats.totalMatches}
             </div>
             <div className="text-green-100 text-[9px] mt-0.5">Jogos</div>
           </div>

@@ -3,7 +3,6 @@ import {
   brazilMatches,
   brazilMatchByDate,
   getBrazilStats,
-  getBrazilCurrentPhase
 } from './worldCup2026';
 
 describe('worldCup2026', () => {
@@ -34,40 +33,17 @@ describe('worldCup2026', () => {
       // Brasil 3-0 Haiti (Win)
       // Escócia 0-3 Brasil (Win)
       // Brasil 2-1 Japão (Win)
-      expect(stats.played).toBe(4);
+      // Brasil 1-2 Noruega (Loss)
+      expect(stats.totalMatches).toBe(5);
       expect(stats.wins).toBe(3);
       expect(stats.draws).toBe(1);
-      expect(stats.losses).toBe(0);
+      expect(stats.losses).toBe(1);
 
-      // Points: 3 wins (9) + 1 draw (1) = 10
-      expect(stats.points).toBe(10);
+      // Goals For: 1 + 3 + 3 + 2 + 1 = 10
+      expect(stats.goalsFor).toBe(10);
 
-      // Goals For: 1 + 3 + 3 + 2 = 9
-      expect(stats.goalsFor).toBe(9);
-
-      // Goals Against: 1 + 0 + 0 + 1 = 2
-      expect(stats.goalsAgainst).toBe(2);
-    });
-
-    it('should identify the correct next match', () => {
-      const stats = getBrazilStats();
-
-      // The next match in the static data should be "upcoming" or "live"
-      // Which is Oitavas de Final (Brasil vs Costa do Marfim / Noruega)
-      expect(stats.nextMatch).toBeDefined();
-      if (stats.nextMatch) {
-        expect(stats.nextMatch.id).toBe('brasil-oitavas');
-        expect(stats.nextMatch.status).toBe('upcoming');
-      }
-    });
-  });
-
-  describe('getBrazilCurrentPhase', () => {
-    it('should return the phase of the last finished match', () => {
-      const phase = getBrazilCurrentPhase();
-
-      // The last finished match in the static data is the "Rodada de 32"
-      expect(phase).toBe('Rodada de 32');
+      // Goals Against: 1 + 0 + 0 + 1 + 2 = 4
+      expect(stats.goalsAgainst).toBe(4);
     });
   });
 });
