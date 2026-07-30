@@ -7,6 +7,7 @@ import superjson from "superjson";
 import App from "./App";
 import { getLoginUrl } from "./const";
 import "./index.css";
+import "./registerSW";
 
 // Detecta se o erro é HTML em vez de JSON (ocorre quando o servidor está reiniciando após hibernação)
 const isHtmlResponse = (error: unknown): boolean => {

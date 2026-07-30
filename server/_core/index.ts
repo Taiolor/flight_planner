@@ -68,7 +68,6 @@ async function startServer() {
           defaultSrc: ["'self'"],
           scriptSrc: [
             "'self'",
-            "'unsafe-inline'",
             "'unsafe-eval'",
             "https://cdn.jsdelivr.net",
           ],
