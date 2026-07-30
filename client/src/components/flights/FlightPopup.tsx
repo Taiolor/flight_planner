@@ -187,6 +187,11 @@ export default function FlightPopup({
                 Somente Ida
               </span>
             )}
+            {(w.departureRescheduled || w.returnRescheduled) && (
+              <span className="text-[10px] bg-red-500 text-white px-2 py-0.5 rounded-full font-semibold flex items-center gap-1">
+                ⚠️ Remarcado
+              </span>
+            )}
           </div>
           <button
             onClick={onClose}

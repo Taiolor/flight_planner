@@ -158,10 +158,8 @@ function parseDate(dateStr: string): Date | null {
     d = Number(dateStr.substring(8, 10));
   }
   
-  // Criar data em UTC para evitar problemas de timezone
-  const date = new Date(Date.UTC(y, m, d));
-  // Converter para meia-noite local
-  date.setHours(0, 0, 0, 0);
+  // Criar data em meia-noite local sem problemas de timezone
+  const date = new Date(y, m, d, 0, 0, 0, 0);
   return date;
 }
 
@@ -556,8 +554,8 @@ export default function CalendarView({
                         if (cupMatch && !mark) {
                           if (cupMatch.status === "finished") {
                             if (cupMatch.brazilResult === "win") {
-                              cellBg = "bg-emerald-200";
-                              textColor = "text-emerald-800 font-bold";
+                              cellBg = "bg-purple-200";
+                              textColor = "text-purple-800 font-bold";
                             } else if (cupMatch.brazilResult === "draw") {
                               cellBg = "bg-amber-200";
                               textColor = "text-amber-800 font-bold";
