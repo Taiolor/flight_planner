@@ -554,8 +554,8 @@ export default function CalendarView({
                         if (cupMatch && !mark) {
                           if (cupMatch.status === "finished") {
                             if (cupMatch.brazilResult === "win") {
-                              cellBg = "bg-purple-200";
-                              textColor = "text-purple-800 font-bold";
+                              cellBg = "bg-orange-200";
+                              textColor = "text-orange-800 font-bold";
                             } else if (cupMatch.brazilResult === "draw") {
                               cellBg = "bg-amber-200";
                               textColor = "text-amber-800 font-bold";
