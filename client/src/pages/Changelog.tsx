@@ -43,7 +43,8 @@ const releases: Release[] = [
     date: "28/07/2026",
     month: "Julho 2026",
     status: "released",
-    highlights: "Segurança Aprimorada, Correção de Autenticação e Atualização de Dependências",
+    highlights:
+      "Segurança Aprimorada, Correção de Autenticação e Atualização de Dependências",
     features: [
       {
         icon: <Shield className="w-5 h-5" />,
@@ -609,9 +610,7 @@ export default function Changelog() {
         </Link>
         <div className="flex items-center gap-2 ml-2">
           <Sparkles className="w-5 h-5" />
-          <h1 className="text-base font-bold tracking-wide">
-            Novidades
-          </h1>
+          <h1 className="text-base font-bold tracking-wide">Novidades</h1>
         </div>
       </header>
 

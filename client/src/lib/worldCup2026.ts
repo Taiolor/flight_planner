@@ -141,7 +141,7 @@ export const brazilMatches: WorldCupMatch[] = [
 export const brazilMatchByDate: Record<string, WorldCupMatch> = {};
 
 // Inicializar mapa
-brazilMatches.forEach((match) => {
+brazilMatches.forEach(match => {
   brazilMatchByDate[match.date] = match;
 });
 
@@ -152,7 +152,7 @@ export function getBrazilResultOnDate(date: string): WorldCupMatch | null {
 
 // Função para obter todos os jogos de uma fase específica
 export function getMatchesByPhase(phase: MatchPhase): WorldCupMatch[] {
-  return brazilMatches.filter((match) => match.phase === phase);
+  return brazilMatches.filter(match => match.phase === phase);
 }
 
 // Função para obter estatísticas gerais
@@ -166,7 +166,7 @@ export function getBrazilStats() {
     goalsAgainst: 0,
   };
 
-  brazilMatches.forEach((match) => {
+  brazilMatches.forEach(match => {
     if (match.brazilResult === "win") stats.wins++;
     if (match.brazilResult === "draw") stats.draws++;
     if (match.brazilResult === "loss") stats.losses++;

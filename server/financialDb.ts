@@ -22,8 +22,8 @@ export interface WeekFinancialData {
   returnRescheduled: number;
   // Preço pago (registrado em flight_prices)
   paidPriceDeparture: number | null; // R$ ida
-  paidPriceReturn: number | null;    // R$ volta
-  paidPriceTotal: number | null;     // R$ total
+  paidPriceReturn: number | null; // R$ volta
+  paidPriceTotal: number | null; // R$ total
   // Milhas
   smilesPoints: number | null;
   latamPassPoints: number | null;
@@ -114,13 +114,13 @@ export async function getFinancialDataByYear(
   // Indexar preços por semana+companhia
   const priceMap = new Map<string, number>();
   const weekPricesMap = new Map<number, number[]>(); // Todos os preços de uma semana
-  
+
   for (const p of prices) {
     const key = `${p.weekNumber}:${p.airline}`;
     const val = parseFloat(p.price.replace(",", ".").replace(/[^0-9.]/g, ""));
     if (!isNaN(val)) {
       priceMap.set(key, val);
-      
+
       // Agregar todos os preços da semana
       if (!weekPricesMap.has(p.weekNumber)) {
         weekPricesMap.set(p.weekNumber, []);
@@ -140,7 +140,7 @@ export async function getFinancialDataByYear(
     if (allWeekPrices.length > 0) {
       paidTotal = allWeekPrices.reduce((sum, p) => sum + p, 0);
     }
-    
+
     // Preços individuais de ida e volta (para referência)
     const paidDep = depAirline
       ? (priceMap.get(`${w.weekNumber}:${depAirline}`) ?? null)
@@ -241,11 +241,15 @@ export async function getFinancialYearSummary(
   const weekData = await getFinancialDataByYear(year);
   const issued = weekData.filter(w => w.isTicketIssued === 1);
 
-  const byAirline: Record<string, { cashBRL: number; miles: number; count: number }> = {};
+  const byAirline: Record<
+    string,
+    { cashBRL: number; miles: number; count: number }
+  > = {};
 
   for (const ms of byMonth) {
     for (const [airline, data] of Object.entries(ms.byAirline)) {
-      if (!byAirline[airline]) byAirline[airline] = { cashBRL: 0, miles: 0, count: 0 };
+      if (!byAirline[airline])
+        byAirline[airline] = { cashBRL: 0, miles: 0, count: 0 };
       byAirline[airline].cashBRL += data.cashBRL;
       byAirline[airline].miles += data.miles;
       byAirline[airline].count += data.count;

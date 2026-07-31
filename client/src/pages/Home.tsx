@@ -602,7 +602,8 @@ export default function Home() {
   useEffect(() => {
     const handleRequireLogin = () => setShowLoginModal(true);
     window.addEventListener("flight:require-login", handleRequireLogin);
-    return () => window.removeEventListener("flight:require-login", handleRequireLogin);
+    return () =>
+      window.removeEventListener("flight:require-login", handleRequireLogin);
   }, []);
 
   // Atualizar timestamp quando os dados forem atualizados
@@ -1257,28 +1258,35 @@ export default function Home() {
   };
   // ⚡ Bolt Optimization: Combine selectedWeeks, issuedCount, and totalCost into a single pass
   // to avoid multiple O(N) loops and intermediate array allocations (.filter, .reduce)
-  const { selectedWeeks, issuedCount, totalCost, totalSmiles, totalLatamPass } = useMemo(() => {
-    const selected: WeekData[] = [];
-    let count = 0;
-    let cost = 0;
-    let smiles = 0;
-    let latamPass = 0;
+  const { selectedWeeks, issuedCount, totalCost, totalSmiles, totalLatamPass } =
+    useMemo(() => {
+      const selected: WeekData[] = [];
+      let count = 0;
+      let cost = 0;
+      let smiles = 0;
+      let latamPass = 0;
 
-    for (let i = 0; i < weeksData.length; i++) {
-      const w = weeksData[i];
-      if (w.isSelected === 1) {
-        selected.push(w);
-        if (w.isTicketIssued) {
-          count++;
+      for (let i = 0; i < weeksData.length; i++) {
+        const w = weeksData[i];
+        if (w.isSelected === 1) {
+          selected.push(w);
+          if (w.isTicketIssued) {
+            count++;
+          }
+          cost += getTotalWeekCost(w.weekNumber) ?? 0;
+          if (w.smilesPoints) smiles += w.smilesPoints;
+          if (w.latamPassPoints) latamPass += w.latamPassPoints;
         }
-        cost += getTotalWeekCost(w.weekNumber) ?? 0;
-        if (w.smilesPoints) smiles += w.smilesPoints;
-        if (w.latamPassPoints) latamPass += w.latamPassPoints;
       }
-    }
 
-    return { selectedWeeks: selected, issuedCount: count, totalCost: cost, totalSmiles: smiles, totalLatamPass: latamPass };
-  }, [weeksData, getTotalWeekCost]);
+      return {
+        selectedWeeks: selected,
+        issuedCount: count,
+        totalCost: cost,
+        totalSmiles: smiles,
+        totalLatamPass: latamPass,
+      };
+    }, [weeksData, getTotalWeekCost]);
 
   // Dados para o gráfico de variação de preços por mês (todas as empresas)
   const chartData = useMemo(() => {
@@ -2059,159 +2067,161 @@ export default function Home() {
             </button>
             {expandSummary && (
               <Card className="p-4 sm:p-6 mb-4 sm:mb-8 gradient-modern-animated text-white rounded-b-3xl rounded-t-none relative overflow-hidden shadow-2xl">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-4 sm:mb-6">
-              <div>
-                <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
-                  Resumo Anual 2026
-                </h2>
-                <p className="text-blue-200 text-xs sm:text-sm mt-1">
-                  Passagens emitidas — GRU / CGH → NVT
-                </p>
-              </div>
-              <div className="flex flex-wrap gap-3 sm:gap-6">
-                <div className="text-center">
-                  <p className="text-blue-100 text-[10px] sm:text-xs uppercase tracking-wider mb-1">
-                    Bilhetes Emitidos
-                  </p>
-                  <p className="text-3xl sm:text-4xl font-black text-cyan-300">
-                    {annualIssuedCount}
-                  </p>
-                </div>
-                <div className="text-center">
-                  <p className="text-blue-100 text-[10px] sm:text-xs uppercase tracking-wider mb-1">
-                    Total Investido
-                  </p>
-                  <p className="text-2xl sm:text-4xl font-black text-emerald-200">
-                    {hideValues
-                      ? "••••"
-                      : `R$ ${annualTotalIssued.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
-                  </p>
-                </div>
-                <div className="text-center">
-                  <p className="text-blue-100 text-[10px] sm:text-xs uppercase tracking-wider mb-1">
-                    Média por Viagem
-                  </p>
-                  <p className="text-2xl sm:text-4xl font-black text-amber-200">
-                    {hideValues
-                      ? "••••"
-                      : annualIssuedCount > 0
-                        ? `R$ ${(annualTotalIssued / annualIssuedCount).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-                        : "—"}
-                  </p>
-                </div>
-                {annualSmilesTotal > 0 && (
-                  <div className="text-center">
-                    <p className="text-orange-200 text-[10px] sm:text-xs uppercase tracking-wider mb-1">
-                      ✦ Total SMILES
-                    </p>
-                    <p className="text-2xl sm:text-3xl font-black text-orange-300">
-                      {hideValues
-                        ? "••••"
-                        : `${annualSmilesTotal.toLocaleString("pt-BR")} pts`}
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-4 sm:mb-6">
+                  <div>
+                    <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
+                      Resumo Anual 2026
+                    </h2>
+                    <p className="text-blue-200 text-xs sm:text-sm mt-1">
+                      Passagens emitidas — GRU / CGH → NVT
                     </p>
                   </div>
-                )}
-                {annualLatamPassTotal > 0 && (
-                  <div className="text-center">
-                    <p className="text-red-200 text-[10px] sm:text-xs uppercase tracking-wider mb-1">
-                      ✦ Total LATAM PASS
-                    </p>
-                    <p className="text-2xl sm:text-3xl font-black text-red-300">
-                      {hideValues
-                        ? "••••"
-                        : `${annualLatamPassTotal.toLocaleString("pt-BR")} pts`}
-                    </p>
-                  </div>
-                )}
-              </div>
-            </div>
-            {annualHasData ? (
-              <div>
-                <p className="text-blue-100 text-xs uppercase tracking-wider mb-3">
-                  Gasto por Mês (R$)
-                </p>
-                <ResponsiveContainer
-                  width="100%"
-                  height={160}
-                  className="chart-container"
-                >
-                  <BarChart
-                    data={annualSummaryData}
-                    margin={{ top: 0, right: 8, left: 0, bottom: 0 }}
-                  >
-                    <CartesianGrid
-                      strokeDasharray="3 3"
-                      stroke={
-                        theme === "dark"
-                          ? "rgba(100,116,139,0.2)"
-                          : "rgba(255,255,255,0.1)"
-                      }
-                    />
-                    <XAxis
-                      dataKey="mes"
-                      tick={{
-                        fill: theme === "dark" ? "#94a3b8" : "#e0f2fe",
-                        fontSize: 12,
-                      }}
-                      axisLine={false}
-                      tickLine={false}
-                    />
-                    <YAxis
-                      tick={{
-                        fill: theme === "dark" ? "#94a3b8" : "#e0f2fe",
-                        fontSize: 11,
-                      }}
-                      axisLine={false}
-                      tickLine={false}
-                      tickFormatter={v =>
-                        v > 0 ? `R$${(v / 1000).toFixed(0)}k` : ""
-                      }
-                    />
-                    <Tooltip
-                      contentStyle={{
-                        background: theme === "dark" ? "#1e293b" : "#1e3a5f",
-                        border: theme === "dark" ? "1px solid #475569" : "none",
-                        borderRadius: 8,
-                        color: "#fff",
-                      }}
-                      formatter={(value: number) => [
-                        hideValues
+                  <div className="flex flex-wrap gap-3 sm:gap-6">
+                    <div className="text-center">
+                      <p className="text-blue-100 text-[10px] sm:text-xs uppercase tracking-wider mb-1">
+                        Bilhetes Emitidos
+                      </p>
+                      <p className="text-3xl sm:text-4xl font-black text-cyan-300">
+                        {annualIssuedCount}
+                      </p>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-blue-100 text-[10px] sm:text-xs uppercase tracking-wider mb-1">
+                        Total Investido
+                      </p>
+                      <p className="text-2xl sm:text-4xl font-black text-emerald-200">
+                        {hideValues
                           ? "••••"
-                          : `R$ ${value.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`,
-                        "Total Emitido",
-                      ]}
-                      labelStyle={{
-                        color: theme === "dark" ? "#cbd5e1" : "#e0f2fe",
-                        fontWeight: 600,
-                      }}
-                    />
-                    <Bar
-                      dataKey="total"
-                      fill={theme === "dark" ? "#10b981" : "#34d399"}
-                      radius={[4, 4, 0, 0]}
-                      label={{
-                        position: "top",
-                        fill: theme === "dark" ? "#22d3ee" : "#06b6d4",
-                        fontSize: 10,
-                        formatter: (v: number) =>
-                          v > 0
-                            ? hideValues
-                              ? "•••"
-                              : `R$${(v / 1000).toFixed(1)}k`
-                            : "",
-                      }}
-                    />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-            ) : (
-              <div className="flex items-center justify-center h-24 rounded-xl border border-blue-500 border-dashed">
-                <p className="text-blue-300 text-sm">
-                  Marque bilhetes como emitidos e adicione preços para ver o
-                  gráfico anual
-                </p>
-              </div>
-            )}
+                          : `R$ ${annualTotalIssued.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                      </p>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-blue-100 text-[10px] sm:text-xs uppercase tracking-wider mb-1">
+                        Média por Viagem
+                      </p>
+                      <p className="text-2xl sm:text-4xl font-black text-amber-200">
+                        {hideValues
+                          ? "••••"
+                          : annualIssuedCount > 0
+                            ? `R$ ${(annualTotalIssued / annualIssuedCount).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                            : "—"}
+                      </p>
+                    </div>
+                    {annualSmilesTotal > 0 && (
+                      <div className="text-center">
+                        <p className="text-orange-200 text-[10px] sm:text-xs uppercase tracking-wider mb-1">
+                          ✦ Total SMILES
+                        </p>
+                        <p className="text-2xl sm:text-3xl font-black text-orange-300">
+                          {hideValues
+                            ? "••••"
+                            : `${annualSmilesTotal.toLocaleString("pt-BR")} pts`}
+                        </p>
+                      </div>
+                    )}
+                    {annualLatamPassTotal > 0 && (
+                      <div className="text-center">
+                        <p className="text-red-200 text-[10px] sm:text-xs uppercase tracking-wider mb-1">
+                          ✦ Total LATAM PASS
+                        </p>
+                        <p className="text-2xl sm:text-3xl font-black text-red-300">
+                          {hideValues
+                            ? "••••"
+                            : `${annualLatamPassTotal.toLocaleString("pt-BR")} pts`}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+                {annualHasData ? (
+                  <div>
+                    <p className="text-blue-100 text-xs uppercase tracking-wider mb-3">
+                      Gasto por Mês (R$)
+                    </p>
+                    <ResponsiveContainer
+                      width="100%"
+                      height={160}
+                      className="chart-container"
+                    >
+                      <BarChart
+                        data={annualSummaryData}
+                        margin={{ top: 0, right: 8, left: 0, bottom: 0 }}
+                      >
+                        <CartesianGrid
+                          strokeDasharray="3 3"
+                          stroke={
+                            theme === "dark"
+                              ? "rgba(100,116,139,0.2)"
+                              : "rgba(255,255,255,0.1)"
+                          }
+                        />
+                        <XAxis
+                          dataKey="mes"
+                          tick={{
+                            fill: theme === "dark" ? "#94a3b8" : "#e0f2fe",
+                            fontSize: 12,
+                          }}
+                          axisLine={false}
+                          tickLine={false}
+                        />
+                        <YAxis
+                          tick={{
+                            fill: theme === "dark" ? "#94a3b8" : "#e0f2fe",
+                            fontSize: 11,
+                          }}
+                          axisLine={false}
+                          tickLine={false}
+                          tickFormatter={v =>
+                            v > 0 ? `R$${(v / 1000).toFixed(0)}k` : ""
+                          }
+                        />
+                        <Tooltip
+                          contentStyle={{
+                            background:
+                              theme === "dark" ? "#1e293b" : "#1e3a5f",
+                            border:
+                              theme === "dark" ? "1px solid #475569" : "none",
+                            borderRadius: 8,
+                            color: "#fff",
+                          }}
+                          formatter={(value: number) => [
+                            hideValues
+                              ? "••••"
+                              : `R$ ${value.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`,
+                            "Total Emitido",
+                          ]}
+                          labelStyle={{
+                            color: theme === "dark" ? "#cbd5e1" : "#e0f2fe",
+                            fontWeight: 600,
+                          }}
+                        />
+                        <Bar
+                          dataKey="total"
+                          fill={theme === "dark" ? "#10b981" : "#34d399"}
+                          radius={[4, 4, 0, 0]}
+                          label={{
+                            position: "top",
+                            fill: theme === "dark" ? "#22d3ee" : "#06b6d4",
+                            fontSize: 10,
+                            formatter: (v: number) =>
+                              v > 0
+                                ? hideValues
+                                  ? "•••"
+                                  : `R$${(v / 1000).toFixed(1)}k`
+                                : "",
+                          }}
+                        />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-center h-24 rounded-xl border border-blue-500 border-dashed">
+                    <p className="text-blue-300 text-sm">
+                      Marque bilhetes como emitidos e adicione preços para ver o
+                      gráfico anual
+                    </p>
+                  </div>
+                )}
               </Card>
             )}
           </div>
@@ -2242,295 +2252,306 @@ export default function Home() {
                     : "bg-white/80 border-white/20"
                 }`}
               >
-            {/* Linha 1: Mês, Companhia, Ordenar por, Filtro de Preço, Status do Bilhete */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
-              <div>
-                <label
-                  className={`text-sm font-semibold mb-2 block transition-colors duration-300 ${
-                    theme === "dark" ? "text-slate-300" : "text-slate-700"
-                  }`}
-                >
-                  Mês
-                </label>
-                <Select value={filterMonth} onValueChange={setFilterMonth}>
-                  <SelectTrigger aria-label="Filtrar por Mês">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Todos os meses</SelectItem>
-                    {[
-                      "01",
-                      "02",
-                      "03",
-                      "04",
-                      "05",
-                      "06",
-                      "07",
-                      "08",
-                      "09",
-                      "10",
-                      "11",
-                      "12",
-                    ].map((m, i) => (
-                      <SelectItem key={m} value={m}>
-                        {
-                          [
-                            "Janeiro",
-                            "Fevereiro",
-                            "Março",
-                            "Abril",
-                            "Maio",
-                            "Junho",
-                            "Julho",
-                            "Agosto",
-                            "Setembro",
-                            "Outubro",
-                            "Novembro",
-                            "Dezembro",
-                          ][i]
-                        }
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+                {/* Linha 1: Mês, Companhia, Ordenar por, Filtro de Preço, Status do Bilhete */}
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
+                  <div>
+                    <label
+                      className={`text-sm font-semibold mb-2 block transition-colors duration-300 ${
+                        theme === "dark" ? "text-slate-300" : "text-slate-700"
+                      }`}
+                    >
+                      Mês
+                    </label>
+                    <Select value={filterMonth} onValueChange={setFilterMonth}>
+                      <SelectTrigger aria-label="Filtrar por Mês">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Todos os meses</SelectItem>
+                        {[
+                          "01",
+                          "02",
+                          "03",
+                          "04",
+                          "05",
+                          "06",
+                          "07",
+                          "08",
+                          "09",
+                          "10",
+                          "11",
+                          "12",
+                        ].map((m, i) => (
+                          <SelectItem key={m} value={m}>
+                            {
+                              [
+                                "Janeiro",
+                                "Fevereiro",
+                                "Março",
+                                "Abril",
+                                "Maio",
+                                "Junho",
+                                "Julho",
+                                "Agosto",
+                                "Setembro",
+                                "Outubro",
+                                "Novembro",
+                                "Dezembro",
+                              ][i]
+                            }
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
 
-              <div>
-                <label
-                  className={`text-sm font-semibold mb-2 block transition-colors duration-300 ${
-                    theme === "dark" ? "text-slate-300" : "text-slate-700"
-                  }`}
-                >
-                  Companhia
-                </label>
-                <Select value={filterAirline} onValueChange={setFilterAirline}>
-                  <SelectTrigger aria-label="Filtrar por Companhia Aérea">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Todas as companhias</SelectItem>
-                    {airlines.map(a => (
-                      <SelectItem key={a.id} value={a.id}>
-                        <div className="flex items-center gap-2">
-                          <span className="text-lg">{a.icon}</span>
-                          <span>{a.name}</span>
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+                  <div>
+                    <label
+                      className={`text-sm font-semibold mb-2 block transition-colors duration-300 ${
+                        theme === "dark" ? "text-slate-300" : "text-slate-700"
+                      }`}
+                    >
+                      Companhia
+                    </label>
+                    <Select
+                      value={filterAirline}
+                      onValueChange={setFilterAirline}
+                    >
+                      <SelectTrigger aria-label="Filtrar por Companhia Aérea">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Todas as companhias</SelectItem>
+                        {airlines.map(a => (
+                          <SelectItem key={a.id} value={a.id}>
+                            <div className="flex items-center gap-2">
+                              <span className="text-lg">{a.icon}</span>
+                              <span>{a.name}</span>
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
 
-              <div>
-                <label
-                  className={`text-sm font-semibold mb-2 block transition-colors duration-300 ${
-                    theme === "dark" ? "text-slate-300" : "text-slate-700"
-                  }`}
-                >
-                  Ordenar por
-                </label>
-                <Select value={sortBy} onValueChange={setSortBy}>
-                  <SelectTrigger aria-label="Ordenar Resultados">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="week">Semana</SelectItem>
-                    <SelectItem value="price">Preço</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+                  <div>
+                    <label
+                      className={`text-sm font-semibold mb-2 block transition-colors duration-300 ${
+                        theme === "dark" ? "text-slate-300" : "text-slate-700"
+                      }`}
+                    >
+                      Ordenar por
+                    </label>
+                    <Select value={sortBy} onValueChange={setSortBy}>
+                      <SelectTrigger aria-label="Ordenar Resultados">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="week">Semana</SelectItem>
+                        <SelectItem value="price">Preço</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
 
-              <div>
-                <label
-                  className={`text-sm font-semibold mb-2 block transition-colors duration-300 ${
-                    theme === "dark" ? "text-slate-300" : "text-slate-700"
-                  }`}
-                >
-                  Filtro de Preço
-                </label>
-                <div className="flex items-center gap-2 mt-1">
-                  <Checkbox
-                    id="cheap-filter"
-                    checked={showCheapestOnly}
-                    onCheckedChange={c => setShowCheapestOnly(c as boolean)}
-                  />
-                  <label
-                    htmlFor="cheap-filter"
-                    className={`text-sm cursor-pointer select-none transition-colors duration-300 ${
-                      theme === "dark" ? "text-slate-400" : "text-slate-600"
-                    }`}
-                  >
-                    Apenas os mais baratos
-                  </label>
+                  <div>
+                    <label
+                      className={`text-sm font-semibold mb-2 block transition-colors duration-300 ${
+                        theme === "dark" ? "text-slate-300" : "text-slate-700"
+                      }`}
+                    >
+                      Filtro de Preço
+                    </label>
+                    <div className="flex items-center gap-2 mt-1">
+                      <Checkbox
+                        id="cheap-filter"
+                        checked={showCheapestOnly}
+                        onCheckedChange={c => setShowCheapestOnly(c as boolean)}
+                      />
+                      <label
+                        htmlFor="cheap-filter"
+                        className={`text-sm cursor-pointer select-none transition-colors duration-300 ${
+                          theme === "dark" ? "text-slate-400" : "text-slate-600"
+                        }`}
+                      >
+                        Apenas os mais baratos
+                      </label>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label
+                      className={`text-sm font-semibold mb-2 block transition-colors duration-300 ${
+                        theme === "dark" ? "text-slate-300" : "text-slate-700"
+                      }`}
+                    >
+                      Status do Bilhete
+                    </label>
+                    <Select
+                      value={filterTicketStatus}
+                      onValueChange={setFilterTicketStatus}
+                    >
+                      <SelectTrigger aria-label="Filtrar por Status do Bilhete">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Todos</SelectItem>
+                        <SelectItem value="issued">Emitidos</SelectItem>
+                        <SelectItem value="notIssued">Não Emitidos</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
-              </div>
 
-              <div>
-                <label
-                  className={`text-sm font-semibold mb-2 block transition-colors duration-300 ${
-                    theme === "dark" ? "text-slate-300" : "text-slate-700"
-                  }`}
-                >
-                  Status do Bilhete
-                </label>
-                <Select
-                  value={filterTicketStatus}
-                  onValueChange={setFilterTicketStatus}
-                >
-                  <SelectTrigger aria-label="Filtrar por Status do Bilhete">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Todos</SelectItem>
-                    <SelectItem value="issued">Emitidos</SelectItem>
-                    <SelectItem value="notIssued">Não Emitidos</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            {/* Linha 2: Horários de Ida e Volta + Botão Limpar + Resumo */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mt-4">
-              <div>
-                <div className="flex justify-between items-center mb-2">
-                  <label
-                    htmlFor="departureTimeFilter"
-                    className="text-sm font-semibold text-slate-700 dark:text-slate-300 cursor-pointer"
-                  >
-                    Horário de Ida: {minutesToTime(departureTimeFilter)}
-                  </label>
-                  <span className="text-xs bg-blue-100 dark:bg-blue-900 text-blue-900 dark:text-blue-100 px-2 py-1 rounded">
-                    {(() => {
-                      let count = 0;
-                      for (let i = 0; i < filteredWeeks.length; i++) {
-                        const depMin = getFlightMinutes(
-                          filteredWeeks[i].departureFlightDatetime
-                        );
-                        if (
-                          depMin >= 0 &&
-                          depMin >= departureTimeFilter &&
-                          depMin <= 1439
-                        ) {
-                          count++;
-                        }
+                {/* Linha 2: Horários de Ida e Volta + Botão Limpar + Resumo */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mt-4">
+                  <div>
+                    <div className="flex justify-between items-center mb-2">
+                      <label
+                        htmlFor="departureTimeFilter"
+                        className="text-sm font-semibold text-slate-700 dark:text-slate-300 cursor-pointer"
+                      >
+                        Horário de Ida: {minutesToTime(departureTimeFilter)}
+                      </label>
+                      <span className="text-xs bg-blue-100 dark:bg-blue-900 text-blue-900 dark:text-blue-100 px-2 py-1 rounded">
+                        {(() => {
+                          let count = 0;
+                          for (let i = 0; i < filteredWeeks.length; i++) {
+                            const depMin = getFlightMinutes(
+                              filteredWeeks[i].departureFlightDatetime
+                            );
+                            if (
+                              depMin >= 0 &&
+                              depMin >= departureTimeFilter &&
+                              depMin <= 1439
+                            ) {
+                              count++;
+                            }
+                          }
+                          return count;
+                        })()}{" "}
+                        voos
+                      </span>
+                    </div>
+                    <input
+                      id="departureTimeFilter"
+                      type="range"
+                      min="0"
+                      max="1439"
+                      step="15"
+                      value={departureTimeFilter}
+                      onChange={e =>
+                        setDepartureTimeFilter(parseInt(e.target.value))
                       }
-                      return count;
-                    })()}{" "}
-                    voos
-                  </span>
-                </div>
-                <input
-                  id="departureTimeFilter"
-                  type="range"
-                  min="0"
-                  max="1439"
-                  step="15"
-                  value={departureTimeFilter}
-                  onChange={e =>
-                    setDepartureTimeFilter(parseInt(e.target.value))
-                  }
-                  className="w-full"
-                  aria-label="Filtro de Horário de Ida"
-                />
-              </div>
+                      className="w-full"
+                      aria-label="Filtro de Horário de Ida"
+                    />
+                  </div>
 
-              <div>
-                <div className="flex justify-between items-center mb-2">
-                  <label
-                    htmlFor="returnTimeFilter"
-                    className="text-sm font-semibold text-slate-700 dark:text-slate-300 cursor-pointer"
-                  >
-                    Horário de Volta: {minutesToTime(returnTimeFilter)}
-                  </label>
-                  <span className="text-xs bg-blue-100 dark:bg-blue-900 text-blue-900 dark:text-blue-100 px-2 py-1 rounded">
-                    {(() => {
-                      let count = 0;
-                      for (let i = 0; i < filteredWeeks.length; i++) {
-                        const retMin = getFlightMinutes(
-                          filteredWeeks[i].returnFlightDatetime
-                        );
-                        if (
-                          retMin >= 0 &&
-                          retMin >= returnTimeFilter &&
-                          retMin <= 1439
-                        ) {
-                          count++;
-                        }
+                  <div>
+                    <div className="flex justify-between items-center mb-2">
+                      <label
+                        htmlFor="returnTimeFilter"
+                        className="text-sm font-semibold text-slate-700 dark:text-slate-300 cursor-pointer"
+                      >
+                        Horário de Volta: {minutesToTime(returnTimeFilter)}
+                      </label>
+                      <span className="text-xs bg-blue-100 dark:bg-blue-900 text-blue-900 dark:text-blue-100 px-2 py-1 rounded">
+                        {(() => {
+                          let count = 0;
+                          for (let i = 0; i < filteredWeeks.length; i++) {
+                            const retMin = getFlightMinutes(
+                              filteredWeeks[i].returnFlightDatetime
+                            );
+                            if (
+                              retMin >= 0 &&
+                              retMin >= returnTimeFilter &&
+                              retMin <= 1439
+                            ) {
+                              count++;
+                            }
+                          }
+                          return count;
+                        })()}{" "}
+                        voos
+                      </span>
+                    </div>
+                    <input
+                      id="returnTimeFilter"
+                      type="range"
+                      min="0"
+                      max="1439"
+                      step="15"
+                      value={returnTimeFilter}
+                      onChange={e =>
+                        setReturnTimeFilter(parseInt(e.target.value))
                       }
-                      return count;
-                    })()}{" "}
-                    voos
-                  </span>
+                      className="w-full"
+                      aria-label="Filtro de Horário de Volta"
+                    />
+                  </div>
+
+                  <div className="flex items-end">
+                    <Button
+                      onClick={() => {
+                        setDepartureTimeFilter(0);
+                        setReturnTimeFilter(0);
+                      }}
+                      variant="outline"
+                      size="sm"
+                      className="w-full text-slate-700 dark:text-slate-300"
+                      disabled={
+                        departureTimeFilter === 0 && returnTimeFilter === 0
+                      }
+                    >
+                      <RotateCcw className="w-4 h-4 mr-2" />
+                      Limpar Horários
+                    </Button>
+                  </div>
+
+                  <div className="bg-green-50 border border-green-200 rounded-lg p-4 flex flex-col justify-center">
+                    <p className="text-sm font-semibold text-green-900">
+                      {sortedWeeks.length} viagens
+                    </p>
+                    <p className="text-xs text-green-700">
+                      {44 - deletedWeeks.length} semanas disponíveis
+                    </p>
+                    {showCheapestOnly && priceThreshold && (
+                      <p className="text-xs text-green-700 mt-1">
+                        Limite:{" "}
+                        {hideValues
+                          ? "••••"
+                          : `R$ ${priceThreshold.toFixed(2)}`}
+                      </p>
+                    )}
+                  </div>
                 </div>
-                <input
-                  id="returnTimeFilter"
-                  type="range"
-                  min="0"
-                  max="1439"
-                  step="15"
-                  value={returnTimeFilter}
-                  onChange={e => setReturnTimeFilter(parseInt(e.target.value))}
-                  className="w-full"
-                  aria-label="Filtro de Horário de Volta"
-                />
-              </div>
 
-              <div className="flex items-end">
-                <Button
-                  onClick={() => {
-                    setDepartureTimeFilter(0);
-                    setReturnTimeFilter(0);
-                  }}
-                  variant="outline"
-                  size="sm"
-                  className="w-full text-slate-700 dark:text-slate-300"
-                  disabled={departureTimeFilter === 0 && returnTimeFilter === 0}
-                >
-                  <RotateCcw className="w-4 h-4 mr-2" />
-                  Limpar Horários
-                </Button>
-              </div>
-
-              <div className="bg-green-50 border border-green-200 rounded-lg p-4 flex flex-col justify-center">
-                <p className="text-sm font-semibold text-green-900">
-                  {sortedWeeks.length} viagens
-                </p>
-                <p className="text-xs text-green-700">
-                  {44 - deletedWeeks.length} semanas disponíveis
-                </p>
-                {showCheapestOnly && priceThreshold && (
-                  <p className="text-xs text-green-700 mt-1">
-                    Limite:{" "}
-                    {hideValues ? "••••" : `R$ ${priceThreshold.toFixed(2)}`}
-                  </p>
+                {showCheapestOnly && (
+                  <div className="mt-6 pt-6 border-t border-slate-200">
+                    <label
+                      htmlFor="pricePercentile"
+                      className="text-sm font-semibold text-slate-700 mb-3 block cursor-pointer"
+                    >
+                      Percentil de Preço: {pricePercentile}%
+                    </label>
+                    <input
+                      id="pricePercentile"
+                      type="range"
+                      min="5"
+                      max="50"
+                      step="5"
+                      value={pricePercentile}
+                      onChange={e =>
+                        setPricePercentile(parseInt(e.target.value))
+                      }
+                      className="w-full"
+                      aria-label="Filtro de Percentil de Preço"
+                    />
+                    <p className="text-xs text-slate-500 mt-2">
+                      Ajuste para mostrar voos mais ou menos baratos
+                    </p>
+                  </div>
                 )}
-              </div>
-            </div>
-
-            {showCheapestOnly && (
-              <div className="mt-6 pt-6 border-t border-slate-200">
-                <label
-                  htmlFor="pricePercentile"
-                  className="text-sm font-semibold text-slate-700 mb-3 block cursor-pointer"
-                >
-                  Percentil de Preço: {pricePercentile}%
-                </label>
-                <input
-                  id="pricePercentile"
-                  type="range"
-                  min="5"
-                  max="50"
-                  step="5"
-                  value={pricePercentile}
-                  onChange={e => setPricePercentile(parseInt(e.target.value))}
-                  className="w-full"
-                  aria-label="Filtro de Percentil de Preço"
-                />
-                <p className="text-xs text-slate-500 mt-2">
-                  Ajuste para mostrar voos mais ou menos baratos
-                </p>
-              </div>
-            )}
               </Card>
             )}
           </div>
@@ -2873,13 +2894,13 @@ export default function Home() {
                                         )}
                                         {/* Jogos da Copa do Mundo no intervalo da semana */}
                                         {feriadosIntervaloCopa.map(f => (
-                                            <span
-                                              key={f.feriado.data + f.tipo}
-                                              className="text-xs bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-200 px-2 py-1 rounded font-semibold"
-                                            >
-                                              {f.feriado.nome}
-                                            </span>
-                                          ))}
+                                          <span
+                                            key={f.feriado.data + f.tipo}
+                                            className="text-xs bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-200 px-2 py-1 rounded font-semibold"
+                                          >
+                                            {f.feriado.nome}
+                                          </span>
+                                        ))}
                                         {getTotalWeekCost(week.weekNumber) && (
                                           <span className="text-xs bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-200 px-2 py-1 rounded font-semibold">
                                             💰{" "}
@@ -3592,7 +3613,12 @@ export default function Home() {
                                                     ✦ SMILES
                                                   </span>
                                                   <div className="relative flex-1">
-                                                    <label htmlFor={`smiles-${week.weekNumber}`} className="sr-only">Pontos SMILES</label>
+                                                    <label
+                                                      htmlFor={`smiles-${week.weekNumber}`}
+                                                      className="sr-only"
+                                                    >
+                                                      Pontos SMILES
+                                                    </label>
                                                     {hideValues ? (
                                                       <div className="h-8 rounded-md border border-input bg-muted flex items-center px-3 text-xs text-muted-foreground tracking-widest">
                                                         ••••
@@ -3628,7 +3654,12 @@ export default function Home() {
                                                     ✦ LATAM
                                                   </span>
                                                   <div className="relative flex-1">
-                                                    <label htmlFor={`latam-${week.weekNumber}`} className="sr-only">Pontos LATAM PASS</label>
+                                                    <label
+                                                      htmlFor={`latam-${week.weekNumber}`}
+                                                      className="sr-only"
+                                                    >
+                                                      Pontos LATAM PASS
+                                                    </label>
                                                     {hideValues ? (
                                                       <div className="h-8 rounded-md border border-input bg-muted flex items-center px-3 text-xs text-muted-foreground tracking-widest">
                                                         ••••
@@ -3682,7 +3713,12 @@ export default function Home() {
                                                   {airline.icon} {airline.name}
                                                 </span>
                                                 <div className="relative flex-1">
-                                                  <label htmlFor={`airline-${airline.id}-${week.weekNumber}`} className="sr-only">Preço {airline.name}</label>
+                                                  <label
+                                                    htmlFor={`airline-${airline.id}-${week.weekNumber}`}
+                                                    className="sr-only"
+                                                  >
+                                                    Preço {airline.name}
+                                                  </label>
                                                   {hideValues ? (
                                                     <div className="h-8 rounded-md border border-input bg-muted flex items-center px-3 text-xs text-muted-foreground tracking-widest">
                                                       ••••
@@ -4324,7 +4360,7 @@ export default function Home() {
                                                       week.weekNumber
                                                     ] ?? ""
                                                   }
-                                                    onChange={e =>
+                                                  onChange={e =>
                                                     setTempDepartureLocator(
                                                       prev => ({
                                                         ...prev,
@@ -4339,18 +4375,24 @@ export default function Home() {
                                               <div className="flex items-center gap-2 pt-1">
                                                 <Checkbox
                                                   id={`departure-rescheduled-${week.weekNumber}`}
-                                                  checked={week.departureRescheduled === 1}
-                                                  onCheckedChange={(checked) => {
+                                                  checked={
+                                                    week.departureRescheduled ===
+                                                    1
+                                                  }
+                                                  onCheckedChange={checked => {
                                                     if (!isAuthenticated) {
                                                       setShowLoginModal(true);
                                                       return;
                                                     }
                                                     updateStatusMutation.mutate(
                                                       {
-                                                        weekNumber: week.weekNumber,
+                                                        weekNumber:
+                                                          week.weekNumber,
                                                         year: selectedYear,
-                                                        departureRescheduled: checked ? 1 : 0,
-                                                        isTicketIssued: week.isTicketIssued,
+                                                        departureRescheduled:
+                                                          checked ? 1 : 0,
+                                                        isTicketIssued:
+                                                          week.isTicketIssued,
                                                       },
                                                       {
                                                         onSuccess: () => {
@@ -4362,7 +4404,9 @@ export default function Home() {
                                                           );
                                                         },
                                                         onError: () =>
-                                                          toast.error("Erro ao atualizar status de voo remarcado"),
+                                                          toast.error(
+                                                            "Erro ao atualizar status de voo remarcado"
+                                                          ),
                                                       }
                                                     );
                                                   }}
@@ -4838,18 +4882,24 @@ export default function Home() {
                                                 <div className="flex items-center gap-2 pt-1">
                                                   <Checkbox
                                                     id={`return-rescheduled-${week.weekNumber}`}
-                                                    checked={week.returnRescheduled === 1}
-                                                    onCheckedChange={(checked) => {
+                                                    checked={
+                                                      week.returnRescheduled ===
+                                                      1
+                                                    }
+                                                    onCheckedChange={checked => {
                                                       if (!isAuthenticated) {
                                                         setShowLoginModal(true);
                                                         return;
                                                       }
                                                       updateStatusMutation.mutate(
                                                         {
-                                                          weekNumber: week.weekNumber,
+                                                          weekNumber:
+                                                            week.weekNumber,
                                                           year: selectedYear,
-                                                          returnRescheduled: checked ? 1 : 0,
-                                                          isTicketIssued: week.isTicketIssued,
+                                                          returnRescheduled:
+                                                            checked ? 1 : 0,
+                                                          isTicketIssued:
+                                                            week.isTicketIssued,
                                                         },
                                                         {
                                                           onSuccess: () => {
@@ -4861,7 +4911,9 @@ export default function Home() {
                                                             );
                                                           },
                                                           onError: () =>
-                                                            toast.error("Erro ao atualizar status de voo remarcado"),
+                                                            toast.error(
+                                                              "Erro ao atualizar status de voo remarcado"
+                                                            ),
                                                         }
                                                       );
                                                     }}
@@ -5592,20 +5644,20 @@ export default function Home() {
                 </p>
               </div>
               <div>
-                <p className="text-sm text-slate-600 mb-1">
-                  Total em Dinheiro
-                </p>
+                <p className="text-sm text-slate-600 mb-1">Total em Dinheiro</p>
                 <p className="text-3xl font-bold text-green-600">
-                  {hideValues ? "••••" : `R$ ${totalCost.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                  {hideValues
+                    ? "••••"
+                    : `R$ ${totalCost.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
                 </p>
               </div>
               {totalSmiles > 0 && (
                 <div>
-                  <p className="text-sm text-slate-600 mb-1">
-                    Total SMILES
-                  </p>
+                  <p className="text-sm text-slate-600 mb-1">Total SMILES</p>
                   <p className="text-3xl font-bold text-orange-500">
-                    {hideValues ? "••••" : `${totalSmiles.toLocaleString("pt-BR")} pts`}
+                    {hideValues
+                      ? "••••"
+                      : `${totalSmiles.toLocaleString("pt-BR")} pts`}
                   </p>
                 </div>
               )}
@@ -5615,7 +5667,9 @@ export default function Home() {
                     Total LATAM Pass
                   </p>
                   <p className="text-3xl font-bold text-red-600">
-                    {hideValues ? "••••" : `${totalLatamPass.toLocaleString("pt-BR")} pts`}
+                    {hideValues
+                      ? "••••"
+                      : `${totalLatamPass.toLocaleString("pt-BR")} pts`}
                   </p>
                 </div>
               )}

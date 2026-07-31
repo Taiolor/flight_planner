@@ -68,12 +68,7 @@ async function startServer() {
       contentSecurityPolicy: {
         directives: {
           defaultSrc: ["'self'"],
-          scriptSrc: [
-            "'self'",
-            "'unsafe-inline'",
-            "'unsafe-eval'",
-            "https://cdn.jsdelivr.net",
-          ],
+          scriptSrc: ["'self'", "'unsafe-eval'", "https://cdn.jsdelivr.net"],
           styleSrc: [
             "'self'",
             "'unsafe-inline'",
@@ -126,7 +121,7 @@ async function startServer() {
             console.error("Error setting proxy key:", e);
           }
         },
-      }
+      },
     })
   );
 

@@ -48,7 +48,17 @@ function phaseColor(phase: WorldCupMatch["phase"]) {
   }
 }
 
-function MatchCardHeader({ match, isTbd, weekday, dateStr }: { match: WorldCupMatch, isTbd: boolean, weekday: string, dateStr: string }) {
+function MatchCardHeader({
+  match,
+  isTbd,
+  weekday,
+  dateStr,
+}: {
+  match: WorldCupMatch;
+  isTbd: boolean;
+  weekday: string;
+  dateStr: string;
+}) {
   return (
     <div className="px-3 pt-2 pb-1 flex items-center justify-between">
       <span
@@ -60,9 +70,7 @@ function MatchCardHeader({ match, isTbd, weekday, dateStr }: { match: WorldCupMa
         <span className="capitalize">{weekday}</span>
         <span>{dateStr}</span>
         {!isTbd && (
-          <span className="text-slate-500 font-medium">
-            {match.timeLocal}
-          </span>
+          <span className="text-slate-500 font-medium">{match.timeLocal}</span>
         )}
       </div>
     </div>
@@ -76,15 +84,15 @@ function MatchCardScoreboard({
   brazilScore,
   opponentScore,
   opponentTeam,
-  opponentFlag
+  opponentFlag,
 }: {
-  match: WorldCupMatch,
-  isFinished: boolean,
-  isUpcoming: boolean,
-  brazilScore: number | null,
-  opponentScore: number | null,
-  opponentTeam: string,
-  opponentFlag: string
+  match: WorldCupMatch;
+  isFinished: boolean;
+  isUpcoming: boolean;
+  brazilScore: number | null;
+  opponentScore: number | null;
+  opponentTeam: string;
+  opponentFlag: string;
 }) {
   return (
     <div className="px-3 pb-2 flex items-center gap-2">

@@ -1,13 +1,13 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from "vitest";
 import {
   brazilMatches,
   brazilMatchByDate,
   getBrazilStats,
-} from './worldCup2026';
+} from "./worldCup2026";
 
-describe('worldCup2026', () => {
-  describe('brazilMatchByDate', () => {
-    it('should map matches by their dates', () => {
+describe("worldCup2026", () => {
+  describe("brazilMatchByDate", () => {
+    it("should map matches by their dates", () => {
       expect(Object.keys(brazilMatchByDate).length).toBe(brazilMatches.length);
 
       for (const match of brazilMatches) {
@@ -15,17 +15,17 @@ describe('worldCup2026', () => {
       }
     });
 
-    it('should correctly lookup specific matches by date', () => {
+    it("should correctly lookup specific matches by date", () => {
       // 2026-06-13 is Brazil vs Morocco
-      const match = brazilMatchByDate['2026-06-13'];
+      const match = brazilMatchByDate["2026-06-13"];
       expect(match).toBeDefined();
-      expect(match.homeTeam).toBe('Brasil');
-      expect(match.awayTeam).toBe('Marrocos');
+      expect(match.homeTeam).toBe("Brasil");
+      expect(match.awayTeam).toBe("Marrocos");
     });
   });
 
-  describe('getBrazilStats', () => {
-    it('should calculate statistics correctly based on finished matches', () => {
+  describe("getBrazilStats", () => {
+    it("should calculate statistics correctly based on finished matches", () => {
       const stats = getBrazilStats();
 
       // Based on the static data:

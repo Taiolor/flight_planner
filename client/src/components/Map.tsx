@@ -86,11 +86,11 @@ declare global {
   }
 }
 
-
 function loadMapScript() {
   return new Promise(resolve => {
     const script = document.createElement("script");
-    script.src = "/api/maps/proxy/maps/api/js?v=weekly&libraries=marker,places,geocoding,geometry";
+    script.src =
+      "/api/maps/proxy/maps/api/js?v=weekly&libraries=marker,places,geocoding,geometry";
     script.async = true;
     script.crossOrigin = "anonymous";
     script.onload = () => {
