@@ -58,7 +58,8 @@ export function ShareByEmailButton({
   const [isLoading, setIsLoading] = useState(false);
   // Usar useMemo para evitar criar a mutation múltiplas vezes
   // A mutation será criada apenas uma vez por renderização
-  const shareByEmailMutation = trpc.ticketNotifications.shareByEmail.useMutation();
+  const shareByEmailMutation =
+    trpc.ticketNotifications.shareByEmail.useMutation();
 
   const handleShareByEmail = async () => {
     // Validar se há dados de bilhete preenchidos

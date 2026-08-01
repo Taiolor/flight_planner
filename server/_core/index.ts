@@ -126,7 +126,7 @@ async function startServer() {
             console.error("Error setting proxy key:", e);
           }
         },
-      }
+      },
     })
   );
 

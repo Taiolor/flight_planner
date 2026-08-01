@@ -23,16 +23,16 @@ const INFLATION_RATE_DEFAULT = 0.05;
 // Sazonalidade por mês: fator multiplicador sobre a média anual
 // Baseado em padrões históricos de passagens aéreas no Brasil
 const SEASONALITY_FACTORS: Record<number, number> = {
-  1: 1.25,  // Janeiro – alta temporada (verão/férias)
-  2: 1.15,  // Fevereiro – Carnaval
-  3: 0.90,  // Março – baixa temporada
-  4: 0.85,  // Abril – baixa temporada
-  5: 0.88,  // Maio – baixa temporada
-  6: 1.05,  // Junho – Festa Junina, férias escolares
-  7: 1.20,  // Julho – férias escolares
-  8: 0.85,  // Agosto – baixa temporada
-  9: 0.85,  // Setembro – baixa temporada
-  10: 0.90, // Outubro – baixa temporada
+  1: 1.25, // Janeiro – alta temporada (verão/férias)
+  2: 1.15, // Fevereiro – Carnaval
+  3: 0.9, // Março – baixa temporada
+  4: 0.85, // Abril – baixa temporada
+  5: 0.88, // Maio – baixa temporada
+  6: 1.05, // Junho – Festa Junina, férias escolares
+  7: 1.2, // Julho – férias escolares
+  8: 0.85, // Agosto – baixa temporada
+  9: 0.85, // Setembro – baixa temporada
+  10: 0.9, // Outubro – baixa temporada
   11: 1.05, // Novembro – Black Friday
   12: 1.25, // Dezembro – alta temporada (festas)
 };
@@ -44,7 +44,9 @@ export const financialRouter = router({
    * Retorna todos os dados financeiros por semana para um dado ano.
    */
   getWeeklyData: flightProtectedProcedure
-    .input(z.object({ year: z.number().int().min(2020).max(2030).default(2026) }))
+    .input(
+      z.object({ year: z.number().int().min(2020).max(2030).default(2026) })
+    )
     .query(async ({ input }) => {
       return getFinancialDataByYear(input.year);
     }),
@@ -53,7 +55,9 @@ export const financialRouter = router({
    * Retorna o resumo financeiro por mês para um dado ano.
    */
   getMonthlySummary: flightProtectedProcedure
-    .input(z.object({ year: z.number().int().min(2020).max(2030).default(2026) }))
+    .input(
+      z.object({ year: z.number().int().min(2020).max(2030).default(2026) })
+    )
     .query(async ({ input }) => {
       return getFinancialSummaryByMonth(input.year);
     }),
@@ -62,7 +66,9 @@ export const financialRouter = router({
    * Retorna o resumo financeiro anual completo (inclui por mês e por companhia).
    */
   getYearSummary: flightProtectedProcedure
-    .input(z.object({ year: z.number().int().min(2020).max(2030).default(2026) }))
+    .input(
+      z.object({ year: z.number().int().min(2020).max(2030).default(2026) })
+    )
     .query(async ({ input }) => {
       return getFinancialYearSummary(input.year);
     }),
@@ -103,7 +109,7 @@ export const financialRouter = router({
             priceCount++;
           }
           if ((w.totalMiles ?? 0) > 0) {
-            milesTotal += (w.totalMiles ?? 0);
+            milesTotal += w.totalMiles ?? 0;
             milesCount++;
           }
         }
@@ -119,7 +125,8 @@ export const financialRouter = router({
         const inflationFactor = 1 + inflationRate;
 
         // Preço base ajustado por inflação e sazonalidade
-        const projectedPricePerTrip = avgPricePerTrip * inflationFactor * seasonFactor;
+        const projectedPricePerTrip =
+          avgPricePerTrip * inflationFactor * seasonFactor;
         const projectedMilesPerTrip = avgMilesPerTrip * seasonFactor;
 
         // Histórico do mês no ano base (para comparação)
@@ -143,7 +150,9 @@ export const financialRouter = router({
           historicTrips,
           variationVsHistoric:
             historicCash > 0
-              ? ((projectedPricePerTrip * tripsPerMonth - historicCash) / historicCash) * 100
+              ? ((projectedPricePerTrip * tripsPerMonth - historicCash) /
+                  historicCash) *
+                100
               : null,
         };
       });
