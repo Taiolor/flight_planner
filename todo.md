@@ -581,7 +581,6 @@
 - [x] Registrar rota /financeiro no App.tsx com lazy loading
 - [x] Criar testes unitários para os cálculos financeiros
 
-
 ## Bugs Críticos - Sessão Atual
 
 - [x] Remover companhia aérea Voepass de todos os locais (schema, routers, componentes, etc)

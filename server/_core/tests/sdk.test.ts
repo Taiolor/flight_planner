@@ -10,7 +10,7 @@ vi.mock("axios", () => {
   return {
     default: {
       create: vi.fn().mockImplementation(() => ({
-        post: (...args: any[]) => mockPost(...args)
+        post: (...args: any[]) => mockPost(...args),
       })),
     },
   };
@@ -45,7 +45,9 @@ describe("sdk", () => {
 
   describe("exchangeCodeForToken", () => {
     it("should exchange code for token successfully", async () => {
-      mockPost.mockResolvedValueOnce({ data: { accessToken: "test-access-token" } });
+      mockPost.mockResolvedValueOnce({
+        data: { accessToken: "test-access-token" },
+      });
       const state = btoa("https://redirect.uri");
 
       const result = await sdk.exchangeCodeForToken("test-code", state);
@@ -101,7 +103,9 @@ describe("sdk", () => {
 
   describe("Session Management", () => {
     it("should create and verify a session token", async () => {
-      const token = await sdk.createSessionToken("test-open-id", { name: "Test User" });
+      const token = await sdk.createSessionToken("test-open-id", {
+        name: "Test User",
+      });
       expect(typeof token).toBe("string");
 
       const payload = await sdk.verifySession(token);
@@ -153,7 +157,9 @@ describe("sdk", () => {
 
   describe("authenticateRequest", () => {
     it("should return user if session is valid and user exists in db", async () => {
-      const token = await sdk.createSessionToken("test-open-id", { name: "Test User" });
+      const token = await sdk.createSessionToken("test-open-id", {
+        name: "Test User",
+      });
       const req = {
         headers: {
           cookie: `${COOKIE_NAME}=${token}`,
@@ -173,25 +179,34 @@ describe("sdk", () => {
         name: "Test User",
         email: "test@example.com",
       });
-      expect(db.upsertUser).toHaveBeenCalledWith(expect.objectContaining({
-        openId: "test-open-id",
-      }));
+      expect(db.upsertUser).toHaveBeenCalledWith(
+        expect.objectContaining({
+          openId: "test-open-id",
+        })
+      );
     });
 
     it("should throw ForbiddenError if session cookie is missing", async () => {
       const req = { headers: {} } as Request;
-      await expect(sdk.authenticateRequest(req)).rejects.toThrow("Invalid session cookie");
+      await expect(sdk.authenticateRequest(req)).rejects.toThrow(
+        "Invalid session cookie"
+      );
     });
 
     it("should sync user from OAuth if not in db", async () => {
-      const token = await sdk.createSessionToken("test-open-id", { name: "Test User" });
+      const token = await sdk.createSessionToken("test-open-id", {
+        name: "Test User",
+      });
       const req = {
         headers: { cookie: `${COOKIE_NAME}=${token}` },
       } as unknown as Request;
 
       vi.mocked(db.getUserByOpenId)
         .mockResolvedValueOnce(null)
-        .mockResolvedValueOnce({ openId: "test-open-id", name: "Test User" } as any);
+        .mockResolvedValueOnce({
+          openId: "test-open-id",
+          name: "Test User",
+        } as any);
 
       mockPost.mockResolvedValueOnce({
         data: {
@@ -204,12 +219,17 @@ describe("sdk", () => {
       const user = await sdk.authenticateRequest(req);
 
       expect(user).toEqual({ openId: "test-open-id", name: "Test User" });
-      expect(mockPost).toHaveBeenCalledWith("/webdev.v1.WebDevAuthPublicService/GetUserInfoWithJwt", expect.any(Object));
+      expect(mockPost).toHaveBeenCalledWith(
+        "/webdev.v1.WebDevAuthPublicService/GetUserInfoWithJwt",
+        expect.any(Object)
+      );
       expect(db.upsertUser).toHaveBeenCalledTimes(2);
     });
 
     it("should throw ForbiddenError if sync from OAuth fails", async () => {
-      const token = await sdk.createSessionToken("test-open-id", { name: "Test User" });
+      const token = await sdk.createSessionToken("test-open-id", {
+        name: "Test User",
+      });
       const req = {
         headers: { cookie: `${COOKIE_NAME}=${token}` },
       } as unknown as Request;
@@ -217,11 +237,15 @@ describe("sdk", () => {
       vi.mocked(db.getUserByOpenId).mockResolvedValueOnce(null);
       mockPost.mockRejectedValueOnce(new Error("API Error"));
 
-      await expect(sdk.authenticateRequest(req)).rejects.toThrow("Failed to sync user info");
+      await expect(sdk.authenticateRequest(req)).rejects.toThrow(
+        "Failed to sync user info"
+      );
     });
 
     it("should throw ForbiddenError if user is still not found after sync", async () => {
-      const token = await sdk.createSessionToken("test-open-id", { name: "Test User" });
+      const token = await sdk.createSessionToken("test-open-id", {
+        name: "Test User",
+      });
       const req = {
         headers: { cookie: `${COOKIE_NAME}=${token}` },
       } as unknown as Request;
@@ -237,7 +261,9 @@ describe("sdk", () => {
         },
       });
 
-      await expect(sdk.authenticateRequest(req)).rejects.toThrow("User not found");
+      await expect(sdk.authenticateRequest(req)).rejects.toThrow(
+        "User not found"
+      );
     });
   });
 });

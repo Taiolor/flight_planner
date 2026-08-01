@@ -145,7 +145,7 @@ const HOLIDAYS: Record<string, HolidayInfo> = {
 function parseDate(dateStr: string): Date | null {
   if (!dateStr || dateStr.length !== 10) return null;
   let y: number, m: number, d: number;
-  
+
   if (dateStr.includes("/")) {
     // DD/MM/YYYY
     d = Number(dateStr.substring(0, 2));
@@ -157,7 +157,7 @@ function parseDate(dateStr: string): Date | null {
     m = Number(dateStr.substring(5, 7)) - 1;
     d = Number(dateStr.substring(8, 10));
   }
-  
+
   // Criar data em meia-noite local sem problemas de timezone
   const date = new Date(y, m, d, 0, 0, 0, 0);
   return date;
@@ -522,9 +522,16 @@ export default function CalendarView({
                         if (mark) {
                           // Verificar se TODOS os voos marcados neste dia são remarcados
                           const allRescheduled =
-                            (mark.departure && mark.departureRescheduled && !mark.return) ||
-                            (mark.return && mark.returnRescheduled && !mark.departure) ||
-                            (mark.departure && mark.departureRescheduled && mark.return && mark.returnRescheduled);
+                            (mark.departure &&
+                              mark.departureRescheduled &&
+                              !mark.return) ||
+                            (mark.return &&
+                              mark.returnRescheduled &&
+                              !mark.departure) ||
+                            (mark.departure &&
+                              mark.departureRescheduled &&
+                              mark.return &&
+                              mark.returnRescheduled);
                           // Verificar se ALGUM voo neste dia é remarcado
                           const anyRescheduled =
                             (mark.departure && mark.departureRescheduled) ||
