@@ -25,6 +25,7 @@ import {
   FlaskConical,
   Plane,
   ChevronDown,
+  Loader2,
 } from "lucide-react";
 import { useState, useMemo } from "react";
 import { toast } from "sonner";
@@ -586,7 +587,11 @@ export default function AdminNotifications() {
               }
               className="gap-2 bg-blue-600 hover:bg-blue-700"
             >
-              <Bell className="w-4 h-4" />
+              {sendTestMutation.isPending ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Bell className="w-4 h-4" />
+              )}
               {sendTestMutation.isPending
                 ? "Enviando..."
                 : "Enviar Notificação de Teste"}
@@ -761,7 +766,12 @@ function TicketNotificationEmailsSection() {
               disabled={addRecipientMutation.isPending}
               className="bg-purple-600 hover:bg-purple-700 text-white gap-2"
             >
-              <span>+</span> Adicionar
+              {addRecipientMutation.isPending ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <span>+</span>
+              )}
+              {addRecipientMutation.isPending ? "Adicionando..." : "Adicionar"}
             </Button>
           </div>
         </form>
@@ -853,7 +863,10 @@ function TicketNotificationEmailsSection() {
                 disabled={sendTestEmailMutation.isPending}
                 className="bg-blue-600 hover:bg-blue-700 text-white gap-2"
               >
-                Enviar
+                {sendTestEmailMutation.isPending && (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                )}
+                {sendTestEmailMutation.isPending ? "Enviando..." : "Enviar"}
               </Button>
             </div>
             <p className="text-xs text-gray-500">
