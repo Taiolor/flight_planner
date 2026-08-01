@@ -1,3 +1,6 @@
 ## 2025-02-12 - Added ARIA Labels to Interactive Buttons
 **Learning:** Native `<button>` elements functioning as icon-only toggles, download actions, or dataset filters critically need contextual `aria-label`s to be perceivable by screen readers. When these buttons are rendered inside a mapped list (like flight weeks), the `aria-label` must include the unique identifier (e.g., `weekNumber`) so screen readers can distinguish between identically purposed buttons.
 **Action:** Always inject specific variables (like item IDs, titles, or week numbers) into the `aria-label` string when rendering interactive elements inside mapping loops. Use targeted string replacement instead of global formatting tools to keep PRs lean.
+## 2024-08-01 - Custom Tab Implementation Accessibility
+**Learning:** Custom tab interfaces built using generic HTML elements (like `<button>`) combined with conditional rendering for content blocks are completely opaque to screen readers unless explicitly annotated with ARIA roles (`tablist`, `tab`, `tabpanel`) and relationship attributes (`aria-controls`, `aria-labelledby`).
+**Action:** When auditing or implementing custom tab components that don't use a dedicated UI library, verify that the ARIA tab pattern is fully implemented to ensure screen-reader users can perceive and navigate the content structure correctly.

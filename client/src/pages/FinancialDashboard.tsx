@@ -387,10 +387,18 @@ export default function FinancialDashboard() {
 
         {/* ── Tabs de análise ── */}
         <div>
-          <div className="flex gap-1 p-1 bg-slate-200 dark:bg-slate-800 rounded-2xl w-full sm:w-fit mb-4 sm:mb-6">
+          <div
+            role="tablist"
+            aria-label="Análise Financeira"
+            className="flex gap-1 p-1 bg-slate-200 dark:bg-slate-800 rounded-2xl w-full sm:w-fit mb-4 sm:mb-6"
+          >
             {(["cash", "miles", "comparison"] as const).map(tab => (
               <button
                 key={tab}
+                role="tab"
+                id={`tab-${tab}`}
+                aria-selected={activeTab === tab}
+                aria-controls={`panel-${tab}`}
                 onClick={() => setActiveTab(tab)}
                 className={`px-2 sm:px-4 py-1.5 sm:py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all flex-1 sm:flex-none whitespace-nowrap ${
                   activeTab === tab
@@ -407,7 +415,12 @@ export default function FinancialDashboard() {
 
           {/* ── Tab: Dinheiro ── */}
           {activeTab === "cash" && (
-            <div className="space-y-6">
+            <div
+              role="tabpanel"
+              id="panel-cash"
+              aria-labelledby="tab-cash"
+              className="space-y-6"
+            >
               {/* Gráfico de barras mensal */}
               <div className="bg-white dark:bg-slate-900 rounded-2xl p-3 sm:p-6 shadow-sm border border-slate-100 dark:border-slate-800">
                 <SectionHeader
@@ -545,7 +558,12 @@ export default function FinancialDashboard() {
 
           {/* ── Tab: Milhas ── */}
           {activeTab === "miles" && (
-            <div className="space-y-6">
+            <div
+              role="tabpanel"
+              id="panel-miles"
+              aria-labelledby="tab-miles"
+              className="space-y-6"
+            >
               <div className="bg-white dark:bg-slate-900 rounded-2xl p-3 sm:p-6 shadow-sm border border-slate-100 dark:border-slate-800">
                 <SectionHeader
                   title="Gastos em Milhas por Mês"
@@ -658,7 +676,12 @@ export default function FinancialDashboard() {
 
           {/* ── Tab: Comparativo por Companhia ── */}
           {activeTab === "comparison" && (
-            <div className="space-y-6">
+            <div
+              role="tabpanel"
+              id="panel-comparison"
+              aria-labelledby="tab-comparison"
+              className="space-y-6"
+            >
               <div className="grid md:grid-cols-2 gap-6">
                 {/* Pizza de gastos por companhia */}
                 <div className="bg-white dark:bg-slate-900 rounded-2xl p-3 sm:p-6 shadow-sm border border-slate-100 dark:border-slate-800">
@@ -1082,6 +1105,8 @@ export default function FinancialDashboard() {
         <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 overflow-hidden">
           <button
             onClick={() => setShowProjections(v => !v)}
+            aria-expanded={showProjections}
+            aria-controls="projections-panel"
             className="w-full flex items-center justify-between p-3 sm:p-6 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
           >
             <div className="flex items-center gap-3">
@@ -1105,7 +1130,10 @@ export default function FinancialDashboard() {
           </button>
 
           {showProjections && (
-            <div className="px-3 sm:px-6 pb-3 sm:pb-6 space-y-4 sm:space-y-6 border-t border-slate-100 dark:border-slate-800 pt-4 sm:pt-5">
+            <div
+              id="projections-panel"
+              className="px-3 sm:px-6 pb-3 sm:pb-6 space-y-4 sm:space-y-6 border-t border-slate-100 dark:border-slate-800 pt-4 sm:pt-5"
+            >
               {/* Parâmetros de projeção */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="bg-slate-50 dark:bg-slate-800/50 rounded-xl p-4">
