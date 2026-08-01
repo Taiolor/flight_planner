@@ -21,3 +21,8 @@
 ## 2026-07-28 - Optimize redundant upsert user query
 **Learning:** In MySQL/Drizzle, `INSERT ... ON DUPLICATE KEY UPDATE` does not support returning the row directly. Faking the returned object locally (e.g. setting `id: 0`) is dangerous as it corrupts internal state. To implement an optimization, the `SELECT` query must be moved into the helper function (`upsertUser`) but protected by a `returnRecord` flag so hot paths do not execute unneeded SELECT statements.
 **Action:** When asked to optimize redundant queries on MySQL upserts, avoid faking records. Use optional flags to gate follow-up queries inside the repository module to satisfy callers who need the object while keeping performance fast for callers who don't.
+
+## 2026-07-28 - Eager Map Initialization for O(1) Lookups
+
+**Learning:** When retrieving data inside loops or heavily used functions using `Array.prototype.find()` on static arrays, the time complexity balloons to O(N * M), leading to CPU overhead and rendering delays.
+**Action:** When working with static arrays that are frequently queried by a unique identifier (like an ID or week number), initialize a `Map` eagerly at module load time to enable O(1) lookups, preventing repeated O(N) array traversals during runtime or render cycles.
