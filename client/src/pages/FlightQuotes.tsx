@@ -433,10 +433,14 @@ const WeekCard = ({
   const isPast = status === "past";
   const isCurrent = status === "current";
 
-  const lowestQuote =
-    quotes.length > 0
+  // ⚡ Bolt Optimization: Memoize the lowestQuote calculation to prevent O(N) array reduction
+  // from running on every render of the WeekCard component. This is particularly beneficial
+  // because WeekCard is rendered in a list, multiplying the savings across all weeks.
+  const lowestQuote = useMemo(() => {
+    return quotes.length > 0
       ? quotes.reduce((min, q) => (q.lowestPrice < min.lowestPrice ? q : min))
       : null;
+  }, [quotes]);
 
   const handleSaveManual = () => {
     const price = parseFloat(manualPrice.replace(",", "."));
