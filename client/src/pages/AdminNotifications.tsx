@@ -132,7 +132,7 @@ export default function AdminNotifications() {
               <Button
                 variant="ghost"
                 size="sm"
-                aria-label="Voltar"
+                aria-label="Voltar para a página inicial"
                 className="gap-2 text-gray-600"
               >
                 <ArrowLeft className="w-4 h-4" />
