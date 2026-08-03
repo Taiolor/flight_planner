@@ -12,3 +12,7 @@
 
 **Learning:** Replaced multiple O(N) `.filter()` array methods with a single-pass `for...of` loop inside a `useMemo` block in `BrazilWorldCupPanel.tsx`, and similarly optimized multiple chained `.filter()`, `.reduce()`, and `.find()` calls in `worldCup2026.ts`. This reinforces the previous learning that when separating elements of a single dataset into multiple distinct categories or calculating multiple aggregate metrics, doing it in a single pass drastically reduces redundant loop executions and lowers intermediate memory allocations.
 **Action:** Always look for chained array methods or multiple array iterations over the same data source and consolidate them into a single-pass loop, especially in frequently executed functions or React component renders.
+
+## 2024-07-04 - O(1) Map Lookups for Static Collections
+**Learning:** When retrieving records from a large static array inside a frequently invoked function (like `getFeriadosPorIntervalo`), using `.find()` incurs an O(N) penalty every time. Pre-computing a `Map` keyed by the target identifier (e.g., `weekNumber`) at module load time turns this into an O(1) operation.
+**Action:** Always scan for `.find()` operations inside loops or render cycles on static data. Convert these datasets into `Map` structures during initialization to eliminate repetitive CPU overhead.

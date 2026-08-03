@@ -1080,6 +1080,13 @@ export const feriados2026: Feriado[] = [
 ];
 
 // ⚡ Bolt Optimization:
+// Initialize Map at module load time for O(1) lookups by weekNumber
+export const flightDataByWeek = new Map<number, Flight>();
+for (let i = 0; i < flightData.length; i++) {
+  flightDataByWeek.set(flightData[i].semana, flightData[i]);
+}
+
+// ⚡ Bolt Optimization:
 // Converte string de data DD/MM/YYYY para um número YYYYMMDD para
 // comparações rápidas sem instanciar objetos Date.
 function dateToInt(dateStr: string): number {
@@ -1145,7 +1152,7 @@ export function getFeriadosPorIntervalo(
   departureDate?: string,
   returnDate?: string
 ): FeriadoInfo[] {
-  const defaultFlight = flightData.find(f => f.semana === weekNumber);
+  const defaultFlight = flightDataByWeek.get(weekNumber);
   const depStr = departureDate || defaultFlight?.ida.data;
   const retStr = returnDate || defaultFlight?.retorno.data;
 
