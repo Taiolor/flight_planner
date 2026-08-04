@@ -12,3 +12,6 @@
 
 **Learning:** Replaced multiple O(N) `.filter()` array methods with a single-pass `for...of` loop inside a `useMemo` block in `BrazilWorldCupPanel.tsx`, and similarly optimized multiple chained `.filter()`, `.reduce()`, and `.find()` calls in `worldCup2026.ts`. This reinforces the previous learning that when separating elements of a single dataset into multiple distinct categories or calculating multiple aggregate metrics, doing it in a single pass drastically reduces redundant loop executions and lowers intermediate memory allocations.
 **Action:** Always look for chained array methods or multiple array iterations over the same data source and consolidate them into a single-pass loop, especially in frequently executed functions or React component renders.
+## 2024-05-18 - Module Level Static Array Caching
+**Learning:** React `useMemo` is great for derived state, but completely unnecessary for fully static data. Sorting or grouping static config arrays (like `releases` in a Changelog) inside the component forces the engine to still manage memoization overhead.
+**Action:** When data is statically defined within a file, hoist expensive `.reduce()` grouping and `.sort()` operations to the module level (outside the component function) so they only run once when the V8 engine parses the module, achieving zero render overhead.

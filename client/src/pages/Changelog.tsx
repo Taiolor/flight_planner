@@ -544,6 +544,56 @@ const releases: Release[] = [
   },
 ];
 
+// ⚡ Bolt Optimization: Calculate static groupings and sort once at module load
+// This prevents expensive O(N log N) date parsing and sorting on every React render
+// Agrupa releases por mês
+const releasesByMonth: Record<string, Release[]> = releases.reduce(
+  (acc, release) => {
+    if (!acc[release.month]) {
+      acc[release.month] = [];
+    }
+    acc[release.month].push(release);
+    return acc;
+  },
+  {} as Record<string, Release[]>
+);
+
+// Ordena meses em ordem reversa (mais recentes primeiro)
+// Converte 'Mês YYYY' para data para ordenação correta
+const months = Object.keys(releasesByMonth).sort((a, b) => {
+  const monthMap: Record<string, number> = {
+    Janeiro: 1,
+    Fevereiro: 2,
+    Março: 3,
+    Abril: 4,
+    Maio: 5,
+    Junho: 6,
+    Julho: 7,
+    Agosto: 8,
+    Setembro: 9,
+    Outubro: 10,
+    Novembro: 11,
+    Dezembro: 12,
+  };
+
+  const [monthA, yearA] = a.split(" ");
+  const [monthB, yearB] = b.split(" ");
+
+  const dateA = new Date(parseInt(yearA), (monthMap[monthA] || 1) - 1);
+  const dateB = new Date(parseInt(yearB), (monthMap[monthB] || 1) - 1);
+
+  return dateB.getTime() - dateA.getTime(); // Decrescente (mais recentes primeiro)
+});
+
+// Pre-sort each month's releases descending by date
+Object.values(releasesByMonth).forEach(monthReleases => {
+  monthReleases.sort((a, b) => {
+    const dateA = new Date(a.date.split("/").reverse().join("-")).getTime();
+    const dateB = new Date(b.date.split("/").reverse().join("-")).getTime();
+    return dateB - dateA;
+  });
+});
+
 export default function Changelog() {
   const [expandedReleases, setExpandedReleases] = useState<Set<string>>(
     new Set(["v1.3.0"])
@@ -558,45 +608,6 @@ export default function Changelog() {
     }
     setExpandedReleases(newExpanded);
   };
-
-  // Agrupa releases por mês
-  const releasesByMonth: Record<string, Release[]> = releases.reduce(
-    (acc, release) => {
-      if (!acc[release.month]) {
-        acc[release.month] = [];
-      }
-      acc[release.month].push(release);
-      return acc;
-    },
-    {} as Record<string, Release[]>
-  );
-
-  // Ordena meses em ordem reversa (mais recentes primeiro)
-  // Converte 'Mês YYYY' para data para ordenação correta
-  const months = Object.keys(releasesByMonth).sort((a, b) => {
-    const monthMap: Record<string, number> = {
-      Janeiro: 1,
-      Fevereiro: 2,
-      Março: 3,
-      Abril: 4,
-      Maio: 5,
-      Junho: 6,
-      Julho: 7,
-      Agosto: 8,
-      Setembro: 9,
-      Outubro: 10,
-      Novembro: 11,
-      Dezembro: 12,
-    };
-
-    const [monthA, yearA] = a.split(" ");
-    const [monthB, yearB] = b.split(" ");
-
-    const dateA = new Date(parseInt(yearA), (monthMap[monthA] || 1) - 1);
-    const dateB = new Date(parseInt(yearB), (monthMap[monthB] || 1) - 1);
-
-    return dateB.getTime() - dateA.getTime(); // Decrescente (mais recentes primeiro)
-  });
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
@@ -665,89 +676,79 @@ export default function Changelog() {
                 {month}
               </h2>
               <div className="space-y-4 ml-4">
-                {releasesByMonth[month]
-                  .sort((a, b) => {
-                    const dateA = new Date(
-                      a.date.split("/").reverse().join("-")
-                    ).getTime();
-                    const dateB = new Date(
-                      b.date.split("/").reverse().join("-")
-                    ).getTime();
-                    return dateB - dateA; // Decrescente (mais recentes primeiro)
-                  })
-                  .map((release, index) => (
-                    <div key={release.version} className="relative">
-                      {/* Release Card */}
-                      <Card
-                        className={`relative p-6 cursor-pointer transition-all hover:shadow-lg ${
-                          expandedReleases.has(release.version)
-                            ? "bg-blue-50 dark:bg-slate-800 border-blue-200 dark:border-blue-900"
-                            : "bg-white dark:bg-slate-800"
-                        }`}
-                        onClick={() => toggleRelease(release.version)}
-                      >
-                        <div className="flex items-start justify-between">
-                          <div className="flex-1">
-                            <div className="flex items-center gap-3 mb-2">
-                              <span className="text-sm font-semibold text-blue-600 bg-blue-100 dark:bg-blue-900 px-3 py-1 rounded-full">
-                                {release.version}
-                              </span>
-                              <span className="text-sm text-slate-500 dark:text-slate-400">
-                                {release.date}
-                              </span>
-                            </div>
-                            <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">
-                              {release.highlights}
-                            </h3>
+                {releasesByMonth[month].map((release, index) => (
+                  <div key={release.version} className="relative">
+                    {/* Release Card */}
+                    <Card
+                      className={`relative p-6 cursor-pointer transition-all hover:shadow-lg ${
+                        expandedReleases.has(release.version)
+                          ? "bg-blue-50 dark:bg-slate-800 border-blue-200 dark:border-blue-900"
+                          : "bg-white dark:bg-slate-800"
+                      }`}
+                      onClick={() => toggleRelease(release.version)}
+                    >
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-3 mb-2">
+                            <span className="text-sm font-semibold text-blue-600 bg-blue-100 dark:bg-blue-900 px-3 py-1 rounded-full">
+                              {release.version}
+                            </span>
+                            <span className="text-sm text-slate-500 dark:text-slate-400">
+                              {release.date}
+                            </span>
                           </div>
-                          <ChevronDown
-                            className={`w-6 h-6 text-slate-400 transition-transform ${
-                              expandedReleases.has(release.version)
-                                ? "rotate-180"
-                                : ""
-                            }`}
-                          />
+                          <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">
+                            {release.highlights}
+                          </h3>
                         </div>
+                        <ChevronDown
+                          className={`w-6 h-6 text-slate-400 transition-transform ${
+                            expandedReleases.has(release.version)
+                              ? "rotate-180"
+                              : ""
+                          }`}
+                        />
+                      </div>
 
-                        {/* Expanded Content */}
-                        {expandedReleases.has(release.version) && (
-                          <div className="mt-6 pt-6 border-t border-slate-200 dark:border-slate-700 space-y-4">
-                            {release.features.map((feature, idx) => (
-                              <div key={idx}>
-                                <div className="flex items-center gap-2 mb-2">
-                                  <div className="text-slate-600 dark:text-slate-400">
-                                    {feature.icon}
-                                  </div>
-                                  <h4 className="font-semibold text-slate-900 dark:text-white">
-                                    {feature.category}
-                                  </h4>
+                      {/* Expanded Content */}
+                      {expandedReleases.has(release.version) && (
+                        <div className="mt-6 pt-6 border-t border-slate-200 dark:border-slate-700 space-y-4">
+                          {release.features.map((feature, idx) => (
+                            <div key={idx}>
+                              <div className="flex items-center gap-2 mb-2">
+                                <div className="text-slate-600 dark:text-slate-400">
+                                  {feature.icon}
                                 </div>
-                                <ul className="space-y-1 ml-8">
-                                  {feature.items.map((item, itemIdx) => (
-                                    <li
-                                      key={itemIdx}
-                                      className="text-sm text-slate-600 dark:text-slate-400 flex items-start gap-2"
-                                    >
-                                      <span className="text-blue-600 mt-1">
-                                        •
-                                      </span>
-                                      <span>{item}</span>
-                                    </li>
-                                  ))}
-                                </ul>
+                                <h4 className="font-semibold text-slate-900 dark:text-white">
+                                  {feature.category}
+                                </h4>
                               </div>
-                            ))}
-                          </div>
-                        )}
-                      </Card>
-
-                      {/* Timeline Dot */}
-                      <div className="absolute left-0 top-8 -ml-8 w-4 h-4 bg-blue-600 rounded-full border-4 border-slate-50 dark:border-slate-950" />
-                      {index < releasesByMonth[month].length - 1 && (
-                        <div className="absolute left-0 top-12 -ml-7 w-0.5 h-12 bg-slate-200 dark:bg-slate-700" />
+                              <ul className="space-y-1 ml-8">
+                                {feature.items.map((item, itemIdx) => (
+                                  <li
+                                    key={itemIdx}
+                                    className="text-sm text-slate-600 dark:text-slate-400 flex items-start gap-2"
+                                  >
+                                    <span className="text-blue-600 mt-1">
+                                      •
+                                    </span>
+                                    <span>{item}</span>
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+                          ))}
+                        </div>
                       )}
-                    </div>
-                  ))}
+                    </Card>
+
+                    {/* Timeline Dot */}
+                    <div className="absolute left-0 top-8 -ml-8 w-4 h-4 bg-blue-600 rounded-full border-4 border-slate-50 dark:border-slate-950" />
+                    {index < releasesByMonth[month].length - 1 && (
+                      <div className="absolute left-0 top-12 -ml-7 w-0.5 h-12 bg-slate-200 dark:bg-slate-700" />
+                    )}
+                  </div>
+                ))}
               </div>
             </div>
           ))}
