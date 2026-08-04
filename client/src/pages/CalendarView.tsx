@@ -309,13 +309,15 @@ export default function CalendarView({
         map[key].departureRescheduled = week.departureRescheduled === 1;
       }
 
-      if (!isOneway && retDate) {
+      if (retDate) {
         const key = toKey(retDate);
         const isPast = retDate < today;
         if (!map[key])
           map[key] = { departure: false, return: false, isPast, week };
-        map[key].return = true;
-        map[key].returnRescheduled = week.returnRescheduled === 1;
+        if (!isOneway) {
+          map[key].return = true;
+          map[key].returnRescheduled = week.returnRescheduled === 1;
+        }
         if (!map[key].departure) {
           map[key].isPast = isPast;
           map[key].week = week;
