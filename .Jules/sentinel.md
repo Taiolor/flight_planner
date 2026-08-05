@@ -9,3 +9,9 @@
 **Vulnerability:** XSS risk via `'unsafe-inline'` in CSP `scriptSrc`.
 **Learning:** The application had `'unsafe-inline'` allowed in its CSP purely for registering a Service Worker inline inside `index.html`.
 **Prevention:** Extract all inline scripts to external `.ts` or `.js` files, allowing the CSP to drop `'unsafe-inline'` completely and protect against XSS injections.
+
+## 2024-05-27 - Information Disclosure via Stack Traces in Production
+
+**Vulnerability:** The application was leaking stack traces and detailed internal error messages to clients during `INTERNAL_SERVER_ERROR` scenarios in tRPC endpoints.
+**Learning:** By default, tRPC returns the original error message and stack trace if not explicitly handled, which can leak sensitive infrastructure details to end-users in production.
+**Prevention:** Implement a secure custom `errorFormatter` during `initTRPC.create()` to intercept errors. Check the environment (`NODE_ENV === "production"`) and safely replace `INTERNAL_SERVER_ERROR` messages with a generic string and strip the `stack` trace completely in production environments.
