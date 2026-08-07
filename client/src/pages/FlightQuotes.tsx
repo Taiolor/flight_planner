@@ -48,6 +48,8 @@ import {
 import { Link } from "wouter";
 import { useTheme } from "@/contexts/ThemeContext";
 
+const EMPTY_ARRAY: any[] = [];
+
 // ─── Utilitários de data ─────────────────────────────────────────────────────
 
 /** Converte DD/MM/YYYY → YYYY-MM-DD (se já estiver em ISO, retorna sem alterar) */
@@ -853,7 +855,7 @@ export default function FlightQuotes() {
   const [loadingWeek, setLoadingWeek] = useState<number | null>(null);
 
   // Queries
-  const { data: allQuotes = [], refetch: refetchQuotes } =
+  const { data: allQuotes = EMPTY_ARRAY, refetch: refetchQuotes } =
     trpc.quotes.getAll.useQuery();
   const {
     data: apiUsage = { requestsUsed: 0, requestsLimit: 20 },
@@ -1087,7 +1089,7 @@ export default function FlightQuotes() {
             <WeekCard
               key={week.semana}
               week={week}
-              quotes={quotesByWeek[week.semana] ?? []}
+              quotes={quotesByWeek[week.semana] ?? EMPTY_ARRAY}
               apiUsage={apiUsage}
               onFetchApi={handleFetchApi}
               onSaveManual={handleSaveManual}
