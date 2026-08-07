@@ -5,6 +5,16 @@ import type { TrpcContext } from "./context";
 
 const t = initTRPC.context<TrpcContext>().create({
   transformer: superjson,
+  errorFormatter({ shape, error }) {
+    return {
+      ...shape,
+      message:
+        process.env.NODE_ENV === "production" &&
+        error.code === "INTERNAL_SERVER_ERROR"
+          ? "Internal server error"
+          : shape.message,
+    };
+  },
 });
 
 export const router = t.router;

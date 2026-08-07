@@ -21,3 +21,7 @@
 **Vulnerability:** Authorization bypass via mixed middleware contexts. The `quotesRouter` in `server/routers/quotes.ts` was using the global `protectedProcedure` (which validates general OAuth users) instead of the domain-specific `flightProtectedProcedure` (which validates flight planner app-specific session cookies).
 **Learning:** Using the wrong middleware allows cross-domain authorization bypasses. Even if a user is authenticated globally via Manus OAuth, they should not automatically have access to domain-specific features (like the flight planner) unless they pass that domain's specific auth checks (`flightAuth`).
 **Prevention:** Always verify that the chosen protected procedure matches the intended domain of the router. For flight planner features, strictly import and use `flightProtectedProcedure` from `server/flightAuthMiddleware.ts`. Ensure middleware definitions are extracted into dedicated files to prevent circular dependencies when referenced across multiple routers.
+## 2024-05-24 - Do not leak internal server errors to clients via tRPC
+**Vulnerability:** tRPC exposes `INTERNAL_SERVER_ERROR` messages to the client which can leak sensitive stack traces and execution paths.
+**Learning:** By default, tRPC returns error messages untouched to the client, even internal server errors, unless formatted.
+**Prevention:** Implement an `errorFormatter` in the `initTRPC` configuration to mask `INTERNAL_SERVER_ERROR` messages with a generic string like "Internal server error" when the environment is production.
