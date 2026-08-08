@@ -1,14 +1,3 @@
-## 2024-05-18 - Single-Pass Array Categorization
-
-**Learning:** Replaced multiple O(N) `.filter()` array methods with a single-pass `for...of` loop inside a `useMemo` block. When separating elements of a single dataset into multiple distinct arrays based on enum values (e.g., status flags), doing it in a single pass reduces redundant loop executions and lowers intermediate memory allocations, particularly benefiting frequently re-rendered React components.
-**Action:** Next time when encountering a pattern where an array is filtered multiple times sequentially for distinct non-overlapping categories, convert it to a single-pass loop approach using `useMemo`.
-
-## 2024-06-26 - Parallelize Promise fetches for independent calls
-
-**Learning:** When executing multiple independent asynchronous data fetching functions consecutively (like database queries), using sequential `await` introduces unnecessary latency. Converting them to a concurrent execution using `await Promise.all()` significantly decreases the total execution time since the queries run in parallel.
-**Action:** When working on performance enhancements that involve multiple independent asynchronous requests (such as DB queries or HTTP requests), search for sequential `await` patterns and refactor them to `Promise.all` to reduce latency.
-
-## 2024-07-03 - Single-Pass Array Categorization (Revisited)
-
-**Learning:** Replaced multiple O(N) `.filter()` array methods with a single-pass `for...of` loop inside a `useMemo` block in `BrazilWorldCupPanel.tsx`, and similarly optimized multiple chained `.filter()`, `.reduce()`, and `.find()` calls in `worldCup2026.ts`. This reinforces the previous learning that when separating elements of a single dataset into multiple distinct categories or calculating multiple aggregate metrics, doing it in a single pass drastically reduces redundant loop executions and lowers intermediate memory allocations.
-**Action:** Always look for chained array methods or multiple array iterations over the same data source and consolidate them into a single-pass loop, especially in frequently executed functions or React component renders.
+## 2025-02-28 - Optimize Changelog releases grouping
+**Learning:** Found a case where a very large, static array (`releases`) was being mapped and sorted via `.reduce()` and `Date` instantiation on every single component render in `client/src/pages/Changelog.tsx`. Because `releases` is defined as a constant outside the component, this complex grouping logic was redundant and causing unnecessary CPU overhead on state changes (like expanding an accordion).
+**Action:** Always verify if complex data transformations (like `.reduce()` over large arrays or `new Date()` inside loops) depend on component state. If they don't, or depend on slowly changing state, hoist them outside the component or wrap them in `useMemo` with an empty dependency array to prevent redundant allocations during the React render cycle.
