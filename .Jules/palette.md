@@ -1,4 +1,3 @@
-## 2025-02-12 - Added ARIA Labels to Interactive Buttons
-
-**Learning:** Native `<button>` elements functioning as icon-only toggles, download actions, or dataset filters critically need contextual `aria-label`s to be perceivable by screen readers. When these buttons are rendered inside a mapped list (like flight weeks), the `aria-label` must include the unique identifier (e.g., `weekNumber`) so screen readers can distinguish between identically purposed buttons.
-**Action:** Always inject specific variables (like item IDs, titles, or week numbers) into the `aria-label` string when rendering interactive elements inside mapping loops. Use targeted string replacement instead of global formatting tools to keep PRs lean.
+## 2025-02-05 - Added ARIA attributes to accordion toggles
+**Learning:** React accordion buttons often use local state for toggling visibility without properly communicating `aria-expanded` and `aria-controls` to screen readers, especially when manually implemented without a dedicated UI library. Also, applying explicit `focus-visible` ring styles is necessary for proper keyboard navigation visual feedback.
+**Action:** Always verify if accordion or collapsible toggles have `aria-expanded` reflecting their state, point to their content via `aria-controls`, and include strong focus indicators like `focus-visible:ring-2`.
