@@ -3,8 +3,19 @@ import { initTRPC, TRPCError } from "@trpc/server";
 import superjson from "superjson";
 import type { TrpcContext } from "./context";
 
+import { ENV } from "./env";
+
 const t = initTRPC.context<TrpcContext>().create({
   transformer: superjson,
+  errorFormatter({ shape, error }) {
+    return {
+      ...shape,
+      message:
+        ENV.isProduction && error.code === "INTERNAL_SERVER_ERROR"
+          ? "Internal server error"
+          : shape.message,
+    };
+  },
 });
 
 export const router = t.router;
