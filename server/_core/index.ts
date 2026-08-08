@@ -65,10 +65,10 @@ async function startServer() {
   const isDev = process.env.NODE_ENV === "development";
   app.use(
     helmet({
-      contentSecurityPolicy: {
+      contentSecurityPolicy: isDev ? false : {
         directives: {
           defaultSrc: ["'self'"],
-          scriptSrc: ["'self'", "'unsafe-eval'", "https://cdn.jsdelivr.net"],
+          scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "blob:", "data:", "https://cdn.jsdelivr.net"],
           styleSrc: [
             "'self'",
             "'unsafe-inline'",
@@ -76,14 +76,12 @@ async function startServer() {
           ],
           fontSrc: ["'self'", "https://fonts.gstatic.com"],
           imgSrc: ["'self'", "data:", "https:"],
-          connectSrc: ["'self'", "https:", ...(isDev ? ["ws:", "wss:"] : [])],
-          frameSrc: ["'none'"],
+          connectSrc: ["'self'", "https:", "http:", "ws:", "wss:"],
+          frameSrc: ["'self'", "*"],
           objectSrc: ["'none'"],
           baseUri: ["'self'"],
           formAction: ["'self'"],
-          frameAncestors: isDev
-            ? ["*"]
-            : ["https://*.manus.space", "https://*.manus.computer"],
+          frameAncestors: ["*"],
         },
       },
       crossOriginEmbedderPolicy: false,
