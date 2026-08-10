@@ -13,6 +13,7 @@ import {
   Download,
   ExternalLink,
   ChevronDown,
+  AlertCircle,
 } from "lucide-react";
 import {
   getGoogleCalendarLink,
@@ -695,6 +696,45 @@ export default function CalendarView({
             </>
           )}
         </div>
+
+        {/* Alerta de semanas sem passagens emitidas */}
+        {!weeksQuery.isLoading && unissuedCount > 0 && (
+          <div className="mt-6 bg-amber-50 border-l-4 border-amber-400 rounded-lg p-4">
+            <div className="flex items-start gap-3">
+              <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+              <div className="flex-1">
+                <h3 className="font-semibold text-amber-900 mb-2">
+                  Semanas sem passagens emitidas ({unissuedCount})
+                </h3>
+                <p className="text-sm text-amber-800 mb-3">
+                  Você ainda não comprou passagens para as seguintes semanas. Lembre-se: idas aos domingos, retornos quinta ou sexta.
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {(weeksQuery.data as any)
+                    ?.filter((week: any) => {
+                      const depDate = parseDate(week.departureDate);
+                      const retDate = parseDate(week.returnDate);
+                      const hasIssued = depDate && retDate && (markedDays[toKey(depDate)]?.departure || markedDays[toKey(retDate)]?.return);
+                      return !hasIssued && depDate && depDate > today;
+                    })
+                    .map((week: any) => (
+                      <div
+                        key={week.weekNum}
+                        className="px-3 py-1.5 bg-white border border-amber-300 rounded-full text-sm font-medium text-amber-900 hover:bg-amber-100 transition-colors cursor-pointer"
+                        onClick={() => {
+                          const element = document.querySelector(`[data-week-id="week-${week.weekNum}"]`);
+                          element?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        }}
+                        title={`Semana ${week.weekNum}: ${week.departureDate} a ${week.returnDate}`}
+                      >
+                        Semana {week.weekNum}
+                      </div>
+                    ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </main>
     </div>
   );
