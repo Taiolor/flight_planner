@@ -714,8 +714,14 @@ export default function CalendarView({
                     ?.filter((week: any) => {
                       const depDate = parseDate(week.departureDate);
                       const retDate = parseDate(week.returnDate);
+                      // Validar padrão: ida domingo (0), retorno quinta (4) ou sexta (5)
+                      const isDepartureSunday = depDate && depDate.getDay() === 0;
+                      const isReturnThursdayOrFriday = retDate && (retDate.getDay() === 4 || retDate.getDay() === 5);
+                      const hasCorrectPattern = isDepartureSunday && isReturnThursdayOrFriday;
+                      // Verificar se tem bilhete emitido
                       const hasIssued = depDate && retDate && (markedDays[toKey(depDate)]?.departure || markedDays[toKey(retDate)]?.return);
-                      return !hasIssued && depDate && depDate > today;
+                      // Mostrar apenas semanas futuras sem bilhete e com padrão correto
+                      return !hasIssued && depDate && depDate > today && hasCorrectPattern;
                     })
                     .map((week: any) => (
                       <div
