@@ -726,14 +726,22 @@ export default function CalendarView({
                     .map((week: any) => (
                       <div
                         key={week.weekNum}
-                        className="px-3 py-1.5 bg-white border border-amber-300 rounded-full text-sm font-medium text-amber-900 hover:bg-amber-100 transition-colors cursor-pointer"
+                        className="px-3 py-1.5 bg-white border border-amber-300 rounded-full text-sm font-medium text-amber-900 hover:bg-amber-100 transition-colors cursor-pointer flex items-center gap-1.5"
                         onClick={() => {
                           const element = document.querySelector(`[data-week-id="week-${week.weekNum}"]`);
                           element?.scrollIntoView({ behavior: 'smooth', block: 'center' });
                         }}
                         title={`Semana ${week.weekNum}: ${week.departureDate} a ${week.returnDate}`}
                       >
+                        <span className="flex items-center gap-0.5">
+                          <Plane className="w-3.5 h-3.5" />
+                          <span className="text-xs">→</span>
+                        </span>
                         Semana {week.weekNum}
+                        <span className="flex items-center gap-0.5">
+                          <span className="text-xs">←</span>
+                          <Plane className="w-3.5 h-3.5 rotate-180" />
+                        </span>
                       </div>
                     ))}
                 </div>
