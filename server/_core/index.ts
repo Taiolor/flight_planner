@@ -68,7 +68,7 @@ async function startServer() {
       contentSecurityPolicy: isDev ? false : {
         directives: {
           defaultSrc: ["'self'"],
-          scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "blob:", "data:", "https://cdn.jsdelivr.net"],
+          scriptSrc: ["'self'", "blob:", "data:", "https://cdn.jsdelivr.net"],
           styleSrc: [
             "'self'",
             "'unsafe-inline'",

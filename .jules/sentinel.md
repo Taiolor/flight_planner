@@ -25,3 +25,8 @@
 **Vulnerability:** tRPC exposes `INTERNAL_SERVER_ERROR` details to clients in production.
 **Learning:** By default, if a tRPC resolver throws an unexpected error, the default `errorFormatter` can leak sensitive stack traces, paths, or database messages to the client, providing attackers with insights into the server architecture.
 **Prevention:** Always configure the tRPC initialization with a custom `errorFormatter` that checks `ENV.isProduction` and explicitly masks the `INTERNAL_SERVER_ERROR` code with a generic message (e.g., 'Internal server error').
+## 2026-08-10 - Harden Content Security Policy
+
+**Vulnerability:** Inline Scripts and Eval (XSS Risk)
+**Learning:** The default Content Security Policy (CSP) allowed `'unsafe-inline'` and `'unsafe-eval'` in `scriptSrc` during production mode, which defeats the primary defense against Cross-Site Scripting (XSS) attacks by allowing an attacker to execute arbitrary injected JavaScript.
+**Prevention:** Strictly remove `'unsafe-inline'` and `'unsafe-eval'` from the `scriptSrc` configuration in `server/_core/index.ts` (Helmet configuration) for the production environment. Required inline scripts like Service Worker registrations should be moved to external files (e.g., `client/src/main.tsx`).
