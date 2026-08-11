@@ -164,6 +164,15 @@ function parseDate(dateStr: string): Date | null {
   return date;
 }
 
+function formatDateLabel(dateStr: string): string {
+  if (!dateStr) return "—";
+  if (dateStr.includes("/")) return dateStr;
+  if (dateStr.length === 10 && dateStr[4] === "-" && dateStr[7] === "-") {
+    return `${dateStr.substring(8, 10)}/${dateStr.substring(5, 7)}/${dateStr.substring(0, 4)}`;
+  }
+  return dateStr;
+}
+
 function toKey(date: Date): string {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
 }
@@ -725,35 +734,41 @@ export default function CalendarView({
                     })
                     .map((week: any) => {
                       const depDate = parseDate(week.departureDate);
+                      const weekNumber = week.weekNumber ?? week.weekNum;
                       // Calcular se está nos próximos 15 dias
                       const daysUntilDeparture = depDate ? Math.ceil((depDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)) : 999;
                       const isUrgent = daysUntilDeparture <= 15 && daysUntilDeparture > 0;
-                      
+
                       return (
-                      <div
-                        key={week.weekNum}
-                        className={`px-3 py-1.5 rounded-full text-sm font-medium cursor-pointer flex items-center gap-1.5 transition-colors ${
-                          isUrgent
-                            ? 'bg-red-100 border border-red-400 text-red-900 hover:bg-red-200'
-                            : 'bg-white border border-amber-300 text-amber-900 hover:bg-amber-100'
-                        }`}
-                        onClick={() => {
-                          const element = document.querySelector(`[data-week-id="week-${week.weekNum}"]`);
-                          element?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                        }}
-                        title={`Semana ${week.weekNum}: ${week.departureDate} a ${week.returnDate}${isUrgent ? ' (URGENTE - próximos 15 dias)' : ''}`}
-                      >
-                        <span className="flex items-center gap-0.5">
-                          <Plane className="w-3.5 h-3.5" />
-                          <span className="text-xs">→</span>
-                        </span>
-                        Semana {week.weekNum}
-                        <span className="flex items-center gap-0.5">
-                          <span className="text-xs">←</span>
-                          <Plane className="w-3.5 h-3.5 rotate-180" />
-                        </span>
-                      </div>
-                    );
+                        <div
+                          key={weekNumber}
+                          className={`px-3 py-2 rounded-xl border text-sm cursor-pointer transition-colors ${
+                            isUrgent
+                              ? 'bg-red-100 border-red-400 text-red-900 hover:bg-red-200'
+                              : 'bg-white border-amber-300 text-amber-900 hover:bg-amber-100'
+                          }`}
+                          onClick={() => {
+                            const element = document.querySelector(`[data-week-id="week-${weekNumber}"]`);
+                            element?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                          }}
+                          title={`Semana ${weekNumber}: ida ${formatDateLabel(week.departureDate)}, volta ${formatDateLabel(week.returnDate)}${isUrgent ? ' (URGENTE - próximos 15 dias)' : ''}`}
+                        >
+                          <div className="flex items-center justify-between gap-3 font-semibold">
+                            <span>Semana {weekNumber}</span>
+                            {isUrgent && <span className="text-[11px] uppercase tracking-wide">Urgente</span>}
+                          </div>
+                          <div className="mt-1 flex flex-col gap-1 text-xs sm:flex-row sm:items-center sm:gap-3">
+                            <span className="inline-flex items-center gap-1 whitespace-nowrap">
+                              <Plane className="h-3.5 w-3.5" aria-hidden="true" />
+                              <span>Ida: {formatDateLabel(week.departureDate)}</span>
+                            </span>
+                            <span className="inline-flex items-center gap-1 whitespace-nowrap">
+                              <Plane className="h-3.5 w-3.5 rotate-180" aria-hidden="true" />
+                              <span>Volta: {formatDateLabel(week.returnDate)}</span>
+                            </span>
+                          </div>
+                        </div>
+                      );
                     })
                   }
                 </div>

@@ -618,3 +618,5 @@
 - [x] Implementar visualização em cartões para tabela de semanas no mobile (Gestão Financeira) - eliminar scroll horizontal
 
 - [x] Calendário: destacar em vermelho semanas sem passagens cuja ida ocorre nos próximos 15 dias
+
+- [x] Calendário: exibir número da semana e datas de ida e volta no resumo de semanas sem passagens
