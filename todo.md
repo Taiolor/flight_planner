@@ -616,3 +616,5 @@
 - [x] Habilitar vulnerability alerts e automated security fixes no repositório GitHub (secret scanning requer plano GitHub Advanced Security)
 
 - [x] Implementar visualização em cartões para tabela de semanas no mobile (Gestão Financeira) - eliminar scroll horizontal
+
+- [x] Calendário: destacar em vermelho semanas sem passagens cuja ida ocorre nos próximos 15 dias

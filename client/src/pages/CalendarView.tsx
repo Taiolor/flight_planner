@@ -723,15 +723,25 @@ export default function CalendarView({
                       // Mostrar apenas semanas futuras sem bilhete e com padrão correto
                       return !hasIssued && depDate && depDate > today && hasCorrectPattern;
                     })
-                    .map((week: any) => (
+                    .map((week: any) => {
+                      const depDate = parseDate(week.departureDate);
+                      // Calcular se está nos próximos 15 dias
+                      const daysUntilDeparture = depDate ? Math.ceil((depDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)) : 999;
+                      const isUrgent = daysUntilDeparture <= 15 && daysUntilDeparture > 0;
+                      
+                      return (
                       <div
                         key={week.weekNum}
-                        className="px-3 py-1.5 bg-white border border-amber-300 rounded-full text-sm font-medium text-amber-900 hover:bg-amber-100 transition-colors cursor-pointer flex items-center gap-1.5"
+                        className={`px-3 py-1.5 rounded-full text-sm font-medium cursor-pointer flex items-center gap-1.5 transition-colors ${
+                          isUrgent
+                            ? 'bg-red-100 border border-red-400 text-red-900 hover:bg-red-200'
+                            : 'bg-white border border-amber-300 text-amber-900 hover:bg-amber-100'
+                        }`}
                         onClick={() => {
                           const element = document.querySelector(`[data-week-id="week-${week.weekNum}"]`);
                           element?.scrollIntoView({ behavior: 'smooth', block: 'center' });
                         }}
-                        title={`Semana ${week.weekNum}: ${week.departureDate} a ${week.returnDate}`}
+                        title={`Semana ${week.weekNum}: ${week.departureDate} a ${week.returnDate}${isUrgent ? ' (URGENTE - próximos 15 dias)' : ''}`}
                       >
                         <span className="flex items-center gap-0.5">
                           <Plane className="w-3.5 h-3.5" />
@@ -743,7 +753,9 @@ export default function CalendarView({
                           <Plane className="w-3.5 h-3.5 rotate-180" />
                         </span>
                       </div>
-                    ))}
+                    );
+                    })
+                  }
                 </div>
               </div>
             </div>
