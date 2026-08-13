@@ -1,3 +1,3 @@
-## 2025-02-28 - Optimize Changelog releases grouping
+## 2026-08-13 - Optimize Changelog releases grouping
 **Learning:** Found a case where a very large, static array (`releases`) was being mapped and sorted via `.reduce()` and `Date` instantiation on every single component render in `client/src/pages/Changelog.tsx`. Because `releases` is defined as a constant outside the component, this complex grouping logic was redundant and causing unnecessary CPU overhead on state changes (like expanding an accordion).
 **Action:** Always verify if complex data transformations (like `.reduce()` over large arrays or `new Date()` inside loops) depend on component state. If they don't, or depend on slowly changing state, hoist them outside the component or wrap them in `useMemo` with an empty dependency array to prevent redundant allocations during the React render cycle.
