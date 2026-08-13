@@ -620,3 +620,6 @@
 - [x] Calendário: destacar em vermelho semanas sem passagens cuja ida ocorre nos próximos 15 dias
 
 - [x] Calendário: exibir número da semana e datas de ida e volta no resumo de semanas sem passagens
+
+- [x] PDF: exibir status de remarcação individual para ida, volta ou somente ida
+- [x] PDF: exibir localizador individual de cada trecho do bilhete

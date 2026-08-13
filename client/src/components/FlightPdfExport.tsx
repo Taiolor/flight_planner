@@ -23,6 +23,9 @@ interface WeekData {
   returnFlightDatetime?: string | null;
   departureAirport?: string | null;
   returnAirport?: string | null;
+  ticketType?: string | null;
+  departureRescheduled?: number | boolean | null;
+  returnRescheduled?: number | boolean | null;
 }
 
 interface PriceMap {
@@ -43,6 +46,18 @@ const AIRLINE_COLORS: Record<
   gol: { bg: "#ff6600", text: "#fff", label: "GOL" },
   azul: { bg: "#1a3c8f", text: "#fff", label: "AZUL" },
 };
+
+function isRescheduled(value: number | boolean | null | undefined): boolean {
+  return value === true || value === 1;
+}
+
+export function formatLocator(locator: string | null | undefined): string {
+  return locator?.trim() || "Não informado";
+}
+
+export function formatRescheduleStatus(value: number | boolean | null | undefined): string {
+  return isRescheduled(value) ? "Remarcado" : "Não remarcado";
+}
 
 function formatDatetime(dt: string | null | undefined): string {
   if (!dt) return "—";
@@ -77,6 +92,7 @@ interface FlightDetailsProps {
   locator?: string | null;
   flightDatetime?: string | null;
   airport?: string | null;
+  rescheduled?: boolean;
 }
 
 function FlightDetailRow({
@@ -149,6 +165,7 @@ function FlightDetailsSection({
   locator,
   flightDatetime,
   airport,
+  rescheduled = false,
 }: FlightDetailsProps) {
   return (
     <div
@@ -192,13 +209,31 @@ function FlightDetailsSection({
           />
           <FlightDetailRow
             label="Localizador"
-            value={locator}
+            value={formatLocator(locator)}
             valueStyle={{
               fontWeight: 700,
-              color: "#1e293b",
+              color: locator ? "#1e293b" : "#94a3b8",
               fontFamily: "monospace",
               letterSpacing: "1px",
             }}
+          />
+          <FlightDetailRow
+            label="Status"
+            value={
+              <span
+                style={{
+                  display: "inline-block",
+                  padding: "3px 8px",
+                  borderRadius: "999px",
+                  background: rescheduled ? "#fee2e2" : "#dcfce7",
+                  color: rescheduled ? "#b91c1c" : "#166534",
+                  fontSize: "11px",
+                  fontWeight: 700,
+                }}
+              >
+                {formatRescheduleStatus(rescheduled)}
+              </span>
+            }
           />
           <FlightDetailRow
             label="Data/Hora"
@@ -376,6 +411,7 @@ function WeekCard({
   const prices = priceMap[week.weekNumber] || {};
   const depAirlineKey = week.departureAirline?.toLowerCase() ?? "";
   const retAirlineKey = week.returnAirline?.toLowerCase() ?? "";
+  const isOneway = week.ticketType === "oneway";
   const depPrice =
     depAirlineKey && prices[depAirlineKey]
       ? parseFloat(prices[depAirlineKey])
@@ -404,7 +440,7 @@ function WeekCard({
         }}
       >
         <div style={{ fontWeight: 700, fontSize: "14px" }}>
-          Semana {week.weekNumber} — {week.departureDate} → {week.returnDate}
+          Semana {week.weekNumber} — {week.departureDate} {isOneway ? "• Somente ida" : `→ ${week.returnDate}`}
         </div>
         {depPrice !== null && !isNaN(depPrice) && (
           <div
@@ -424,28 +460,37 @@ function WeekCard({
         )}
       </div>
 
-      <div style={{ display: "flex" }}>
+      <div
+        style={{
+          display: "flex",
+          flexDirection: isOneway ? "column" : "row",
+        }}
+      >
         <FlightDetailsSection
-          title="→ IDA"
+          title={isOneway ? "→ IDA • SOMENTE IDA" : "→ IDA"}
           titleColor="#1d4ed8"
-          borderRight={true}
+          borderRight={!isOneway}
           airline={week.departureAirline}
           airlineInfo={depAirlineInfo}
           flightNumber={week.departureFlightNumber}
           locator={week.departureLocator}
           flightDatetime={week.departureFlightDatetime}
           airport={week.departureAirport}
+          rescheduled={isRescheduled(week.departureRescheduled)}
         />
-        <FlightDetailsSection
-          title="↩ VOLTA"
-          titleColor="#ea580c"
-          airline={week.returnAirline}
-          airlineInfo={retAirlineInfo}
-          flightNumber={week.returnFlightNumber}
-          locator={week.returnLocator}
-          flightDatetime={week.returnFlightDatetime}
-          airport={week.returnAirport}
-        />
+        {!isOneway && (
+          <FlightDetailsSection
+            title="↩ VOLTA"
+            titleColor="#ea580c"
+            airline={week.returnAirline}
+            airlineInfo={retAirlineInfo}
+            flightNumber={week.returnFlightNumber}
+            locator={week.returnLocator}
+            flightDatetime={week.returnFlightDatetime}
+            airport={week.returnAirport}
+            rescheduled={isRescheduled(week.returnRescheduled)}
+          />
+        )}
       </div>
     </div>
   );
