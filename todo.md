@@ -623,3 +623,6 @@
 
 - [x] PDF: exibir status de remarcação individual para ida, volta ou somente ida
 - [x] PDF: exibir localizador individual de cada trecho do bilhete
+
+- [x] PDF: impedir que a quebra de página corte o conteúdo de um bilhete
+- [x] PDF: padronizar nome da companhia em maiúsculas e centralizar vertical e horizontalmente

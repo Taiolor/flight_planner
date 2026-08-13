@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  formatAirlineName,
   formatLocator,
   formatRescheduleStatus,
 } from "./FlightPdfExport";
@@ -13,6 +14,12 @@ describe("FlightPdfExport helpers", () => {
   it("informa quando o localizador não foi preenchido", () => {
     expect(formatLocator(null)).toBe("Não informado");
     expect(formatLocator("   ")).toBe("Não informado");
+  });
+
+  it("padroniza o nome da companhia em maiúsculas", () => {
+    expect(formatAirlineName("Latam")).toBe("LATAM");
+    expect(formatAirlineName(" azul ")).toBe("AZUL");
+    expect(formatAirlineName(null)).toBe("Não informado");
   });
 
   it("exibe o status de remarcação por trecho", () => {

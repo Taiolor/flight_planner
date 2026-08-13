@@ -55,6 +55,10 @@ export function formatLocator(locator: string | null | undefined): string {
   return locator?.trim() || "Não informado";
 }
 
+export function formatAirlineName(airline: string | null | undefined): string {
+  return airline?.trim().toUpperCase() || "Não informado";
+}
+
 export function formatRescheduleStatus(value: number | boolean | null | undefined): string {
   return isRescheduled(value) ? "Remarcado" : "Não remarcado";
 }
@@ -128,27 +132,48 @@ function FlightDetailRow({
         style={{
           paddingBottom: "6px",
           verticalAlign: "middle",
+          textAlign: isAirline ? "center" : undefined,
           ...valueStyle,
         }}
       >
         {isAirline && airlineInfo ? (
           <span
             style={{
-              display: "inline-block",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              width: "100%",
+              minHeight: "22px",
+              boxSizing: "border-box",
               background: airlineInfo.bg,
               color: airlineInfo.text,
               borderRadius: "4px",
               padding: "3px 10px",
               fontSize: "11px",
               fontWeight: 700,
-              minWidth: "52px",
               textAlign: "center",
+              textTransform: "uppercase",
+              lineHeight: 1.2,
             }}
           >
-            {airlineInfo.label}
+            {airlineInfo.label.toUpperCase()}
           </span>
         ) : (
-          value
+          <span
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              width: "100%",
+              minHeight: "22px",
+              textAlign: "center",
+              textTransform: "uppercase",
+              fontWeight: 700,
+              color: "#1e293b",
+            }}
+          >
+            {typeof value === "string" ? formatAirlineName(value) : value}
+          </span>
         )}
       </td>
     </tr>
@@ -197,7 +222,7 @@ function FlightDetailsSection({
         <tbody>
           <FlightDetailRow
             label="Companhia"
-            value={airline}
+            value={airline ? formatAirlineName(airline) : undefined}
             isAirline
             airlineInfo={airlineInfo}
             hasWidth
@@ -427,6 +452,8 @@ function WeekCard({
         border: "1px solid #e2e8f0",
         marginBottom: isLast ? "0" : "16px",
         overflow: "hidden",
+        breakInside: "avoid",
+        pageBreakInside: "avoid",
       }}
     >
       <div
@@ -500,12 +527,14 @@ function MonthPage({
   monthLabel,
   weeks,
   priceMap,
+  monthTotalOverride,
 }: {
   monthLabel: string;
   weeks: WeekData[];
   priceMap: PriceMap;
+  monthTotalOverride?: number;
 }) {
-  const monthTotal = weeks.reduce((acc, w) => {
+  const monthTotal = monthTotalOverride ?? weeks.reduce((acc, w) => {
     const prices = priceMap[w.weekNumber];
     if (!prices) return acc;
     const airline = w.departureAirline?.toLowerCase();
@@ -756,17 +785,28 @@ export function ExportPdfButton({
       );
       addCanvasToPdfHelper(pdf, coverCanvas, true, pdfW, pdfH);
 
-      // 2. Uma página por mês
+      // 2. Um cartão completo por página para nunca cortar os dados de um bilhete
       for (let i = 0; i < months.length; i++) {
         const [monthLabel, weeks] = months[i];
-        const monthCanvas = await renderPageToCanvas(
-          <MonthPage
-            monthLabel={monthLabel}
-            weeks={weeks}
-            priceMap={priceMap}
-          />
-        );
-        addCanvasToPdfHelper(pdf, monthCanvas, false, pdfW, pdfH);
+        const monthTotal = weeks.reduce((acc, w) => {
+          const prices = priceMap[w.weekNumber];
+          if (!prices) return acc;
+          const airline = w.departureAirline?.toLowerCase();
+          const price = airline && prices[airline] ? parseFloat(prices[airline]) : 0;
+          return acc + (isNaN(price) ? 0 : price);
+        }, 0);
+
+        for (const week of weeks) {
+          const weekCanvas = await renderPageToCanvas(
+            <MonthPage
+              monthLabel={monthLabel}
+              weeks={[week]}
+              priceMap={priceMap}
+              monthTotalOverride={monthTotal}
+            />
+          );
+          addCanvasToPdfHelper(pdf, weekCanvas, false, pdfW, pdfH);
+        }
       }
 
       pdf.save("SmartFly-Passagens-2026.pdf");
