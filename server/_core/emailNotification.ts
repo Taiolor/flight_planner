@@ -1,4 +1,5 @@
 import { Resend } from "resend";
+import { ENV } from "./env";
 
 /**
  * Email notification for ticket changes
@@ -32,7 +33,7 @@ export interface TicketChangeNotification {
  * Get Resend client instance
  */
 function getResendClient(): Resend {
-  const apiKey = process.env.RESEND_API_KEY;
+  const apiKey = ENV.resendApiKey;
   if (!apiKey) {
     throw new Error("RESEND_API_KEY not configured");
   }

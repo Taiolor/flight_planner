@@ -97,8 +97,8 @@ export const appRouter = router({
         })
       )
       .mutation(async ({ input, ctx }) => {
-        const allowedEmail = process.env.AUTH_EMAIL;
-        const allowedPassword = process.env.AUTH_PASSWORD;
+        const allowedEmail = ENV.authEmail;
+        const allowedPassword = ENV.authPassword;
 
         if (!allowedEmail || !allowedPassword) {
           throw new TRPCError({
@@ -182,8 +182,7 @@ export const appRouter = router({
     // Retorna a chave pública VAPID para o frontend criar a subscription
     getVapidPublicKey: publicProcedure.query(() => {
       return {
-        publicKey:
-          ENV.vapidPublicKey || process.env.VITE_VAPID_PUBLIC_KEY || "",
+        publicKey: ENV.vapidPublicKey || "",
       };
     }),
 

@@ -21,8 +21,7 @@ let vapidConfigured = false;
 
 function ensureVapidConfigured() {
   if (vapidConfigured) return;
-  const publicKey =
-    ENV.vapidPublicKey || process.env.VITE_VAPID_PUBLIC_KEY || "";
+  const publicKey = ENV.vapidPublicKey || "";
   const privateKey = ENV.vapidPrivateKey || "";
 
   if (!publicKey || !privateKey) {
