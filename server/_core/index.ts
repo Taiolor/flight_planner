@@ -126,28 +126,12 @@ async function startServer() {
   // Rate limiting mais restrito para rotas de autenticação OAuth
   app.use("/api/oauth", authLimiter);
 
-  // Rate limiting para rotas de login via tRPC (proteção contra brute force)
-  app.use("/api/trpc/*", (req, res, next) => {
-    if (req.path.includes("flightAuth.login")) {
-      return authLimiter(req, res, next);
-    }
-    next();
-  });
-
   // OAuth callback under /api/oauth/callback
   registerOAuthRoutes(app);
 
-  // Middleware to apply rate limiting specifically to tRPC login procedures
+  // Rate limiting para rotas de login via tRPC (proteção contra brute force)
   app.use("/api/trpc", (req, res, next) => {
     // tRPC passes procedure names in the path, e.g., /api/trpc/flightAuth.login
-    if (req.path.includes("flightAuth.login")) {
-      return authLimiter(req, res, next);
-    }
-    next();
-  });
-
-  // tRPC API
-  app.use("/api/trpc", (req, res, next) => {
     if (req.path.includes("flightAuth.login")) {
       return authLimiter(req, res, next);
     }
