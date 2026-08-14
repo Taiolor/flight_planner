@@ -157,14 +157,14 @@ export const financialRouter = router({
         };
       });
 
-      const totalProjectedCash = projectedMonths.reduce(
-        (s, m) => s + m.projectedCashBRL,
-        0
-      );
-      const totalProjectedMiles = projectedMonths.reduce(
-        (s, m) => s + m.projectedMiles,
-        0
-      );
+      // ⚡ Bolt Optimization: Combine two .reduce() calls into a single pass to reduce CPU overhead
+      let totalProjectedCash = 0;
+      let totalProjectedMiles = 0;
+      for (let i = 0; i < projectedMonths.length; i++) {
+        totalProjectedCash += projectedMonths[i].projectedCashBRL;
+        totalProjectedMiles += projectedMonths[i].projectedMiles;
+      }
+
       const totalProjectedTrips = tripsPerMonth * 12;
 
       return {
