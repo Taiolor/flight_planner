@@ -115,12 +115,14 @@ const mockFlightData = [
   { semana: 7, ida: { data: "19/04/2026" }, retorno: { data: "24/04/2026" } }, // Tiradentes no intervalo
 ];
 
+const mockFlightDataMap = new Map(mockFlightData.map(f => [f.semana, f]));
+
 function getFeriadosPorIntervalo(
   weekNumber: number,
   departureDate?: string,
   returnDate?: string
 ): FeriadoInfo[] {
-  const defaultFlight = mockFlightData.find(f => f.semana === weekNumber);
+  const defaultFlight = mockFlightDataMap.get(weekNumber);
   const depStr = departureDate || defaultFlight?.ida.data;
   const retStr = returnDate || defaultFlight?.retorno.data;
   if (!depStr || !retStr) return [];

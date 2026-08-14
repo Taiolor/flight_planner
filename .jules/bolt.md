@@ -1,3 +1,6 @@
 ## 2025-02-28 - Optimize Changelog releases grouping
 **Learning:** Found a case where a very large, static array (`releases`) was being mapped and sorted via `.reduce()` and `Date` instantiation on every single component render in `client/src/pages/Changelog.tsx`. Because `releases` is defined as a constant outside the component, this complex grouping logic was redundant and causing unnecessary CPU overhead on state changes (like expanding an accordion).
 **Action:** Always verify if complex data transformations (like `.reduce()` over large arrays or `new Date()` inside loops) depend on component state. If they don't, or depend on slowly changing state, hoist them outside the component or wrap them in `useMemo` with an empty dependency array to prevent redundant allocations during the React render cycle.
+## 2024-05-18 - Optimize array lookups with Map for O(1) performance
+**Learning:** Using `Array.prototype.find()` inside frequently called functions results in O(N) lookup times and unnecessary CPU overhead.
+**Action:** When working with static lookup arrays, convert the array into a `Map` and hoist the initialization to the module level. This enables O(1) constant-time lookups using `Map.prototype.get()`.
