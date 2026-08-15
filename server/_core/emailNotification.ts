@@ -170,10 +170,6 @@ async function sendEmailViaResend(
   htmlContent: string
 ): Promise<boolean> {
   try {
-    console.log(
-      `[Email] Sending email to ${to.join(", ")} with subject: ${subject}`
-    );
-
     const resend = getResendClient();
 
     const { data, error } = await resend.emails.send({
@@ -188,7 +184,6 @@ async function sendEmailViaResend(
       return false;
     }
 
-    console.log(`[Email] Email sent successfully via Resend. Id: ${data?.id}`);
     return true;
   } catch (error) {
     console.error("[Email] Failed to send email via Resend:", error);
