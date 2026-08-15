@@ -15,6 +15,7 @@ import {
   insertNotificationLog,
   deleteOldNotificationLogs,
 } from "./db";
+import { type FlightWeek } from "../drizzle/schema";
 
 // Configurar VAPID uma única vez ao carregar o módulo
 let vapidConfigured = false;
@@ -136,6 +137,142 @@ function parseBrasiliaDatetime(dt: string): Date {
  * Verifica os voos dentro das janelas configuradas (aviso1 e aviso2) e envia notificações push.
  * Deve ser chamado periodicamente (ex: a cada hora).
  */
+
+interface AvisoWindow {
+  aviso: { minutes: number; label: string };
+  antecedenciaLabel: string;
+  startMs: number;
+  endMs: number;
+}
+
+type PushSubscriptions = Awaited<ReturnType<typeof getAllPushSubscriptions>>;
+
+async function processDepartureFlight(
+  week: FlightWeek,
+  departureTime: Date,
+  departureTimeMs: number,
+  avisoWindow: AvisoWindow,
+  pushSubscriptions: PushSubscriptions,
+  airlineNames: Record<string, string>
+): Promise<void> {
+  const { aviso, antecedenciaLabel, startMs, endMs } = avisoWindow;
+
+  if (isNaN(departureTimeMs) || departureTimeMs < startMs || departureTimeMs > endMs) {
+    return;
+  }
+
+  const airline = week.departureAirline
+    ? (airlineNames[week.departureAirline.toUpperCase()] ?? week.departureAirline)
+    : "Companhia";
+  const flightNum = week.departureFlightNumber ?? "";
+  const timeStr = departureTime.toLocaleTimeString("pt-BR", {
+    hour: "2-digit",
+    minute: "2-digit",
+    timeZone: "America/Sao_Paulo",
+  });
+  const dateStr = departureTime.toLocaleDateString("pt-BR", {
+    weekday: "long",
+    day: "2-digit",
+    month: "2-digit",
+    timeZone: "America/Sao_Paulo",
+  });
+
+  const sentDepCount = await sendPushToAll(
+    {
+      title: `✈️ ${antecedenciaLabel} — ${airline} ${flightNum}`,
+      body: `Voo de ida GRU → NVT: ${dateStr} às ${timeStr}. Prepare-se! 🧳`,
+      icon: "/icons/icon-192.png",
+      badge: "/icons/icon-192.png",
+      tag: `departure-week-${week.weekNumber}-aviso${aviso.minutes}`,
+      data: { weekNumber: week.weekNumber, direction: "departure" },
+    },
+    pushSubscriptions
+  );
+
+  const totalDepDevices = pushSubscriptions.length;
+  await insertNotificationLog({
+    weekNumber: Number(week.weekNumber),
+    direction: "ida",
+    avisoLabel: aviso.label,
+    avisoMinutes: aviso.minutes,
+    airline: week.departureAirline ?? null,
+    flightNumber: week.departureFlightNumber ?? null,
+    flightDatetime: week.departureFlightDatetime ?? null,
+    status:
+      sentDepCount === totalDepDevices
+        ? "success"
+        : sentDepCount > 0
+          ? "partial"
+          : "failed",
+    devicesReached: sentDepCount,
+    totalDevices: totalDepDevices,
+    isTest: 0,
+  });
+}
+
+async function processReturnFlight(
+  week: FlightWeek,
+  returnTime: Date,
+  returnTimeMs: number,
+  avisoWindow: AvisoWindow,
+  pushSubscriptions: PushSubscriptions,
+  airlineNames: Record<string, string>
+): Promise<void> {
+  const { aviso, antecedenciaLabel, startMs, endMs } = avisoWindow;
+
+  if (isNaN(returnTimeMs) || returnTimeMs < startMs || returnTimeMs > endMs) {
+    return;
+  }
+
+  const airline = week.returnAirline
+    ? (airlineNames[week.returnAirline.toUpperCase()] ?? week.returnAirline)
+    : "Companhia";
+  const flightNum = week.returnFlightNumber ?? "";
+  const timeStr = returnTime.toLocaleTimeString("pt-BR", {
+    hour: "2-digit",
+    minute: "2-digit",
+    timeZone: "America/Sao_Paulo",
+  });
+  const dateStr = returnTime.toLocaleDateString("pt-BR", {
+    weekday: "long",
+    day: "2-digit",
+    month: "2-digit",
+    timeZone: "America/Sao_Paulo",
+  });
+
+  const sentRetCount = await sendPushToAll(
+    {
+      title: `🏠 ${antecedenciaLabel} — ${airline} ${flightNum}`,
+      body: `Voo de volta NVT → GRU: ${dateStr} às ${timeStr}. Boa viagem! ✈️`,
+      icon: "/icons/icon-192.png",
+      badge: "/icons/icon-192.png",
+      tag: `return-week-${week.weekNumber}-aviso${aviso.minutes}`,
+      data: { weekNumber: week.weekNumber, direction: "return" },
+    },
+    pushSubscriptions
+  );
+
+  const totalRetDevices = pushSubscriptions.length;
+  await insertNotificationLog({
+    weekNumber: Number(week.weekNumber),
+    direction: "volta",
+    avisoLabel: aviso.label,
+    avisoMinutes: aviso.minutes,
+    airline: week.returnAirline ?? null,
+    flightNumber: week.returnFlightNumber ?? null,
+    flightDatetime: week.returnFlightDatetime ?? null,
+    status:
+      sentRetCount === totalRetDevices
+        ? "success"
+        : sentRetCount > 0
+          ? "partial"
+          : "failed",
+    devicesReached: sentRetCount,
+    totalDevices: totalRetDevices,
+    isTest: 0,
+  });
+}
+
 export async function checkAndNotifyUpcomingFlights(): Promise<void> {
   ensureVapidConfigured();
   if (!vapidConfigured) return;
@@ -197,110 +334,28 @@ export async function checkAndNotifyUpcomingFlights(): Promise<void> {
     if (isNaN(departureTimeMs) && isNaN(returnTimeMs)) continue;
 
     for (let j = 0; j < avisoWindows.length; j++) {
-      const { aviso, antecedenciaLabel, startMs, endMs } = avisoWindows[j];
+      const avisoWindow = avisoWindows[j];
 
-      // Verificar voo de ida
-      if (departureTime && !isNaN(departureTimeMs)) {
-        if (departureTimeMs >= startMs && departureTimeMs <= endMs) {
-          const airline = week.departureAirline
-            ? (airlineNames[week.departureAirline.toUpperCase()] ??
-              week.departureAirline)
-            : "Companhia";
-          const flightNum = week.departureFlightNumber ?? "";
-          const timeStr = departureTime.toLocaleTimeString("pt-BR", {
-            hour: "2-digit",
-            minute: "2-digit",
-            timeZone: "America/Sao_Paulo",
-          });
-          const dateStr = departureTime.toLocaleDateString("pt-BR", {
-            weekday: "long",
-            day: "2-digit",
-            month: "2-digit",
-            timeZone: "America/Sao_Paulo",
-          });
-          const sentDepCount = await sendPushToAll(
-            {
-              title: `✈️ ${antecedenciaLabel} — ${airline} ${flightNum}`,
-              body: `Voo de ida GRU → NVT: ${dateStr} às ${timeStr}. Prepare-se! 🧳`,
-              icon: "/icons/icon-192.png",
-              badge: "/icons/icon-192.png",
-              tag: `departure-week-${week.weekNumber}-aviso${aviso.minutes}`,
-              data: { weekNumber: week.weekNumber, direction: "departure" },
-            },
-            pushSubscriptions
-          );
-          const totalDepDevices = pushSubscriptions.length;
-          await insertNotificationLog({
-            weekNumber: Number(week.weekNumber),
-            direction: "ida",
-            avisoLabel: aviso.label,
-            avisoMinutes: aviso.minutes,
-            airline: week.departureAirline ?? null,
-            flightNumber: week.departureFlightNumber ?? null,
-            flightDatetime: week.departureFlightDatetime ?? null,
-            status:
-              sentDepCount === totalDepDevices
-                ? "success"
-                : sentDepCount > 0
-                  ? "partial"
-                  : "failed",
-            devicesReached: sentDepCount,
-            totalDevices: totalDepDevices,
-            isTest: 0,
-          });
-        }
+      if (departureTime) {
+        await processDepartureFlight(
+          week,
+          departureTime,
+          departureTimeMs,
+          avisoWindow,
+          pushSubscriptions,
+          airlineNames
+        );
       }
 
-      // Verificar voo de volta
-      if (returnTime && !isNaN(returnTimeMs)) {
-        if (returnTimeMs >= startMs && returnTimeMs <= endMs) {
-          const airline = week.returnAirline
-            ? (airlineNames[week.returnAirline.toUpperCase()] ??
-              week.returnAirline)
-            : "Companhia";
-          const flightNum = week.returnFlightNumber ?? "";
-          const timeStr = returnTime.toLocaleTimeString("pt-BR", {
-            hour: "2-digit",
-            minute: "2-digit",
-            timeZone: "America/Sao_Paulo",
-          });
-          const dateStr = returnTime.toLocaleDateString("pt-BR", {
-            weekday: "long",
-            day: "2-digit",
-            month: "2-digit",
-            timeZone: "America/Sao_Paulo",
-          });
-          const sentRetCount = await sendPushToAll(
-            {
-              title: `🏠 ${antecedenciaLabel} — ${airline} ${flightNum}`,
-              body: `Voo de volta NVT → GRU: ${dateStr} às ${timeStr}. Boa viagem! ✈️`,
-              icon: "/icons/icon-192.png",
-              badge: "/icons/icon-192.png",
-              tag: `return-week-${week.weekNumber}-aviso${aviso.minutes}`,
-              data: { weekNumber: week.weekNumber, direction: "return" },
-            },
-            pushSubscriptions
-          );
-          const totalRetDevices = pushSubscriptions.length;
-          await insertNotificationLog({
-            weekNumber: Number(week.weekNumber),
-            direction: "volta",
-            avisoLabel: aviso.label,
-            avisoMinutes: aviso.minutes,
-            airline: week.returnAirline ?? null,
-            flightNumber: week.returnFlightNumber ?? null,
-            flightDatetime: week.returnFlightDatetime ?? null,
-            status:
-              sentRetCount === totalRetDevices
-                ? "success"
-                : sentRetCount > 0
-                  ? "partial"
-                  : "failed",
-            devicesReached: sentRetCount,
-            totalDevices: totalRetDevices,
-            isTest: 0,
-          });
-        }
+      if (returnTime) {
+        await processReturnFlight(
+          week,
+          returnTime,
+          returnTimeMs,
+          avisoWindow,
+          pushSubscriptions,
+          airlineNames
+        );
       }
     }
   }
