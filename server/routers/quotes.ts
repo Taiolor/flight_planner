@@ -75,17 +75,11 @@ interface SkyScrapperResult {
  * Nota: a API retorna price.raw como valor numérico em BRL (o símbolo
  * formatado pode aparecer incorretamente como ₹ — ignoramos o símbolo).
  */
-async function fetchSkyScrapperPrice(
+async function initiateFlightSearch(
   departureDate: string,
   returnDate: string,
-  apiKey: string
-): Promise<SkyScrapperResult> {
-  const headers = {
-    "x-rapidapi-key": apiKey,
-    "x-rapidapi-host": RAPIDAPI_HOST,
-  };
-
-  // ── Passo 1: Iniciar a busca ──────────────────────────────────────────────
+  headers: Record<string, string>
+) {
   const searchUrl = new URL(
     `https://${RAPIDAPI_HOST}/api/v2/flights/searchFlights`
   );
@@ -121,7 +115,14 @@ async function fetchSkyScrapperPrice(
     });
   }
 
-  // ── Passo 2: Polling até obter resultados completos ───────────────────────
+  return { initData, sessionId };
+}
+
+async function pollForResults(
+  sessionId: string,
+  headers: Record<string, string>,
+  initData: any
+) {
   let itineraries: any[] = initData?.data?.itineraries ?? [];
   let contextStatus: string = initData?.data?.context?.status ?? "incomplete";
   let lastData = initData;
@@ -156,6 +157,13 @@ async function fetchSkyScrapperPrice(
     if (contextStatus === "complete" && itineraries.length > 0) break;
   }
 
+  return { itineraries, lastData };
+}
+
+function extractBestFlightInfo(
+  itineraries: any[],
+  lastData: any
+): SkyScrapperResult {
   const rawResponse = JSON.stringify(lastData).slice(0, 5000);
 
   if (itineraries.length === 0) {
@@ -166,7 +174,6 @@ async function fetchSkyScrapperPrice(
     });
   }
 
-  // ── Passo 3: Extrair menor preço e dados detalhados ───────────────────────
   // price.raw é o valor numérico em BRL (o símbolo formatado pode estar errado)
   let lowestPrice = Infinity;
   let outboundInfo: FlightLegInfo = {
@@ -229,6 +236,34 @@ async function fetchSkyScrapperPrice(
     returnArrival: returnInfo.arrival,
     rawResponse,
   };
+}
+
+async function fetchSkyScrapperPrice(
+  departureDate: string,
+  returnDate: string,
+  apiKey: string
+): Promise<SkyScrapperResult> {
+  const headers = {
+    "x-rapidapi-key": apiKey,
+    "x-rapidapi-host": RAPIDAPI_HOST,
+  };
+
+  // ── Passo 1: Iniciar a busca ──────────────────────────────────────────────
+  const { initData, sessionId } = await initiateFlightSearch(
+    departureDate,
+    returnDate,
+    headers
+  );
+
+  // ── Passo 2: Polling até obter resultados completos ───────────────────────
+  const { itineraries, lastData } = await pollForResults(
+    sessionId,
+    headers,
+    initData
+  );
+
+  // ── Passo 3: Extrair menor preço e dados detalhados ───────────────────────
+  return extractBestFlightInfo(itineraries, lastData);
 }
 
 export const quotesRouter = router({
