@@ -47,17 +47,11 @@ import {
 } from "lucide-react";
 import { Link } from "wouter";
 import { useTheme } from "@/contexts/ThemeContext";
+import { toIsoDate } from "@/lib/utils";
 
 const EMPTY_ARRAY: any[] = [];
 
 // ─── Utilitários de data ─────────────────────────────────────────────────────
-
-/** Converte DD/MM/YYYY → YYYY-MM-DD (se já estiver em ISO, retorna sem alterar) */
-const toIsoDate = (d: string): string => {
-  if (d.includes("-")) return d;
-  const [day, month, year] = d.split("/");
-  return `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;
-};
 
 /** Formata DD/MM/YYYY para exibição (ou converte ISO → BR) */
 const formatDateBR = (dateStr: string): string => {

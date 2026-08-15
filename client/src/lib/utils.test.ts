@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { cn } from "./utils";
+import { cn, toIsoDate } from "./utils";
 
 describe("cn utility", () => {
   it("merges basic class names", () => {
@@ -36,5 +36,23 @@ describe("cn utility", () => {
         null
       )
     ).toBe("base-class bg-blue-500 m-2 p-4");
+  });
+});
+
+describe("toIsoDate utility", () => {
+  it("converts DD/MM/YYYY to YYYY-MM-DD", () => {
+    expect(toIsoDate("15/08/2023")).toBe("2023-08-15");
+  });
+
+  it("pads single digit days and months", () => {
+    expect(toIsoDate("5/8/2023")).toBe("2023-08-05");
+  });
+
+  it("returns already formatted ISO dates as is", () => {
+    expect(toIsoDate("2023-08-15")).toBe("2023-08-15");
+  });
+
+  it("handles empty or falsy inputs gracefully", () => {
+    expect(toIsoDate("")).toBe("");
   });
 });

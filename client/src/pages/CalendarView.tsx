@@ -2,6 +2,7 @@ import { useMemo, useState, useEffect, useRef } from "react";
 import BrazilWorldCupPanel from "@/components/BrazilWorldCupPanel";
 import { brazilMatchByDate } from "@/lib/worldCup2026";
 import { Link } from "wouter";
+import { toIsoDate } from "@/lib/utils";
 import { trpc } from "@/lib/trpc";
 import {
   ArrowLeft,
@@ -217,16 +218,6 @@ function extractTime(dt: string | null | undefined): string {
   if (!dt) return "";
   const t = dt.includes("T") ? dt.split("T")[1] : dt.split(" ")[1];
   return t ? t.slice(0, 5) : "";
-}
-
-/** Converte "DD/MM/YYYY" para "YYYY-MM-DD" */
-function toIsoDate(dateStr: string): string {
-  if (!dateStr) return "";
-  if (dateStr.includes("/")) {
-    const [d, m, y] = dateStr.split("/");
-    return `${y}-${m.padStart(2, "0")}-${d.padStart(2, "0")}`;
-  }
-  return dateStr;
 }
 
 import { WeekRow, DayMark } from "@/components/flights/types";
