@@ -59,7 +59,9 @@ export function formatAirlineName(airline: string | null | undefined): string {
   return airline?.trim().toUpperCase() || "Não informado";
 }
 
-export function formatRescheduleStatus(value: number | boolean | null | undefined): string {
+export function formatRescheduleStatus(
+  value: number | boolean | null | undefined
+): string {
   return isRescheduled(value) ? "Remarcado" : "Não remarcado";
 }
 
@@ -467,7 +469,8 @@ function WeekCard({
         }}
       >
         <div style={{ fontWeight: 700, fontSize: "14px" }}>
-          Semana {week.weekNumber} — {week.departureDate} {isOneway ? "• Somente ida" : `→ ${week.returnDate}`}
+          Semana {week.weekNumber} — {week.departureDate}{" "}
+          {isOneway ? "• Somente ida" : `→ ${week.returnDate}`}
         </div>
         {depPrice !== null && !isNaN(depPrice) && (
           <div
@@ -534,13 +537,16 @@ function MonthPage({
   priceMap: PriceMap;
   monthTotalOverride?: number;
 }) {
-  const monthTotal = monthTotalOverride ?? weeks.reduce((acc, w) => {
-    const prices = priceMap[w.weekNumber];
-    if (!prices) return acc;
-    const airline = w.departureAirline?.toLowerCase();
-    const price = airline && prices[airline] ? parseFloat(prices[airline]) : 0;
-    return acc + (isNaN(price) ? 0 : price);
-  }, 0);
+  const monthTotal =
+    monthTotalOverride ??
+    weeks.reduce((acc, w) => {
+      const prices = priceMap[w.weekNumber];
+      if (!prices) return acc;
+      const airline = w.departureAirline?.toLowerCase();
+      const price =
+        airline && prices[airline] ? parseFloat(prices[airline]) : 0;
+      return acc + (isNaN(price) ? 0 : price);
+    }, 0);
 
   return (
     <div
@@ -792,7 +798,8 @@ export function ExportPdfButton({
           const prices = priceMap[w.weekNumber];
           if (!prices) return acc;
           const airline = w.departureAirline?.toLowerCase();
-          const price = airline && prices[airline] ? parseFloat(prices[airline]) : 0;
+          const price =
+            airline && prices[airline] ? parseFloat(prices[airline]) : 0;
           return acc + (isNaN(price) ? 0 : price);
         }, 0);
 

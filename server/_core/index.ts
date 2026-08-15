@@ -65,25 +65,34 @@ async function startServer() {
   const isDev = process.env.NODE_ENV === "development";
   app.use(
     helmet({
-      contentSecurityPolicy: isDev ? false : {
-        directives: {
-          defaultSrc: ["'self'"],
-          scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "blob:", "data:", "https://cdn.jsdelivr.net"],
-          styleSrc: [
-            "'self'",
-            "'unsafe-inline'",
-            "https://fonts.googleapis.com",
-          ],
-          fontSrc: ["'self'", "https://fonts.gstatic.com"],
-          imgSrc: ["'self'", "data:", "https:"],
-          connectSrc: ["'self'", "https:", "http:", "ws:", "wss:"],
-          frameSrc: ["'self'", "*"],
-          objectSrc: ["'none'"],
-          baseUri: ["'self'"],
-          formAction: ["'self'"],
-          frameAncestors: ["*"],
-        },
-      },
+      contentSecurityPolicy: isDev
+        ? false
+        : {
+            directives: {
+              defaultSrc: ["'self'"],
+              scriptSrc: [
+                "'self'",
+                "'unsafe-inline'",
+                "'unsafe-eval'",
+                "blob:",
+                "data:",
+                "https://cdn.jsdelivr.net",
+              ],
+              styleSrc: [
+                "'self'",
+                "'unsafe-inline'",
+                "https://fonts.googleapis.com",
+              ],
+              fontSrc: ["'self'", "https://fonts.gstatic.com"],
+              imgSrc: ["'self'", "data:", "https:"],
+              connectSrc: ["'self'", "https:", "http:", "ws:", "wss:"],
+              frameSrc: ["'self'", "*"],
+              objectSrc: ["'none'"],
+              baseUri: ["'self'"],
+              formAction: ["'self'"],
+              frameAncestors: ["*"],
+            },
+          },
       crossOriginEmbedderPolicy: false,
       frameguard: isDev ? false : { action: "sameorigin" },
     })
