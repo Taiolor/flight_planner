@@ -102,7 +102,7 @@ Planejador de Passagens Aéreas 2026
       events: [calendarEvent],
     });
 
-    const result = execFileSync(
+    execFileSync(
       "manus-mcp-cli",
       [
         "tool",
@@ -116,10 +116,6 @@ Planejador de Passagens Aéreas 2026
       { encoding: "utf-8", shell: false }
     );
 
-    console.log(
-      `[Calendar] Flight event created successfully. Result:`,
-      result
-    );
     return true;
   } catch (error) {
     console.error("[Calendar] Failed to create flight event:", error);
