@@ -1,3 +1,7 @@
 ## 2025-02-28 - Optimize Changelog releases grouping
 **Learning:** Found a case where a very large, static array (`releases`) was being mapped and sorted via `.reduce()` and `Date` instantiation on every single component render in `client/src/pages/Changelog.tsx`. Because `releases` is defined as a constant outside the component, this complex grouping logic was redundant and causing unnecessary CPU overhead on state changes (like expanding an accordion).
 **Action:** Always verify if complex data transformations (like `.reduce()` over large arrays or `new Date()` inside loops) depend on component state. If they don't, or depend on slowly changing state, hoist them outside the component or wrap them in `useMemo` with an empty dependency array to prevent redundant allocations during the React render cycle.
+
+## 2024-05-18 - Optimize getFinancialYearSummary queries
+**Learning:** Functions aggregating data by year (`getFinancialYearSummary`) often call smaller aggregation functions (`getFinancialSummaryByMonth`). If both functions independently fetch the same large dataset (e.g., all `weekData` for the year), it results in redundant N+1-style DB queries for the same data.
+**Action:** When a parent function fetches data that a child aggregation function also needs, update the child function to accept an optional `prefetchedData?` parameter. This allows the parent to pass down the data it already fetched, preventing duplicate database hits while keeping the child function backward-compatible for other callers.

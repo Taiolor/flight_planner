@@ -178,9 +178,10 @@ export async function getFinancialDataByYear(
  * Agrega dados financeiros por mês para um dado ano.
  */
 export async function getFinancialSummaryByMonth(
-  year: number
+  year: number,
+  prefetchedWeekData?: WeekFinancialData[]
 ): Promise<MonthSummary[]> {
-  const weekData = await getFinancialDataByYear(year);
+  const weekData = prefetchedWeekData ?? (await getFinancialDataByYear(year));
   const issued = weekData.filter(w => w.isTicketIssued === 1);
 
   const monthMap = new Map<number, MonthSummary>();
@@ -237,8 +238,8 @@ export async function getFinancialSummaryByMonth(
 export async function getFinancialYearSummary(
   year: number
 ): Promise<YearSummary> {
-  const byMonth = await getFinancialSummaryByMonth(year);
   const weekData = await getFinancialDataByYear(year);
+  const byMonth = await getFinancialSummaryByMonth(year, weekData);
   const issued = weekData.filter(w => w.isTicketIssued === 1);
 
   const byAirline: Record<
