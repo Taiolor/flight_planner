@@ -903,6 +903,12 @@ export const flightData: Flight[] = [
   },
 ];
 
+// ⚡ Bolt Optimization: Eagerly initialize a Map for O(1) flight lookups by weekNumber
+export const flightDataMap = new Map<number, Flight>(
+  flightData.map(f => [f.semana, f])
+);
+
+
 export function generateBookingLink(
   airline: string,
   departure: string,
@@ -1145,7 +1151,7 @@ export function getFeriadosPorIntervalo(
   departureDate?: string,
   returnDate?: string
 ): FeriadoInfo[] {
-  const defaultFlight = flightData.find(f => f.semana === weekNumber);
+  const defaultFlight = flightDataMap.get(weekNumber);
   const depStr = departureDate || defaultFlight?.ida.data;
   const retStr = returnDate || defaultFlight?.retorno.data;
 
