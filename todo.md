@@ -638,3 +638,6 @@
 - [x] Fechar PRs comprovadamente duplicados ou obsoletos após os merges recentes (8 PRs fechados)
 
 - [x] Configurar CI para validar instalação determinística, TypeScript e Vitest em cada pull request
+
+- [x] Resolver o conflito do PR #290 em branch dedicada de rate limiting (`security/resolve-pr-290-rate-limit`)
+- [x] Resolver o conflito do PR #286 em branch dedicada de Content Security Policy (`security/resolve-pr-286-csp`)
