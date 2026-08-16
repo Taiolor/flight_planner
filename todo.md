@@ -630,3 +630,5 @@
 - [x] Avaliar PRs abertos sem sobreposição e fazer merge apenas dos que não tiverem conflitos (11 PRs integrados com sucesso)
 
 - [x] Classificar PRs abertos por confiabilidade, risco e ausência de conflitos
+
+- [x] Integrar e validar os PRs de segurança #303 e #292 (PRs #290 e #286 retidos por conflitos)
