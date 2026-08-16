@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { cn, toIsoDate } from "./utils";
+import { cn, extractTime, toIsoDate } from "./utils";
 
 describe("cn utility", () => {
   it("merges basic class names", () => {
@@ -54,5 +54,20 @@ describe("toIsoDate utility", () => {
 
   it("handles empty or falsy inputs gracefully", () => {
     expect(toIsoDate("")).toBe("");
+    expect(toIsoDate(null)).toBe("");
+    expect(toIsoDate(undefined)).toBe("");
+  });
+});
+
+describe("extractTime utility", () => {
+  it("extracts time from supported datetime values", () => {
+    expect(extractTime("2026-09-05T14:30:00")).toBe("14:30");
+    expect(extractTime("05/09/2026 07:15:00")).toBe("07:15");
+  });
+
+  it("returns an empty string for absent or incomplete values", () => {
+    expect(extractTime("2026-09-05T")).toBe("");
+    expect(extractTime(null)).toBe("");
+    expect(extractTime(undefined)).toBe("");
   });
 });

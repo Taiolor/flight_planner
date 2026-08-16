@@ -2,7 +2,7 @@ import { useMemo, useState, useEffect, useRef } from "react";
 import BrazilWorldCupPanel from "@/components/BrazilWorldCupPanel";
 import { brazilMatchByDate } from "@/lib/worldCup2026";
 import { Link } from "wouter";
-import { toIsoDate } from "@/lib/utils";
+import { extractTime, toIsoDate } from "@/lib/utils";
 import { trpc } from "@/lib/trpc";
 import {
   ArrowLeft,
@@ -211,13 +211,6 @@ function getExtendedWeekends(
   });
 
   return extended;
-}
-
-/** Extrai HH:mm de um datetime "YYYY-MM-DDTHH:mm" ou "DD/MM/YYYY HH:mm" */
-function extractTime(dt: string | null | undefined): string {
-  if (!dt) return "";
-  const t = dt.includes("T") ? dt.split("T")[1] : dt.split(" ")[1];
-  return t ? t.slice(0, 5) : "";
 }
 
 import { WeekRow, DayMark } from "@/components/flights/types";
