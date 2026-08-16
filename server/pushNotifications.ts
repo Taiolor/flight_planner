@@ -157,12 +157,17 @@ async function processDepartureFlight(
 ): Promise<void> {
   const { aviso, antecedenciaLabel, startMs, endMs } = avisoWindow;
 
-  if (isNaN(departureTimeMs) || departureTimeMs < startMs || departureTimeMs > endMs) {
+  if (
+    isNaN(departureTimeMs) ||
+    departureTimeMs < startMs ||
+    departureTimeMs > endMs
+  ) {
     return;
   }
 
   const airline = week.departureAirline
-    ? (airlineNames[week.departureAirline.toUpperCase()] ?? week.departureAirline)
+    ? (airlineNames[week.departureAirline.toUpperCase()] ??
+      week.departureAirline)
     : "Companhia";
   const flightNum = week.departureFlightNumber ?? "";
   const timeStr = departureTime.toLocaleTimeString("pt-BR", {

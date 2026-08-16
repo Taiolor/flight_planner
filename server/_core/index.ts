@@ -65,25 +65,34 @@ async function startServer() {
   const isDev = process.env.NODE_ENV === "development";
   app.use(
     helmet({
-      contentSecurityPolicy: isDev ? false : {
-        directives: {
-          defaultSrc: ["'self'"],
-          scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "blob:", "data:", "https://cdn.jsdelivr.net"],
-          styleSrc: [
-            "'self'",
-            "'unsafe-inline'",
-            "https://fonts.googleapis.com",
-          ],
-          fontSrc: ["'self'", "https://fonts.gstatic.com"],
-          imgSrc: ["'self'", "data:", "https:"],
-          connectSrc: ["'self'", "https:", "http:", "ws:", "wss:"],
-          frameSrc: ["'self'", "*"],
-          objectSrc: ["'none'"],
-          baseUri: ["'self'"],
-          formAction: ["'self'"],
-          frameAncestors: ["*"],
-        },
-      },
+      contentSecurityPolicy: isDev
+        ? false
+        : {
+            directives: {
+              defaultSrc: ["'self'"],
+              scriptSrc: [
+                "'self'",
+                "'unsafe-inline'",
+                "'unsafe-eval'",
+                "blob:",
+                "data:",
+                "https://cdn.jsdelivr.net",
+              ],
+              styleSrc: [
+                "'self'",
+                "'unsafe-inline'",
+                "https://fonts.googleapis.com",
+              ],
+              fontSrc: ["'self'", "https://fonts.gstatic.com"],
+              imgSrc: ["'self'", "data:", "https:"],
+              connectSrc: ["'self'", "https:", "http:", "ws:", "wss:"],
+              frameSrc: ["'self'", "*"],
+              objectSrc: ["'none'"],
+              baseUri: ["'self'"],
+              formAction: ["'self'"],
+              frameAncestors: ["*"],
+            },
+          },
       crossOriginEmbedderPolicy: false,
       frameguard: isDev ? false : { action: "sameorigin" },
     })
@@ -136,23 +145,6 @@ async function startServer() {
 
   // OAuth callback under /api/oauth/callback
   registerOAuthRoutes(app);
-
-  // Middleware to apply rate limiting specifically to tRPC login procedures
-  app.use("/api/trpc", (req, res, next) => {
-    // tRPC passes procedure names in the path, e.g., /api/trpc/flightAuth.login
-    if (req.path.includes("flightAuth.login")) {
-      return authLimiter(req, res, next);
-    }
-    next();
-  });
-
-  // tRPC API
-  app.use("/api/trpc", (req, res, next) => {
-    if (req.path.includes("flightAuth.login")) {
-      return authLimiter(req, res, next);
-    }
-    next();
-  });
 
   app.use(
     "/api/trpc",

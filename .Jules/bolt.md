@@ -25,5 +25,5 @@
 
 ## 2026-07-28 - Eager Map Initialization for O(1) Lookups
 
-**Learning:** When retrieving data inside loops or heavily used functions using `Array.prototype.find()` on static arrays, the time complexity balloons to O(N * M), leading to CPU overhead and rendering delays.
+**Learning:** When retrieving data inside loops or heavily used functions using `Array.prototype.find()` on static arrays, the time complexity balloons to O(N \* M), leading to CPU overhead and rendering delays.
 **Action:** When working with static arrays that are frequently queried by a unique identifier (like an ID or week number), initialize a `Map` eagerly at module load time to enable O(1) lookups, preventing repeated O(N) array traversals during runtime or render cycles.

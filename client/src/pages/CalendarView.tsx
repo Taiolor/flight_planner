@@ -707,7 +707,8 @@ export default function CalendarView({
                   Semanas sem passagens emitidas ({unissuedCount})
                 </h3>
                 <p className="text-sm text-amber-800 mb-3">
-                  Você ainda não comprou passagens para as seguintes semanas. Lembre-se: idas aos domingos, retornos quinta ou sexta.
+                  Você ainda não comprou passagens para as seguintes semanas.
+                  Lembre-se: idas aos domingos, retornos quinta ou sexta.
                 </p>
                 <div className="flex flex-wrap gap-2">
                   {(weeksQuery.data as any)
@@ -715,53 +716,90 @@ export default function CalendarView({
                       const depDate = parseDate(week.departureDate);
                       const retDate = parseDate(week.returnDate);
                       // Validar padrão: ida domingo (0), retorno quinta (4) ou sexta (5)
-                      const isDepartureSunday = depDate && depDate.getDay() === 0;
-                      const isReturnThursdayOrFriday = retDate && (retDate.getDay() === 4 || retDate.getDay() === 5);
-                      const hasCorrectPattern = isDepartureSunday && isReturnThursdayOrFriday;
+                      const isDepartureSunday =
+                        depDate && depDate.getDay() === 0;
+                      const isReturnThursdayOrFriday =
+                        retDate &&
+                        (retDate.getDay() === 4 || retDate.getDay() === 5);
+                      const hasCorrectPattern =
+                        isDepartureSunday && isReturnThursdayOrFriday;
                       // Verificar se tem bilhete emitido
-                      const hasIssued = depDate && retDate && (markedDays[toKey(depDate)]?.departure || markedDays[toKey(retDate)]?.return);
+                      const hasIssued =
+                        depDate &&
+                        retDate &&
+                        (markedDays[toKey(depDate)]?.departure ||
+                          markedDays[toKey(retDate)]?.return);
                       // Mostrar apenas semanas futuras sem bilhete e com padrão correto
-                      return !hasIssued && depDate && depDate > today && hasCorrectPattern;
+                      return (
+                        !hasIssued &&
+                        depDate &&
+                        depDate > today &&
+                        hasCorrectPattern
+                      );
                     })
                     .map((week: any) => {
                       const depDate = parseDate(week.departureDate);
                       const weekNumber = week.weekNumber ?? week.weekNum;
                       // Calcular se está nos próximos 15 dias
-                      const daysUntilDeparture = depDate ? Math.ceil((depDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)) : 999;
-                      const isUrgent = daysUntilDeparture <= 15 && daysUntilDeparture > 0;
+                      const daysUntilDeparture = depDate
+                        ? Math.ceil(
+                            (depDate.getTime() - today.getTime()) /
+                              (1000 * 60 * 60 * 24)
+                          )
+                        : 999;
+                      const isUrgent =
+                        daysUntilDeparture <= 15 && daysUntilDeparture > 0;
 
                       return (
                         <div
                           key={weekNumber}
                           className={`px-3 py-2 rounded-xl border text-sm cursor-pointer transition-colors ${
                             isUrgent
-                              ? 'bg-red-100 border-red-400 text-red-900 hover:bg-red-200'
-                              : 'bg-white border-amber-300 text-amber-900 hover:bg-amber-100'
+                              ? "bg-red-100 border-red-400 text-red-900 hover:bg-red-200"
+                              : "bg-white border-amber-300 text-amber-900 hover:bg-amber-100"
                           }`}
                           onClick={() => {
-                            const element = document.querySelector(`[data-week-id="week-${weekNumber}"]`);
-                            element?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            const element = document.querySelector(
+                              `[data-week-id="week-${weekNumber}"]`
+                            );
+                            element?.scrollIntoView({
+                              behavior: "smooth",
+                              block: "center",
+                            });
                           }}
-                          title={`Semana ${weekNumber}: ida ${formatDateLabel(week.departureDate)}, volta ${formatDateLabel(week.returnDate)}${isUrgent ? ' (URGENTE - próximos 15 dias)' : ''}`}
+                          title={`Semana ${weekNumber}: ida ${formatDateLabel(week.departureDate)}, volta ${formatDateLabel(week.returnDate)}${isUrgent ? " (URGENTE - próximos 15 dias)" : ""}`}
                         >
                           <div className="flex items-center justify-between gap-3 font-semibold">
                             <span>Semana {weekNumber}</span>
-                            {isUrgent && <span className="text-[11px] uppercase tracking-wide">Urgente</span>}
+                            {isUrgent && (
+                              <span className="text-[11px] uppercase tracking-wide">
+                                Urgente
+                              </span>
+                            )}
                           </div>
                           <div className="mt-1 flex flex-col gap-1 text-xs sm:flex-row sm:items-center sm:gap-3">
                             <span className="inline-flex items-center gap-1 whitespace-nowrap">
-                              <Plane className="h-3.5 w-3.5" aria-hidden="true" />
-                              <span>Ida: {formatDateLabel(week.departureDate)}</span>
+                              <Plane
+                                className="h-3.5 w-3.5"
+                                aria-hidden="true"
+                              />
+                              <span>
+                                Ida: {formatDateLabel(week.departureDate)}
+                              </span>
                             </span>
                             <span className="inline-flex items-center gap-1 whitespace-nowrap">
-                              <Plane className="h-3.5 w-3.5 rotate-180" aria-hidden="true" />
-                              <span>Volta: {formatDateLabel(week.returnDate)}</span>
+                              <Plane
+                                className="h-3.5 w-3.5 rotate-180"
+                                aria-hidden="true"
+                              />
+                              <span>
+                                Volta: {formatDateLabel(week.returnDate)}
+                              </span>
                             </span>
                           </div>
                         </div>
                       );
-                    })
-                  }
+                    })}
                 </div>
               </div>
             </div>

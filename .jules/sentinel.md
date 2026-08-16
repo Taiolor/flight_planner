@@ -21,7 +21,14 @@
 **Vulnerability:** Authorization bypass via mixed middleware contexts. The `quotesRouter` in `server/routers/quotes.ts` was using the global `protectedProcedure` (which validates general OAuth users) instead of the domain-specific `flightProtectedProcedure` (which validates flight planner app-specific session cookies).
 **Learning:** Using the wrong middleware allows cross-domain authorization bypasses. Even if a user is authenticated globally via Manus OAuth, they should not automatically have access to domain-specific features (like the flight planner) unless they pass that domain's specific auth checks (`flightAuth`).
 **Prevention:** Always verify that the chosen protected procedure matches the intended domain of the router. For flight planner features, strictly import and use `flightProtectedProcedure` from `server/flightAuthMiddleware.ts`. Ensure middleware definitions are extracted into dedicated files to prevent circular dependencies when referenced across multiple routers.
+
 ## YYYY-MM-DD - [Prevent tRPC Information Leakage]
+
 **Vulnerability:** tRPC exposes `INTERNAL_SERVER_ERROR` details to clients in production.
 **Learning:** By default, if a tRPC resolver throws an unexpected error, the default `errorFormatter` can leak sensitive stack traces, paths, or database messages to the client, providing attackers with insights into the server architecture.
 **Prevention:** Always configure the tRPC initialization with a custom `errorFormatter` that checks `ENV.isProduction` and explicitly masks the `INTERNAL_SERVER_ERROR` code with a generic message (e.g., 'Internal server error').
+## 2024-06-25 - Prevent Rate Limiting Misconfigurations
+
+**Vulnerability:** Double Rate Limit Deduction
+**Learning:** Applying a rate limiting middleware (like `authLimiter`) multiple times to the same routing stack (e.g., repeating `app.use` blocks) causes a single HTTP request to trigger the limiter multiple times, draining the allowed quota prematurely and potentially causing self-imposed Denial of Service (DoS) for legitimate users.
+**Prevention:** Ensure rate limiters are only registered once per unique path block in Express, avoiding redundant `app.use` statements.

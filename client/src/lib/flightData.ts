@@ -908,7 +908,6 @@ export const flightDataMap = new Map<number, Flight>(
   flightData.map(f => [f.semana, f])
 );
 
-
 export function generateBookingLink(
   airline: string,
   departure: string,
