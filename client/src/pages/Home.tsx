@@ -386,6 +386,19 @@ const todasFasesParsed = todasFases.map(fase => ({
   fimMs: parseISO(fase.fim).getTime(),
 }));
 
+const CHART_MONTHS = [
+  { num: "03", label: "Mar" },
+  { num: "04", label: "Abr" },
+  { num: "05", label: "Mai" },
+  { num: "06", label: "Jun" },
+  { num: "07", label: "Jul" },
+  { num: "08", label: "Ago" },
+  { num: "09", label: "Set" },
+  { num: "10", label: "Out" },
+  { num: "11", label: "Nov" },
+  { num: "12", label: "Dez" },
+];
+
 export default function Home() {
   // Theme state
   const { theme, toggleTheme, colorPreset, setColorPreset } = useTheme();
@@ -1291,19 +1304,6 @@ export default function Home() {
   // Dados para o gráfico de variação de preços por mês (todas as empresas)
   const chartData = useMemo(() => {
     // ⚡ Bolt: Single-pass iteration to avoid multiple array allocations from .filter()
-    const MONTHS = [
-      { num: "03", label: "Mar" },
-      { num: "04", label: "Abr" },
-      { num: "05", label: "Mai" },
-      { num: "06", label: "Jun" },
-      { num: "07", label: "Jul" },
-      { num: "08", label: "Ago" },
-      { num: "09", label: "Set" },
-      { num: "10", label: "Out" },
-      { num: "11", label: "Nov" },
-      { num: "12", label: "Dez" },
-    ];
-
     // Initialize accumulator for each month
     const monthStats: Record<
       string,
@@ -1316,10 +1316,10 @@ export default function Home() {
       }
     > = {};
 
-    for (let i = 0; i < MONTHS.length; i++) {
-      const monthNum = MONTHS[i].num;
+    for (let i = 0; i < CHART_MONTHS.length; i++) {
+      const monthNum = CHART_MONTHS[i].num;
       monthStats[monthNum] = {
-        mes: MONTHS[i].label,
+        mes: CHART_MONTHS[i].label,
         airlines: {},
         minPrice: Infinity,
         totalAll: 0,
@@ -1362,8 +1362,8 @@ export default function Home() {
 
     // Format output exactly as expected
     const result: Record<string, string | number>[] = [];
-    for (let i = 0; i < MONTHS.length; i++) {
-      const stats = monthStats[MONTHS[i].num];
+    for (let i = 0; i < CHART_MONTHS.length; i++) {
+      const stats = monthStats[CHART_MONTHS[i].num];
       const entry: Record<string, string | number> = { mes: stats.mes };
 
       for (const airline of airlines) {
@@ -1433,15 +1433,19 @@ export default function Home() {
       const semanaInicioMs = semanaInicio.getTime();
       const semanaFimEfetivoMs = semanaFimEfetivo.getTime();
 
-      const jogosDosBrasil = todosJogosParsed.filter(
-        jogo =>
-          jogo.dataMs >= semanaInicioMs && jogo.dataMs <= semanaFimEfetivoMs
-      );
+      const jogosDosBrasil: typeof todosJogosParsed = [];
+      for (const jogo of todosJogosParsed) {
+        if (jogo.dataMs >= semanaInicioMs && jogo.dataMs <= semanaFimEfetivoMs) {
+          jogosDosBrasil.push(jogo);
+        }
+      }
 
-      const fasesEliminatorias = todasFasesParsed.filter(
-        fase =>
-          fase.inicioMs <= semanaFimEfetivoMs && fase.fimMs >= semanaInicioMs
-      );
+      const fasesEliminatorias: typeof todasFasesParsed = [];
+      for (const fase of todasFasesParsed) {
+        if (fase.inicioMs <= semanaFimEfetivoMs && fase.fimMs >= semanaInicioMs) {
+          fasesEliminatorias.push(fase);
+        }
+      }
 
       map[w.weekNumber] = {
         feriados,
@@ -1465,25 +1469,12 @@ export default function Home() {
     annualSmilesTotal,
     annualLatamPassTotal,
   } = useMemo(() => {
-    const MONTHS = [
-      { num: "03", label: "Mar" },
-      { num: "04", label: "Abr" },
-      { num: "05", label: "Mai" },
-      { num: "06", label: "Jun" },
-      { num: "07", label: "Jul" },
-      { num: "08", label: "Ago" },
-      { num: "09", label: "Set" },
-      { num: "10", label: "Out" },
-      { num: "11", label: "Nov" },
-      { num: "12", label: "Dez" },
-    ];
-
     const summaryMap: Record<
       string,
       { mes: string; total: number; count: number }
     > = {};
-    for (let i = 0; i < MONTHS.length; i++) {
-      summaryMap[MONTHS[i].num] = { mes: MONTHS[i].label, total: 0, count: 0 };
+    for (let i = 0; i < CHART_MONTHS.length; i++) {
+      summaryMap[CHART_MONTHS[i].num] = { mes: CHART_MONTHS[i].label, total: 0, count: 0 };
     }
 
     let totalIssued = 0;
@@ -1512,8 +1503,8 @@ export default function Home() {
     }
 
     const summaryResult = [];
-    for (let i = 0; i < MONTHS.length; i++) {
-      const s = summaryMap[MONTHS[i].num];
+    for (let i = 0; i < CHART_MONTHS.length; i++) {
+      const s = summaryMap[CHART_MONTHS[i].num];
       summaryResult.push({
         mes: s.mes,
         total: s.total > 0 ? Math.round(s.total * 100) / 100 : 0,

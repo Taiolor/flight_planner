@@ -92,6 +92,7 @@ export const financialRouter = router({
 
       const yearSummary = await getFinancialYearSummary(baseYear);
       const monthData = yearSummary.byMonth;
+      const monthDataMap = new Map(monthData.map(m => [m.month, m]));
 
       // Média de gasto por viagem no ano base (apenas viagens com preço registrado)
       // ⚡ Bolt Optimization: Cache getFinancialDataByYear to avoid duplicate DB calls and combine loops
@@ -130,7 +131,7 @@ export const financialRouter = router({
         const projectedMilesPerTrip = avgMilesPerTrip * seasonFactor;
 
         // Histórico do mês no ano base (para comparação)
-        const historicMonth = monthData.find(m => m.month === month);
+        const historicMonth = monthDataMap.get(month);
         const historicCash = historicMonth?.totalCashBRL ?? 0;
         const historicMiles = historicMonth?.totalMiles ?? 0;
         const historicTrips = historicMonth?.issuedCount ?? 0;
