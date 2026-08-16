@@ -647,3 +647,6 @@
 - [x] Validar e integrar sequencialmente os PRs de segurança #313 e #314
 - [x] Rebasear e validar o upgrade para pnpm 11 do PR #268 (substituído pelo PR #315; #268 fechado)
 - [x] Avaliar isoladamente os PRs de dependências #304 e #309 (225 testes aprovados em ambos)
+
+- [x] Integrar o PR #315 e fechar os PRs substituídos #290 e #286
+- [x] Atualizar a página de Novidades com as entregas dos últimos dois meses

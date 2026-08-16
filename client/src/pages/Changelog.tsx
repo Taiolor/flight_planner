@@ -37,6 +37,57 @@ interface Release {
 }
 
 const releases: Release[] = [
+  // Agosto 2026
+  {
+    version: "v1.6.0",
+    date: "16/08/2026",
+    month: "Agosto 2026",
+    status: "released",
+    highlights:
+      "Calendário Mais Confiável, PDF Detalhado e Segurança Reforçada",
+    features: [
+      {
+        icon: <Calendar className="w-5 h-5" />,
+        category: "Calendário e Planejamento",
+        items: [
+          "Correção de timezone para preservar a data exata dos voos no calendário",
+          "Voos somente ida agora aparecem como emitidos e abrem os detalhes do bilhete",
+          "Badge visual para bilhetes remarcados e identificação atualizada dos jogos da Copa",
+          "Resumo de semanas sem passagem com número da semana, datas de ida/volta, ícones e alerta vermelho para compras nos próximos 15 dias",
+          "Cabeçalho do calendário aprimorado para telas menores",
+        ],
+      },
+      {
+        icon: <Plane className="w-5 h-5" />,
+        category: "Exportação PDF de Bilhetes",
+        items: [
+          "Status de remarcação exibido separadamente para ida, volta ou somente ida",
+          "Localizador individual apresentado em cada trecho do bilhete",
+          "Quebras de página preservam o cartão completo do bilhete",
+          "Companhias aéreas em maiúsculas e centralizadas nas células do PDF",
+        ],
+      },
+      {
+        icon: <Shield className="w-5 h-5" />,
+        category: "Segurança e Confiabilidade",
+        items: [
+          "Rate limiting do login tRPC consolidado para evitar consumo duplicado de tentativas",
+          "Content Security Policy de produção endurecida, sem unsafe-inline e unsafe-eval para scripts",
+          "Migração preparada para pnpm 11, com configurações de patches, overrides e builds no pnpm-workspace.yaml",
+          "Pipeline de validação preparada com instalação determinística, TypeScript e Vitest",
+        ],
+      },
+      {
+        icon: <Gauge className="w-5 h-5" />,
+        category: "Qualidade",
+        items: [
+          "225 testes automatizados aprovados após as integrações de segurança e dependências",
+          "Novos testes unitários para rate limiting de login e Content Security Policy",
+          "Validação isolada de atualizações de nanoid e do grupo de dependências de produção",
+        ],
+      },
+    ],
+  },
   // Julho 2026 (Semana 3)
   {
     version: "v1.5.0",
@@ -546,7 +597,7 @@ const releases: Release[] = [
 
 export default function Changelog() {
   const [expandedReleases, setExpandedReleases] = useState<Set<string>>(
-    new Set(["v1.3.0"])
+    new Set(["v1.6.0"])
   );
 
   const toggleRelease = (version: string) => {
@@ -641,7 +692,7 @@ export default function Changelog() {
             </div>
           </Card>
           <Card className="p-4 text-center">
-            <div className="text-3xl font-bold text-green-600">159</div>
+            <div className="text-3xl font-bold text-green-600">225</div>
             <div className="text-sm text-slate-600 dark:text-slate-400">
               Testes
             </div>
