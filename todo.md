@@ -635,6 +635,6 @@
 
 - [x] Integrar isoladamente e validar atualizações de dependências dos PRs #271, #270 e #269 (PR #268 retido por conflito)
 
-- [ ] Fechar PRs comprovadamente duplicados ou obsoletos após os merges recentes
+- [x] Fechar PRs comprovadamente duplicados ou obsoletos após os merges recentes (8 PRs fechados)
 
 - [x] Configurar CI para validar instalação determinística, TypeScript e Vitest em cada pull request
