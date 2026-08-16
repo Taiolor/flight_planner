@@ -650,3 +650,5 @@
 
 - [x] Integrar o PR #315 e fechar os PRs substituídos #290 e #286
 - [x] Atualizar a página de Novidades com as entregas dos últimos dois meses
+
+- [x] Auditar e fechar PRs de segurança comprovadamente substituídos (#312, #249, #253 e #277 fechados; #276 retido para revisão)
