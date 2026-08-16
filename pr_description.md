@@ -1,4 +1,5 @@
-💡 What: Added explicit `id` and `htmlFor` bindings to the "SMILES", "LATAM PASS", and Airline price `<Input>` fields in the Home page.
-🎯 Why: These inputs lacked proper label associations, relying entirely on visual context and placeholders. Adding visually hidden (`sr-only`) labels ensures complete context and accessibility for screen reader users.
-📸 Before/After: Before, screen readers might not announce the purpose of these inputs clearly. Now, they are explicitly linked to invisible labels like "Pontos SMILES" and "Preço LATAM".
-♿ Accessibility: Improved WCAG compliance by ensuring all form controls have explicitly associated `<label>` elements.
+💡 What: Hoisted the static data processing (`releases.reduce` grouping and sorting) outside of the `Changelog` React component into the module scope.
+
+🎯 Why: To prevent the grouping logic from executing during the React render cycle on component mount. Since `releases` is static data defined at the module level, computing the grouped structures (`releasesByMonth` and `sortedMonths`) once when the module loads avoids redundant calculations and `useMemo` overhead.
+
+📊 Measured Improvement: Reduces CPU overhead on the first render of the Changelog component from O(N log N) to O(1) by reusing pre-calculated arrays, providing slightly faster time-to-interactive for the page.
