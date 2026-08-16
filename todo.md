@@ -659,6 +659,6 @@
 
 - [x] Executar automaticamente PRs pendentes que possam ser validados por instalação, TypeScript e Vitest (fila de PRs esvaziada)
 
-- [ ] Avaliar arquitetura e migração para calendário dinâmico com semanas e passagens isoladas por ano
+- [x] Avaliar arquitetura e migração para calendário dinâmico com semanas e passagens isoladas por ano
 
 - [x] Corrigir bloqueio de abertura da página administrativa
