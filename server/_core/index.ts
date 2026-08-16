@@ -12,6 +12,7 @@ import rateLimit from "express-rate-limit";
 import helmet from "helmet";
 import { ENV } from "./env";
 import { createProxyMiddleware } from "http-proxy-middleware";
+import { createTrpcLoginRateLimiter } from "./trpcLoginRateLimit";
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise(resolve => {
@@ -129,13 +130,8 @@ async function startServer() {
   // OAuth callback under /api/oauth/callback
   registerOAuthRoutes(app);
 
-  // tRPC API com Rate limiting para rotas de login via tRPC (proteção contra brute force)
-  app.use("/api/trpc", (req, res, next) => {
-    if (req.path.includes("flightAuth.login")) {
-      return authLimiter(req, res, next);
-    }
-    next();
-  });
+  // O middleware é registrado uma única vez antes do adaptador tRPC.
+  app.use("/api/trpc", createTrpcLoginRateLimiter(authLimiter));
 
   app.use(
     "/api/trpc",
