@@ -19,14 +19,7 @@ import {
   CalendarEventParams,
 } from "@/lib/calendarHelper";
 import { WeekRow, DayMark } from "./types";
-import { toIsoDate } from "@/lib/utils";
-
-// Utils
-function extractTime(dt: string | null | undefined): string {
-  if (!dt) return "";
-  const t = dt.includes("T") ? dt.split("T")[1] : dt.split(" ")[1];
-  return t ? t.slice(0, 5) : "";
-}
+import { extractTime, toIsoDate } from "@/lib/utils";
 
 export default function FlightPopup({
   mark,
