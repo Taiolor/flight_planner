@@ -4,16 +4,34 @@ import superjson from "superjson";
 import type { TrpcContext } from "./context";
 import { ENV } from "./env";
 
+type TrpcErrorShape = {
+  message: string;
+  data: {
+    stack?: string;
+    [key: string]: unknown;
+  };
+};
+
+export function sanitizeTrpcErrorShape<T extends TrpcErrorShape>(
+  shape: T,
+  errorCode: string,
+  isProduction = ENV.isProduction
+): T {
+  const { stack: _stack, ...dataWithoutStack } = shape.data;
+  const shouldMaskMessage =
+    isProduction && errorCode === "INTERNAL_SERVER_ERROR";
+
+  return {
+    ...shape,
+    message: shouldMaskMessage ? "Internal server error" : shape.message,
+    data: isProduction ? dataWithoutStack : shape.data,
+  } as T;
+}
+
 const t = initTRPC.context<TrpcContext>().create({
   transformer: superjson,
   errorFormatter({ shape, error }) {
-    return {
-      ...shape,
-      message:
-        ENV.isProduction && error.code === "INTERNAL_SERVER_ERROR"
-          ? "Internal server error"
-          : shape.message,
-    };
+    return sanitizeTrpcErrorShape(shape, error.code);
   },
 });
 
