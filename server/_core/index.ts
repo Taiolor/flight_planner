@@ -12,6 +12,8 @@ import rateLimit from "express-rate-limit";
 import helmet from "helmet";
 import { ENV } from "./env";
 import { createProxyMiddleware } from "http-proxy-middleware";
+import { createTrpcLoginRateLimiter } from "./trpcLoginRateLimit";
+import { getContentSecurityPolicy } from "./contentSecurityPolicy";
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise(resolve => {
@@ -65,25 +67,7 @@ async function startServer() {
   const isDev = process.env.NODE_ENV === "development";
   app.use(
     helmet({
-      contentSecurityPolicy: isDev ? false : {
-        directives: {
-          defaultSrc: ["'self'"],
-          scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "blob:", "data:", "https://cdn.jsdelivr.net"],
-          styleSrc: [
-            "'self'",
-            "'unsafe-inline'",
-            "https://fonts.googleapis.com",
-          ],
-          fontSrc: ["'self'", "https://fonts.gstatic.com"],
-          imgSrc: ["'self'", "data:", "https:"],
-          connectSrc: ["'self'", "https:", "http:", "ws:", "wss:"],
-          frameSrc: ["'self'", "*"],
-          objectSrc: ["'none'"],
-          baseUri: ["'self'"],
-          formAction: ["'self'"],
-          frameAncestors: ["*"],
-        },
-      },
+      contentSecurityPolicy: getContentSecurityPolicy(isDev),
       crossOriginEmbedderPolicy: false,
       frameguard: isDev ? false : { action: "sameorigin" },
     })
@@ -129,13 +113,8 @@ async function startServer() {
   // OAuth callback under /api/oauth/callback
   registerOAuthRoutes(app);
 
-  // tRPC API com Rate limiting para rotas de login via tRPC (proteção contra brute force)
-  app.use("/api/trpc", (req, res, next) => {
-    if (req.path.includes("flightAuth.login")) {
-      return authLimiter(req, res, next);
-    }
-    next();
-  });
+  // O middleware é registrado uma única vez antes do adaptador tRPC.
+  app.use("/api/trpc", createTrpcLoginRateLimiter(authLimiter));
 
   app.use(
     "/api/trpc",
