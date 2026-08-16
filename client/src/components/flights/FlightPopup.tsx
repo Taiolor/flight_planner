@@ -19,14 +19,7 @@ import {
   CalendarEventParams,
 } from "@/lib/calendarHelper";
 import { WeekRow, DayMark } from "./types";
-import { toIsoDate } from "@/lib/utils";
-
-// Utils
-function extractTime(dt: string | null | undefined): string {
-  if (!dt) return "";
-  const t = dt.includes("T") ? dt.split("T")[1] : dt.split(" ")[1];
-  return t ? t.slice(0, 5) : "";
-}
+import { extractTime, toIsoDate } from "@/lib/utils";
 
 export default function FlightPopup({
   mark,
@@ -406,6 +399,7 @@ export default function FlightPopup({
                   onClick={() =>
                     downloadICS(allEvents, `voo-semana-${w.weekNumber}.ics`)
                   }
+                  aria-label={`Baixar arquivo ICS da semana ${w.weekNumber}`}
                   className="col-span-2 flex items-center justify-center gap-1.5 px-2 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 transition-colors text-slate-700 text-[11px] font-semibold border border-slate-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   <Download className="w-3.5 h-3.5" />
