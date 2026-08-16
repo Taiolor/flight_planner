@@ -778,7 +778,7 @@ function TicketNotificationEmailsSection() {
               ) : (
                 <span>+</span>
               )}
-              Adicionar
+              {addRecipientMutation.isPending ? "Adicionando..." : "Adicionar"}
             </Button>
           </div>
         </form>
