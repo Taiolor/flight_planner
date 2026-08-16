@@ -643,3 +643,7 @@
 - [x] Resolver o conflito do PR #286 em branch dedicada de Content Security Policy (`security/resolve-pr-286-csp`)
 
 - [x] Criar pull requests para as branches dedicadas de rate limiting e Content Security Policy (#313 e #314)
+
+- [x] Validar e integrar sequencialmente os PRs de segurança #313 e #314
+- [x] Rebasear e validar o upgrade para pnpm 11 do PR #268 (substituído pelo PR #315; #268 fechado)
+- [x] Avaliar isoladamente os PRs de dependências #304 e #309 (225 testes aprovados em ambos)
