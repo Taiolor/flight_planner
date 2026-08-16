@@ -36,12 +36,33 @@ import {
   formatRelativeTime,
 } from "@/components/admin-notifications/utils";
 import { AlertRow } from "@/components/admin-notifications/AlertRow";
+import { LoginModal } from "@/components/auth/LoginModal";
+
+export type AdminAccessState = "checking" | "login-required" | "authorized";
+
+export function getAdminAccessState({
+  isCheckingAuthentication,
+  isAuthenticated,
+}: {
+  isCheckingAuthentication: boolean;
+  isAuthenticated: boolean;
+}): AdminAccessState {
+  if (isCheckingAuthentication) return "checking";
+  return isAuthenticated ? "authorized" : "login-required";
+}
 
 export default function AdminNotifications() {
   const [autoRefresh, setAutoRefresh] = useState(false);
+  const [showLoginModal, setShowLoginModal] = useState(false);
   const [expandedSections, setExpandedSections] = useState<Set<string>>(
     new Set()
   );
+  const authCheckQuery = trpc.flightAuth.check.useQuery();
+  const isAuthenticated = authCheckQuery.data?.authenticated ?? false;
+  const accessState = getAdminAccessState({
+    isCheckingAuthentication: authCheckQuery.isLoading,
+    isAuthenticated,
+  });
 
   const toggleSection = (section: string) => {
     const newSet = new Set(expandedSections);
@@ -55,13 +76,17 @@ export default function AdminNotifications() {
 
   const { data, isLoading, error, refetch, isFetching } =
     trpc.adminNotifications.getStatus.useQuery(undefined, {
+      enabled: isAuthenticated,
       refetchInterval: autoRefresh ? 60_000 : false,
     });
 
   const { data: logs, refetch: refetchLogs } =
     trpc.adminNotifications.getLogs.useQuery(
       { limit: 100 },
-      { refetchInterval: autoRefresh ? 60_000 : false }
+      {
+        enabled: isAuthenticated,
+        refetchInterval: autoRefresh ? 60_000 : false,
+      }
     );
 
   const sendTestMutation = trpc.push.sendTest.useMutation({
@@ -75,7 +100,7 @@ export default function AdminNotifications() {
     },
   });
 
-  if (isLoading) {
+  if (accessState === "checking" || (isAuthenticated && isLoading)) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center space-y-3">
@@ -86,12 +111,47 @@ export default function AdminNotifications() {
     );
   }
 
+  if (accessState === "login-required") {
+    return (
+      <>
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6">
+          <div className="text-center space-y-4 max-w-sm">
+            <AlertCircle className="w-12 h-12 text-amber-500 mx-auto" />
+            <div className="space-y-1">
+              <p className="text-gray-800 font-semibold">Acesso restrito</p>
+              <p className="text-gray-500 text-sm">
+                Entre com sua conta para acompanhar alertas e notificações de voo.
+              </p>
+            </div>
+            <div className="flex items-center justify-center gap-2">
+              <Button onClick={() => setShowLoginModal(true)} className="gap-2">
+                <Bell className="w-4 h-4" /> Entrar
+              </Button>
+              <Link href="/">
+                <Button
+                  variant="outline"
+                  aria-label="Voltar para a página inicial"
+                  className="gap-2"
+                >
+                  <ArrowLeft className="w-4 h-4" /> Voltar
+                </Button>
+              </Link>
+            </div>
+          </div>
+        </div>
+        <LoginModal open={showLoginModal} onOpenChange={setShowLoginModal} />
+      </>
+    );
+  }
+
   if (error) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center space-y-4 max-w-sm">
           <AlertCircle className="w-12 h-12 text-red-400 mx-auto" />
-          <p className="text-gray-700 font-medium">Acesso negado</p>
+          <p className="text-gray-700 font-medium">
+            Não foi possível carregar o painel
+          </p>
           <p className="text-gray-500 text-sm">{error.message}</p>
           <Link href="/">
             <Button
