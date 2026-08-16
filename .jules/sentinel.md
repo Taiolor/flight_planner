@@ -21,7 +21,14 @@
 **Vulnerability:** Authorization bypass via mixed middleware contexts. The `quotesRouter` in `server/routers/quotes.ts` was using the global `protectedProcedure` (which validates general OAuth users) instead of the domain-specific `flightProtectedProcedure` (which validates flight planner app-specific session cookies).
 **Learning:** Using the wrong middleware allows cross-domain authorization bypasses. Even if a user is authenticated globally via Manus OAuth, they should not automatically have access to domain-specific features (like the flight planner) unless they pass that domain's specific auth checks (`flightAuth`).
 **Prevention:** Always verify that the chosen protected procedure matches the intended domain of the router. For flight planner features, strictly import and use `flightProtectedProcedure` from `server/flightAuthMiddleware.ts`. Ensure middleware definitions are extracted into dedicated files to prevent circular dependencies when referenced across multiple routers.
+
 ## YYYY-MM-DD - [Prevent tRPC Information Leakage]
 **Vulnerability:** tRPC exposes `INTERNAL_SERVER_ERROR` details to clients in production.
 **Learning:** By default, if a tRPC resolver throws an unexpected error, the default `errorFormatter` can leak sensitive stack traces, paths, or database messages to the client, providing attackers with insights into the server architecture.
 **Prevention:** Always configure the tRPC initialization with a custom `errorFormatter` that checks `ENV.isProduction` and explicitly masks the `INTERNAL_SERVER_ERROR` code with a generic message (e.g., 'Internal server error').
+
+## 2024-10-27 - Centralized Environment Secret Management
+
+**Vulnerability:** Insecure direct access to environment variables.
+**Learning:** Reading sensitive secrets (like API keys and passwords) directly from `process.env` in scattered application files (e.g., `process.env.AUTH_PASSWORD`) increases the risk of secret leakage, makes it difficult to audit secret usage, and complicates validation/type-checking at application startup.
+**Prevention:** Always consolidate environment variable access within a single module (e.g., `server/_core/env.ts`) that exports an `ENV` object. All other modules must import this object. Tests should mock or mutate this `ENV` object rather than relying on `vi.stubEnv` or `process.env`.

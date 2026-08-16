@@ -5,6 +5,7 @@ import {
   sendTestEmail,
   TicketChangeNotification,
 } from "../emailNotification";
+import { ENV } from "../env";
 
 // We need to access the mocked send function to verify its calls
 const mockSend = vi
@@ -22,11 +23,11 @@ vi.mock("resend", () => {
 describe("emailNotification", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.stubEnv("RESEND_API_KEY", "re_test_api_key");
+    ENV.resendApiKey = "re_test_api_key";
   });
 
   afterEach(() => {
-    vi.unstubAllEnvs();
+    ENV.resendApiKey = "";
   });
 
   describe("sendTicketNotificationEmail", () => {
@@ -146,7 +147,7 @@ describe("emailNotification", () => {
     });
 
     it("should return false and log error if getResendClient throws (e.g. no API key)", async () => {
-      vi.stubEnv("RESEND_API_KEY", "");
+      ENV.resendApiKey = "";
 
       const notification: TicketChangeNotification = {
         type: "created",
@@ -205,7 +206,7 @@ describe("emailNotification", () => {
     });
 
     it("should return false if getResendClient throws", async () => {
-      vi.stubEnv("RESEND_API_KEY", "");
+      ENV.resendApiKey = "";
       const result = await sendShareByEmailNotification(
         ["test@example.com"],
         "Share Subject",
@@ -231,7 +232,7 @@ describe("emailNotification", () => {
     });
 
     it("should return false if getResendClient throws", async () => {
-      vi.stubEnv("RESEND_API_KEY", "");
+      ENV.resendApiKey = "";
       const result = await sendTestEmail("admin@test.com");
       expect(result).toBe(false);
     });

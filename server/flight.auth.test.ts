@@ -6,6 +6,14 @@ vi.stubEnv("JWT_SECRET", "test-secret");
 import { appRouter } from "./routers";
 import type { TrpcContext } from "./_core/context";
 
+vi.mock("./_core/env", () => ({
+  ENV: {
+    authEmail: "taiolor@gmail.com",
+    authPassword: "#Salvar2026",
+    isProduction: false,
+  },
+}));
+
 // Mock the db module to avoid real DB calls in tests
 vi.mock("./db", () => ({
   createAuthSession: vi.fn().mockResolvedValue("mock-session-token-abc123"),
@@ -50,8 +58,6 @@ function createTestContext(cookieOverride = ""): TrpcContext {
 
 describe("flightAuth.login", () => {
   beforeEach(() => {
-    process.env.AUTH_EMAIL = "taiolor@gmail.com";
-    process.env.AUTH_PASSWORD = "#Salvar2026";
     process.env.JWT_SECRET = "test-secret";
   });
 

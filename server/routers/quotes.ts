@@ -11,6 +11,7 @@ import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 import { router } from "../_core/trpc";
 import { flightProtectedProcedure as protectedProcedure } from "../flightAuthMiddleware";
+import { ENV } from "../_core/env";
 import {
   getAllFlightQuotes,
   getFlightQuotesByWeek,
@@ -302,7 +303,7 @@ export const quotesRouter = router({
       })
     )
     .mutation(async ({ input }) => {
-      const apiKey = process.env.RAPIDAPI_KEY;
+      const apiKey = ENV.rapidapiKey;
       if (!apiKey) {
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
