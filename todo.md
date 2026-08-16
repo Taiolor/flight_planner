@@ -634,3 +634,7 @@
 - [x] Integrar e validar os PRs de segurança #303 e #292 (PRs #290 e #286 retidos por conflitos)
 
 - [x] Integrar isoladamente e validar atualizações de dependências dos PRs #271, #270 e #269 (PR #268 retido por conflito)
+
+- [ ] Fechar PRs comprovadamente duplicados ou obsoletos após os merges recentes
+
+- [x] Configurar CI para validar instalação determinística, TypeScript e Vitest em cada pull request
