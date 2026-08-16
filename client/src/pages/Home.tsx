@@ -2055,8 +2055,10 @@ export default function Home() {
           <div className="mb-4 sm:mb-8">
             <button
               onClick={() => setExpandSummary(!expandSummary)}
-              className="w-full flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 bg-gradient-to-r from-slate-900 via-blue-950 to-slate-900 text-white rounded-3xl hover:from-slate-800 hover:via-blue-900 hover:to-slate-800 transition-colors shadow-lg"
+              className="w-full flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 bg-gradient-to-r from-slate-900 via-blue-950 to-slate-900 text-white rounded-3xl hover:from-slate-800 hover:via-blue-900 hover:to-slate-800 transition-colors shadow-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
               aria-label="Expandir/Recolher Resumo Anual"
+              aria-expanded={expandSummary}
+              aria-controls="summary-content"
             >
               <span className="text-lg font-bold">Resumo Anual 2026</span>
               {expandSummary ? (
@@ -2066,7 +2068,10 @@ export default function Home() {
               )}
             </button>
             {expandSummary && (
-              <Card className="p-4 sm:p-6 mb-4 sm:mb-8 gradient-modern-animated text-white rounded-b-3xl rounded-t-none relative overflow-hidden shadow-2xl">
+              <Card
+                id="summary-content"
+                className="p-4 sm:p-6 mb-4 sm:mb-8 gradient-modern-animated text-white rounded-b-3xl rounded-t-none relative overflow-hidden shadow-2xl"
+              >
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-4 sm:mb-6">
                   <div>
                     <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
@@ -2234,8 +2239,10 @@ export default function Home() {
           <div className="mb-4 sm:mb-8">
             <button
               onClick={() => setExpandFilters(!expandFilters)}
-              className="w-full flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 bg-gradient-to-r from-slate-900 via-blue-950 to-slate-900 text-white rounded-3xl hover:from-slate-800 hover:via-blue-900 hover:to-slate-800 transition-colors shadow-lg"
+              className="w-full flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 bg-gradient-to-r from-slate-900 via-blue-950 to-slate-900 text-white rounded-3xl hover:from-slate-800 hover:via-blue-900 hover:to-slate-800 transition-colors shadow-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
               aria-label="Expandir/Recolher Filtros e Controles"
+              aria-expanded={expandFilters}
+              aria-controls="filters-content"
             >
               <span className="text-lg font-bold">Filtros e Controles</span>
               {expandFilters ? (
@@ -2246,6 +2253,7 @@ export default function Home() {
             </button>
             {expandFilters && (
               <Card
+                id="filters-content"
                 className={`p-4 sm:p-6 mb-4 sm:mb-8 backdrop-blur-md border rounded-b-3xl rounded-t-none shadow-xl transition-colors duration-300 ${
                   theme === "dark"
                     ? "bg-slate-800/80 border-slate-700/30"
