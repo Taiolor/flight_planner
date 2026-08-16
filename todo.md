@@ -632,3 +632,5 @@
 - [x] Classificar PRs abertos por confiabilidade, risco e ausência de conflitos
 
 - [x] Integrar e validar os PRs de segurança #303 e #292 (PRs #290 e #286 retidos por conflitos)
+
+- [x] Integrar isoladamente e validar atualizações de dependências dos PRs #271, #270 e #269 (PR #268 retido por conflito)
