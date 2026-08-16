@@ -367,7 +367,10 @@ export default function CalendarView({
       <header className="bg-gradient-to-r from-blue-600 via-purple-600 to-cyan-500 text-white px-3 sm:px-4 py-2 sm:py-3 flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3 shadow-lg sticky top-0 z-10">
         <div className="flex items-center gap-2 w-full sm:w-auto">
           <Link href="/">
-            <button className="flex items-center gap-1 text-white/80 hover:text-white transition-colors text-xs sm:text-sm font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-blue-700 rounded-sm">
+            <button
+              aria-label="Voltar para a página inicial"
+              className="flex items-center gap-1 text-white/80 hover:text-white transition-colors text-xs sm:text-sm font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-blue-700 rounded-sm"
+            >
               <ArrowLeft className="w-3 h-3 sm:w-4 sm:h-4" />
               <span className="hidden sm:inline">Voltar</span>
             </button>

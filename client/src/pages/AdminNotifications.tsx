@@ -94,7 +94,11 @@ export default function AdminNotifications() {
           <p className="text-gray-700 font-medium">Acesso negado</p>
           <p className="text-gray-500 text-sm">{error.message}</p>
           <Link href="/">
-            <Button variant="outline" className="gap-2">
+            <Button
+              variant="outline"
+              aria-label="Voltar para a página inicial"
+              className="gap-2"
+            >
               <ArrowLeft className="w-4 h-4" /> Voltar
             </Button>
           </Link>
@@ -133,7 +137,7 @@ export default function AdminNotifications() {
               <Button
                 variant="ghost"
                 size="sm"
-                aria-label="Voltar"
+                aria-label="Voltar para a página inicial"
                 className="gap-2 text-gray-600"
               >
                 <ArrowLeft className="w-4 h-4" />
