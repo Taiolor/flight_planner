@@ -641,3 +641,5 @@
 
 - [x] Resolver o conflito do PR #290 em branch dedicada de rate limiting (`security/resolve-pr-290-rate-limit`)
 - [x] Resolver o conflito do PR #286 em branch dedicada de Content Security Policy (`security/resolve-pr-286-csp`)
+
+- [x] Criar pull requests para as branches dedicadas de rate limiting e Content Security Policy (#313 e #314)
