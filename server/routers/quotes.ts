@@ -27,6 +27,7 @@ const GRU_ENTITY_ID = "95673332";
 const NVT_SKY_ID = "NVT";
 const NVT_ENTITY_ID = "95673774";
 const RAPIDAPI_HOST = "sky-scrapper.p.rapidapi.com";
+const planningYearSchema = z.number().int().min(2020).max(2100);
 
 /** Espera ms milissegundos */
 const sleep = (ms: number) => new Promise(r => setTimeout(r, ms));
@@ -269,22 +270,32 @@ async function fetchSkyScrapperPrice(
 
 export const quotesRouter = router({
   /** Listar todas as cotações (mais recentes primeiro) */
-  getAll: protectedProcedure.query(async () => {
-    return getAllFlightQuotes();
-  }),
+  getAll: protectedProcedure
+    .input(z.object({ year: planningYearSchema }))
+    .query(async ({ input }) => getAllFlightQuotes(input.year)),
 
   /** Listar cotações de uma semana específica */
   getByWeek: protectedProcedure
-    .input(z.object({ weekNumber: z.number().int().positive() }))
+    .input(
+      z.object({
+        year: planningYearSchema,
+        weekNumber: z.number().int().positive(),
+      })
+    )
     .query(async ({ input }) => {
-      return getFlightQuotesByWeek(input.weekNumber);
+      return getFlightQuotesByWeek(input.weekNumber, input.year);
     }),
 
   /** Verificar uso atual da API no mês corrente */
-  getApiUsage: protectedProcedure.query(async () => {
-    const yearMonth = getCurrentYearMonth();
-    return getApiUsage(yearMonth);
-  }),
+  getApiUsage: protectedProcedure
+    .input(z.object({ year: planningYearSchema }))
+    .query(async ({ input }) => {
+      // A franquia da RapidAPI é mensal e compartilhada; o ano mantém a
+      // chave de consulta sincronizada ao planejamento selecionado.
+      void input.year;
+      const yearMonth = getCurrentYearMonth();
+      return getApiUsage(yearMonth);
+    }),
 
   /**
    * Buscar preço via Sky Scrapper API
@@ -293,6 +304,7 @@ export const quotesRouter = router({
   fetchFromApi: protectedProcedure
     .input(
       z.object({
+        year: planningYearSchema,
         weekNumber: z.number().int().positive(),
         departureDate: z
           .string()
@@ -349,6 +361,7 @@ export const quotesRouter = router({
 
       // Salvar cotação no banco com todos os campos detalhados
       await insertFlightQuote({
+        year: input.year,
         weekNumber: input.weekNumber,
         departureDate: input.departureDate,
         returnDate: input.returnDate,
@@ -395,6 +408,7 @@ export const quotesRouter = router({
   saveManual: protectedProcedure
     .input(
       z.object({
+        year: planningYearSchema,
         weekNumber: z.number().int().positive(),
         departureDate: z
           .string()
@@ -416,6 +430,7 @@ export const quotesRouter = router({
       const lowestPrice = Math.round(input.price * 100); // Converter para centavos
 
       await insertFlightQuote({
+        year: input.year,
         weekNumber: input.weekNumber,
         departureDate: input.departureDate,
         returnDate: input.returnDate,
@@ -446,9 +461,14 @@ export const quotesRouter = router({
 
   /** Deletar uma cotação pelo ID */
   delete: protectedProcedure
-    .input(z.object({ id: z.number().int().positive() }))
+    .input(
+      z.object({
+        id: z.number().int().positive(),
+        year: planningYearSchema,
+      })
+    )
     .mutation(async ({ input }) => {
-      await deleteFlightQuote(input.id);
+      await deleteFlightQuote(input.id, input.year);
       return { success: true };
     }),
 });

@@ -619,7 +619,7 @@ export async function deleteOldNotificationLogs(daysOld = 90): Promise<number> {
 // Flight Quotes
 // =====================
 
-export async function getAllFlightQuotes(year = DEFAULT_PLANNING_YEAR) {
+export async function getAllFlightQuotes(year: number) {
   const db = await getDb();
   if (!db) return [];
   return db
@@ -631,7 +631,7 @@ export async function getAllFlightQuotes(year = DEFAULT_PLANNING_YEAR) {
 
 export async function getFlightQuotesByWeek(
   weekNumber: number,
-  year = DEFAULT_PLANNING_YEAR
+  year: number
 ) {
   const db = await getDb();
   if (!db) return [];
@@ -647,19 +647,23 @@ export async function getFlightQuotesByWeek(
     .orderBy(desc(flightQuotes.quotedAt));
 }
 
-export async function insertFlightQuote(data: InsertFlightQuote) {
+export async function insertFlightQuote(
+  data: InsertFlightQuote & { year: number }
+) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
   const result = await db
     .insert(flightQuotes)
-    .values({ year: data.year ?? DEFAULT_PLANNING_YEAR, ...data });
+    .values(data);
   return result;
 }
 
-export async function deleteFlightQuote(id: number) {
+export async function deleteFlightQuote(id: number, year: number) {
   const db = await getDb();
   if (!db) return;
-  await db.delete(flightQuotes).where(eq(flightQuotes.id, id));
+  await db
+    .delete(flightQuotes)
+    .where(and(eq(flightQuotes.id, id), eq(flightQuotes.year, year)));
 }
 
 // =====================

@@ -8,7 +8,6 @@
  */
 
 import { useState, useMemo } from "react";
-import { flightData } from "@/lib/flightData";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -47,6 +46,8 @@ import {
 } from "lucide-react";
 import { Link } from "wouter";
 import { useTheme } from "@/contexts/ThemeContext";
+import { useYear } from "@/contexts/YearContext";
+import { GlobalYearSelector } from "@/components/GlobalYearSelector";
 import { toIsoDate } from "@/lib/utils";
 
 const EMPTY_ARRAY: any[] = [];
@@ -849,16 +850,19 @@ const WeekCard = ({
 
 export default function FlightQuotes() {
   const { theme } = useTheme();
+  const { selectedYear: year } = useYear();
   const _isDark = theme === "dark";
   const [loadingWeek, setLoadingWeek] = useState<number | null>(null);
 
-  // Queries
+  // As cotações e semanas são sempre carregadas pelo exercício selecionado.
   const { data: allQuotes = EMPTY_ARRAY, refetch: refetchQuotes } =
-    trpc.quotes.getAll.useQuery();
+    trpc.quotes.getAll.useQuery({ year });
+  const { data: planningWeeks = EMPTY_ARRAY, isLoading: isLoadingWeeks } =
+    trpc.flights.getWeeks.useQuery({ year });
   const {
     data: apiUsage = { requestsUsed: 0, requestsLimit: 20 },
     refetch: refetchUsage,
-  } = trpc.quotes.getApiUsage.useQuery();
+  } = trpc.quotes.getApiUsage.useQuery({ year });
 
   // Mutations
   const fetchFromApi = trpc.quotes.fetchFromApi.useMutation({
@@ -915,7 +919,7 @@ export default function FlightQuotes() {
     returnDate: string
   ) => {
     setLoadingWeek(weekNumber);
-    fetchFromApi.mutate({ weekNumber, departureDate, returnDate });
+    fetchFromApi.mutate({ year, weekNumber, departureDate, returnDate });
   };
 
   const handleSaveManual = (
@@ -931,6 +935,7 @@ export default function FlightQuotes() {
     }
   ) => {
     saveManual.mutate({
+      year,
       weekNumber,
       departureDate,
       returnDate,
@@ -940,7 +945,7 @@ export default function FlightQuotes() {
   };
 
   const handleDelete = (id: number) => {
-    deleteQuote.mutate({ id });
+    deleteQuote.mutate({ id, year });
   };
 
   const usagePercent = Math.round(
@@ -969,19 +974,32 @@ export default function FlightQuotes() {
       current = 0,
       future = 0;
 
-    for (const w of flightData) {
-      const s = getWeekStatus(w.ida.data, w.retorno.data, todayInt);
+    for (const w of planningWeeks) {
+      if (w.isDeleted) continue;
+      const s = getWeekStatus(w.departureDate, w.returnDate, todayInt);
       if (s === "past") past++;
       else if (s === "current") current++;
       else future++;
     }
     return { past, current, future };
-  }, [todayInt]);
+  }, [planningWeeks, todayInt]);
+
+  const quoteWeeks = useMemo(
+    () =>
+      planningWeeks
+        .filter(week => !week.isDeleted)
+        .map(week => ({
+          semana: week.weekNumber,
+          ida: { data: week.departureDate },
+          retorno: { data: week.returnDate },
+        })),
+    [planningWeeks]
+  );
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-900 transition-colors duration-300">
       {/* Cabeçalho com botão voltar */}
-      <header className="bg-gradient-to-r from-blue-600 via-purple-600 to-cyan-500 text-white px-4 py-3 flex items-center gap-3 shadow-lg sticky top-0 z-10">
+      <header className="bg-gradient-to-r from-blue-600 via-purple-600 to-cyan-500 text-white px-4 py-3 flex items-center gap-3 shadow-lg sticky top-0 z-10 flex-wrap">
         <Link href="/">
           <button
             aria-label="Voltar para a página inicial"
@@ -994,9 +1012,10 @@ export default function FlightQuotes() {
         <div className="flex items-center gap-2 ml-2">
           <Plane className="w-5 h-5" />
           <h1 className="text-base font-bold tracking-wide">
-            Cotações de Passagens
+            Cotações · {year}
           </h1>
         </div>
+        <GlobalYearSelector compact className="ml-auto" />
       </header>
 
       {/* Header da página */}
@@ -1007,7 +1026,7 @@ export default function FlightQuotes() {
               <div className="flex items-center gap-2 mb-1">
                 <Plane className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                 <h1 className="text-xl font-bold text-slate-800 dark:text-slate-100">
-                  Cotações de Passagens
+                  Cotações de Passagens {year}
                 </h1>
               </div>
               <p className="text-sm text-slate-500 dark:text-slate-400">
@@ -1086,19 +1105,43 @@ export default function FlightQuotes() {
         </div>
 
         <div className="space-y-3">
-          {flightData.map(week => (
-            <WeekCard
-              key={week.semana}
-              week={week}
-              quotes={quotesByWeek[week.semana] ?? EMPTY_ARRAY}
-              apiUsage={apiUsage}
-              onFetchApi={handleFetchApi}
-              onSaveManual={handleSaveManual}
-              onDelete={handleDelete}
-              isLoadingApi={loadingWeek === week.semana}
-              todayInt={todayInt}
-            />
-          ))}
+          {isLoadingWeeks ? (
+            <div className="flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white py-12 text-sm text-slate-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400">
+              <Loader2 className="h-4 w-4 animate-spin" />
+              Carregando semanas de {year}...
+            </div>
+          ) : quoteWeeks.length === 0 ? (
+            <div className="rounded-xl border border-dashed border-blue-300 bg-blue-50 p-8 text-center dark:border-blue-800 dark:bg-blue-950/30">
+              <Plane className="mx-auto mb-3 h-8 w-8 text-blue-600 dark:text-blue-400" />
+              <h2 className="text-base font-semibold text-slate-800 dark:text-slate-100">
+                Semanas de {year} ainda não foram geradas
+              </h2>
+              <p className="mx-auto mt-2 max-w-md text-sm text-slate-600 dark:text-slate-300">
+                Gere o planejamento anual na página inicial para registrar e acompanhar as cotações deste exercício.
+              </p>
+              <Link
+                href={`/?ano=${year}`}
+                className="mt-4 inline-flex items-center gap-1.5 rounded-md bg-blue-600 px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700 focus-visible:ring-2 focus-visible:ring-blue-500"
+              >
+                <ArrowLeft className="h-4 w-4" />
+                Ir para o planejamento de {year}
+              </Link>
+            </div>
+          ) : (
+            quoteWeeks.map(week => (
+              <WeekCard
+                key={week.semana}
+                week={week}
+                quotes={quotesByWeek[week.semana] ?? EMPTY_ARRAY}
+                apiUsage={apiUsage}
+                onFetchApi={handleFetchApi}
+                onSaveManual={handleSaveManual}
+                onDelete={handleDelete}
+                isLoadingApi={loadingWeek === week.semana}
+                todayInt={todayInt}
+              />
+            ))
+          )}
         </div>
       </div>
     </div>

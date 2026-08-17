@@ -669,4 +669,6 @@
 
 - [x] Fase 2: gerar semanas idempotentes por ano e carregar a Home pelo ano selecionado
 
+- [x] Conectar consultas, gravações e histórico de Cotações ao ano global selecionado
+
 - [x] Corrigir bloqueio de abertura da página administrativa
