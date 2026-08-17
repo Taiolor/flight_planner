@@ -115,6 +115,7 @@ import { LoginModal } from "@/components/auth/LoginModal";
 import { useTheme, COLOR_PRESETS } from "@/contexts/ThemeContext";
 import type { ColorPreset } from "@/contexts/ThemeContext";
 import { useYear } from "@/contexts/YearContext";
+import { GlobalYearSelector } from "@/components/GlobalYearSelector";
 
 /**
  * Memória histórica de números de voo.
@@ -571,10 +572,7 @@ export default function Home() {
     });
 
   // Usar contexto de ano compartilhado
-  const { selectedYear, setSelectedYear } = useYear();
-
-  // Gerar lista de anos disponíveis (2026-2030)
-  const availableYears = [2026, 2027, 2028, 2029, 2030];
+  const { selectedYear } = useYear();
 
   // tRPC queries
   const weeksQuery = trpc.flights.getWeeks.useQuery();
@@ -1806,25 +1804,7 @@ export default function Home() {
                 )}
               </Button>
 
-              {/* Seletor de Ano */}
-              <Select
-                value={selectedYear.toString()}
-                onValueChange={val => setSelectedYear(parseInt(val))}
-              >
-                <SelectTrigger
-                  className="border-white/40 text-white hover:bg-white/20 backdrop-blur-sm bg-white/10 btn-glow-cyan transition-all w-auto"
-                  aria-label="Selecionar ano"
-                >
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {availableYears.map(year => (
-                    <SelectItem key={year} value={year.toString()}>
-                      {year}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <GlobalYearSelector className="border-white/40 text-white hover:bg-white/20 backdrop-blur-sm bg-white/10 btn-glow-cyan transition-all" />
 
               {/* Seletor de Presets de Cores */}
               <Select
@@ -2051,7 +2031,9 @@ export default function Home() {
               aria-expanded={expandSummary}
               aria-controls="summary-content"
             >
-              <span className="text-lg font-bold">Resumo Anual 2026</span>
+              <span className="text-lg font-bold">
+                Resumo Anual {selectedYear}
+              </span>
               {expandSummary ? (
                 <ChevronUp className="w-5 h-5" />
               ) : (
@@ -2066,7 +2048,7 @@ export default function Home() {
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-4 sm:mb-6">
                   <div>
                     <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
-                      Resumo Anual 2026
+                      Resumo Anual {selectedYear}
                     </h2>
                     <p className="text-blue-200 text-xs sm:text-sm mt-1">
                       Passagens emitidas — GRU / CGH → NVT
@@ -2671,8 +2653,8 @@ export default function Home() {
                         aria-controls={`month-content-${monthKey}`}
                         aria-label={
                           isOpen
-                            ? `Recolher mês ${monthLabel} 2026`
-                            : `Expandir mês ${monthLabel} 2026`
+                            ? `Recolher mês ${monthLabel} ${selectedYear}`
+                            : `Expandir mês ${monthLabel} ${selectedYear}`
                         }
                       >
                         <div className="flex items-center gap-3">
@@ -2684,7 +2666,7 @@ export default function Home() {
                             }`}
                           />
                           <span className="text-sm sm:text-lg font-bold">
-                            {monthLabel} 2026
+                            {monthLabel} {selectedYear}
                           </span>
                           {monthHasHoliday && (
                             <span

@@ -215,9 +215,11 @@ function getExtendedWeekends(
 
 import { WeekRow, DayMark } from "@/components/flights/types";
 import FlightPopup from "@/components/flights/FlightPopup";
-export default function CalendarView({
-  year = DEFAULT_YEAR,
-}: CalendarViewProps = {}) {
+import { useYear } from "@/contexts/YearContext";
+import { GlobalYearSelector } from "@/components/GlobalYearSelector";
+
+export default function CalendarView() {
+  const { selectedYear: year } = useYear();
   const weeksQuery = trpc.flights.getWeeks.useQuery();
   const [selectedMark, setSelectedMark] = useState<DayMark | null>(null);
   const [showOnlyHolidaysAndWeekends, setShowOnlyHolidaysAndWeekends] =
@@ -371,23 +373,28 @@ export default function CalendarView({
           <div className="flex items-center gap-1.5 ml-auto sm:ml-2">
             <Plane className="w-4 h-4 sm:w-5 sm:h-5" />
             <h1 className="text-xs sm:text-base font-bold tracking-wide">
-              Calendário 2026
+              Calendário {year}
             </h1>
           </div>
         </div>
-        <button
-          onClick={() => setShowCupPanel((v: boolean) => !v)}
-          className="flex items-center gap-1 bg-transparent hover:bg-slate-50 border border-slate-300/50 text-slate-400 hover:text-slate-600 text-xs px-1.5 py-0.5 rounded transition-all duration-200 sm:ml-auto"
-          title={showCupPanel ? "Ocultar Copa 2026" : "Mostrar Copa 2026"}
-          aria-label={
-            showCupPanel
-              ? "Ocultar painel da Copa do Mundo 2026"
-              : "Mostrar painel da Copa do Mundo 2026"
-          }
-          aria-expanded={showCupPanel}
-        >
-          <span className="text-xs">🇧🇷</span>
-        </button>
+        <div className="flex items-center gap-2 sm:ml-auto">
+          <GlobalYearSelector compact className="border-white/40 bg-white/10 text-white hover:bg-white/20" />
+          {year === 2026 && (
+            <button
+              onClick={() => setShowCupPanel((v: boolean) => !v)}
+              className="flex items-center gap-1 bg-transparent hover:bg-slate-50 border border-slate-300/50 text-slate-400 hover:text-slate-600 text-xs px-1.5 py-0.5 rounded transition-all duration-200"
+              title={showCupPanel ? "Ocultar Copa 2026" : "Mostrar Copa 2026"}
+              aria-label={
+                showCupPanel
+                  ? "Ocultar painel da Copa do Mundo 2026"
+                  : "Mostrar painel da Copa do Mundo 2026"
+              }
+              aria-expanded={showCupPanel}
+            >
+              <span className="text-xs">🇧🇷</span>
+            </button>
+          )}
+        </div>
         <div className="hidden md:flex items-center gap-2 lg:gap-4 text-xs flex-wrap">
           <span className="flex items-center gap-1">
             <span className="w-2 h-2 rounded-full bg-emerald-400 inline-block" />
@@ -439,7 +446,7 @@ export default function CalendarView({
       <div className="px-4 max-w-7xl mx-auto">
         <div
           className={`overflow-hidden transition-all duration-300 ease-in-out ${
-            showCupPanel ? "max-h-96 py-3" : "max-h-0 py-0"
+            year === 2026 && showCupPanel ? "max-h-96 py-3" : "max-h-0 py-0"
           }`}
         >
           <BrazilWorldCupPanel />
@@ -666,7 +673,9 @@ export default function CalendarView({
 
         {/* Rodapé com resumo */}
         <div className="mt-6 bg-white rounded-2xl border border-slate-100 shadow-sm p-4 flex flex-wrap gap-6 items-center">
-          <div className="text-sm text-slate-500 font-medium">Resumo 2026</div>
+          <div className="text-sm text-slate-500 font-medium">
+            Resumo {year}
+          </div>
           {weeksQuery.isLoading ? (
             <span className="text-xs text-slate-400">Carregando...</span>
           ) : (

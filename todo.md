@@ -663,4 +663,6 @@
 
 - [x] Elaborar plano diretor à prova de falhas para calendário anual dinâmico em Home, Calendário e Financeiro
 
+- [x] Criar seletor global de ano e conectá-lo visualmente à Home, ao Calendário e ao Financeiro
+
 - [x] Corrigir bloqueio de abertura da página administrativa
