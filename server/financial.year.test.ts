@@ -1,0 +1,96 @@
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import type { TrpcContext } from "./_core/context";
+
+vi.mock("./db", () => ({
+  validateAuthSession: vi.fn(),
+}));
+
+vi.mock("./financialDb", () => ({
+  getFinancialDataByYear: vi.fn(),
+  getFinancialSummaryByMonth: vi.fn(),
+  getFinancialYearSummary: vi.fn(),
+}));
+
+import { financialRouter } from "./routers/financial";
+
+function createAuthenticatedContext(): TrpcContext {
+  return {
+    user: null,
+    req: {
+      headers: { cookie: "flight_session=valid-session" },
+    } as TrpcContext["req"],
+    res: {} as TrpcContext["res"],
+  };
+}
+
+const EMPTY_YEAR_SUMMARY = {
+  year: 2026,
+  totalCashBRL: 0,
+  totalSmilesPoints: 0,
+  totalLatamPassPoints: 0,
+  totalMiles: 0,
+  weeksCount: 0,
+  issuedCount: 0,
+  avgCashBRL: 0,
+  byAirline: {},
+  byMonth: [],
+};
+
+describe("financial router by planning year", () => {
+  beforeEach(async () => {
+    vi.clearAllMocks();
+    const db = await import("./db");
+    const financialDb = await import("./financialDb");
+
+    (db.validateAuthSession as ReturnType<typeof vi.fn>).mockResolvedValue({
+      email: "taiolor@gmail.com",
+    });
+    (financialDb.getFinancialDataByYear as ReturnType<typeof vi.fn>)
+      .mockResolvedValue([]);
+    (financialDb.getFinancialSummaryByMonth as ReturnType<typeof vi.fn>)
+      .mockResolvedValue([]);
+    (financialDb.getFinancialYearSummary as ReturnType<typeof vi.fn>)
+      .mockResolvedValue(EMPTY_YEAR_SUMMARY);
+  });
+
+  it("encaminha o ano selecionado para dados semanais, mensais e anuais", async () => {
+    const financialDb = await import("./financialDb");
+    const caller = financialRouter.createCaller(createAuthenticatedContext());
+
+    await caller.getWeeklyData({ year: 2027 });
+    await caller.getMonthlySummary({ year: 2028 });
+    await caller.getYearSummary({ year: 2029 });
+
+    expect(financialDb.getFinancialDataByYear).toHaveBeenCalledWith(2027);
+    expect(financialDb.getFinancialSummaryByMonth).toHaveBeenCalledWith(2028);
+    expect(financialDb.getFinancialYearSummary).toHaveBeenCalledWith(2029);
+  });
+
+  it("calcula a projeção somente a partir do exercício base selecionado", async () => {
+    const financialDb = await import("./financialDb");
+    const caller = financialRouter.createCaller(createAuthenticatedContext());
+
+    const result = await caller.getProjections({
+      baseYear: 2028,
+      targetYear: 2029,
+      inflationRate: 0.05,
+      tripsPerMonth: 4,
+    });
+
+    expect(result.baseYear).toBe(2028);
+    expect(result.targetYear).toBe(2029);
+    expect(financialDb.getFinancialYearSummary).toHaveBeenCalledWith(2028);
+    expect(financialDb.getFinancialDataByYear).toHaveBeenCalledWith(2028);
+  });
+
+  it("rejeita contratos sem ano e projeções que misturam exercícios", async () => {
+    const caller = financialRouter.createCaller(createAuthenticatedContext());
+
+    await expect((caller.getWeeklyData as any)({})).rejects.toThrow();
+    await expect((caller.getMonthlySummary as any)({})).rejects.toThrow();
+    await expect((caller.getYearSummary as any)({})).rejects.toThrow();
+    await expect(
+      (caller.getProjections as any)({ baseYear: 2027, targetYear: 2030 })
+    ).rejects.toThrow("O ano projetado deve ser o ano seguinte ao exercício base.");
+  });
+});

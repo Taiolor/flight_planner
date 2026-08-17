@@ -235,7 +235,7 @@ export default function FinancialDashboard() {
         inflationRate: inflationRate / 100,
         tripsPerMonth,
       },
-      { enabled: showProjections }
+      { enabled: isAuthenticated && showProjections }
     );
 
   // ─── Dados derivados ───────────────────────────────────────────────────────
@@ -328,7 +328,7 @@ export default function FinancialDashboard() {
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
       {/* Header */}
-      <header className="bg-gradient-to-r from-blue-600 via-purple-600 to-cyan-500 text-white px-4 py-3 flex items-center gap-3 shadow-lg sticky top-0 z-10">
+      <header className="bg-gradient-to-r from-blue-600 via-purple-600 to-cyan-500 text-white px-4 py-3 flex items-center gap-3 flex-wrap shadow-lg sticky top-0 z-10">
         <Link href="/">
           <button
             aria-label="Voltar para a página inicial"
@@ -353,8 +353,14 @@ export default function FinancialDashboard() {
                 ? "Ocultar valores financeiros"
                 : "Mostrar valores financeiros"
             }
-            onClick={() => setShowValues(v => !v)}
-            className="flex items-center gap-2 px-3 py-2 rounded-xl bg-white/10 hover:bg-white/20 transition-colors text-sm font-medium"
+            onClick={() => isAuthenticated && setShowValues(v => !v)}
+            disabled={!isAuthenticated}
+            title={
+              isAuthenticated
+                ? undefined
+                : "Faça login para visualizar valores financeiros"
+            }
+            className="flex items-center gap-2 px-3 py-2 rounded-xl bg-white/10 hover:bg-white/20 disabled:cursor-not-allowed disabled:opacity-50 transition-colors text-sm font-medium"
           >
             {showValues ? (
               <Eye className="w-4 h-4" />

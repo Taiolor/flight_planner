@@ -671,4 +671,6 @@
 
 - [x] Conectar consultas, gravações e histórico de Cotações ao ano global selecionado
 
+- [x] Revisar e concluir o isolamento de indicadores, tabelas, gráficos e projeções financeiras por ano selecionado
+
 - [x] Corrigir bloqueio de abertura da página administrativa

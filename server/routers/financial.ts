@@ -19,6 +19,7 @@ import {
 
 // Índice de inflação acumulado estimado para 2027 (IPCA ~5%)
 const INFLATION_RATE_DEFAULT = 0.05;
+const planningYearSchema = z.number().int().min(2020).max(2100);
 
 // Sazonalidade por mês: fator multiplicador sobre a média anual
 // Baseado em padrões históricos de passagens aéreas no Brasil
@@ -44,9 +45,7 @@ export const financialRouter = router({
    * Retorna todos os dados financeiros por semana para um dado ano.
    */
   getWeeklyData: flightProtectedProcedure
-    .input(
-      z.object({ year: z.number().int().min(2020).max(2030).default(2026) })
-    )
+    .input(z.object({ year: planningYearSchema }))
     .query(async ({ input }) => {
       return getFinancialDataByYear(input.year);
     }),
@@ -55,9 +54,7 @@ export const financialRouter = router({
    * Retorna o resumo financeiro por mês para um dado ano.
    */
   getMonthlySummary: flightProtectedProcedure
-    .input(
-      z.object({ year: z.number().int().min(2020).max(2030).default(2026) })
-    )
+    .input(z.object({ year: planningYearSchema }))
     .query(async ({ input }) => {
       return getFinancialSummaryByMonth(input.year);
     }),
@@ -66,9 +63,7 @@ export const financialRouter = router({
    * Retorna o resumo financeiro anual completo (inclui por mês e por companhia).
    */
   getYearSummary: flightProtectedProcedure
-    .input(
-      z.object({ year: z.number().int().min(2020).max(2030).default(2026) })
-    )
+    .input(z.object({ year: planningYearSchema }))
     .query(async ({ input }) => {
       return getFinancialYearSummary(input.year);
     }),
@@ -79,13 +74,22 @@ export const financialRouter = router({
    */
   getProjections: flightProtectedProcedure
     .input(
-      z.object({
-        baseYear: z.number().int().min(2020).max(2030).default(2026),
-        targetYear: z.number().int().min(2021).max(2031).default(2027),
-        inflationRate: z.number().min(0).max(1).default(INFLATION_RATE_DEFAULT),
-        // Frequência esperada de viagens por mês no próximo ano
-        tripsPerMonth: z.number().min(0).max(10).default(4),
-      })
+      z
+        .object({
+          baseYear: planningYearSchema,
+          targetYear: z.number().int().min(2021).max(2101),
+          inflationRate: z
+            .number()
+            .min(0)
+            .max(1)
+            .default(INFLATION_RATE_DEFAULT),
+          // Frequência esperada de viagens por mês no próximo ano
+          tripsPerMonth: z.number().min(0).max(10).default(4),
+        })
+        .refine(({ baseYear, targetYear }) => targetYear === baseYear + 1, {
+          message: "O ano projetado deve ser o ano seguinte ao exercício base.",
+          path: ["targetYear"],
+        })
     )
     .query(async ({ input }) => {
       const { baseYear, targetYear, inflationRate, tripsPerMonth } = input;
