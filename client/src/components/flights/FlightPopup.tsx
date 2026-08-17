@@ -177,6 +177,11 @@ export default function FlightPopup({
                 ⚠️ Remarcado
               </span>
             )}
+            {(w.departureCancelled || w.returnCancelled) && (
+              <span className="text-[10px] bg-slate-700 text-white px-2 py-0.5 rounded-full font-semibold flex items-center gap-1">
+                Cancelado
+              </span>
+            )}
           </div>
           <button
             onClick={onClose}
@@ -233,6 +238,16 @@ export default function FlightPopup({
                   {w.departureFlightNumber || "—"}
                 </span>
               </div>
+              {(w.departureRescheduled || w.departureCancelled) && (
+                <div>
+                  <span className="text-[9px] font-semibold text-blue-400 uppercase tracking-wide block">
+                    Status
+                  </span>
+                  <span className="text-slate-700 font-medium">
+                    {w.departureCancelled ? "Cancelado" : "Remarcado"}
+                  </span>
+                </div>
+              )}
               {w.departureLocator && (
                 <div className="col-span-2">
                   <span className="text-[9px] font-semibold text-blue-400 uppercase tracking-wide block">
@@ -295,14 +310,24 @@ export default function FlightPopup({
                     {retAirlineName}
                   </span>
                 </div>
-                <div>
-                  <span className="text-[9px] font-semibold text-orange-400 uppercase tracking-wide block">
-                    Voo
+              <div>
+                <span className="text-[9px] font-semibold text-orange-400 uppercase tracking-wide block">
+                  Voo
                   </span>
                   <span className="text-slate-700 font-mono font-medium">
-                    {w.returnFlightNumber || "—"}
+                  {w.returnFlightNumber || "—"}
+                </span>
+              </div>
+              {(w.returnRescheduled || w.returnCancelled) && (
+                <div>
+                  <span className="text-[9px] font-semibold text-orange-400 uppercase tracking-wide block">
+                    Status
+                  </span>
+                  <span className="text-slate-700 font-medium">
+                    {w.returnCancelled ? "Cancelado" : "Remarcado"}
                   </span>
                 </div>
+              )}
                 {w.returnLocator && (
                   <div className="col-span-2">
                     <span className="text-[9px] font-semibold text-orange-400 uppercase tracking-wide block">

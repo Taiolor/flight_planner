@@ -89,6 +89,9 @@ export const flightWeeks = mysqlTable(
     // Campos de voo remarcado (0 = normal, 1 = remarcado/não será voado)
     departureRescheduled: int("departureRescheduled").default(0).notNull(),
     returnRescheduled: int("returnRescheduled").default(0).notNull(),
+    // Campos de voo cancelado (0 = ativo, 1 = cancelado)
+    departureCancelled: int("departureCancelled").default(0).notNull(),
+    returnCancelled: int("returnCancelled").default(0).notNull(),
     createdAt: timestamp("createdAt").defaultNow().notNull(),
     updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
   },

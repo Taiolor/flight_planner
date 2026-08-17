@@ -677,4 +677,6 @@
 
 - [x] Publicar o callback anual de notificações e criar o agendamento periódico na plataforma
 
+- [x] Adicionar checkboxes de cancelamento independentes para ida e volta, com persistência anual e indicação visual
+
 - [x] Corrigir bloqueio de abertura da página administrativa

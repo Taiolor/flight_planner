@@ -177,6 +177,34 @@ describe("flights.updateWeekStatus with airline fields", () => {
     );
   });
 
+  it("should persist independent cancellation flags for each leg in the selected year", async () => {
+    const { validateAuthSession, updateFlightWeekStatus } = await import(
+      "./db"
+    );
+    (validateAuthSession as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+      email: "taiolor@gmail.com",
+    });
+
+    const caller = appRouter.createCaller(createTestContext("flight_session=valid-token"));
+    const result = await caller.flights.updateWeekStatus({
+      year: 2028,
+      weekNumber: 7,
+      isTicketIssued: 1,
+      departureCancelled: 1,
+      returnCancelled: 0,
+    });
+
+    expect(result.success).toBe(true);
+    expect(updateFlightWeekStatus).toHaveBeenCalledWith(
+      7,
+      expect.objectContaining({
+        year: 2028,
+        departureCancelled: 1,
+        returnCancelled: 0,
+      })
+    );
+  });
+
   it("should reject update without authentication", async () => {
     const { validateAuthSession } = await import("./db");
     (validateAuthSession as ReturnType<typeof vi.fn>).mockResolvedValueOnce(

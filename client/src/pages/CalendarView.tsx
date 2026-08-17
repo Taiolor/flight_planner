@@ -303,6 +303,7 @@ export default function CalendarView() {
         map[key].isPast = isPast;
         map[key].week = week;
         map[key].departureRescheduled = week.departureRescheduled === 1;
+        map[key].departureCancelled = week.departureCancelled === 1;
       }
 
       if (retDate) {
@@ -313,6 +314,7 @@ export default function CalendarView() {
         if (!isOneway) {
           map[key].return = true;
           map[key].returnRescheduled = week.returnRescheduled === 1;
+          map[key].returnCancelled = week.returnCancelled === 1;
         }
         if (!map[key].departure) {
           map[key].isPast = isPast;
@@ -413,6 +415,10 @@ export default function CalendarView() {
           <span className="flex items-center gap-1">
             <span className="w-2 h-2 rounded-full bg-red-500 inline-block" />
             Remarcado
+          </span>
+          <span className="flex items-center gap-1">
+            <span className="w-2 h-2 rounded-full bg-slate-700 inline-block" />
+            Cancelado
           </span>
           <span className="flex items-center gap-1">
             <span className="w-2 h-2 rounded-full bg-emerald-200 border border-emerald-400 inline-block" />
@@ -530,6 +536,13 @@ export default function CalendarView() {
                         }
 
                         if (mark) {
+                          const allCancelled =
+                            (mark.departure && mark.departureCancelled && !mark.return) ||
+                            (mark.return && mark.returnCancelled && !mark.departure) ||
+                            (mark.departure && mark.departureCancelled && mark.return && mark.returnCancelled);
+                          const anyCancelled =
+                            (mark.departure && mark.departureCancelled) ||
+                            (mark.return && mark.returnCancelled);
                           // Verificar se TODOS os voos marcados neste dia são remarcados
                           const allRescheduled =
                             (mark.departure &&
@@ -547,7 +560,13 @@ export default function CalendarView() {
                             (mark.departure && mark.departureRescheduled) ||
                             (mark.return && mark.returnRescheduled);
 
-                          if (allRescheduled) {
+                          if (allCancelled) {
+                            cellBg = "bg-slate-700";
+                            textColor = "text-white";
+                          } else if (anyCancelled) {
+                            cellBg = "bg-slate-600";
+                            textColor = "text-white";
+                          } else if (allRescheduled) {
                             cellBg = "bg-red-500";
                             textColor = "text-white";
                           } else if (anyRescheduled) {

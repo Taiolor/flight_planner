@@ -255,6 +255,8 @@ interface WeekData {
   latamPassPoints?: number | null;
   departureRescheduled?: number;
   returnRescheduled?: number;
+  departureCancelled?: number;
+  returnCancelled?: number;
 }
 
 interface PriceMap {
@@ -898,6 +900,8 @@ export default function Home() {
         latamPassPoints: (w as any).latamPassPoints ?? null,
         departureRescheduled: (w as any).departureRescheduled ?? 0,
         returnRescheduled: (w as any).returnRescheduled ?? 0,
+        departureCancelled: (w as any).departureCancelled ?? 0,
+        returnCancelled: (w as any).returnCancelled ?? 0,
       }));
     }
     // Não usar fallback estático: semanas de outro exercício jamais podem ser exibidas.
@@ -4407,6 +4411,8 @@ export default function Home() {
                                                         year: selectedYear,
                                                         departureRescheduled:
                                                           checked ? 1 : 0,
+                                                        departureCancelled:
+                                                          checked ? 0 : week.departureCancelled,
                                                         isTicketIssued:
                                                           week.isTicketIssued,
                                                       },
@@ -4435,6 +4441,46 @@ export default function Home() {
                                                   className="text-[10px] font-semibold text-red-600 dark:text-red-400 uppercase tracking-wide cursor-pointer"
                                                 >
                                                   Voo Remarcado
+                                                </label>
+                                              </div>
+                                              <div className="flex items-center gap-2 pt-1">
+                                                <Checkbox
+                                                  id={`departure-cancelled-${week.weekNumber}`}
+                                                  checked={week.departureCancelled === 1}
+                                                  onCheckedChange={checked => {
+                                                    if (!isAuthenticated) {
+                                                      setShowLoginModal(true);
+                                                      return;
+                                                    }
+                                                    updateStatusMutation.mutate(
+                                                      {
+                                                        weekNumber: week.weekNumber,
+                                                        year: selectedYear,
+                                                        departureCancelled: checked ? 1 : 0,
+                                                        departureRescheduled:
+                                                          checked ? 0 : week.departureRescheduled,
+                                                        isTicketIssued: week.isTicketIssued,
+                                                      },
+                                                      {
+                                                        onSuccess: () => {
+                                                          utils.flights.getWeeks.invalidate({ year: selectedYear });
+                                                          toast.success(
+                                                            checked
+                                                              ? "Voo de ida marcado como cancelado"
+                                                              : "Voo de ida desmarcado como cancelado"
+                                                          );
+                                                        },
+                                                        onError: () => toast.error("Erro ao atualizar cancelamento do voo de ida"),
+                                                      }
+                                                    );
+                                                  }}
+                                                  className="border-slate-500 data-[state=checked]:bg-slate-700 data-[state=checked]:border-slate-700"
+                                                />
+                                                <label
+                                                  htmlFor={`departure-cancelled-${week.weekNumber}`}
+                                                  className="text-[10px] font-semibold text-slate-700 dark:text-slate-200 uppercase tracking-wide cursor-pointer"
+                                                >
+                                                  Voo Cancelado
                                                 </label>
                                               </div>
                                             </div>
@@ -4916,6 +4962,8 @@ export default function Home() {
                                                           year: selectedYear,
                                                           returnRescheduled:
                                                             checked ? 1 : 0,
+                                                          returnCancelled:
+                                                            checked ? 0 : week.returnCancelled,
                                                           isTicketIssued:
                                                             week.isTicketIssued,
                                                         },
@@ -4944,6 +4992,46 @@ export default function Home() {
                                                     className="text-[10px] font-semibold text-red-600 dark:text-red-400 uppercase tracking-wide cursor-pointer"
                                                   >
                                                     Voo Remarcado
+                                                  </label>
+                                                </div>
+                                                <div className="flex items-center gap-2 pt-1">
+                                                  <Checkbox
+                                                    id={`return-cancelled-${week.weekNumber}`}
+                                                    checked={week.returnCancelled === 1}
+                                                    onCheckedChange={checked => {
+                                                      if (!isAuthenticated) {
+                                                        setShowLoginModal(true);
+                                                        return;
+                                                      }
+                                                      updateStatusMutation.mutate(
+                                                        {
+                                                          weekNumber: week.weekNumber,
+                                                          year: selectedYear,
+                                                          returnCancelled: checked ? 1 : 0,
+                                                          returnRescheduled:
+                                                            checked ? 0 : week.returnRescheduled,
+                                                          isTicketIssued: week.isTicketIssued,
+                                                        },
+                                                        {
+                                                          onSuccess: () => {
+                                                            utils.flights.getWeeks.invalidate({ year: selectedYear });
+                                                            toast.success(
+                                                              checked
+                                                                ? "Voo de volta marcado como cancelado"
+                                                                : "Voo de volta desmarcado como cancelado"
+                                                            );
+                                                          },
+                                                          onError: () => toast.error("Erro ao atualizar cancelamento do voo de volta"),
+                                                        }
+                                                      );
+                                                    }}
+                                                    className="border-slate-500 data-[state=checked]:bg-slate-700 data-[state=checked]:border-slate-700"
+                                                  />
+                                                  <label
+                                                    htmlFor={`return-cancelled-${week.weekNumber}`}
+                                                    className="text-[10px] font-semibold text-slate-700 dark:text-slate-200 uppercase tracking-wide cursor-pointer"
+                                                  >
+                                                    Voo Cancelado
                                                   </label>
                                                 </div>
                                               </div>

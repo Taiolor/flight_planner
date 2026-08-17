@@ -26,6 +26,8 @@ interface WeekData {
   ticketType?: string | null;
   departureRescheduled?: number | boolean | null;
   returnRescheduled?: number | boolean | null;
+  departureCancelled?: number | boolean | null;
+  returnCancelled?: number | boolean | null;
 }
 
 interface PriceMap {
@@ -72,6 +74,14 @@ export function formatRescheduleStatus(value: number | boolean | null | undefine
   return isRescheduled(value) ? "Remarcado" : "Não remarcado";
 }
 
+export function formatFlightStatus(
+  rescheduled: number | boolean | null | undefined,
+  cancelled: number | boolean | null | undefined
+): string {
+  if (isRescheduled(cancelled)) return "Cancelado";
+  return formatRescheduleStatus(rescheduled);
+}
+
 function formatDatetime(dt: string | null | undefined): string {
   if (!dt) return "—";
   const iso = dt.includes("T") ? dt : dt + "T12:00";
@@ -106,6 +116,7 @@ interface FlightDetailsProps {
   flightDatetime?: string | null;
   airport?: string | null;
   rescheduled?: boolean;
+  cancelled?: boolean;
 }
 
 function FlightDetailRow({
@@ -200,6 +211,7 @@ function FlightDetailsSection({
   flightDatetime,
   airport,
   rescheduled = false,
+  cancelled = false,
 }: FlightDetailsProps) {
   return (
     <div
@@ -259,13 +271,13 @@ function FlightDetailsSection({
                   display: "inline-block",
                   padding: "3px 8px",
                   borderRadius: "999px",
-                  background: rescheduled ? "#fee2e2" : "#dcfce7",
-                  color: rescheduled ? "#b91c1c" : "#166534",
+                  background: cancelled ? "#e2e8f0" : rescheduled ? "#fee2e2" : "#dcfce7",
+                  color: cancelled ? "#334155" : rescheduled ? "#b91c1c" : "#166534",
                   fontSize: "11px",
                   fontWeight: 700,
                 }}
               >
-                {formatRescheduleStatus(rescheduled)}
+                {formatFlightStatus(rescheduled, cancelled)}
               </span>
             }
           />
@@ -515,6 +527,7 @@ function WeekCard({
           flightDatetime={week.departureFlightDatetime}
           airport={week.departureAirport}
           rescheduled={isRescheduled(week.departureRescheduled)}
+          cancelled={isRescheduled(week.departureCancelled)}
         />
         {!isOneway && (
           <FlightDetailsSection
@@ -527,6 +540,7 @@ function WeekCard({
             flightDatetime={week.returnFlightDatetime}
             airport={week.returnAirport}
             rescheduled={isRescheduled(week.returnRescheduled)}
+            cancelled={isRescheduled(week.returnCancelled)}
           />
         )}
       </div>

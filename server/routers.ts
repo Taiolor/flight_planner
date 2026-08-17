@@ -355,6 +355,8 @@ export const appRouter = router({
           latamPassPoints: z.number().nullable().optional(),
           departureRescheduled: z.number().optional(),
           returnRescheduled: z.number().optional(),
+          departureCancelled: z.number().optional(),
+          returnCancelled: z.number().optional(),
         })
       )
       .mutation(async ({ input }) => {
@@ -381,6 +383,8 @@ export const appRouter = router({
           latamPassPoints: input.latamPassPoints,
           departureRescheduled: input.departureRescheduled,
           returnRescheduled: input.returnRescheduled,
+          departureCancelled: input.departureCancelled,
+          returnCancelled: input.returnCancelled,
         });
 
         // Send email notifications if ticket was issued or modified

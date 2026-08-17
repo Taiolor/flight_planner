@@ -234,6 +234,8 @@ export async function updateFlightWeekStatus(
     latamPassPoints?: number | null;
     departureRescheduled?: number;
     returnRescheduled?: number;
+    departureCancelled?: number;
+    returnCancelled?: number;
   }
 ) {
   const db = await getDb();
