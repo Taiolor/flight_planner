@@ -61,6 +61,7 @@ import {
 } from "./flightAuthMiddleware";
 
 interface NextAlert {
+  year: number;
   weekNumber: number;
   direction: "ida" | "volta";
   avisoLabel: string;
@@ -71,6 +72,8 @@ interface NextAlert {
   arrivalAirport: string | null;
   flightDatetime: string;
 }
+
+const planningYearSchema = z.number().int().min(2020).max(2100);
 
 export const appRouter = router({
   system: systemRouter,
@@ -224,7 +227,9 @@ export const appRouter = router({
       }),
 
     // Enviar notificação de teste
-    sendTest: flightProtectedProcedure.mutation(async () => {
+    sendTest: flightProtectedProcedure
+      .input(z.object({ year: planningYearSchema }))
+      .mutation(async ({ input }) => {
       const { sendPushToAll } = await import("./pushNotifications");
       const sent = await sendPushToAll({
         title: "✈️ Smart Fly — Teste",
@@ -235,6 +240,7 @@ export const appRouter = router({
       });
       const totalDevices = (await getAllPushSubscriptions()).length;
       await insertNotificationLog({
+        year: input.year,
         weekNumber: 0,
         direction: "ida",
         avisoLabel: "Teste Manual",
@@ -248,7 +254,7 @@ export const appRouter = router({
         isTest: 1,
       });
       return { success: true, sent };
-    }),
+      }),
   }),
 
   // =====================
@@ -723,9 +729,11 @@ export const appRouter = router({
   // =====================
   adminNotifications: router({
     // Retorna status completo do sistema de notificações para o painel admin
-    getStatus: flightProtectedProcedure.query(async () => {
+    getStatus: flightProtectedProcedure
+      .input(z.object({ year: planningYearSchema }))
+      .query(async ({ input }) => {
       const [weeks, settings, subscriptions] = await Promise.all([
-        getAllFlightWeeks(),
+        getAllFlightWeeks(input.year),
         getNotificationSettings(),
         getAllPushSubscriptions(),
       ]);
@@ -753,6 +761,7 @@ export const appRouter = router({
       ].filter(a => a.minutes > 0);
 
       const scheduledAlerts: Array<{
+        year: number;
         weekNumber: number;
         direction: "ida" | "volta";
         avisoLabel: string;
@@ -818,6 +827,7 @@ export const appRouter = router({
                 status = "sent";
 
               scheduledAlerts.push({
+                year: input.year,
                 weekNumber: Number(week.weekNumber),
                 direction: "ida",
                 avisoLabel: aviso.label,
@@ -855,6 +865,7 @@ export const appRouter = router({
                 status = "sent";
 
               scheduledAlerts.push({
+                year: input.year,
                 weekNumber: Number(week.weekNumber),
                 direction: "volta",
                 avisoLabel: aviso.label,
@@ -895,12 +906,14 @@ export const appRouter = router({
         serverTime: now.toISOString(),
         avisos: avisos.map(a => ({ ...a, label: formatMinutes(a.minutes) })),
       };
-    }),
+      }),
 
     // Enviar notificação de teste do próximo alerta agendado
-    sendNextAlert: flightProtectedProcedure.mutation(async () => {
+    sendNextAlert: flightProtectedProcedure
+      .input(z.object({ year: planningYearSchema }))
+      .mutation(async ({ input }) => {
       const [weeks, settings] = await Promise.all([
-        getAllFlightWeeks(),
+        getAllFlightWeeks(input.year),
         getNotificationSettings(),
       ]);
       const now = new Date();
@@ -953,6 +966,7 @@ export const appRouter = router({
               ) {
                 minTimeUntilAlert = minutesUntilAlert;
                 nextAlert = {
+                  year: input.year,
                   weekNumber: week.weekNumber,
                   direction: "ida",
                   avisoLabel: aviso.label,
@@ -984,6 +998,7 @@ export const appRouter = router({
               ) {
                 minTimeUntilAlert = minutesUntilAlert;
                 nextAlert = {
+                  year: input.year,
                   weekNumber: week.weekNumber,
                   direction: "volta",
                   avisoLabel: aviso.label,
@@ -1028,10 +1043,11 @@ export const appRouter = router({
         body: `${nextAlert.direction === "ida" ? "Partida" : "Retorno"} em ${dateStr} às ${timeStr}\n${nextAlert.departureAirport} → ${nextAlert.arrivalAirport}`,
         icon: "/icons/icon-192.png",
         badge: "/icons/icon-192.png",
-        tag: `test-${nextAlert.weekNumber}`,
+        tag: `test-${nextAlert.year}-${nextAlert.weekNumber}`,
       });
 
       await insertNotificationLog({
+        year: nextAlert.year,
         weekNumber: nextAlert.weekNumber,
         direction: nextAlert.direction,
         avisoLabel: nextAlert.avisoLabel,
@@ -1046,13 +1062,18 @@ export const appRouter = router({
       });
 
       return { success: true, sent, nextAlert };
-    }),
+      }),
 
     // Retorna histórico persistente de envios
     getLogs: flightProtectedProcedure
-      .input(z.object({ limit: z.number().min(1).max(500).optional() }))
+      .input(
+        z.object({
+          year: planningYearSchema,
+          limit: z.number().min(1).max(500).optional(),
+        })
+      )
       .query(async ({ input }) => {
-        const logs = await getNotificationLogs(input?.limit ?? 100);
+        const logs = await getNotificationLogs(input.limit ?? 100, input.year);
         return logs;
       }),
   }),

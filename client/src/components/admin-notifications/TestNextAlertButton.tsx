@@ -4,7 +4,7 @@ import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
 import { FlaskConical } from "lucide-react";
 
-export function TestNextAlertButton() {
+export function TestNextAlertButton({ year }: { year: number }) {
   const [isLoading, setIsLoading] = useState(false);
   const sendNextAlertMutation =
     trpc.adminNotifications.sendNextAlert.useMutation({
@@ -22,7 +22,7 @@ export function TestNextAlertButton() {
 
   const handleTest = async () => {
     setIsLoading(true);
-    await sendNextAlertMutation.mutateAsync();
+    await sendNextAlertMutation.mutateAsync({ year });
   };
 
   return (

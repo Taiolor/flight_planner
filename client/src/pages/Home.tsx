@@ -656,7 +656,7 @@ export default function Home() {
     unsubscribe: pushUnsubscribe,
     sendTest: pushSendTest,
     isSendingTest: pushSendingTest,
-  } = usePushNotifications();
+  } = usePushNotifications(selectedYear);
 
   // Ref que rastreia quais semanas já foram inicializadas — evita sobrescrever
   // o que o usuário está digitando quando o tRPC faz refetch em background.
@@ -1919,6 +1919,7 @@ export default function Home() {
               )}
 
               <ExportPdfButton
+                year={selectedYear}
                 weeksData={weeksData}
                 priceMap={priceMap}
                 totalInvested={annualTotalIssued}

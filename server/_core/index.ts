@@ -7,7 +7,7 @@ import { registerOAuthRoutes } from "./oauth";
 import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
-import { startFlightNotificationJob } from "../pushNotifications";
+import { runScheduledFlightNotifications } from "../pushNotifications";
 import rateLimit from "express-rate-limit";
 import helmet from "helmet";
 import { ENV } from "./env";
@@ -124,6 +124,8 @@ async function startServer() {
     })
   );
 
+  app.post("/api/scheduled/flight-notifications", runScheduledFlightNotifications);
+
   // development mode uses Vite, production mode uses static files
   if (process.env.NODE_ENV === "development") {
     await setupVite(app, server);
@@ -140,8 +142,6 @@ async function startServer() {
 
   server.listen(port, () => {
     console.log(`Server running on http://localhost:${port}/`);
-    // Iniciar job de notificações push (verifica voos a cada hora)
-    startFlightNotificationJob();
   });
 }
 

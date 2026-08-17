@@ -33,9 +33,18 @@ interface PriceMap {
 }
 
 interface FlightPdfExportProps {
+  year: number;
   weeksData: WeekData[];
   priceMap: PriceMap;
   totalInvested: number;
+}
+
+export function getPdfReportSubtitle(year: number): string {
+  return `Relatório de Passagens Aéreas ${year}`;
+}
+
+export function getPdfFilename(year: number): string {
+  return `SmartFly-Passagens-${year}.pdf`;
 }
 
 const AIRLINE_COLORS: Record<
@@ -276,7 +285,7 @@ function FlightDetailsSection({
   );
 }
 
-function CoverHeader() {
+function CoverHeader({ year }: { year: number }) {
   return (
     <div
       style={{
@@ -311,7 +320,7 @@ function CoverHeader() {
           Smart Fly
         </div>
         <div style={{ fontSize: "14px", opacity: 0.75 }}>
-          Relatório de Passagens Aéreas 2026
+          {getPdfReportSubtitle(year)}
         </div>
       </div>
     </div>
@@ -354,9 +363,11 @@ function StatCard({
 }
 
 function CoverPage({
+  year,
   issued,
   totalInvested,
 }: {
+  year: number;
   issued: WeekData[];
   totalInvested: number;
 }) {
@@ -373,7 +384,7 @@ function CoverPage({
         boxSizing: "border-box",
       }}
     >
-      <CoverHeader />
+      <CoverHeader year={year} />
 
       <div
         style={{
@@ -749,6 +760,7 @@ function addCanvasToPdfHelper(
 
 // ─── Botão de exportação ─────────────────────────────────────────────────────
 export function ExportPdfButton({
+  year,
   weeksData,
   priceMap,
   totalInvested,
@@ -781,7 +793,7 @@ export function ExportPdfButton({
 
       // 1. Capa
       const coverCanvas = await renderPageToCanvas(
-        <CoverPage issued={issued} totalInvested={totalInvested} />
+        <CoverPage year={year} issued={issued} totalInvested={totalInvested} />
       );
       addCanvasToPdfHelper(pdf, coverCanvas, true, pdfW, pdfH);
 
@@ -809,7 +821,7 @@ export function ExportPdfButton({
         }
       }
 
-      pdf.save("SmartFly-Passagens-2026.pdf");
+      pdf.save(getPdfFilename(year));
     } catch (err) {
       console.error("[PDF Export Error]", err);
       alert("Erro ao gerar o PDF. Tente novamente.");

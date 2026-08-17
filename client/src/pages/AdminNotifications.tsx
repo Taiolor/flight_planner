@@ -37,6 +37,8 @@ import {
 } from "@/components/admin-notifications/utils";
 import { AlertRow } from "@/components/admin-notifications/AlertRow";
 import { LoginModal } from "@/components/auth/LoginModal";
+import { GlobalYearSelector } from "@/components/GlobalYearSelector";
+import { useYear } from "@/contexts/YearContext";
 
 export type AdminAccessState = "checking" | "login-required" | "authorized";
 
@@ -52,6 +54,7 @@ export function getAdminAccessState({
 }
 
 export default function AdminNotifications() {
+  const { selectedYear } = useYear();
   const [autoRefresh, setAutoRefresh] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [expandedSections, setExpandedSections] = useState<Set<string>>(
@@ -75,14 +78,14 @@ export default function AdminNotifications() {
   };
 
   const { data, isLoading, error, refetch, isFetching } =
-    trpc.adminNotifications.getStatus.useQuery(undefined, {
+    trpc.adminNotifications.getStatus.useQuery({ year: selectedYear }, {
       enabled: isAuthenticated,
       refetchInterval: autoRefresh ? 60_000 : false,
     });
 
   const { data: logs, refetch: refetchLogs } =
     trpc.adminNotifications.getLogs.useQuery(
-      { limit: 100 },
+      { year: selectedYear, limit: 100 },
       {
         enabled: isAuthenticated,
         refetchInterval: autoRefresh ? 60_000 : false,
@@ -208,11 +211,12 @@ export default function AdminNotifications() {
             <div className="flex items-center gap-2">
               <Bell className="w-5 h-5 text-blue-600" />
               <h1 className="font-semibold text-gray-800">
-                Painel de Notificações
+                Painel de Notificações · {selectedYear}
               </h1>
             </div>
           </div>
           <div className="flex items-center gap-2">
+            <GlobalYearSelector />
             <Button
               variant="ghost"
               size="sm"
@@ -322,7 +326,7 @@ export default function AdminNotifications() {
                     {formatDatetimeBRT(nextAlert.alertDatetime)}
                   </p>
                 </div>
-                <TestNextAlertButton />
+                <TestNextAlertButton year={selectedYear} />
               </div>
             </div>
           </Card>
@@ -644,7 +648,7 @@ export default function AdminNotifications() {
           </h2>
           <div className="flex flex-wrap gap-3">
             <Button
-              onClick={() => sendTestMutation.mutate()}
+              onClick={() => sendTestMutation.mutate({ year: selectedYear })}
               disabled={
                 sendTestMutation.isPending ||
                 (data?.totalSubscriptions ?? 0) === 0

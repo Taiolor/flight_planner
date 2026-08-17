@@ -29,7 +29,7 @@ function urlBase64ToUint8Array(base64String: string): Uint8Array<ArrayBuffer> {
   return outputArray;
 }
 
-export function usePushNotifications() {
+export function usePushNotifications(year: number) {
   const [status, setStatus] = useState<NotificationStatus>("loading");
   const [subscription, setSubscription] = useState<PushSubscription | null>(
     null
@@ -149,7 +149,7 @@ export function usePushNotifications() {
 
   const sendTest = useCallback(async () => {
     try {
-      await sendTestMutation.mutateAsync();
+      await sendTestMutation.mutateAsync({ year });
       return true;
     } catch (err: unknown) {
       setErrorMessage(
@@ -159,7 +159,7 @@ export function usePushNotifications() {
       );
       return false;
     }
-  }, [sendTestMutation]);
+  }, [sendTestMutation, year]);
 
   return {
     status,

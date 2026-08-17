@@ -252,9 +252,11 @@ export const notificationLogs = mysqlTable("notification_logs", {
   totalDevices: int("totalDevices").notNull().default(0),
   errorMessage: text("errorMessage"),
   isTest: int("isTest").notNull().default(0), // 1 = envio de teste manual
+  deliveryKey: varchar("deliveryKey", { length: 160 }), // chave idempotente de envios automáticos
   sentAt: timestamp("sentAt").defaultNow().notNull(),
 }, table => [
   index("idx_notification_logs_year_week").on(table.year, table.weekNumber),
+  uniqueIndex("uq_notification_logs_delivery_key").on(table.deliveryKey),
 ]);
 
 export type NotificationLog = typeof notificationLogs.$inferSelect;

@@ -3,6 +3,8 @@ import {
   formatAirlineName,
   formatLocator,
   formatRescheduleStatus,
+  getPdfFilename,
+  getPdfReportSubtitle,
 } from "./FlightPdfExport";
 
 describe("FlightPdfExport helpers", () => {
@@ -27,5 +29,10 @@ describe("FlightPdfExport helpers", () => {
     expect(formatRescheduleStatus(true)).toBe("Remarcado");
     expect(formatRescheduleStatus(0)).toBe("Não remarcado");
     expect(formatRescheduleStatus(false)).toBe("Não remarcado");
+  });
+
+  it("identifica a capa e o arquivo pelo exercício selecionado", () => {
+    expect(getPdfReportSubtitle(2027)).toBe("Relatório de Passagens Aéreas 2027");
+    expect(getPdfFilename(2027)).toBe("SmartFly-Passagens-2027.pdf");
   });
 });

@@ -567,34 +567,64 @@ export async function updateNotificationSettings(
 // =====================
 
 export async function insertNotificationLog(
-  data: InsertNotificationLog
+  data: InsertNotificationLog & { year: number }
 ): Promise<void> {
   const db = await getDb();
   if (!db) return;
-  await db
-    .insert(notificationLogs)
-    .values({ year: data.year ?? DEFAULT_PLANNING_YEAR, ...data });
+  await db.insert(notificationLogs).values(data);
 }
 
 export async function getNotificationLogs(
   limit = 100,
-  year?: number
+  year: number
 ) {
   const db = await getDb();
   if (!db) return [];
-  if (year) {
-    return db
-      .select()
-      .from(notificationLogs)
-      .where(eq(notificationLogs.year, year))
-      .orderBy(desc(notificationLogs.sentAt))
-      .limit(limit);
-  }
   return db
     .select()
     .from(notificationLogs)
+    .where(eq(notificationLogs.year, year))
     .orderBy(desc(notificationLogs.sentAt))
     .limit(limit);
+}
+
+/**
+ * Reserva um envio automático pelo identificador único da entrega. Se o
+ * callback for repetido pela plataforma, o registro existente impede um novo
+ * push para o mesmo voo, trecho e janela de aviso.
+ */
+export async function claimNotificationDelivery(
+  data: InsertNotificationLog & { year: number; deliveryKey: string }
+): Promise<boolean> {
+  const db = await getDb();
+  if (!db) return false;
+
+  try {
+    await db.insert(notificationLogs).values(data);
+    return true;
+  } catch (error: any) {
+    if (error?.code === "ER_DUP_ENTRY" || error?.errno === 1062) {
+      return false;
+    }
+    throw error;
+  }
+}
+
+export async function completeNotificationDelivery(
+  deliveryKey: string,
+  data: {
+    status: string;
+    devicesReached: number;
+    totalDevices: number;
+    errorMessage?: string | null;
+  }
+): Promise<void> {
+  const db = await getDb();
+  if (!db) return;
+  await db
+    .update(notificationLogs)
+    .set(data)
+    .where(eq(notificationLogs.deliveryKey, deliveryKey));
 }
 
 export async function deleteOldNotificationLogs(daysOld = 90): Promise<number> {
