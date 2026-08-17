@@ -213,7 +213,7 @@ function getExtendedWeekends(
   return extended;
 }
 
-import { WeekRow, DayMark } from "@/components/flights/types";
+import { WeekRow, DayMark, hasCancelledFlight } from "@/components/flights/types";
 import FlightPopup from "@/components/flights/FlightPopup";
 import { useYear } from "@/contexts/YearContext";
 import { GlobalYearSelector } from "@/components/GlobalYearSelector";
@@ -223,6 +223,8 @@ export default function CalendarView() {
   const weeksQuery = trpc.flights.getWeeks.useQuery({ year });
   const [selectedMark, setSelectedMark] = useState<DayMark | null>(null);
   const [showOnlyHolidaysAndWeekends, setShowOnlyHolidaysAndWeekends] =
+    useState(false);
+  const [showOnlyCancelledFlights, setShowOnlyCancelledFlights] =
     useState(false);
   const [showCupPanel, setShowCupPanel] = useState(() => {
     // Carregar preferência do localStorage
@@ -429,7 +431,7 @@ export default function CalendarView() {
 
       {/* Filtro */}
       <div className="px-4 py-4 bg-white/80 backdrop-blur-sm border-b border-purple-200/30 sticky top-16 z-9">
-        <div className="max-w-7xl mx-auto flex items-center gap-3">
+        <div className="max-w-7xl mx-auto flex flex-wrap items-center gap-3">
           <label
             htmlFor="holiday-filter"
             className="flex items-center gap-2 cursor-pointer select-none"
@@ -443,6 +445,21 @@ export default function CalendarView() {
             />
             <span className="text-sm font-medium text-slate-700">
               Mostrar apenas feriados e finais de semana prolongados
+            </span>
+          </label>
+          <label
+            htmlFor="cancelled-flights-filter"
+            className="flex items-center gap-2 cursor-pointer select-none"
+          >
+            <input
+              id="cancelled-flights-filter"
+              type="checkbox"
+              checked={showOnlyCancelledFlights}
+              onChange={e => setShowOnlyCancelledFlights(e.target.checked)}
+              className="w-4 h-4 rounded border-slate-300 text-slate-700 focus:ring-2 focus:ring-slate-500"
+            />
+            <span className="text-sm font-medium text-slate-700">
+              Mostrar apenas voos cancelados
             </span>
           </label>
         </div>
@@ -627,11 +644,12 @@ export default function CalendarView() {
                           tooltipText = "Fim de semana prolongado";
                         }
 
-                        // Aplicar filtro: mostrar apenas se tem feriado ou fim de semana prolongado
+                        // Aplicar filtros ativos ao mesmo tempo.
                         if (
-                          showOnlyHolidaysAndWeekends &&
-                          !holiday &&
-                          !isExtendedWeekend
+                          (showOnlyHolidaysAndWeekends &&
+                            !holiday &&
+                            !isExtendedWeekend) ||
+                          (showOnlyCancelledFlights && !hasCancelledFlight(mark))
                         ) {
                           return <div key={di} className="aspect-square" />;
                         }

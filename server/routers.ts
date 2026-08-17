@@ -587,16 +587,12 @@ export const appRouter = router({
             // Ticket was updated - detect changes
             if (recipients.length > 0) {
               const recipientEmails = recipients.map(r => r.email);
-              const changes: Record<string, any> = {};
-
               // Check departure changes
               if (
-                weekBefore.departureFlightNumber !==
-                  input.departureFlightNumber ||
-                weekBefore.departureFlightDatetime !==
-                  input.departureFlightDatetime ||
-                weekBefore.departureAirline !== input.departureAirline ||
-                weekBefore.departureLocator !== input.departureLocator
+                (input.departureFlightNumber !== undefined && weekBefore.departureFlightNumber !== input.departureFlightNumber) ||
+                (input.departureFlightDatetime !== undefined && weekBefore.departureFlightDatetime !== input.departureFlightDatetime) ||
+                (input.departureAirline !== undefined && weekBefore.departureAirline !== input.departureAirline) ||
+                (input.departureLocator !== undefined && weekBefore.departureLocator !== input.departureLocator)
               ) {
                 await sendTicketNotificationEmail(recipientEmails, {
                   type: "updated",
@@ -634,11 +630,10 @@ export const appRouter = router({
 
               // Check return changes
               if (
-                weekBefore.returnFlightNumber !== input.returnFlightNumber ||
-                weekBefore.returnFlightDatetime !==
-                  input.returnFlightDatetime ||
-                weekBefore.returnAirline !== input.returnAirline ||
-                weekBefore.returnLocator !== input.returnLocator
+                (input.returnFlightNumber !== undefined && weekBefore.returnFlightNumber !== input.returnFlightNumber) ||
+                (input.returnFlightDatetime !== undefined && weekBefore.returnFlightDatetime !== input.returnFlightDatetime) ||
+                (input.returnAirline !== undefined && weekBefore.returnAirline !== input.returnAirline) ||
+                (input.returnLocator !== undefined && weekBefore.returnLocator !== input.returnLocator)
               ) {
                 await sendTicketNotificationEmail(recipientEmails, {
                   type: "updated",
@@ -669,6 +664,60 @@ export const appRouter = router({
                   returnFlightDatetime: input.returnFlightDatetime ?? undefined,
                   returnAirline: input.returnAirline ?? undefined,
                   returnLocator: input.returnLocator ?? undefined,
+                  departureDate: weekBefore.departureDate ?? undefined,
+                  returnDate: weekBefore.returnDate ?? undefined,
+                });
+              }
+
+              if (
+                input.departureCancelled === 1 &&
+                weekBefore.departureCancelled !== 1
+              ) {
+                await sendTicketNotificationEmail(recipientEmails, {
+                  type: "updated",
+                  eventLabel: "⚠️ Voo de Ida Cancelado",
+                  weekNumber: input.weekNumber,
+                  ticketType: "departure",
+                  changes: {
+                    before: { Status: "Ativo" },
+                    after: { Status: "Cancelado" },
+                  },
+                  timestamp: new Date(),
+                  departureFlightNumber: weekBefore.departureFlightNumber ?? undefined,
+                  departureFlightDatetime: weekBefore.departureFlightDatetime ?? undefined,
+                  departureAirline: weekBefore.departureAirline ?? undefined,
+                  departureLocator: weekBefore.departureLocator ?? undefined,
+                  returnFlightNumber: weekBefore.returnFlightNumber ?? undefined,
+                  returnFlightDatetime: weekBefore.returnFlightDatetime ?? undefined,
+                  returnAirline: weekBefore.returnAirline ?? undefined,
+                  returnLocator: weekBefore.returnLocator ?? undefined,
+                  departureDate: weekBefore.departureDate ?? undefined,
+                  returnDate: weekBefore.returnDate ?? undefined,
+                });
+              }
+
+              if (
+                input.returnCancelled === 1 &&
+                weekBefore.returnCancelled !== 1
+              ) {
+                await sendTicketNotificationEmail(recipientEmails, {
+                  type: "updated",
+                  eventLabel: "⚠️ Voo de Volta Cancelado",
+                  weekNumber: input.weekNumber,
+                  ticketType: "return",
+                  changes: {
+                    before: { Status: "Ativo" },
+                    after: { Status: "Cancelado" },
+                  },
+                  timestamp: new Date(),
+                  departureFlightNumber: weekBefore.departureFlightNumber ?? undefined,
+                  departureFlightDatetime: weekBefore.departureFlightDatetime ?? undefined,
+                  departureAirline: weekBefore.departureAirline ?? undefined,
+                  departureLocator: weekBefore.departureLocator ?? undefined,
+                  returnFlightNumber: weekBefore.returnFlightNumber ?? undefined,
+                  returnFlightDatetime: weekBefore.returnFlightDatetime ?? undefined,
+                  returnAirline: weekBefore.returnAirline ?? undefined,
+                  returnLocator: weekBefore.returnLocator ?? undefined,
                   departureDate: weekBefore.departureDate ?? undefined,
                   returnDate: weekBefore.returnDate ?? undefined,
                 });

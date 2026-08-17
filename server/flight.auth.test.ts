@@ -22,12 +22,19 @@ vi.mock("./db", () => ({
   getAllFlightWeeks: vi.fn().mockResolvedValue([]),
   getFlightWeek: vi.fn().mockResolvedValue(null),
   getAllFlightPrices: vi.fn().mockResolvedValue([]),
+  getTicketNotificationEmails: vi.fn().mockResolvedValue([]),
   initFlightWeeks: vi.fn().mockResolvedValue(undefined),
   updateFlightWeekStatus: vi.fn().mockResolvedValue(undefined),
   upsertFlightPrice: vi.fn().mockResolvedValue(undefined),
   deleteFlightPrice: vi.fn().mockResolvedValue(undefined),
   upsertUser: vi.fn().mockResolvedValue(undefined),
   getUserByOpenId: vi.fn().mockResolvedValue(undefined),
+}));
+
+vi.mock("./_core/emailNotification", () => ({
+  sendTicketNotificationEmail: vi.fn().mockResolvedValue(true),
+  sendTestEmail: vi.fn().mockResolvedValue(true),
+  sendShareByEmailNotification: vi.fn().mockResolvedValue(true),
 }));
 
 function createTestContext(cookieOverride = ""): TrpcContext {
@@ -201,6 +208,54 @@ describe("flights.updateWeekStatus with airline fields", () => {
         year: 2028,
         departureCancelled: 1,
         returnCancelled: 0,
+      })
+    );
+  });
+
+  it("should notify recipients when an issued departure is cancelled", async () => {
+    const {
+      validateAuthSession,
+      getFlightWeek,
+      getTicketNotificationEmails,
+    } = await import("./db");
+    const { sendTicketNotificationEmail } = await import(
+      "./_core/emailNotification"
+    );
+    (validateAuthSession as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+      email: "taiolor@gmail.com",
+    });
+    (getFlightWeek as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+      year: 2029,
+      weekNumber: 8,
+      isTicketIssued: 1,
+      departureCancelled: 0,
+      returnCancelled: 0,
+      departureFlightNumber: "LA1234",
+      departureAirline: "LATAM",
+      departureDate: "15/02/2029",
+    });
+    (getTicketNotificationEmails as ReturnType<typeof vi.fn>).mockResolvedValueOnce([
+      { email: "alertas@example.com" },
+    ]);
+
+    const caller = appRouter.createCaller(createTestContext("flight_session=valid-token"));
+    await caller.flights.updateWeekStatus({
+      year: 2029,
+      weekNumber: 8,
+      isTicketIssued: 1,
+      departureCancelled: 1,
+    });
+
+    expect(sendTicketNotificationEmail).toHaveBeenCalledWith(
+      ["alertas@example.com"],
+      expect.objectContaining({
+        eventLabel: "⚠️ Voo de Ida Cancelado",
+        weekNumber: 8,
+        ticketType: "departure",
+        changes: {
+          before: { Status: "Ativo" },
+          after: { Status: "Cancelado" },
+        },
       })
     );
   });

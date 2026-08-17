@@ -124,6 +124,26 @@ describe("emailNotification", () => {
       expect(sendArgs.html).toContain("LA456");
     });
 
+    it("should identify cancellation alerts in the email subject and body", async () => {
+      const result = await sendTicketNotificationEmail(["test@example.com"], {
+        type: "updated",
+        eventLabel: "⚠️ Voo de Ida Cancelado",
+        weekNumber: 9,
+        ticketType: "departure",
+        timestamp: new Date("2024-01-01T10:00:00Z"),
+        changes: {
+          before: { Status: "Ativo" },
+          after: { Status: "Cancelado" },
+        },
+      });
+
+      expect(result).toBe(true);
+      const sendArgs = mockSend.mock.calls[0][0];
+      expect(sendArgs.subject).toBe("[Bilhete ⚠️ Voo de Ida Cancelado] Semana 9 - Ida");
+      expect(sendArgs.html).toContain("Voo de Ida Cancelado");
+      expect(sendArgs.html).toContain("Cancelado");
+    });
+
     it("should return false if resend API returns an error", async () => {
       mockSend.mockResolvedValueOnce({
         data: null,

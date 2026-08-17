@@ -679,4 +679,7 @@
 
 - [x] Adicionar checkboxes de cancelamento independentes para ida e volta, com persistência anual e indicação visual
 
+- [x] Adicionar filtro de voos cancelados no calendário anual
+- [x] Enviar alerta automático aos destinatários quando ida ou volta for cancelada
+
 - [x] Corrigir bloqueio de abertura da página administrativa

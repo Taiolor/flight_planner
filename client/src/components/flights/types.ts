@@ -31,3 +31,11 @@ export type DayMark = {
   departureCancelled?: boolean;
   returnCancelled?: boolean;
 };
+
+export function hasCancelledFlight(mark: DayMark | undefined): boolean {
+  return Boolean(
+    mark &&
+      ((mark.departure && mark.departureCancelled) ||
+        (mark.return && mark.returnCancelled))
+  );
+}

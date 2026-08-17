@@ -9,6 +9,7 @@ import { ENV } from "./env";
 
 export interface TicketChangeNotification {
   type: "created" | "updated" | "deleted";
+  eventLabel?: string;
   weekNumber: number;
   ticketType: "departure" | "return";
   changes?: {
@@ -46,6 +47,7 @@ function getResendClient(): Resend {
 function formatTicketDetails(notification: TicketChangeNotification): string {
   const {
     type,
+    eventLabel,
     weekNumber,
     ticketType,
     changes,
@@ -67,13 +69,11 @@ function formatTicketDetails(notification: TicketChangeNotification): string {
       <h2 style="color: #1e40af; border-bottom: 2px solid #1e40af; padding-bottom: 10px;">Notificação de Alteração de Bilhete</h2>
       
       <div style="background-color: #f8f9fa; padding: 15px; border-radius: 5px; margin: 15px 0;">
-        <p><strong>Tipo de evento:</strong> ${
-          type === "created"
+        <p><strong>Tipo de evento:</strong> ${eventLabel ?? (type === "created"
             ? "✅ Bilhete Criado"
             : type === "updated"
               ? "✏️ Bilhete Alterado"
-              : "❌ Bilhete Deletado"
-        }</p>
+              : "❌ Bilhete Deletado")}</p>
         <p><strong>Semana:</strong> ${weekNumber}</p>
         <p><strong>Trecho:</strong> ${ticketType === "departure" ? "Ida" : "Volta"}</p>
         <p><strong>Data/Hora da Notificação:</strong> ${timestamp.toLocaleString("pt-BR")}</p>
@@ -205,7 +205,8 @@ export async function sendTicketNotificationEmail(
   }
 
   try {
-    const subject = `[Bilhete ${notification.type === "created" ? "Criado" : notification.type === "updated" ? "Alterado" : "Deletado"}] Semana ${notification.weekNumber} - ${notification.ticketType === "departure" ? "Ida" : "Volta"}`;
+    const eventLabel = notification.eventLabel ?? (notification.type === "created" ? "Criado" : notification.type === "updated" ? "Alterado" : "Deletado");
+    const subject = `[Bilhete ${eventLabel}] Semana ${notification.weekNumber} - ${notification.ticketType === "departure" ? "Ida" : "Volta"}`;
 
     const htmlContent = formatTicketDetails(notification);
 
