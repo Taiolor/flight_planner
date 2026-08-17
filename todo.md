@@ -653,12 +653,14 @@
 
 - [x] Auditar e fechar PRs de segurança comprovadamente substituídos (#312, #249, #253 e #277 fechados; #276 retido para revisão)
 
-- [ ] Habilitar permissão de workflows da credencial GitHub e publicar a pipeline de CI
+- [x] Publicação da pipeline de CI adiada por decisão do usuário; aguardar autorização futura de workflows
 
 - [x] Mapear e priorizar as demais pendências abertas do projeto
 
 - [x] Executar automaticamente PRs pendentes que possam ser validados por instalação, TypeScript e Vitest (fila de PRs esvaziada)
 
 - [x] Avaliar arquitetura e migração para calendário dinâmico com semanas e passagens isoladas por ano
+
+- [x] Elaborar plano diretor à prova de falhas para calendário anual dinâmico em Home, Calendário e Financeiro
 
 - [x] Corrigir bloqueio de abertura da página administrativa
