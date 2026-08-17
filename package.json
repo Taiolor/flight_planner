@@ -13,9 +13,9 @@
     "db:push": "drizzle-kit generate && drizzle-kit migrate"
   },
   "dependencies": {
-    "@aws-sdk/client-s3": "^3.1109.0",
-    "@aws-sdk/s3-request-presigner": "^3.1109.0",
-    "@hookform/resolvers": "^5.7.1",
+    "@aws-sdk/client-s3": "^3.1110.0",
+    "@aws-sdk/s3-request-presigner": "^3.1110.0",
+    "@hookform/resolvers": "^5.8.0",
     "@radix-ui/react-accordion": "^1.2.20",
     "@radix-ui/react-alert-dialog": "^1.1.23",
     "@radix-ui/react-aspect-ratio": "^1.1.15",
@@ -73,7 +73,7 @@
     "react-hook-form": "^7.85.0",
     "react-resizable-panels": "^4.12.2",
     "recharts": "^2.15.4",
-    "resend": "^6.19.0",
+    "resend": "^6.20.0",
     "sonner": "^2.0.8",
     "streamdown": "^2.5.0",
     "superjson": "^2.2.6",
