@@ -675,6 +675,6 @@
 
 - [x] Isolar exportação PDF, notificações e logs pelo ano global selecionado
 
-- [ ] Publicar o callback anual de notificações e criar o agendamento periódico na plataforma
+- [x] Publicar o callback anual de notificações e criar o agendamento periódico na plataforma
 
 - [x] Corrigir bloqueio de abertura da página administrativa
