@@ -1,5 +1,5 @@
 import crypto from "crypto";
-import { and, desc, eq, gt, lt } from "drizzle-orm";
+import { and, desc, eq, gt, lt, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import {
   FlightWeek,
@@ -239,7 +239,7 @@ export async function updateFlightWeekStatus(
   const db = await getDb();
   if (!db) return;
 
-  const currentYear = data.year ?? new Date().getFullYear();
+  const currentYear = data.year ?? DEFAULT_PLANNING_YEAR;
 
   const existing = await db
     .select()
@@ -270,16 +270,16 @@ export async function initFlightWeeks(
   year = DEFAULT_PLANNING_YEAR
 ) {
   const db = await getDb();
-  if (!db) return;
+  if (!db || weeks.length === 0) return;
 
-  const existing = await db
-    .select({ id: flightWeeks.id })
-    .from(flightWeeks)
-    .where(eq(flightWeeks.year, year))
-    .limit(1);
-  if (existing.length > 0) return; // Already initialized
-
-  await db.insert(flightWeeks).values(weeks.map(week => ({ ...week, year })));
+  // A chave única (year, weekNumber) transforma a operação em um merge seguro:
+  // inserimos semanas ausentes e preservamos qualquer edição já feita pelo usuário.
+  await db
+    .insert(flightWeeks)
+    .values(weeks.map(week => ({ ...week, year })))
+    .onDuplicateKeyUpdate({
+      set: { weekNumber: sql`${flightWeeks.weekNumber}` },
+    });
 }
 
 // =====================

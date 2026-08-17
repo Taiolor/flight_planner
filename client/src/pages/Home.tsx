@@ -575,12 +575,12 @@ export default function Home() {
   const { selectedYear } = useYear();
 
   // tRPC queries
-  const weeksQuery = trpc.flights.getWeeks.useQuery();
-  const pricesQuery = trpc.flights.getPrices.useQuery(undefined, {
+  const weeksQuery = trpc.flights.getWeeks.useQuery({ year: selectedYear });
+  const pricesQuery = trpc.flights.getPrices.useQuery({ year: selectedYear }, {
     enabled: isAuthenticated,
   });
 
-  const publicPricesQuery = trpc.flights.getPublicPrices.useQuery(undefined, {
+  const publicPricesQuery = trpc.flights.getPublicPrices.useQuery({ year: selectedYear }, {
     enabled: !isAuthenticated,
   });
 
@@ -593,11 +593,11 @@ export default function Home() {
   // Pull-to-refresh: puxar para baixo no topo da página para recarregar os dados
   const handleRefresh = useCallback(async () => {
     await Promise.all([
-      utils.flights.getWeeks.invalidate(),
-      utils.flights.getPrices.invalidate(),
+      utils.flights.getWeeks.invalidate({ year: selectedYear }),
+      utils.flights.getPrices.invalidate({ year: selectedYear }),
     ]);
     toast.success("Dados atualizados!", { duration: 1500 });
-  }, [utils]);
+  }, [selectedYear, utils]);
 
   const { pullDistance, isRefreshing, isPulling } = usePullToRefresh({
     threshold: 80,
@@ -828,29 +828,35 @@ export default function Home() {
       return next;
     });
   }, [weeksQuery.data]);
-  const initWeeksMutation = trpc.flights.initWeeks.useMutation();
+  const ensureYearWeeksMutation = trpc.flights.ensureYearWeeks.useMutation();
   const updateStatusMutation = trpc.flights.updateWeekStatus.useMutation();
   const updateDatesMutation = trpc.flights.updateWeekDates.useMutation();
   const savePriceMutation = trpc.flights.savePrice.useMutation();
 
-  // Initialize weeks in DB if empty
+  // Gera o calendário do exercício somente após login. A operação é idempotente
+  // e nunca substitui semanas que já foram personalizadas.
   useEffect(() => {
-    if (weeksQuery.data && weeksQuery.data.length === 0) {
-      initWeeksMutation.mutate(
-        flightData.map(f => ({
-          weekNumber: f.semana,
-          departureDate: f.ida.data,
-          returnDate: f.retorno.data,
-          departureDayOfWeek: f.ida.dia_semana,
-          returnDayOfWeek: f.retorno.dia_semana,
-          holiday: f.ida.feriado ?? null,
-        })),
+    if (
+      isAuthenticated &&
+      weeksQuery.isSuccess &&
+      weeksQuery.data.length === 0 &&
+      !ensureYearWeeksMutation.isPending
+    ) {
+      ensureYearWeeksMutation.mutate(
+        { year: selectedYear },
         {
-          onSuccess: () => utils.flights.getWeeks.invalidate(),
+          onSuccess: () => utils.flights.getWeeks.invalidate({ year: selectedYear }),
         }
       );
     }
-  }, [weeksQuery.data]);
+  }, [
+    ensureYearWeeksMutation,
+    isAuthenticated,
+    selectedYear,
+    utils.flights.getWeeks,
+    weeksQuery.data,
+    weeksQuery.isSuccess,
+  ]);
 
   // Build price map from DB
   const priceMap: PriceMap = useMemo(() => {
@@ -894,18 +900,8 @@ export default function Home() {
         returnRescheduled: (w as any).returnRescheduled ?? 0,
       }));
     }
-    // Fallback to static data
-    return flightData.map(f => ({
-      weekNumber: f.semana,
-      departureDate: f.ida.data,
-      returnDate: f.retorno.data,
-      departureDayOfWeek: f.ida.dia_semana,
-      returnDayOfWeek: f.retorno.dia_semana,
-      holiday: f.ida.feriado ?? null,
-      isDeleted: 0,
-      isTicketIssued: 0,
-      isSelected: 0,
-    }));
+    // Não usar fallback estático: semanas de outro exercício jamais podem ser exibidas.
+    return [];
   }, [weeksQuery.data]);
 
   // ⚡ Otimização: pré-computa o menor preço de cada semana em um mapa
@@ -1525,8 +1521,11 @@ export default function Home() {
   const handleToggleSelect = (weekNumber: number, current: number) => {
     requireAuth(() => {
       updateStatusMutation.mutate(
-        { weekNumber, isSelected: current ? 0 : 1 },
-        { onSuccess: () => utils.flights.getWeeks.invalidate() }
+        { year: selectedYear, weekNumber, isSelected: current ? 0 : 1 },
+        {
+          onSuccess: () =>
+            utils.flights.getWeeks.invalidate({ year: selectedYear }),
+        }
       );
     });
   };
@@ -1534,10 +1533,10 @@ export default function Home() {
   const handleDelete = (weekNumber: number) => {
     requireAuth(() => {
       updateStatusMutation.mutate(
-        { weekNumber, isDeleted: 1 },
+        { year: selectedYear, weekNumber, isDeleted: 1 },
         {
           onSuccess: () => {
-            utils.flights.getWeeks.invalidate();
+            utils.flights.getWeeks.invalidate({ year: selectedYear });
             toast.success(`Semana ${weekNumber} excluída`);
           },
         }
@@ -1548,10 +1547,10 @@ export default function Home() {
   const handleRestore = (weekNumber: number) => {
     requireAuth(() => {
       updateStatusMutation.mutate(
-        { weekNumber, isDeleted: 0 },
+        { year: selectedYear, weekNumber, isDeleted: 0 },
         {
           onSuccess: () => {
-            utils.flights.getWeeks.invalidate();
+            utils.flights.getWeeks.invalidate({ year: selectedYear });
             toast.success(`Semana ${weekNumber} restaurada`);
           },
         }
@@ -1601,10 +1600,10 @@ export default function Home() {
       }
 
       updateStatusMutation.mutate(
-        { weekNumber, isTicketIssued: current ? 0 : 1 },
+        { year: selectedYear, weekNumber, isTicketIssued: current ? 0 : 1 },
         {
           onSuccess: () => {
-            utils.flights.getWeeks.invalidate();
+            utils.flights.getWeeks.invalidate({ year: selectedYear });
             toast.success(
               current
                 ? "Bilhete marcado como não emitido"
@@ -1627,10 +1626,10 @@ export default function Home() {
     }
     setSavingPrice({ week: weekNumber, airline });
     savePriceMutation.mutate(
-      { weekNumber, airline, price: value },
+      { year: selectedYear, weekNumber, airline, price: value },
       {
         onSuccess: () => {
-          utils.flights.getPrices.invalidate();
+          utils.flights.getPrices.invalidate({ year: selectedYear });
           setSavingPrice(null);
         },
         onError: err => {
@@ -1654,10 +1653,10 @@ export default function Home() {
     if (value !== "" && isNaN(numValue as number)) return;
     setSavingMiles({ week: weekNumber, field });
     updateStatusMutation.mutate(
-      { weekNumber, [field]: numValue },
+      { year: selectedYear, weekNumber, [field]: numValue },
       {
         onSuccess: () => {
-          utils.flights.getWeeks.invalidate();
+          utils.flights.getWeeks.invalidate({ year: selectedYear });
           setSavingMiles(null);
         },
         onError: () => {
@@ -2596,29 +2595,61 @@ export default function Home() {
                 <div className="flex flex-col items-center">
                   <Calendar className="w-16 h-16 text-slate-300 dark:text-slate-600 mb-4" />
                   <h3 className="text-xl font-semibold text-slate-700 dark:text-slate-300 mb-2">
-                    Nenhum voo encontrado
+                    {weeksData.length === 0
+                      ? `Planejamento de ${selectedYear} ainda não disponível`
+                      : "Nenhum voo encontrado"}
                   </h3>
                   <p className="text-slate-600 dark:text-slate-400 mb-6 max-w-md">
-                    Desculpe, não encontramos voos que correspondam aos seus
-                    filtros. Tente ajustar os horários, mês ou outras opções de
-                    filtro.
+                    {weeksData.length === 0
+                      ? isAuthenticated
+                        ? "As semanas serão criadas automaticamente para este exercício. Se a criação não concluir, tente gerar novamente."
+                        : "Entre para criar e administrar as semanas deste exercício sem misturar dados de outros anos."
+                      : "Desculpe, não encontramos voos que correspondam aos seus filtros. Tente ajustar os horários, mês ou outras opções de filtro."}
                   </p>
                   <div className="flex gap-3 justify-center flex-wrap">
-                    <Button
-                      variant="outline"
-                      className="border-slate-300 text-slate-700 dark:border-slate-600 dark:text-slate-300"
-                      onClick={() => {
-                        setFilterMonth("all");
-                        setFilterAirline("all");
-                        setFilterTicketStatus("all");
-                        setShowCheapestOnly(false);
-                        setDepartureTimeFilter(0);
-                        setReturnTimeFilter(0);
-                      }}
-                    >
-                      <RotateCcw className="w-4 h-4 mr-2" />
-                      Limpar Todos os Filtros
-                    </Button>
+                    {weeksData.length === 0 ? (
+                      <Button
+                        variant="outline"
+                        className="border-slate-300 text-slate-700 dark:border-slate-600 dark:text-slate-300"
+                        disabled={ensureYearWeeksMutation.isPending}
+                        onClick={() => {
+                          if (!isAuthenticated) {
+                            setShowLoginModal(true);
+                            return;
+                          }
+                          ensureYearWeeksMutation.mutate(
+                            { year: selectedYear },
+                            {
+                              onSuccess: () =>
+                                utils.flights.getWeeks.invalidate({
+                                  year: selectedYear,
+                                }),
+                            }
+                          );
+                        }}
+                      >
+                        <Calendar className="w-4 h-4 mr-2" />
+                        {isAuthenticated
+                          ? `Gerar semanas de ${selectedYear}`
+                          : "Entrar para criar planejamento"}
+                      </Button>
+                    ) : (
+                      <Button
+                        variant="outline"
+                        className="border-slate-300 text-slate-700 dark:border-slate-600 dark:text-slate-300"
+                        onClick={() => {
+                          setFilterMonth("all");
+                          setFilterAirline("all");
+                          setFilterTicketStatus("all");
+                          setShowCheapestOnly(false);
+                          setDepartureTimeFilter(0);
+                          setReturnTimeFilter(0);
+                        }}
+                      >
+                        <RotateCcw className="w-4 h-4 mr-2" />
+                        Limpar Todos os Filtros
+                      </Button>
+                    )}
                   </div>
                 </div>
               </Card>
@@ -3002,6 +3033,7 @@ export default function Home() {
                                               : week.returnDayOfWeek;
                                           updateDatesMutation.mutate(
                                             {
+                                              year: selectedYear,
                                               weekNumber: week.weekNumber,
                                               departureDate: newDepDisplay,
                                               returnDate: newRetDisplay,
@@ -3010,7 +3042,9 @@ export default function Home() {
                                             },
                                             {
                                               onSuccess: () => {
-                                                utils.flights.getWeeks.invalidate();
+                                                utils.flights.getWeeks.invalidate({
+                                                  year: selectedYear,
+                                                });
                                                 toast.success(
                                                   "Data atualizada!"
                                                 );
@@ -4377,7 +4411,9 @@ export default function Home() {
                                                       },
                                                       {
                                                         onSuccess: () => {
-                                                          utils.flights.getWeeks.invalidate();
+                                                          utils.flights.getWeeks.invalidate({
+                                                            year: selectedYear,
+                                                          });
                                                           toast.success(
                                                             checked
                                                               ? "Voo de ida marcado como remarcado"
@@ -4884,7 +4920,9 @@ export default function Home() {
                                                         },
                                                         {
                                                           onSuccess: () => {
-                                                            utils.flights.getWeeks.invalidate();
+                                                            utils.flights.getWeeks.invalidate({
+                                                              year: selectedYear,
+                                                            });
                                                             toast.success(
                                                               checked
                                                                 ? "Voo de volta marcado como remarcado"
@@ -4930,6 +4968,7 @@ export default function Home() {
                                             }));
                                             updateStatusMutation.mutate(
                                               {
+                                                year: selectedYear,
                                                 weekNumber: week.weekNumber,
                                                 departureAirport:
                                                   tempDepartureAirport[
@@ -4988,7 +5027,9 @@ export default function Home() {
                                               },
                                               {
                                                 onSuccess: () => {
-                                                  utils.flights.getWeeks.invalidate();
+                                                  utils.flights.getWeeks.invalidate({
+                                                    year: selectedYear,
+                                                  });
                                                   toast.success(
                                                     "Dados do bilhete salvos com sucesso!"
                                                   );

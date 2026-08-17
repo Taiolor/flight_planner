@@ -667,4 +667,6 @@
 
 - [x] Fase 1: criar fundação anual no banco, migrar 2026 e isolar entidades de planejamento por ano
 
+- [x] Fase 2: gerar semanas idempotentes por ano e carregar a Home pelo ano selecionado
+
 - [x] Corrigir bloqueio de abertura da página administrativa

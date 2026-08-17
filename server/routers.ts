@@ -33,6 +33,7 @@ import {
   removeTicketNotificationEmail,
   updateTicketNotificationEmail,
 } from "./db";
+import { ensurePlanningYearWeeks } from "./planningYears";
 import {
   sendTicketNotificationEmail,
   sendTestEmail,
@@ -254,54 +255,61 @@ export const appRouter = router({
   // Voos (protegidos por sessão para mutações)
   // =====================
   flights: router({
-    // Buscar todas as semanas (público)
-    getWeeks: publicProcedure.query(async ({ ctx }) => {
-      const weeks = await getAllFlightWeeks();
-      const session = await getSessionFromCookie(ctx.req);
-      if (session) {
-        return weeks;
-      }
+    // Buscar todas as semanas de um exercício (público).
+    getWeeks: publicProcedure
+      .input(z.object({ year: z.number().int().min(2020).max(2100) }))
+      .query(async ({ ctx, input }) => {
+        const weeks = await getAllFlightWeeks(input.year);
+        const session = await getSessionFromCookie(ctx.req);
+        if (session) return weeks;
 
-      // Se não estiver autenticado, omitir dados sensíveis
-      return weeks.map(w => ({
-        ...w,
-        departureLocator: null,
-        returnLocator: null,
-        departureFlightNumber: null,
-        returnFlightNumber: null,
-        departureTerminal: null,
-        returnTerminal: null,
-        smilesPoints: null,
-        latamPassPoints: null,
-      }));
-    }),
+        // Se não estiver autenticado, omitir dados sensíveis.
+        return weeks.map(w => ({
+          ...w,
+          departureLocator: null,
+          returnLocator: null,
+          departureFlightNumber: null,
+          returnFlightNumber: null,
+          departureTerminal: null,
+          returnTerminal: null,
+          smilesPoints: null,
+          latamPassPoints: null,
+        }));
+      }),
 
-    // Buscar todos os preços
-    getPrices: flightProtectedProcedure.query(async () => {
-      return getAllFlightPrices();
-    }),
+    getPrices: flightProtectedProcedure
+      .input(z.object({ year: z.number().int().min(2020).max(2100) }))
+      .query(async ({ input }) => getAllFlightPrices(input.year)),
 
-    getPublicPrices: publicProcedure.query(async () => {
-      return getPublicPrices();
-    }),
+    getPublicPrices: publicProcedure
+      .input(z.object({ year: z.number().int().min(2020).max(2100) }))
+      .query(async ({ input }) => getPublicPrices(input.year)),
 
-    // Inicializar semanas com dados padrão (só roda se não houver dados)
+    // Cria somente as semanas ainda ausentes e preserva qualquer edição existente.
+    ensureYearWeeks: flightProtectedProcedure
+      .input(z.object({ year: z.number().int().min(2020).max(2100) }))
+      .mutation(async ({ input }) => ensurePlanningYearWeeks(input.year)),
+
+    // Mantido como compatibilidade temporária para clientes antigos.
     initWeeks: flightProtectedProcedure
       .input(
-        z.array(
-          z.object({
-            weekNumber: z.number(),
-            departureDate: z.string(),
-            returnDate: z.string(),
-            departureDayOfWeek: z.string(),
-            returnDayOfWeek: z.string(),
-            holiday: z.string().nullable().optional(),
-          })
-        )
+        z.object({
+          year: z.number().int().min(2020).max(2100),
+          weeks: z.array(
+            z.object({
+              weekNumber: z.number(),
+              departureDate: z.string(),
+              returnDate: z.string(),
+              departureDayOfWeek: z.string(),
+              returnDayOfWeek: z.string(),
+              holiday: z.string().nullable().optional(),
+            })
+          ),
+        })
       )
       .mutation(async ({ input }) => {
         await initFlightWeeks(
-          input.map(w => ({
+          input.weeks.map(w => ({
             weekNumber: w.weekNumber,
             departureDate: w.departureDate,
             returnDate: w.returnDate,
@@ -311,7 +319,8 @@ export const appRouter = router({
             isDeleted: 0,
             isTicketIssued: 0,
             isSelected: 0,
-          }))
+          })),
+          input.year
         );
         return { success: true };
       }),
@@ -320,7 +329,7 @@ export const appRouter = router({
     updateWeekStatus: flightProtectedProcedure
       .input(
         z.object({
-          year: z.number().default(2026).optional(),
+          year: z.number().int().min(2020).max(2100),
           weekNumber: z.number(),
           isDeleted: z.number().optional(),
           isTicketIssued: z.number().optional(),
@@ -344,9 +353,10 @@ export const appRouter = router({
       )
       .mutation(async ({ input }) => {
         // Get the week before update to detect changes
-        const weekBefore = await getFlightWeek(input.weekNumber);
+        const weekBefore = await getFlightWeek(input.weekNumber, input.year);
 
         await updateFlightWeekStatus(input.weekNumber, {
+          year: input.year,
           isDeleted: input.isDeleted,
           isTicketIssued: input.isTicketIssued,
           isSelected: input.isSelected,
@@ -664,6 +674,7 @@ export const appRouter = router({
     updateWeekDates: flightProtectedProcedure
       .input(
         z.object({
+          year: z.number().int().min(2020).max(2100),
           weekNumber: z.number(),
           departureDate: z.string(),
           returnDate: z.string(),
@@ -673,6 +684,7 @@ export const appRouter = router({
       )
       .mutation(async ({ input }) => {
         await updateFlightWeekStatus(input.weekNumber, {
+          year: input.year,
           departureDate: input.departureDate,
           returnDate: input.returnDate,
           departureDayOfWeek: input.departureDayOfWeek,
@@ -685,6 +697,7 @@ export const appRouter = router({
     savePrice: flightProtectedProcedure
       .input(
         z.object({
+          year: z.number().int().min(2020).max(2100),
           weekNumber: z.number(),
           airline: z.string(),
           price: z.string(),
@@ -692,9 +705,14 @@ export const appRouter = router({
       )
       .mutation(async ({ input }) => {
         if (input.price === "") {
-          await deleteFlightPrice(input.weekNumber, input.airline);
+          await deleteFlightPrice(input.weekNumber, input.airline, input.year);
         } else {
-          await upsertFlightPrice(input.weekNumber, input.airline, input.price);
+          await upsertFlightPrice(
+            input.weekNumber,
+            input.airline,
+            input.price,
+            input.year
+          );
         }
         return { success: true };
       }),

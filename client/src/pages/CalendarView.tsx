@@ -220,7 +220,7 @@ import { GlobalYearSelector } from "@/components/GlobalYearSelector";
 
 export default function CalendarView() {
   const { selectedYear: year } = useYear();
-  const weeksQuery = trpc.flights.getWeeks.useQuery();
+  const weeksQuery = trpc.flights.getWeeks.useQuery({ year });
   const [selectedMark, setSelectedMark] = useState<DayMark | null>(null);
   const [showOnlyHolidaysAndWeekends, setShowOnlyHolidaysAndWeekends] =
     useState(false);

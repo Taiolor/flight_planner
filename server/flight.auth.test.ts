@@ -158,6 +158,7 @@ describe("flights.updateWeekStatus with airline fields", () => {
     const caller = appRouter.createCaller(ctx);
 
     const result = await caller.flights.updateWeekStatus({
+      year: 2026,
       weekNumber: 5,
       isTicketIssued: 1,
       departureAirline: "latam",
@@ -168,6 +169,7 @@ describe("flights.updateWeekStatus with airline fields", () => {
     expect(updateFlightWeekStatus).toHaveBeenCalledWith(
       5,
       expect.objectContaining({
+        year: 2026,
         isTicketIssued: 1,
         departureAirline: "latam",
         returnAirline: "gol",
