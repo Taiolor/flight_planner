@@ -5,6 +5,7 @@ import {
   mysqlTable,
   text,
   timestamp,
+  uniqueIndex,
   varchar,
 } from "drizzle-orm/mysql-core";
 
@@ -32,6 +33,25 @@ export const users = mysqlTable("users", {
 
 export type User = typeof users.$inferSelect;
 export type InsertUser = typeof users.$inferInsert;
+
+/**
+ * Catálogo dos exercícios de planejamento disponíveis no aplicativo.
+ * A existência de um ano é a fonte de verdade para gerar semanas e manter
+ * semanas, preços, cotações, notificações e relatórios isolados por período.
+ */
+export const planningYears = mysqlTable("planning_years", {
+  id: int("id").autoincrement().primaryKey(),
+  year: int("year").notNull().unique(),
+  status: mysqlEnum("status", ["draft", "active", "archived"])
+    .notNull()
+    .default("draft"),
+  weekCount: int("weekCount").notNull().default(0),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type PlanningYear = typeof planningYears.$inferSelect;
+export type InsertPlanningYear = typeof planningYears.$inferInsert;
 
 /**
  * Tabela para persistir dados das semanas de voo
@@ -85,6 +105,10 @@ export const flightWeeks = mysqlTable(
       table.isDeleted,
       table.isTicketIssued
     ),
+    uniqueIndex("uq_flight_weeks_year_week").on(
+      table.year,
+      table.weekNumber
+    ),
   ]
 );
 
@@ -100,15 +124,26 @@ export type InsertFlightWeek = typeof flightWeeks.$inferInsert;
 /**
  * Tabela para persistir preços por semana e companhia aérea
  */
-export const flightPrices = mysqlTable("flight_prices", {
-  id: int("id").autoincrement().primaryKey(),
-  year: int("year").default(2026).notNull(),
-  weekNumber: int("weekNumber").notNull(),
-  airline: varchar("airline", { length: 50 }).notNull(),
-  price: varchar("price", { length: 20 }).notNull(),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
-});
+export const flightPrices = mysqlTable(
+  "flight_prices",
+  {
+    id: int("id").autoincrement().primaryKey(),
+    year: int("year").default(2026).notNull(),
+    weekNumber: int("weekNumber").notNull(),
+    airline: varchar("airline", { length: 50 }).notNull(),
+    price: varchar("price", { length: 20 }).notNull(),
+    createdAt: timestamp("createdAt").defaultNow().notNull(),
+    updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+  },
+  table => [
+    index("idx_flight_prices_year").on(table.year),
+    uniqueIndex("uq_flight_prices_year_week_airline").on(
+      table.year,
+      table.weekNumber,
+      table.airline
+    ),
+  ]
+);
 
 export type FlightPrice = typeof flightPrices.$inferSelect;
 export type InsertFlightPrice = typeof flightPrices.$inferInsert;
@@ -116,15 +151,26 @@ export type InsertFlightPrice = typeof flightPrices.$inferInsert;
 /**
  * Tabela para armazenar preços públicos
  */
-export const public_prices = mysqlTable("public_prices", {
-  id: int("id").autoincrement().primaryKey(),
-  year: int("year").default(2026).notNull(),
-  weekNumber: int("weekNumber").notNull(),
-  airline: varchar("airline", { length: 50 }).notNull(),
-  price: varchar("price", { length: 20 }).notNull(),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
-});
+export const public_prices = mysqlTable(
+  "public_prices",
+  {
+    id: int("id").autoincrement().primaryKey(),
+    year: int("year").default(2026).notNull(),
+    weekNumber: int("weekNumber").notNull(),
+    airline: varchar("airline", { length: 50 }).notNull(),
+    price: varchar("price", { length: 20 }).notNull(),
+    createdAt: timestamp("createdAt").defaultNow().notNull(),
+    updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+  },
+  table => [
+    index("idx_public_prices_year").on(table.year),
+    uniqueIndex("uq_public_prices_year_week_airline").on(
+      table.year,
+      table.weekNumber,
+      table.airline
+    ),
+  ]
+);
 
 export type PublicPrice = typeof public_prices.$inferSelect;
 export type InsertPublicPrice = typeof public_prices.$inferInsert;
@@ -193,6 +239,7 @@ export type InsertNotificationSettings =
  */
 export const notificationLogs = mysqlTable("notification_logs", {
   id: int("id").autoincrement().primaryKey(),
+  year: int("year").default(2026).notNull(),
   weekNumber: int("weekNumber").notNull(),
   direction: varchar("direction", { length: 10 }).notNull(), // 'ida' | 'volta'
   avisoLabel: varchar("avisoLabel", { length: 30 }).notNull(), // 'Aviso 1' | 'Aviso 2'
@@ -206,7 +253,9 @@ export const notificationLogs = mysqlTable("notification_logs", {
   errorMessage: text("errorMessage"),
   isTest: int("isTest").notNull().default(0), // 1 = envio de teste manual
   sentAt: timestamp("sentAt").defaultNow().notNull(),
-});
+}, table => [
+  index("idx_notification_logs_year_week").on(table.year, table.weekNumber),
+]);
 
 export type NotificationLog = typeof notificationLogs.$inferSelect;
 export type InsertNotificationLog = typeof notificationLogs.$inferInsert;
@@ -220,6 +269,7 @@ export const flightQuotes = mysqlTable(
   "flight_quotes",
   {
     id: int("id").autoincrement().primaryKey(),
+    year: int("year").default(2026).notNull(),
     weekNumber: int("weekNumber").notNull(),
     departureDate: varchar("departureDate", { length: 20 }).notNull(), // YYYY-MM-DD
     returnDate: varchar("returnDate", { length: 20 }).notNull(), // YYYY-MM-DD
@@ -240,6 +290,7 @@ export const flightQuotes = mysqlTable(
     updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
   },
   table => [
+    index("idx_flight_quotes_year_week").on(table.year, table.weekNumber),
     index("idx_flight_quotes_weekNumber").on(table.weekNumber),
     index("idx_flight_quotes_quotedAt").on(table.quotedAt),
   ]

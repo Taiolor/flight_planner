@@ -665,4 +665,6 @@
 
 - [x] Criar seletor global de ano e conectá-lo visualmente à Home, ao Calendário e ao Financeiro
 
+- [x] Fase 1: criar fundação anual no banco, migrar 2026 e isolar entidades de planejamento por ano
+
 - [x] Corrigir bloqueio de abertura da página administrativa

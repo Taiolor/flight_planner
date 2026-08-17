@@ -19,6 +19,8 @@ import {
   InsertNotificationLog,
   flightQuotes,
   InsertFlightQuote,
+  planningYears,
+  InsertPlanningYear,
   apiUsageTracker,
   ticketNotificationEmails,
   InsertTicketNotificationEmail,
@@ -120,39 +122,48 @@ export async function getUserByOpenId(openId: string) {
 // Flight Weeks
 // =====================
 
-// ⚡ Bolt: Single-flight mechanism to prevent thundering herd when multiple requests fetch flight weeks concurrently
-let _flightWeeksPromise: Promise<FlightWeek[]> | null = null;
+const DEFAULT_PLANNING_YEAR = 2026;
+const flightWeeksPromises = new Map<number, Promise<FlightWeek[]>>();
 
-export async function getAllFlightWeeks(): Promise<FlightWeek[]> {
-  if (_flightWeeksPromise) return _flightWeeksPromise;
+export async function getAllFlightWeeks(
+  year = DEFAULT_PLANNING_YEAR
+): Promise<FlightWeek[]> {
+  const cached = flightWeeksPromises.get(year);
+  if (cached) return cached;
 
-  _flightWeeksPromise = (async () => {
+  const request = (async () => {
     try {
       const db = await getDb();
       if (!db) return [];
-      const currentYear = new Date().getFullYear();
       return await db
         .select()
         .from(flightWeeks)
-        .where(eq(flightWeeks.year, currentYear))
+        .where(eq(flightWeeks.year, year))
         .orderBy(flightWeeks.weekNumber);
     } finally {
-      _flightWeeksPromise = null;
+      flightWeeksPromises.delete(year);
     }
   })();
 
-  return _flightWeeksPromise;
+  flightWeeksPromises.set(year, request);
+  return request;
 }
 
 export async function getFlightWeek(
-  weekNumber: number
+  weekNumber: number,
+  year = DEFAULT_PLANNING_YEAR
 ): Promise<FlightWeek | null> {
   const db = await getDb();
   if (!db) return null;
   const result = await db
     .select()
     .from(flightWeeks)
-    .where(eq(flightWeeks.weekNumber, weekNumber))
+    .where(
+      and(
+        eq(flightWeeks.weekNumber, weekNumber),
+        eq(flightWeeks.year, year)
+      )
+    )
     .limit(1);
   return result[0] || null;
 }
@@ -161,8 +172,7 @@ export async function upsertFlightWeek(week: InsertFlightWeek) {
   const db = await getDb();
   if (!db) return;
 
-  const currentYear = new Date().getFullYear();
-  const yearToUse = week.year || currentYear;
+  const yearToUse = week.year ?? DEFAULT_PLANNING_YEAR;
   const existing = await db
     .select()
     .from(flightWeeks)
@@ -255,50 +265,58 @@ export async function updateFlightWeekStatus(
     );
 }
 
-export async function initFlightWeeks(weeks: InsertFlightWeek[]) {
+export async function initFlightWeeks(
+  weeks: InsertFlightWeek[],
+  year = DEFAULT_PLANNING_YEAR
+) {
   const db = await getDb();
   if (!db) return;
 
-  const existing = await db.select().from(flightWeeks).limit(1);
+  const existing = await db
+    .select({ id: flightWeeks.id })
+    .from(flightWeeks)
+    .where(eq(flightWeeks.year, year))
+    .limit(1);
   if (existing.length > 0) return; // Already initialized
 
-  await db.insert(flightWeeks).values(weeks);
+  await db.insert(flightWeeks).values(weeks.map(week => ({ ...week, year })));
 }
 
 // =====================
 // Flight Prices
 // =====================
 
-// ⚡ Bolt: Single-flight mechanism to prevent thundering herd when multiple requests fetch flight prices concurrently
-let _flightPricesPromise: Promise<(typeof flightPrices.$inferSelect)[]> | null =
-  null;
+const flightPricesPromises = new Map<
+  number,
+  Promise<(typeof flightPrices.$inferSelect)[]>
+>();
 
-export async function getAllFlightPrices(): Promise<
-  (typeof flightPrices.$inferSelect)[]
-> {
-  if (_flightPricesPromise) return _flightPricesPromise;
+export async function getAllFlightPrices(
+  year = DEFAULT_PLANNING_YEAR
+): Promise<(typeof flightPrices.$inferSelect)[]> {
+  const cached = flightPricesPromises.get(year);
+  if (cached) return cached;
 
-  _flightPricesPromise = (async () => {
+  const request = (async () => {
     try {
       const db = await getDb();
       if (!db) return [];
-      const currentYear = new Date().getFullYear();
       return await db
         .select()
         .from(flightPrices)
-        .where(eq(flightPrices.year, currentYear));
+        .where(eq(flightPrices.year, year));
     } finally {
-      _flightPricesPromise = null;
+      flightPricesPromises.delete(year);
     }
   })();
 
-  return _flightPricesPromise;
+  flightPricesPromises.set(year, request);
+  return request;
 }
 
-export async function getPublicPrices() {
+export async function getPublicPrices(year = DEFAULT_PLANNING_YEAR) {
   const db = await getDb();
   if (!db) return [];
-  const currentYear = new Date().getFullYear();
   return db
     .select({
       id: public_prices.id,
@@ -310,44 +328,46 @@ export async function getPublicPrices() {
       updatedAt: public_prices.updatedAt,
     })
     .from(public_prices)
-    .where(eq(public_prices.year, currentYear));
+    .where(eq(public_prices.year, year));
 }
 
 export async function upsertFlightPrice(
   weekNumber: number,
   airline: string,
-  price: string
+  price: string,
+  year = DEFAULT_PLANNING_YEAR
 ) {
   const db = await getDb();
   if (!db) return;
 
+  const criteria = and(
+    eq(flightPrices.weekNumber, weekNumber),
+    eq(flightPrices.airline, airline),
+    eq(flightPrices.year, year)
+  );
   const existing = await db
     .select()
     .from(flightPrices)
-    .where(
-      and(
-        eq(flightPrices.weekNumber, weekNumber),
-        eq(flightPrices.airline, airline)
-      )
-    )
+    .where(criteria)
     .limit(1);
 
   if (existing.length > 0) {
-    await db
-      .update(flightPrices)
-      .set({ price })
-      .where(
-        and(
-          eq(flightPrices.weekNumber, weekNumber),
-          eq(flightPrices.airline, airline)
-        )
-      );
+    await db.update(flightPrices).set({ price }).where(criteria);
   } else {
-    await db.insert(flightPrices).values({ weekNumber, airline, price });
+    await db.insert(flightPrices).values({
+      year,
+      weekNumber,
+      airline,
+      price,
+    });
   }
 }
 
-export async function deleteFlightPrice(weekNumber: number, airline: string) {
+export async function deleteFlightPrice(
+  weekNumber: number,
+  airline: string,
+  year = DEFAULT_PLANNING_YEAR
+) {
   const db = await getDb();
   if (!db) return;
 
@@ -356,7 +376,8 @@ export async function deleteFlightPrice(weekNumber: number, airline: string) {
     .where(
       and(
         eq(flightPrices.weekNumber, weekNumber),
-        eq(flightPrices.airline, airline)
+        eq(flightPrices.airline, airline),
+        eq(flightPrices.year, year)
       )
     );
 }
@@ -550,12 +571,25 @@ export async function insertNotificationLog(
 ): Promise<void> {
   const db = await getDb();
   if (!db) return;
-  await db.insert(notificationLogs).values(data);
+  await db
+    .insert(notificationLogs)
+    .values({ year: data.year ?? DEFAULT_PLANNING_YEAR, ...data });
 }
 
-export async function getNotificationLogs(limit = 100) {
+export async function getNotificationLogs(
+  limit = 100,
+  year?: number
+) {
   const db = await getDb();
   if (!db) return [];
+  if (year) {
+    return db
+      .select()
+      .from(notificationLogs)
+      .where(eq(notificationLogs.year, year))
+      .orderBy(desc(notificationLogs.sentAt))
+      .limit(limit);
+  }
   return db
     .select()
     .from(notificationLogs)
@@ -585,26 +619,40 @@ export async function deleteOldNotificationLogs(daysOld = 90): Promise<number> {
 // Flight Quotes
 // =====================
 
-export async function getAllFlightQuotes() {
-  const db = await getDb();
-  if (!db) return [];
-  return db.select().from(flightQuotes).orderBy(desc(flightQuotes.quotedAt));
-}
-
-export async function getFlightQuotesByWeek(weekNumber: number) {
+export async function getAllFlightQuotes(year = DEFAULT_PLANNING_YEAR) {
   const db = await getDb();
   if (!db) return [];
   return db
     .select()
     .from(flightQuotes)
-    .where(eq(flightQuotes.weekNumber, weekNumber))
+    .where(eq(flightQuotes.year, year))
+    .orderBy(desc(flightQuotes.quotedAt));
+}
+
+export async function getFlightQuotesByWeek(
+  weekNumber: number,
+  year = DEFAULT_PLANNING_YEAR
+) {
+  const db = await getDb();
+  if (!db) return [];
+  return db
+    .select()
+    .from(flightQuotes)
+    .where(
+      and(
+        eq(flightQuotes.weekNumber, weekNumber),
+        eq(flightQuotes.year, year)
+      )
+    )
     .orderBy(desc(flightQuotes.quotedAt));
 }
 
 export async function insertFlightQuote(data: InsertFlightQuote) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
-  const result = await db.insert(flightQuotes).values(data);
+  const result = await db
+    .insert(flightQuotes)
+    .values({ year: data.year ?? DEFAULT_PLANNING_YEAR, ...data });
   return result;
 }
 
@@ -612,6 +660,30 @@ export async function deleteFlightQuote(id: number) {
   const db = await getDb();
   if (!db) return;
   await db.delete(flightQuotes).where(eq(flightQuotes.id, id));
+}
+
+// =====================
+// Planning Years
+// =====================
+
+export async function getPlanningYears() {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(planningYears).orderBy(desc(planningYears.year));
+}
+
+export async function upsertPlanningYear(data: InsertPlanningYear) {
+  const db = await getDb();
+  if (!db) return;
+  await db
+    .insert(planningYears)
+    .values(data)
+    .onDuplicateKeyUpdate({
+      set: {
+        status: data.status,
+        weekCount: data.weekCount,
+      },
+    });
 }
 
 // =====================
