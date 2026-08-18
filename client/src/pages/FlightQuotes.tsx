@@ -49,6 +49,8 @@ import { useTheme } from "@/contexts/ThemeContext";
 import { useYear } from "@/contexts/YearContext";
 import { queryCachePolicies } from "@/lib/queryCache";
 import { GlobalYearSelector } from "@/components/GlobalYearSelector";
+import { LoginModal } from "@/components/auth/LoginModal";
+import { canLoadProtectedQuoteData } from "@/lib/quoteAccess";
 import { toIsoDate } from "@/lib/utils";
 
 const EMPTY_ARRAY: any[] = [];
@@ -382,6 +384,7 @@ const WeekCard = ({
   onSaveManual,
   onDelete,
   isLoadingApi,
+  canManageQuotes,
   todayInt,
 }: {
   week: { semana: number; ida: { data: string }; retorno: { data: string } };
@@ -412,6 +415,7 @@ const WeekCard = ({
   ) => void;
   onDelete: (id: number) => void;
   isLoadingApi: boolean;
+  canManageQuotes: boolean;
   todayInt: number;
 }) => {
   const [expanded, setExpanded] = useState(false);
@@ -643,9 +647,9 @@ const WeekCard = ({
                     <Button
                       size="sm"
                       onClick={() => onFetchApi(week.semana, depIso, retIso)}
-                      disabled={isLoadingApi || apiLimitReached}
+                      disabled={!canManageQuotes || isLoadingApi || apiLimitReached}
                       className={`flex items-center gap-1.5 text-xs ${
-                        apiLimitReached
+                        !canManageQuotes || apiLimitReached
                           ? "bg-slate-300 dark:bg-slate-600 cursor-not-allowed"
                           : "bg-emerald-600 hover:bg-emerald-700 text-white"
                       }`}
@@ -660,7 +664,9 @@ const WeekCard = ({
                   </span>
                 </TooltipTrigger>
                 <TooltipContent>
-                  {apiLimitReached
+                  {!canManageQuotes
+                    ? "Faça login para buscar e registrar cotações"
+                    : apiLimitReached
                     ? "Limite mensal atingido — use o Kayak"
                     : "Buscar preço via Sky Scrapper API"}
                 </TooltipContent>
@@ -711,13 +717,14 @@ const WeekCard = ({
                   placeholder="Ex: 350.90"
                   value={manualPrice}
                   onChange={e => setManualPrice(e.target.value)}
+                  disabled={!canManageQuotes}
                   className="h-8 text-sm dark:bg-slate-700 dark:border-slate-600 dark:text-slate-100 dark:placeholder-slate-400 max-w-[160px]"
                   onKeyDown={e => e.key === "Enter" && handleSaveManual()}
                 />
                 <Button
                   size="sm"
                   onClick={handleSaveManual}
-                  disabled={!manualPrice}
+                  disabled={!canManageQuotes || !manualPrice}
                   className="h-8 text-xs bg-blue-600 hover:bg-blue-700 text-white"
                 >
                   <Link2 className="w-3.5 h-3.5 mr-1" />
@@ -854,20 +861,37 @@ export default function FlightQuotes() {
   const { selectedYear: year } = useYear();
   const _isDark = theme === "dark";
   const [loadingWeek, setLoadingWeek] = useState<number | null>(null);
+  const [showLoginModal, setShowLoginModal] = useState(false);
   const utils = trpc.useUtils();
+  const authCheckQuery = trpc.flightAuth.check.useQuery(undefined, {
+    retry: false,
+  });
+  const isAuthenticated = authCheckQuery.data?.authenticated === true;
+  const canManageQuotes = canLoadProtectedQuoteData({
+    isAuthResolved: authCheckQuery.isSuccess,
+    isAuthenticating: authCheckQuery.isFetching,
+    isAuthenticated,
+  });
 
   const invalidateQuotesForYear = () =>
     utils.quotes.getAll.invalidate({ year });
   const invalidateQuoteUsageForYear = () =>
     utils.quotes.getApiUsage.invalidate({ year });
 
-  // As cotações e semanas são sempre carregadas pelo exercício selecionado.
+  // As semanas são públicas; dados de cotação e de limite só são carregados
+  // depois que uma sessão autenticada estiver confirmada.
   const { data: allQuotes = EMPTY_ARRAY } =
-    trpc.quotes.getAll.useQuery({ year }, queryCachePolicies.quotes);
+    trpc.quotes.getAll.useQuery({ year }, {
+      ...queryCachePolicies.quotes,
+      enabled: canManageQuotes,
+    });
   const { data: planningWeeks = EMPTY_ARRAY, isLoading: isLoadingWeeks } =
     trpc.flights.getWeeks.useQuery({ year }, queryCachePolicies.annualPlanning);
   const { data: apiUsage = { requestsUsed: 0, requestsLimit: 20 } } =
-    trpc.quotes.getApiUsage.useQuery({ year }, queryCachePolicies.apiUsage);
+    trpc.quotes.getApiUsage.useQuery({ year }, {
+      ...queryCachePolicies.apiUsage,
+      enabled: canManageQuotes,
+    });
 
   // Mutations
   const fetchFromApi = trpc.quotes.fetchFromApi.useMutation({
@@ -1081,6 +1105,20 @@ export default function FlightQuotes() {
               )}
             </div>
           </div>
+          {!authCheckQuery.isLoading && !isAuthenticated && (
+            <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-800 dark:border-blue-800 dark:bg-blue-950/40 dark:text-blue-100">
+              <span>
+                Faça login para buscar preços pela API e salvar suas cotações.
+              </span>
+              <Button
+                size="sm"
+                onClick={() => setShowLoginModal(true)}
+                className="bg-blue-600 text-white hover:bg-blue-700"
+              >
+                Entrar
+              </Button>
+            </div>
+          )}
         </div>
       </div>
 
@@ -1142,12 +1180,14 @@ export default function FlightQuotes() {
                 onSaveManual={handleSaveManual}
                 onDelete={handleDelete}
                 isLoadingApi={loadingWeek === week.semana}
+                canManageQuotes={canManageQuotes}
                 todayInt={todayInt}
               />
             ))
           )}
         </div>
       </div>
+      <LoginModal open={showLoginModal} onOpenChange={setShowLoginModal} />
     </div>
   );
 }
