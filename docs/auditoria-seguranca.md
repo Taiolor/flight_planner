@@ -152,6 +152,10 @@ Recomenda-se proteger desinscrição e verificação com a sessão interna ou as
 | Médio | Padronizar erros de callbacks e criar IDs de correlação | Resposta externa genérica; log interno rastreável |
 | Contínuo | Integrar SCA, secret scan e DAST passivo na CI | PR bloqueado quando introduzir alta criticidade ou segredo |
 
+## Execução S1 — Dependências corrigidas
+
+Em 18 de agosto de 2026, os overrides transitivos foram aplicados na configuração do pnpm 11 para `path-to-regexp`, `lodash`, `lodash-es`, `dompurify`, `mdast-util-to-hast`, `mermaid` e `uuid`. A auditoria posterior de dependências de produção retornou **zero** vulnerabilidades críticas, altas, moderadas ou baixas. O build de produção, o TypeScript e os 270 testes passaram após a atualização. O único aviso de pares remanescente é do plugin de localização JSX da Builder, que declara compatibilidade até Vite 5 enquanto o projeto usa Vite 7; ele não é uma vulnerabilidade de produção e será avaliado separadamente antes de uma atualização do plugin.
+
 ## Programa mínimo de segurança recomendado
 
 O OWASP ASVS fornece uma base de requisitos verificáveis para aplicações web e serviços. Para o Smart Fly, o objetivo realista é usar ASVS como checklist de evolução, sem declarar certificação: autenticação e sessões, controle de acesso, validação/encoding, logging, dependências e configuração devem ter casos de teste automatizados. [4](#referências)

@@ -704,4 +704,6 @@
 
 - [x] P5: implementar telemetria anônima de Web Vitals e latência tRPC
 
+- [x] S1: corrigir dependências transitivas com vulnerabilidades altas e validar regressões
+
 - [x] Corrigir bloqueio de abertura da página administrativa
