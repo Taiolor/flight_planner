@@ -1851,7 +1851,7 @@ export default function Home() {
                   Smart Fly
                 </h1>
                 <p className="text-slate-200 text-xs sm:text-sm font-medium tracking-wide">
-                  {departureAirport} → NVT • {selectedYear}
+                  Viagens
                 </p>
               </div>
             </div>

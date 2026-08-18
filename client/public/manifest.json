@@ -1,7 +1,7 @@
 {
   "name": "Smart Fly",
   "short_name": "Smart Fly",
-  "description": "Smart Fly — Planejamento inteligente de passagens aéreas GRU → NVT 2026",
+  "description": "Smart Fly — Planejamento inteligente de viagens",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#1e3a8a",

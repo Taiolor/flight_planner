@@ -737,3 +737,7 @@
 - [x] Permitir os tiles do OpenStreetMap na CSP de produção sem reabrir origens amplas
 
 - [x] Corrigir bloqueio de abertura da página administrativa
+
+## Padronização visual
+
+- [x] Substituir em toda a interface o rótulo visual “GRU → NVT • 2026” por “Viagens”
