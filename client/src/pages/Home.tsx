@@ -2442,8 +2442,7 @@ export default function Home() {
                         Horário de Ida: {minutesToTime(departureTimeFilter)}
                       </label>
                       <span className="text-xs bg-blue-100 dark:bg-blue-900 text-blue-900 dark:text-blue-100 px-2 py-1 rounded">
-                        {departureFlightCount}{" "}
-                        voos
+                        {departureFlightCount} voos
                       </span>
                     </div>
                     <Slider
@@ -2467,8 +2466,7 @@ export default function Home() {
                         Horário de Volta: {minutesToTime(returnTimeFilter)}
                       </label>
                       <span className="text-xs bg-blue-100 dark:bg-blue-900 text-blue-900 dark:text-blue-100 px-2 py-1 rounded">
-                        {returnFlightCount}{" "}
-                        voos
+                        {returnFlightCount} voos
                       </span>
                     </div>
                     <Slider
