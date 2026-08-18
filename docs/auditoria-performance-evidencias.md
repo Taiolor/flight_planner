@@ -13,3 +13,7 @@
 ## Planos de consulta
 
 Os planos `EXPLAIN` mostram busca ordenada pelo índice anual de semanas. Em contraste, os planos de `flight_prices`, `flight_quotes` e `notification_logs` exibiram `TableFullScan` nos volumes atuais. Isto é pouco relevante no tamanho presente, mas define uma oportunidade de índices compostos antes de escalar o histórico anual.
+
+## Execução P1 — PDF sob demanda
+
+Após a separação do acionador leve na Home, o build de produção passou a manter todo o gerador de PDF em um chunk dinâmico de **927.354 bytes brutos** e **273.199 bytes gzip**. O documento inicial não contém referências a `FlightPdfExport`, `jspdf` ou `html2canvas`; o chunk só é solicitado pelo import dinâmico após o clique de exportação. O chunk inicial JavaScript ficou em **179.583 bytes gzip** nesta medição.

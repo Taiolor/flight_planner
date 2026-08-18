@@ -106,7 +106,7 @@ import {
 } from "@/lib/calendarHelper";
 import { usePullToRefresh } from "@/hooks/usePullToRefresh";
 import { usePushNotifications } from "@/hooks/usePushNotifications";
-import { ExportPdfButton } from "@/components/FlightPdfExport";
+import { DeferredPdfExportButton } from "@/components/DeferredPdfExportButton";
 import { SkeletonFilters } from "@/components/SkeletonFilters";
 import { SkeletonChart } from "@/components/SkeletonChart";
 import { NotificationSettingsPopup } from "@/components/NotificationSettingsPopup";
@@ -1922,7 +1922,7 @@ export default function Home() {
                 </Button>
               )}
 
-              <ExportPdfButton
+              <DeferredPdfExportButton
                 year={selectedYear}
                 weeksData={weeksData}
                 priceMap={priceMap}

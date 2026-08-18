@@ -212,7 +212,6 @@ export default defineConfig({
             "@tanstack/react-query",
           ],
           "vendor-charts": ["recharts"],
-          "vendor-pdf": ["jspdf", "html2canvas"],
           "vendor-forms": ["react-hook-form", "@hookform/resolvers"],
           "vendor-utils": [
             "date-fns",

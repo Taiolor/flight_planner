@@ -694,4 +694,6 @@
 
 - [x] Atualizar a página de Novidades com as entregas concluídas no mês corrente
 
+- [x] P1: carregar a exportação PDF somente sob demanda na Home
+
 - [x] Corrigir bloqueio de abertura da página administrativa

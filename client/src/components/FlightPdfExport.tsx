@@ -34,7 +34,7 @@ interface PriceMap {
   [weekNumber: number]: { [airline: string]: string };
 }
 
-interface FlightPdfExportProps {
+export interface FlightPdfExportProps {
   year: number;
   weeksData: WeekData[];
   priceMap: PriceMap;
@@ -772,16 +772,14 @@ function addCanvasToPdfHelper(
   }
 }
 
-// ─── Botão de exportação ─────────────────────────────────────────────────────
-export function ExportPdfButton({
+export async function exportFlightPdf({
   year,
   weeksData,
   priceMap,
   totalInvested,
-}: FlightPdfExportProps) {
-  const [exporting, setExporting] = useState(false);
-
+}: FlightPdfExportProps): Promise<void> {
   const issued = weeksData.filter(w => !!w.isTicketIssued && !w.isDeleted);
+  if (issued.length === 0) return;
 
   // Agrupar por mês
   const byMonth: Record<string, WeekData[]> = {};
@@ -792,50 +790,60 @@ export function ExportPdfButton({
   });
   const months = Object.entries(byMonth);
 
-  const handleExport = async () => {
-    if (issued.length === 0) return;
-    setExporting(true);
+  const pdf = new jsPDF({
+    orientation: "portrait",
+    unit: "mm",
+    format: "a4",
+  });
+  const pdfW = pdf.internal.pageSize.getWidth();
+  const pdfH = pdf.internal.pageSize.getHeight();
 
-    try {
-      const pdf = new jsPDF({
-        orientation: "portrait",
-        unit: "mm",
-        format: "a4",
-      });
-      const pdfW = pdf.internal.pageSize.getWidth();
-      const pdfH = pdf.internal.pageSize.getHeight();
+  // 1. Capa
+  const coverCanvas = await renderPageToCanvas(
+    <CoverPage year={year} issued={issued} totalInvested={totalInvested} />
+  );
+  addCanvasToPdfHelper(pdf, coverCanvas, true, pdfW, pdfH);
 
-      // 1. Capa
-      const coverCanvas = await renderPageToCanvas(
-        <CoverPage year={year} issued={issued} totalInvested={totalInvested} />
+  // 2. Um cartão completo por página para nunca cortar os dados de um bilhete
+  for (let i = 0; i < months.length; i++) {
+    const [monthLabel, weeks] = months[i];
+    const monthTotal = weeks.reduce((acc, w) => {
+      const prices = priceMap[w.weekNumber];
+      if (!prices) return acc;
+      const airline = w.departureAirline?.toLowerCase();
+      const price = airline && prices[airline] ? parseFloat(prices[airline]) : 0;
+      return acc + (isNaN(price) ? 0 : price);
+    }, 0);
+
+    for (const week of weeks) {
+      const weekCanvas = await renderPageToCanvas(
+        <MonthPage
+          monthLabel={monthLabel}
+          weeks={[week]}
+          priceMap={priceMap}
+          monthTotalOverride={monthTotal}
+        />
       );
-      addCanvasToPdfHelper(pdf, coverCanvas, true, pdfW, pdfH);
+      addCanvasToPdfHelper(pdf, weekCanvas, false, pdfW, pdfH);
+    }
+  };
 
-      // 2. Um cartão completo por página para nunca cortar os dados de um bilhete
-      for (let i = 0; i < months.length; i++) {
-        const [monthLabel, weeks] = months[i];
-        const monthTotal = weeks.reduce((acc, w) => {
-          const prices = priceMap[w.weekNumber];
-          if (!prices) return acc;
-          const airline = w.departureAirline?.toLowerCase();
-          const price = airline && prices[airline] ? parseFloat(prices[airline]) : 0;
-          return acc + (isNaN(price) ? 0 : price);
-        }, 0);
+  pdf.save(getPdfFilename(year));
+}
 
-        for (const week of weeks) {
-          const weekCanvas = await renderPageToCanvas(
-            <MonthPage
-              monthLabel={monthLabel}
-              weeks={[week]}
-              priceMap={priceMap}
-              monthTotalOverride={monthTotal}
-            />
-          );
-          addCanvasToPdfHelper(pdf, weekCanvas, false, pdfW, pdfH);
-        }
-      }
+// Mantido para usos diretos fora da Home. A Home utiliza o acionador leve
+// DeferredPdfExportButton para adiar este módulo pesado até o clique.
+export function ExportPdfButton(props: FlightPdfExportProps) {
+  const [exporting, setExporting] = useState(false);
+  const hasIssuedTickets = props.weeksData.some(
+    week => !!week.isTicketIssued && !week.isDeleted
+  );
 
-      pdf.save(getPdfFilename(year));
+  const handleExport = async () => {
+    if (!hasIssuedTickets) return;
+    setExporting(true);
+    try {
+      await exportFlightPdf(props);
     } catch (err) {
       console.error("[PDF Export Error]", err);
       alert("Erro ao gerar o PDF. Tente novamente.");
@@ -849,9 +857,9 @@ export function ExportPdfButton({
       size="sm"
       variant="outline"
       onClick={handleExport}
-      disabled={exporting || issued.length === 0}
+      disabled={exporting || !hasIssuedTickets}
       title={
-        issued.length === 0
+        !hasIssuedTickets
           ? "Nenhum bilhete emitido para exportar"
           : "Exportar relatório em PDF"
       }
