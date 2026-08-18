@@ -16,4 +16,21 @@ describe("contentSecurityPolicy", () => {
     expect(productionCspDirectives.scriptSrc).not.toContain("'unsafe-inline'");
     expect(productionCspDirectives.scriptSrc).not.toContain("'unsafe-eval'");
   });
+
+  it("restringe incorporação, conexões e conteúdos de terceiros a allowlists", () => {
+    expect(productionCspDirectives.frameAncestors).toEqual(["'self'"]);
+    expect(productionCspDirectives.connectSrc).not.toContain("https:");
+    expect(productionCspDirectives.connectSrc).not.toContain("http:");
+    expect(productionCspDirectives.connectSrc).not.toContain("ws:");
+    expect(productionCspDirectives.connectSrc).not.toContain("wss:");
+    expect(productionCspDirectives.frameSrc).not.toContain("*");
+    expect(productionCspDirectives.imgSrc).not.toContain("https:");
+    expect(productionCspDirectives.imgSrc).toContain(
+      "https://*.tile.openstreetmap.org"
+    );
+  });
+
+  it("não permite blocos de estilo inline em produção", () => {
+    expect(productionCspDirectives.styleSrc).not.toContain("'unsafe-inline'");
+  });
 });

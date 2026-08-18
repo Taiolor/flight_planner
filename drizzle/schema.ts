@@ -299,6 +299,22 @@ export type AuthSession = typeof authSessions.$inferSelect;
 export type InsertAuthSession = typeof authSessions.$inferInsert;
 
 /**
+ * Papéis persistidos do login interno. A conta configurada no ambiente é usada
+ * apenas para o provisionamento inicial; as decisões de autorização consultam
+ * esta tabela em todas as sessões válidas.
+ */
+export const flightAccessRoles = mysqlTable("flight_access_roles", {
+  id: int("id").autoincrement().primaryKey(),
+  email: varchar("email", { length: 320 }).notNull().unique(),
+  role: mysqlEnum("role", ["user", "admin"]).default("user").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type FlightAccessRole = typeof flightAccessRoles.$inferSelect;
+export type InsertFlightAccessRole = typeof flightAccessRoles.$inferInsert;
+
+/**
  * Tabela para armazenar subscriptions de notificações push Web Push
  */
 export const pushSubscriptions = mysqlTable("push_subscriptions", {

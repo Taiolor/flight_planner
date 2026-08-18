@@ -723,4 +723,17 @@
 
 - [x] Criar a área Memórias com quilômetros dinâmicos, mapa de rotas e mídias por passagem emitida
 
+## Segurança e performance — ciclo de endurecimento
+
+- [x] Restringir a CSP de produção, removendo permissões amplas e permitindo apenas origens necessárias
+- [x] Criar autorização administrativa persistente para todos os procedimentos de administração
+- [x] Escapar e validar campos de voo interpolados em e-mails HTML
+- [ ] Proteger a cota da RapidAPI com reserva atômica, limite específico, timeout e resposta limitada
+- [ ] Carregar gráficos secundários do Financeiro somente quando a respectiva seção for aberta
+
+## Reavaliação integral — versão mais recente
+
+- [x] Auditar o código completo, incluindo mapa OpenStreetMap, segurança, desempenho, rotas e tarefas automáticas
+- [x] Permitir os tiles do OpenStreetMap na CSP de produção sem reabrir origens amplas
+
 - [x] Corrigir bloqueio de abertura da página administrativa

@@ -1,15 +1,27 @@
 export const productionCspDirectives = {
   defaultSrc: ["'self'"],
-  scriptSrc: ["'self'", "blob:", "data:", "https://cdn.jsdelivr.net"],
-  styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+  scriptSrc: ["'self'", "blob:", "https://cdn.jsdelivr.net", "https://maps.googleapis.com"],
+  styleSrc: ["'self'", "https://fonts.googleapis.com"],
+  // Alguns componentes do React e o SDK do mapa aplicam estilos calculados via
+  // atributo style. Scripts inline e blocos <style> continuam bloqueados.
+  styleSrcAttr: ["'unsafe-inline'"],
   fontSrc: ["'self'", "https://fonts.gstatic.com"],
-  imgSrc: ["'self'", "data:", "https:"],
-  connectSrc: ["'self'", "https:", "http:", "ws:", "wss:"],
-  frameSrc: ["'self'", "*"],
+  imgSrc: [
+    "'self'",
+    "data:",
+    "blob:",
+    "https://d2xsxph8kpxj0f.cloudfront.net",
+    "https://maps.googleapis.com",
+    "https://maps.gstatic.com",
+    "https://*.googleusercontent.com",
+    "https://*.tile.openstreetmap.org",
+  ],
+  connectSrc: ["'self'", "https://maps.googleapis.com", "https://maps.gstatic.com"],
+  frameSrc: ["'self'", "https://www.google.com"],
   objectSrc: ["'none'"],
   baseUri: ["'self'"],
   formAction: ["'self'"],
-  frameAncestors: ["*"],
+  frameAncestors: ["'self'"],
 };
 
 /**

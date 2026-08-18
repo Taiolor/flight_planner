@@ -40,6 +40,7 @@ import {
   sendTicketNotificationEmail,
   sendTestEmail,
   sendShareByEmailNotification,
+  formatTicketShareEmail,
   type TicketChangeNotification,
 } from "./_core/emailNotification";
 import {
@@ -180,9 +181,7 @@ export const appRouter = router({
       return {
         authenticated: true,
         email: session.email,
-        isAdmin:
-          Boolean(ENV.authEmail) &&
-          session.email.toLowerCase() === ENV.authEmail.toLowerCase(),
+        isAdmin: session.role === "admin",
       };
     }),
 
@@ -248,7 +247,7 @@ export const appRouter = router({
       }),
 
     // Enviar notificação de teste
-    sendTest: flightProtectedProcedure
+    sendTest: flightAdminProcedure
       .input(z.object({ year: planningYearSchema }))
       .mutation(async ({ input }) => {
       const { sendPushToAll } = await import("./pushNotifications");
@@ -503,45 +502,35 @@ export const appRouter = router({
                 const googleRetLink = getGoogleCalendarLink(retEvent, 120, 75);
                 const outlookRetLink = getOutlookLink(retEvent, 120, 75);
 
-                // Construir HTML do e-mail
-                const emailHtml = `
-                  <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-                    <h2 style="color: #1f2937; margin-bottom: 20px;">Compartilhamento de Bilhetes ✈️</h2>
-                    <p style="color: #4b5563; margin-bottom: 20px;"><strong>Semana ${input.weekNumber}</strong></p>
-                    
-                    <div style="background-color: #f3f4f6; border-radius: 8px; padding: 16px; margin-bottom: 20px;">
-                      <h3 style="color: #1f2937; margin-top: 0;">Voo de Ida 🛫</h3>
-                      <p style="margin: 8px 0;"><strong>Data:</strong> ${departureDate} às ${departureTime}</p>
-                      <p style="margin: 8px 0;"><strong>Rota:</strong> ${input.departureAirport} → ${input.returnAirport}</p>
-                      <p style="margin: 8px 0;"><strong>Companhia:</strong> ${input.departureAirline?.toUpperCase() || "N/A"} ${input.departureFlightNumber}</p>
-                      ${(input as any).departureTerminal ? `<p style="margin: 8px 0;"><strong>Terminal:</strong> ${(input as any).departureTerminal}</p>` : ""}
-                      <p style="margin: 8px 0;"><strong>Localizador:</strong> <code style="background-color: #e5e7eb; padding: 2px 6px; border-radius: 3px;">${input.departureLocator || "N/A"}</code></p>
-                      <p style="margin: 8px 0;">
-                        <a href="${outlookDepLink}" style="color: #0078d4; margin-right: 10px; text-decoration: none;">📅 Outlook • Ida</a>
-                        <a href="${googleDepLink}" style="color: #1f2937; margin-right: 10px; text-decoration: none;">📅 Google • Ida</a>
-                        ${depTrackUrl ? `<a href="${depTrackUrl}" style="color: #059669; margin-right: 10px; text-decoration: none;">🔍 Rastrear Ida</a>` : ""}
-                      </p>
-                    </div>
-                    
-                    <div style="background-color: #f3f4f6; border-radius: 8px; padding: 16px; margin-bottom: 20px;">
-                      <h3 style="color: #1f2937; margin-top: 0;">Voo de Volta 🛬</h3>
-                      <p style="margin: 8px 0;"><strong>Data:</strong> ${returnDate} às ${returnTime}</p>
-                      <p style="margin: 8px 0;"><strong>Rota:</strong> ${input.returnAirport} → ${input.departureAirport}</p>
-                      <p style="margin: 8px 0;"><strong>Companhia:</strong> ${input.returnAirline?.toUpperCase() || "N/A"} ${input.returnFlightNumber}</p>
-                      ${(input as any).returnTerminal ? `<p style="margin: 8px 0;"><strong>Terminal:</strong> ${(input as any).returnTerminal}</p>` : ""}
-                      <p style="margin: 8px 0;"><strong>Localizador:</strong> <code style="background-color: #e5e7eb; padding: 2px 6px; border-radius: 3px;">${input.returnLocator || "N/A"}</code></p>
-                      <p style="margin: 8px 0;">
-                        <a href="${outlookRetLink}" style="color: #0078d4; margin-right: 10px; text-decoration: none;">📅 Outlook • Volta</a>
-                        <a href="${googleRetLink}" style="color: #1f2937; margin-right: 10px; text-decoration: none;">📅 Google • Volta</a>
-                        ${retTrackUrl ? `<a href="${retTrackUrl}" style="color: #059669; margin-right: 10px; text-decoration: none;">🔍 Rastrear Volta</a>` : ""}
-                      </p>
-                    </div>
-                    
-                    <p style="color: #6b7280; font-size: 12px; margin-top: 30px; border-top: 1px solid #e5e7eb; padding-top: 20px;">
-                      Compartilhado via Smart Fly - Planejador de Passagens Aéreas 2026
-                    </p>
-                  </div>
-                `;
+                const emailHtml = formatTicketShareEmail({
+                  weekLabel: `Semana ${input.weekNumber}`,
+                  departure: {
+                    date: departureDate,
+                    time: departureTime,
+                    departureAirport: input.departureAirport || "N/A",
+                    arrivalAirport: input.returnAirport || "N/A",
+                    airline: input.departureAirline?.toUpperCase() || "N/A",
+                    flightNumber: input.departureFlightNumber || "N/A",
+                    locator: input.departureLocator || "N/A",
+                    terminal: (input as any).departureTerminal,
+                    outlookUrl: outlookDepLink,
+                    googleUrl: googleDepLink,
+                    trackingUrl: depTrackUrl,
+                  },
+                  return: {
+                    date: returnDate,
+                    time: returnTime,
+                    departureAirport: input.returnAirport || "N/A",
+                    arrivalAirport: input.departureAirport || "N/A",
+                    airline: input.returnAirline?.toUpperCase() || "N/A",
+                    flightNumber: input.returnFlightNumber || "N/A",
+                    locator: input.returnLocator || "N/A",
+                    terminal: (input as any).returnTerminal,
+                    outlookUrl: outlookRetLink,
+                    googleUrl: googleRetLink,
+                    trackingUrl: retTrackUrl,
+                  },
+                });
 
                 const emailAddresses = recipients.map(r => r.email);
                 await sendShareByEmailNotification(
@@ -803,7 +792,7 @@ export const appRouter = router({
   // =====================
   adminNotifications: router({
     // Retorna status completo do sistema de notificações para o painel admin
-    getStatus: flightProtectedProcedure
+    getStatus: flightAdminProcedure
       .input(z.object({ year: planningYearSchema }))
       .query(async ({ input }) => {
       const [weeks, settings, subscriptions] = await Promise.all([
@@ -983,7 +972,7 @@ export const appRouter = router({
       }),
 
     // Enviar notificação de teste do próximo alerta agendado
-    sendNextAlert: flightProtectedProcedure
+    sendNextAlert: flightAdminProcedure
       .input(z.object({ year: planningYearSchema }))
       .mutation(async ({ input }) => {
       const [weeks, settings] = await Promise.all([
@@ -1139,7 +1128,7 @@ export const appRouter = router({
       }),
 
     // Retorna histórico persistente de envios
-    getLogs: flightProtectedProcedure
+    getLogs: flightAdminProcedure
       .input(
         z.object({
           year: planningYearSchema,
@@ -1162,11 +1151,11 @@ export const appRouter = router({
   // =====================
   notificationSettings: router({
     // Buscar configurações atuais de agendamento
-    get: flightProtectedProcedure.query(async () => {
+    get: flightAdminProcedure.query(async () => {
       return getNotificationSettings();
     }),
     // Salvar configurações de agendamento
-    update: flightProtectedProcedure
+    update: flightAdminProcedure
       .input(
         z.object({
           aviso1Minutes: z.number().min(0).max(2880),
@@ -1199,14 +1188,14 @@ export const appRouter = router({
     /**
      * Get all ticket notification email recipients
      */
-    getRecipients: flightProtectedProcedure.query(async () => {
+    getRecipients: flightAdminProcedure.query(async () => {
       return await getTicketNotificationEmails();
     }),
 
     /**
      * Add a new ticket notification email recipient
      */
-    addRecipient: flightProtectedProcedure
+    addRecipient: flightAdminProcedure
       .input(
         z.object({
           email: z.string().email("E-mail inválido"),
@@ -1230,7 +1219,7 @@ export const appRouter = router({
     /**
      * Remove a ticket notification email recipient
      */
-    removeRecipient: flightProtectedProcedure
+    removeRecipient: flightAdminProcedure
       .input(z.object({ emailId: z.number() }))
       .mutation(async ({ input }) => {
         const success = await removeTicketNotificationEmail(input.emailId);
@@ -1246,7 +1235,7 @@ export const appRouter = router({
     /**
      * Update a ticket notification email recipient
      */
-    updateRecipient: flightProtectedProcedure
+    updateRecipient: flightAdminProcedure
       .input(
         z.object({
           emailId: z.number(),
@@ -1269,7 +1258,7 @@ export const appRouter = router({
     /**
      * Send test email to verify SMTP configuration
      */
-    sendTestEmail: flightProtectedProcedure
+    sendTestEmail: flightAdminProcedure
       .input(z.object({ testEmail: z.string().email() }))
       .mutation(async ({ input }) => {
         const success = await sendTestEmail(input.testEmail);
@@ -1282,7 +1271,7 @@ export const appRouter = router({
         return { success: true };
       }),
 
-    shareByEmail: flightProtectedProcedure
+    shareByEmail: flightAdminProcedure
       .input(
         z.object({
           weekNumber: z.number(),
@@ -1359,45 +1348,35 @@ export const appRouter = router({
         const googleRetLink = getGoogleCalendarLink(retEvent, 120, 75);
         const outlookRetLink = getOutlookLink(retEvent, 120, 75);
 
-        // Construir HTML do e-mail similar ao WhatsApp
-        const emailHtml = `
-          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-            <h2 style="color: #1f2937; margin-bottom: 20px;">Compartilhamento de Bilhetes ✈️</h2>
-            <p style="color: #4b5563; margin-bottom: 20px;"><strong>${input.weekLabel}</strong></p>
-            
-            <div style="background-color: #f3f4f6; border-radius: 8px; padding: 16px; margin-bottom: 20px;">
-              <h3 style="color: #1f2937; margin-top: 0;">Voo de Ida 🛫</h3>
-              <p style="margin: 8px 0;"><strong>Data:</strong> ${departureDateBrazilian} às ${input.departureTime}</p>
-              <p style="margin: 8px 0;"><strong>Rota:</strong> ${input.departureAirport} → ${input.returnAirport}</p>
-              <p style="margin: 8px 0;"><strong>Companhia:</strong> ${input.departureAirline.toUpperCase()}</p>
-              <p style="margin: 8px 0;"><strong>Voo:</strong> ${input.departureFlightNumber}</p>
-              <p style="margin: 8px 0;"><strong>Localizador:</strong> <code style="background-color: #e5e7eb; padding: 2px 6px; border-radius: 3px;">${input.departureLocator}</code></p>
-              <p style="margin: 8px 0;">
-                <a href="${outlookDepLink}" style="color: #0078d4; margin-right: 10px; text-decoration: none;">📅 Outlook • Ida</a>
-                <a href="${googleDepLink}" style="color: #1f2937; margin-right: 10px; text-decoration: none;">📅 Google • Ida</a>
-                ${depTrackUrl ? `<a href="${depTrackUrl}" style="color: #059669; margin-right: 10px; text-decoration: none;">🔍 Rastrear Ida</a>` : ""}
-              </p>
-            </div>
-            
-            <div style="background-color: #f3f4f6; border-radius: 8px; padding: 16px; margin-bottom: 20px;">
-              <h3 style="color: #1f2937; margin-top: 0;">Voo de Volta 🛬</h3>
-              <p style="margin: 8px 0;"><strong>Data:</strong> ${returnDateBrazilian} às ${input.returnTime}</p>
-              <p style="margin: 8px 0;"><strong>Rota:</strong> ${input.returnAirport} → ${input.departureAirport}</p>
-              <p style="margin: 8px 0;"><strong>Companhia:</strong> ${input.returnAirline.toUpperCase()}</p>
-              <p style="margin: 8px 0;"><strong>Voo:</strong> ${input.returnFlightNumber}</p>
-              <p style="margin: 8px 0;"><strong>Localizador:</strong> <code style="background-color: #e5e7eb; padding: 2px 6px; border-radius: 3px;">${input.returnLocator}</code></p>
-              <p style="margin: 8px 0;">
-                <a href="${outlookRetLink}" style="color: #0078d4; margin-right: 10px; text-decoration: none;">📅 Outlook • Volta</a>
-                <a href="${googleRetLink}" style="color: #1f2937; margin-right: 10px; text-decoration: none;">📅 Google • Volta</a>
-                ${retTrackUrl ? `<a href="${retTrackUrl}" style="color: #059669; margin-right: 10px; text-decoration: none;">🔍 Rastrear Volta</a>` : ""}
-              </p>
-            </div>
-            
-            <p style="color: #6b7280; font-size: 12px; margin-top: 30px; border-top: 1px solid #e5e7eb; padding-top: 20px;">
-              Compartilhado via Smart Fly - Planejador de Passagens Aéreas 2026
-            </p>
-          </div>
-        `;
+        const emailHtml = formatTicketShareEmail({
+          weekLabel: input.weekLabel,
+          departure: {
+            date: departureDateBrazilian,
+            time: input.departureTime,
+            departureAirport: input.departureAirport,
+            arrivalAirport: input.returnAirport,
+            airline: input.departureAirline.toUpperCase(),
+            flightNumber: input.departureFlightNumber,
+            locator: input.departureLocator,
+            terminal: input.departureTerminal,
+            outlookUrl: outlookDepLink,
+            googleUrl: googleDepLink,
+            trackingUrl: depTrackUrl,
+          },
+          return: {
+            date: returnDateBrazilian,
+            time: input.returnTime,
+            departureAirport: input.returnAirport,
+            arrivalAirport: input.departureAirport,
+            airline: input.returnAirline.toUpperCase(),
+            flightNumber: input.returnFlightNumber,
+            locator: input.returnLocator,
+            terminal: input.returnTerminal,
+            outlookUrl: outlookRetLink,
+            googleUrl: googleRetLink,
+            trackingUrl: retTrackUrl,
+          },
+        });
 
         // Extrair apenas os endereços de e-mail do array de objetos
         // ⚡ Bolt: Use a single pass loop to filter active emails and map them to their address

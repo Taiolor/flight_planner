@@ -12,7 +12,7 @@ vi.mock("./db", () => ({
   insertFlightQuote: vi.fn(),
   deleteFlightQuote: vi.fn(),
   getApiUsage: vi.fn(),
-  incrementApiUsage: vi.fn(),
+  reserveApiUsage: vi.fn(),
 }));
 
 import { quotesRouter } from "./routers/quotes";
@@ -46,6 +46,11 @@ describe("quotes router by planning year", () => {
     );
     (db.getApiUsage as ReturnType<typeof vi.fn>).mockResolvedValue({
       requestsUsed: 0,
+      requestsLimit: 20,
+    });
+    (db.reserveApiUsage as ReturnType<typeof vi.fn>).mockResolvedValue({
+      reserved: true,
+      requestsUsed: 1,
       requestsLimit: 20,
     });
   });

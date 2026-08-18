@@ -12,6 +12,7 @@ import {
   InsertFlightPrice,
   authSessions,
   InsertAuthSession,
+  flightAccessRoles,
   pushSubscriptions,
   InsertPushSubscription,
   notificationSettings,
@@ -396,6 +397,18 @@ export async function createAuthSession(email: string): Promise<string> {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
 
+  const normalizedEmail = email.toLowerCase().trim();
+  const isBootstrapAdmin =
+    Boolean(ENV.authEmail) && normalizedEmail === ENV.authEmail.toLowerCase();
+
+  await db
+    .insert(flightAccessRoles)
+    .values({
+      email: normalizedEmail,
+      role: isBootstrapAdmin ? "admin" : "user",
+    })
+    .onDuplicateKeyUpdate({ set: { email: normalizedEmail } });
+
   // Gerar token único
   const token = crypto.randomBytes(32).toString("hex");
 
@@ -404,7 +417,7 @@ export async function createAuthSession(email: string): Promise<string> {
 
   await db.insert(authSessions).values({
     sessionToken: token,
-    email,
+    email: normalizedEmail,
     expiresAt,
   });
 
@@ -413,21 +426,28 @@ export async function createAuthSession(email: string): Promise<string> {
 
 export async function validateAuthSession(
   token: string
-): Promise<{ email: string } | null> {
+): Promise<{ email: string; role: "user" | "admin" } | null> {
   const db = await getDb();
   if (!db) return null;
 
   const now = new Date();
   const result = await db
-    .select()
+    .select({
+      email: authSessions.email,
+      role: flightAccessRoles.role,
+    })
     .from(authSessions)
+    .innerJoin(
+      flightAccessRoles,
+      eq(authSessions.email, flightAccessRoles.email)
+    )
     .where(
       and(eq(authSessions.sessionToken, token), gt(authSessions.expiresAt, now))
     )
     .limit(1);
 
   if (result.length === 0) return null;
-  return { email: result[0].email };
+  return result[0];
 }
 
 export async function deleteAuthSession(token: string): Promise<void> {
@@ -793,6 +813,34 @@ export async function incrementApiUsage(
       .where(eq(apiUsageTracker.yearMonth, yearMonth));
     return { requestsUsed: newCount, requestsLimit: rows[0].requestsLimit };
   }
+}
+
+/**
+ * Reserva uma consulta da franquia mensal em uma única operação atômica.
+ * O retorno `reserved: false` indica que o limite já havia sido atingido,
+ * sem permitir que chamadas concorrentes ultrapassem a cota configurada.
+ */
+export async function reserveApiUsage(
+  yearMonth: string
+): Promise<{ reserved: boolean; requestsUsed: number; requestsLimit: number }> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const result = await db.execute(sql`
+    INSERT INTO api_usage_tracker (yearMonth, requestsUsed, requestsLimit)
+    VALUES (${yearMonth}, 1, 20)
+    ON DUPLICATE KEY UPDATE
+      requestsUsed = IF(requestsUsed < requestsLimit, requestsUsed + 1, requestsUsed)
+  `);
+  const header = (Array.isArray(result) ? result[0] : result) as {
+    affectedRows?: number;
+  };
+  const usage = await getApiUsage(yearMonth);
+
+  return {
+    reserved: Number(header.affectedRows ?? 0) > 0,
+    ...usage,
+  };
 }
 
 // ============================================================================

@@ -30,6 +30,111 @@ export interface TicketChangeNotification {
   returnDate?: string;
 }
 
+export function escapeHtml(value: unknown): string {
+  return String(value ?? "").replace(/[&<>"']/g, character => {
+    const entities: Record<string, string> = {
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      '"': "&quot;",
+      "'": "&#39;",
+    };
+    return entities[character];
+  });
+}
+
+function formatEmailValue(value: unknown, fallback = "—"): string {
+  const normalized = value === undefined || value === null || value === "" ? fallback : value;
+  return escapeHtml(normalized);
+}
+
+export function sanitizeEmailSubject(subject: string): string {
+  return subject.replace(/[\r\n]+/g, " ").replace(/\s+/g, " ").trim().slice(0, 180);
+}
+
+function safeEmailHref(value: string | undefined): string {
+  if (!value) return "#";
+  try {
+    const url = new URL(value);
+    if (url.protocol !== "https:" && url.protocol !== "http:") return "#";
+    return escapeHtml(url.toString());
+  } catch {
+    return "#";
+  }
+}
+
+export interface TicketShareEmailInput {
+  weekLabel: string;
+  departure: {
+    date: string;
+    time: string;
+    departureAirport: string;
+    arrivalAirport: string;
+    airline: string;
+    flightNumber: string;
+    locator: string;
+    terminal?: string | null;
+    outlookUrl: string;
+    googleUrl: string;
+    trackingUrl?: string | null;
+  };
+  return: {
+    date: string;
+    time: string;
+    departureAirport: string;
+    arrivalAirport: string;
+    airline: string;
+    flightNumber: string;
+    locator: string;
+    terminal?: string | null;
+    outlookUrl: string;
+    googleUrl: string;
+    trackingUrl?: string | null;
+  };
+}
+
+function formatTicketShareLeg(
+  title: string,
+  leg: TicketShareEmailInput["departure"]
+): string {
+  const terminal = leg.terminal
+    ? `<p style="margin: 8px 0;"><strong>Terminal:</strong> ${formatEmailValue(leg.terminal)}</p>`
+    : "";
+  const trackingLink = leg.trackingUrl
+    ? `<a href="${safeEmailHref(leg.trackingUrl)}" style="color: #059669; margin-right: 10px; text-decoration: none;">🔍 Rastrear</a>`
+    : "";
+
+  return `
+    <div style="background-color: #f3f4f6; border-radius: 8px; padding: 16px; margin-bottom: 20px;">
+      <h3 style="color: #1f2937; margin-top: 0;">${title}</h3>
+      <p style="margin: 8px 0;"><strong>Data:</strong> ${formatEmailValue(leg.date)} às ${formatEmailValue(leg.time)}</p>
+      <p style="margin: 8px 0;"><strong>Rota:</strong> ${formatEmailValue(leg.departureAirport)} → ${formatEmailValue(leg.arrivalAirport)}</p>
+      <p style="margin: 8px 0;"><strong>Companhia:</strong> ${formatEmailValue(leg.airline)} ${formatEmailValue(leg.flightNumber)}</p>
+      ${terminal}
+      <p style="margin: 8px 0;"><strong>Localizador:</strong> <code style="background-color: #e5e7eb; padding: 2px 6px; border-radius: 3px;">${formatEmailValue(leg.locator)}</code></p>
+      <p style="margin: 8px 0;">
+        <a href="${safeEmailHref(leg.outlookUrl)}" style="color: #0078d4; margin-right: 10px; text-decoration: none;">📅 Outlook</a>
+        <a href="${safeEmailHref(leg.googleUrl)}" style="color: #1f2937; margin-right: 10px; text-decoration: none;">📅 Google</a>
+        ${trackingLink}
+      </p>
+    </div>
+  `;
+}
+
+export function formatTicketShareEmail(input: TicketShareEmailInput): string {
+  return `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+      <h2 style="color: #1f2937; margin-bottom: 20px;">Compartilhamento de Bilhetes ✈️</h2>
+      <p style="color: #4b5563; margin-bottom: 20px;"><strong>${formatEmailValue(input.weekLabel)}</strong></p>
+      ${formatTicketShareLeg("Voo de Ida 🛫", input.departure)}
+      ${formatTicketShareLeg("Voo de Volta 🛬", input.return)}
+      <p style="color: #6b7280; font-size: 12px; margin-top: 30px; border-top: 1px solid #e5e7eb; padding-top: 20px;">
+        Compartilhado via Smart Fly - Planejador de Passagens Aéreas 2026
+      </p>
+    </div>
+  `;
+}
+
 /**
  * Get Resend client instance
  */
@@ -44,7 +149,7 @@ function getResendClient(): Resend {
 /**
  * Format ticket change details for email body
  */
-function formatTicketDetails(notification: TicketChangeNotification): string {
+export function formatTicketDetails(notification: TicketChangeNotification): string {
   const {
     type,
     eventLabel,
@@ -69,12 +174,12 @@ function formatTicketDetails(notification: TicketChangeNotification): string {
       <h2 style="color: #1e40af; border-bottom: 2px solid #1e40af; padding-bottom: 10px;">Notificação de Alteração de Bilhete</h2>
       
       <div style="background-color: #f8f9fa; padding: 15px; border-radius: 5px; margin: 15px 0;">
-        <p><strong>Tipo de evento:</strong> ${eventLabel ?? (type === "created"
+        <p><strong>Tipo de evento:</strong> ${formatEmailValue(eventLabel ?? (type === "created"
             ? "✅ Bilhete Criado"
             : type === "updated"
               ? "✏️ Bilhete Alterado"
-              : "❌ Bilhete Deletado")}</p>
-        <p><strong>Semana:</strong> ${weekNumber}</p>
+              : "❌ Bilhete Deletado"))}</p>
+        <p><strong>Semana:</strong> ${formatEmailValue(weekNumber)}</p>
         <p><strong>Trecho:</strong> ${ticketType === "departure" ? "Ida" : "Volta"}</p>
         <p><strong>Data/Hora da Notificação:</strong> ${timestamp.toLocaleString("pt-BR")}</p>
       </div>
@@ -104,9 +209,9 @@ function formatTicketDetails(notification: TicketChangeNotification): string {
       if (before !== after) {
         html += `
           <tr>
-            <td style="border: 1px solid #90caf9; padding: 12px;"><strong>${key}</strong></td>
-            <td style="border: 1px solid #90caf9; padding: 12px; color: #666;">${before}</td>
-            <td style="border: 1px solid #90caf9; padding: 12px; background-color: #fff9c4; font-weight: bold;">${after}</td>
+            <td style="border: 1px solid #90caf9; padding: 12px;"><strong>${formatEmailValue(key)}</strong></td>
+            <td style="border: 1px solid #90caf9; padding: 12px; color: #666;">${formatEmailValue(before)}</td>
+            <td style="border: 1px solid #90caf9; padding: 12px; background-color: #fff9c4; font-weight: bold;">${formatEmailValue(after)}</td>
           </tr>
         `;
       }
@@ -126,11 +231,11 @@ function formatTicketDetails(notification: TicketChangeNotification): string {
     html += `
       <div style="margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid #ddd;">
         <h4 style="color: #0d47a1; margin: 0 0 10px 0;">🔵 Voo de Ida</h4>
-        <p><strong>Data:</strong> ${departureDate || "—"}</p>
-        <p><strong>Companhia Aérea:</strong> ${departureAirline || "—"}</p>
-        <p><strong>Número do Voo:</strong> ${departureFlightNumber || "—"}</p>
-        <p><strong>Data/Hora de Partida:</strong> ${departureFlightDatetime || "—"}</p>
-        <p><strong>Localizador:</strong> <span style="font-family: monospace; background-color: #fff9c4; padding: 2px 6px; border-radius: 3px; font-weight: bold;">${departureLocator || "—"}</span></p>
+        <p><strong>Data:</strong> ${formatEmailValue(departureDate)}</p>
+        <p><strong>Companhia Aérea:</strong> ${formatEmailValue(departureAirline)}</p>
+        <p><strong>Número do Voo:</strong> ${formatEmailValue(departureFlightNumber)}</p>
+        <p><strong>Data/Hora de Partida:</strong> ${formatEmailValue(departureFlightDatetime)}</p>
+        <p><strong>Localizador:</strong> <span style="font-family: monospace; background-color: #fff9c4; padding: 2px 6px; border-radius: 3px; font-weight: bold;">${formatEmailValue(departureLocator)}</span></p>
       </div>
     `;
   }
@@ -140,11 +245,11 @@ function formatTicketDetails(notification: TicketChangeNotification): string {
     html += `
       <div>
         <h4 style="color: #0d47a1; margin: 0 0 10px 0;">🔴 Voo de Volta</h4>
-        <p><strong>Data:</strong> ${returnDate || "—"}</p>
-        <p><strong>Companhia Aérea:</strong> ${returnAirline || "—"}</p>
-        <p><strong>Número do Voo:</strong> ${returnFlightNumber || "—"}</p>
-        <p><strong>Data/Hora de Partida:</strong> ${returnFlightDatetime || "—"}</p>
-        <p><strong>Localizador:</strong> <span style="font-family: monospace; background-color: #fff9c4; padding: 2px 6px; border-radius: 3px; font-weight: bold;">${returnLocator || "—"}</span></p>
+        <p><strong>Data:</strong> ${formatEmailValue(returnDate)}</p>
+        <p><strong>Companhia Aérea:</strong> ${formatEmailValue(returnAirline)}</p>
+        <p><strong>Número do Voo:</strong> ${formatEmailValue(returnFlightNumber)}</p>
+        <p><strong>Data/Hora de Partida:</strong> ${formatEmailValue(returnFlightDatetime)}</p>
+        <p><strong>Localizador:</strong> <span style="font-family: monospace; background-color: #fff9c4; padding: 2px 6px; border-radius: 3px; font-weight: bold;">${formatEmailValue(returnLocator)}</span></p>
       </div>
     `;
   }
@@ -176,7 +281,7 @@ async function sendEmailViaResend(
     const { data, error } = await resend.emails.send({
       from: "Smart Fly <noreply@tdmsistemas.com.br>",
       to: to,
-      subject: subject,
+      subject: sanitizeEmailSubject(subject),
       html: htmlContent,
     });
 

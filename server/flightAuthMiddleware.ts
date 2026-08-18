@@ -8,7 +8,7 @@ export const SESSION_COOKIE = "flight_session";
 
 export async function getSessionFromCookie(
   req: any
-): Promise<{ email: string } | null> {
+): Promise<{ email: string; role: "user" | "admin" } | null> {
   const cookieHeader = req.headers?.cookie ?? "";
   const cookies = parse(cookieHeader);
   const sessionToken = cookies[SESSION_COOKIE];
@@ -36,10 +36,7 @@ export const flightProtectedProcedure = publicProcedure.use(
 
 export const flightAdminProcedure = flightProtectedProcedure.use(
   async ({ ctx, next }) => {
-    if (
-      !ENV.authEmail ||
-      ctx.flightSession.email.toLowerCase() !== ENV.authEmail.toLowerCase()
-    ) {
+    if (ctx.flightSession.role !== "admin") {
       throw new TRPCError({
         code: "FORBIDDEN",
         message: "Acesso administrativo necessário.",

@@ -133,6 +133,7 @@ describe("flightAuth.check", () => {
     const { validateAuthSession } = await import("./db");
     (validateAuthSession as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
       email: "taiolor@gmail.com",
+      role: "admin",
     });
 
     const caller = appRouter.createCaller(
@@ -153,6 +154,7 @@ describe("usageTelemetry access", () => {
     const { validateAuthSession } = await import("./db");
     (validateAuthSession as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
       email: "other@example.com",
+      role: "user",
     });
 
     const caller = appRouter.createCaller(
