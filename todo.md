@@ -682,4 +682,7 @@
 - [x] Adicionar filtro de voos cancelados no calendário anual
 - [x] Enviar alerta automático aos destinatários quando ida ou volta for cancelada
 
+- [x] Validar o alerta de cancelamento com envio real para um destinatário de teste ativo
+- [x] Confirmar a validação de envio exclusivamente pelo Resend, sem consulta a caixas Gmail
+
 - [x] Corrigir bloqueio de abertura da página administrativa
