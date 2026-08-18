@@ -7,7 +7,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { airlines } from "@/lib/flightData";
 import { trpc } from "@/lib/trpc";
 import { ChevronDown, ChevronUp, CopyPlus, Loader2, Minus, Pencil, Plane, Plus } from "lucide-react";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 export type AdditionalFlightRecord = {
@@ -137,6 +137,7 @@ export function AdditionalFlightsPanel({
   weekEndDate,
   flights,
   onChanged,
+  createRequestId,
 }: {
   year: number;
   weekNumber: number;
@@ -144,9 +145,11 @@ export function AdditionalFlightsPanel({
   weekEndDate: string;
   flights: AdditionalFlightRecord[];
   onChanged: () => Promise<unknown> | void;
+  createRequestId?: number | null;
 }) {
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<AdditionalFlightRecord | null>(null);
+  const [isCreating, setIsCreating] = useState(false);
   const [flightPendingDeletion, setFlightPendingDeletion] = useState<AdditionalFlightRecord | null>(null);
   const [draft, setDraft] = useState<Draft>(blankDraft);
   const createMutation = trpc.additionalFlights.create.useMutation();
@@ -156,12 +159,19 @@ export function AdditionalFlightsPanel({
 
   const beginCreate = () => {
     setEditing(null);
+    setIsCreating(true);
     setDraft(blankDraft());
     setOpen(true);
   };
 
+  useEffect(() => {
+    if (createRequestId === null || createRequestId === undefined) return;
+    beginCreate();
+  }, [createRequestId]);
+
   const beginEdit = (flight: AdditionalFlightRecord) => {
     const { id: _id, year: _year, weekNumber: _weekNumber, ...values } = flight;
+    setIsCreating(false);
     setEditing(flight);
     setDraft({
       ...values,
@@ -191,6 +201,7 @@ export function AdditionalFlightsPanel({
       await onChanged();
       setOpen(false);
       setEditing(null);
+      setIsCreating(false);
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Não foi possível salvar o voo adicional.");
     }
@@ -231,7 +242,7 @@ export function AdditionalFlightsPanel({
             </div>
           )}
 
-          {editing || (open && flights.length === 0) ? (
+          {editing || isCreating || (open && flights.length === 0) ? (
             <FlightForm
               draft={draft}
               setDraft={setDraft}
@@ -240,7 +251,7 @@ export function AdditionalFlightsPanel({
               weekStartDate={weekStartDate}
               weekEndDate={weekEndDate}
               onSave={persist}
-              onCancel={() => { setEditing(null); setOpen(flights.length === 0); }}
+              onCancel={() => { setEditing(null); setIsCreating(false); setOpen(flights.length === 0); }}
             />
           ) : null}
         </div>

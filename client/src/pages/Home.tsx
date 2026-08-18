@@ -87,6 +87,7 @@ import {
 } from "lucide-react";
 import { Link } from "wouter";
 import { ShareByEmailButton } from "@/components/ShareByEmailButton";
+import { AdditionalFlightHeaderAction } from "@/components/AdditionalFlightHeaderAction";
 import {
   getGoogleCalendarLink,
   getOutlookLink,
@@ -1283,6 +1284,8 @@ export default function Home() {
   const [expandedWeekCards, setExpandedWeekCards] = useState<Set<number>>(
     () => new Set<number>()
   );
+  const [additionalFlightCreateRequest, setAdditionalFlightCreateRequest] =
+    useState<{ weekNumber: number; requestId: number } | null>(null);
   const weekCardsInitialized = useRef(false);
 
   // Inicializa accordion quando os dados de semanas carregarem
@@ -1300,6 +1303,18 @@ export default function Home() {
       else next.add(weekNumber);
       return next;
     });
+  };
+
+  const requestAdditionalFlight = (weekNumber: number) => {
+    setExpandedWeekCards(previous => {
+      const next = new Set(previous);
+      next.add(weekNumber);
+      return next;
+    });
+    setAdditionalFlightCreateRequest(previous => ({
+      weekNumber,
+      requestId: (previous?.requestId ?? 0) + 1,
+    }));
   };
 
   const expandAllWeeks = () => {
@@ -3265,6 +3280,12 @@ export default function Home() {
                                         )}
                                       </Button>
                                     </div>
+                                    {isAuthenticated && (
+                                      <AdditionalFlightHeaderAction
+                                        weekNumber={week.weekNumber}
+                                        onRequest={requestAdditionalFlight}
+                                      />
+                                    )}
                                     {/* Excluir */}
                                     <AlertDialog>
                                       <AlertDialogTrigger asChild>
@@ -5747,6 +5768,12 @@ export default function Home() {
                                       weekStartDate={week.departureDate}
                                       weekEndDate={week.returnDate}
                                       flights={additionalFlightsByWeek[week.weekNumber] ?? []}
+                                      createRequestId={
+                                        additionalFlightCreateRequest?.weekNumber ===
+                                        week.weekNumber
+                                          ? additionalFlightCreateRequest.requestId
+                                          : null
+                                      }
                                       onChanged={() =>
                                         Promise.all([
                                           utils.additionalFlights.getYear.invalidate({ year: selectedYear }),

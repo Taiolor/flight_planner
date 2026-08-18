@@ -86,7 +86,10 @@ function makeFlight(
 let root: Root | null = null;
 let host: HTMLDivElement | null = null;
 
-function renderPanel(flights: AdditionalFlightRecord[]) {
+function renderPanel(
+  flights: AdditionalFlightRecord[],
+  createRequestId: number | null = null
+) {
   host = document.createElement("div");
   document.body.appendChild(host);
   root = createRoot(host);
@@ -98,6 +101,7 @@ function renderPanel(flights: AdditionalFlightRecord[]) {
         weekStartDate="2027-01-10"
         weekEndDate="2027-01-16"
         flights={flights}
+        createRequestId={createRequestId}
         onChanged={vi.fn()}
       />
     );
@@ -187,6 +191,13 @@ describe("AdditionalFlightsPanel form rules", () => {
     );
     expect(datetimeInput?.min).toBe("2027-01-10T00:00");
     expect(datetimeInput?.max).toBe("2027-01-16T23:59");
+  });
+
+  it("opens the form when a weekly header requests a new additional ticket", () => {
+    const container = renderPanel([makeFlight()], 1);
+
+    expect(container.textContent).toContain("Adicionar passagem adicional");
+    expect(container.textContent).toContain("2027-01-10 a 2027-01-16");
   });
 
   it("asks for confirmation before deleting an additional ticket", () => {

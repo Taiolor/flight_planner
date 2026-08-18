@@ -8,3 +8,5 @@
 - [x] Registrar a versão validada em checkpoint e apresentar o resumo da entrega.
 - [x] Substituir os controles textuais de inserção e remoção por botões visuais de mais e menos no painel de passagens de cada semana.
 - [x] Atualizar testes de interação, validar tipos e build e registrar o checkpoint da alteração.
+- [x] Garantir que o controle de incluir passagem adicional apareça em todas as semanas de todos os meses, mesmo quando já houver bilhete emitido.
+- [x] Cobrir a disponibilidade mensal em testes, validar tipos, suíte e build e registrar a versão atualizada.
