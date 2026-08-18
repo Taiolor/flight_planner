@@ -8,6 +8,7 @@ import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
 import { runScheduledFlightNotifications } from "../pushNotifications";
+import { runUsageTelemetryCleanup } from "../usageTelemetryCleanup";
 import rateLimit from "express-rate-limit";
 import helmet from "helmet";
 import { ENV } from "./env";
@@ -125,6 +126,7 @@ async function startServer() {
   );
 
   app.post("/api/scheduled/flight-notifications", runScheduledFlightNotifications);
+  app.post("/api/scheduled/usage-telemetry-cleanup", runUsageTelemetryCleanup);
 
   // development mode uses Vite, production mode uses static files
   if (process.env.NODE_ENV === "development") {

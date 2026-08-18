@@ -121,6 +121,33 @@ describe("flightAuth.check", () => {
   });
 });
 
+describe("usageTelemetry access", () => {
+  it("should reject the administrative map for a non-administrator internal session", async () => {
+    const { validateAuthSession } = await import("./db");
+    (validateAuthSession as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+      email: "other@example.com",
+    });
+
+    const caller = appRouter.createCaller(
+      createTestContext("flight_session=non-admin-token")
+    );
+
+    await expect(caller.usageTelemetry.getSummary({ hours: 24 })).rejects.toThrow(
+      "Acesso administrativo necessário."
+    );
+  });
+
+  it("should reject telemetry records without the internal session", async () => {
+    const caller = appRouter.createCaller(createTestContext());
+    await expect(
+      caller.usageTelemetry.record({
+        sessionId: "b8d3ca80b31544f4a8ac4dd2fdd4c803",
+        events: [{ eventType: "route", route: "/" }],
+      })
+    ).rejects.toThrow("Faça login para acessar.");
+  });
+});
+
 describe("flightAuth.logout", () => {
   beforeEach(() => {
     process.env.JWT_SECRET = "test-secret";

@@ -95,11 +95,21 @@ const trpcClient = trpc.createClient({
           if (
             procedure &&
             procedure !== "performanceMetrics.record" &&
+            procedure !== "usageTelemetry.record" &&
+            procedure !== "usageTelemetry.deleteCurrentSession" &&
             typeof window !== "undefined"
           ) {
             window.dispatchEvent(
               new CustomEvent("flight:trpc-latency", {
                 detail: { procedure, duration: performance.now() - startedAt },
+              })
+            );
+            window.dispatchEvent(
+              new CustomEvent("flight:trpc-usage", {
+                detail: {
+                  procedure,
+                  eventType: init?.method === "POST" ? "mutation" : "query",
+                },
               })
             );
           }

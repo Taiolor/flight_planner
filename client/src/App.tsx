@@ -4,6 +4,7 @@ import { lazy, Suspense } from "react";
 import { Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import PerformanceTelemetry from "./components/PerformanceTelemetry";
+import UsageTelemetry from "./components/UsageTelemetry";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import { YearProvider } from "./contexts/YearContext";
 import Home from "./pages/Home";
@@ -15,6 +16,7 @@ const AdminNotifications = lazy(() => import("./pages/AdminNotifications"));
 const FlightQuotes = lazy(() => import("./pages/FlightQuotes"));
 const Changelog = lazy(() => import("./pages/Changelog"));
 const FinancialDashboard = lazy(() => import("./pages/FinancialDashboard"));
+const UsageTelemetryMap = lazy(() => import("./pages/UsageTelemetryMap"));
 
 // Fallback de carregamento para rotas com lazy loading
 function PageLoader() {
@@ -41,6 +43,11 @@ function Router() {
       <Route path={"/admin/notifications"}>
         <Suspense fallback={<PageLoader />}>
           <AdminNotifications />
+        </Suspense>
+      </Route>
+      <Route path={"/admin/telemetria"}>
+        <Suspense fallback={<PageLoader />}>
+          <UsageTelemetryMap />
         </Suspense>
       </Route>
       <Route path={"/cotacoes"}>
@@ -73,6 +80,7 @@ function App() {
           <TooltipProvider>
             <Toaster position="top-right" richColors />
             <PerformanceTelemetry />
+            <UsageTelemetry />
             <Router />
           </TooltipProvider>
         </ThemeProvider>

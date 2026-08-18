@@ -708,4 +708,7 @@
 
 - [x] Corrigir a telemetria para não enviar mutações antes da sessão interna estar autenticada
 
+- [x] Implementar telemetria de uso com consentimento por sessão, localização aproximada e mapa administrativo protegido
+- [ ] Publicar e ativar a limpeza periódica de eventos de uso com retenção de 30 dias
+
 - [x] Corrigir bloqueio de abertura da página administrativa

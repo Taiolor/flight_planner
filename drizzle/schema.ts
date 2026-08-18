@@ -292,6 +292,41 @@ export const performanceMetrics = mysqlTable("performance_metrics", {
 export type InsertPerformanceMetric = typeof performanceMetrics.$inferInsert;
 
 /**
+ * Eventos de uso consentidos. A localização é armazenada em centésimos de grau
+ * (latitudeE2/longitudeE2), sem precisão GPS e sem vínculo com usuário, IP ou
+ * dispositivo persistente. sessionHash deriva de um nonce efêmero do navegador.
+ */
+export const usageTelemetryEvents = mysqlTable("usage_telemetry_events", {
+  id: int("id").autoincrement().primaryKey(),
+  sessionHash: varchar("sessionHash", { length: 64 }).notNull(),
+  eventType: mysqlEnum("eventType", [
+    "route",
+    "interaction",
+    "query",
+    "mutation",
+  ]).notNull(),
+  route: varchar("route", { length: 120 }).notNull(),
+  procedure: varchar("procedure", { length: 160 }),
+  latitudeE2: int("latitudeE2"),
+  longitudeE2: int("longitudeE2"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, table => [
+  index("idx_usage_telemetry_created_at").on(table.createdAt),
+  index("idx_usage_telemetry_session_created_at").on(
+    table.sessionHash,
+    table.createdAt
+  ),
+  index("idx_usage_telemetry_location_created_at").on(
+    table.latitudeE2,
+    table.longitudeE2,
+    table.createdAt
+  ),
+]);
+
+export type InsertUsageTelemetryEvent =
+  typeof usageTelemetryEvents.$inferInsert;
+
+/**
  * Tabela para armazenar cotações de preços de passagens aéreas
  * (Colunas adicionadas: outboundAirline, returnAirline, outboundDeparture, outboundArrival, returnDeparture, returnArrival)
  * source: 'api' = obtido via Sky Scrapper API | 'manual' = inserido manualmente via Kayak

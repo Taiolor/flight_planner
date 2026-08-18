@@ -61,8 +61,15 @@ import { parse } from "cookie";
 import {
   SESSION_COOKIE,
   getSessionFromCookie,
+  flightAdminProcedure,
   flightProtectedProcedure,
 } from "./flightAuthMiddleware";
+import {
+  deleteUsageTelemetryForSession,
+  getUsageTelemetryMapData,
+  getUsageTelemetrySummary,
+  recordUsageTelemetryEvents,
+} from "./usageTelemetry";
 
 interface NextAlert {
   year: number;
@@ -1521,6 +1528,55 @@ export const appRouter = router({
     getSummary: flightProtectedProcedure
       .input(z.object({ hours: z.number().int().min(1).max(168).default(24) }))
       .query(({ input }) => getPerformanceMetricSummary(input.hours)),
+  }),
+
+  usageTelemetry: router({
+    record: flightProtectedProcedure
+      .input(
+        z.object({
+          sessionId: z.string().min(24).max(128).regex(/^[a-zA-Z0-9_-]+$/),
+          events: z
+            .array(
+              z.object({
+                eventType: z.enum(["route", "interaction", "query", "mutation"]),
+                route: z.string().max(120).regex(/^\/[a-zA-Z0-9_/-]*$/),
+                procedure: z.string().max(160).regex(/^[a-zA-Z0-9_.-]+$/).optional(),
+                latitudeE2: z.number().int().min(-9000).max(9000).optional(),
+                longitudeE2: z.number().int().min(-18000).max(18000).optional(),
+              })
+            )
+            .min(1)
+            .max(20),
+        })
+      )
+      .mutation(async ({ input }) => {
+        await recordUsageTelemetryEvents(input.sessionId, input.events);
+        return { accepted: input.events.length };
+      }),
+
+    getMapData: flightAdminProcedure
+      .input(
+        z.object({
+          hours: z.number().int().min(1).max(24 * 30).default(24),
+          limit: z.number().int().min(10).max(500).default(200),
+        })
+      )
+      .query(({ input }) => getUsageTelemetryMapData(input.hours, input.limit)),
+
+    getSummary: flightAdminProcedure
+      .input(z.object({ hours: z.number().int().min(1).max(24 * 30).default(24) }))
+      .query(({ input }) => getUsageTelemetrySummary(input.hours)),
+
+    deleteCurrentSession: flightProtectedProcedure
+      .input(
+        z.object({
+          sessionId: z.string().min(24).max(128).regex(/^[a-zA-Z0-9_-]+$/),
+        })
+      )
+      .mutation(async ({ input }) => {
+        await deleteUsageTelemetryForSession(input.sessionId);
+        return { success: true };
+      }),
   }),
 });
 

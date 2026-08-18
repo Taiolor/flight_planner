@@ -27,6 +27,7 @@ import {
   ChevronDown,
   Loader2,
   Activity,
+  MapPinned,
 } from "lucide-react";
 import { useState, useMemo } from "react";
 import { toast } from "sonner";
@@ -242,6 +243,17 @@ export default function AdminNotifications() {
           </div>
           <div className="flex items-center gap-2">
             <GlobalYearSelector />
+            <Link href="/admin/telemetria">
+              <Button
+                variant="outline"
+                size="sm"
+                className="gap-2"
+                aria-label="Abrir mapa de telemetria de uso"
+              >
+                <MapPinned className="w-4 h-4" />
+                <span className="hidden md:inline">Telemetria</span>
+              </Button>
+            </Link>
             <Button
               variant="ghost"
               size="sm"
