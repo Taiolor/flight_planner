@@ -39,6 +39,61 @@ interface Release {
 export const releases: Release[] = [
   // Agosto 2026
   {
+    version: "v1.8.0",
+    date: "18/08/2026",
+    month: "Agosto 2026",
+    status: "released",
+    highlights:
+      "Viagens: novos voos, Memórias, desempenho avançado e identidade renovada",
+    features: [
+      {
+        icon: <Plane className="w-5 h-5" />,
+        category: "Mais Opções para Cada Semana",
+        items: [
+          "Inclusão, edição e exclusão de múltiplos voos adicionais por semana, em ida e volta ou somente ida",
+          "Validação das datas dentro da semana planejada, confirmação de exclusão e notificações de emissão por trecho",
+          "Voos adicionais integrados ao Calendário, PDF, indicadores financeiros e cálculos de milhas",
+        ],
+      },
+      {
+        icon: <Sparkles className="w-5 h-5" />,
+        category: "Memórias de Viagem",
+        items: [
+          "Nova área Memórias para acompanhar quilômetros realizados e futuros por trecho de voo",
+          "Linha do tempo anual de passagens emitidas e espaço para fotos, vídeos e mídias de cada experiência",
+          "Cálculo geodésico entre aeroportos para consolidar os quilômetros percorridos",
+        ],
+      },
+      {
+        icon: <Gauge className="w-5 h-5" />,
+        category: "Performance e Confiabilidade",
+        items: [
+          "PDF, gráficos e gráficos financeiros carregados sob demanda, reduzindo o peso inicial das páginas",
+          "Políticas de cache tRPC por domínio, paginação do histórico de notificações e métricas de Web Vitals",
+          "Cotações protegidas por reserva atômica da franquia, limite específico, timeout e tamanho máximo de resposta",
+        ],
+      },
+      {
+        icon: <Shield className="w-5 h-5" />,
+        category: "Segurança e Administração",
+        items: [
+          "Content Security Policy restrita, permissões administrativas persistidas e templates de e-mail com escaping contextual",
+          "Telemetria de uso opcional com consentimento, retenção de 30 dias e mapa administrativo com OpenStreetMap",
+          "Auditoria de dependências de produção sem vulnerabilidades conhecidas e suíte expandida de testes",
+        ],
+      },
+      {
+        icon: <Rocket className="w-5 h-5" />,
+        category: "Identidade Viagens",
+        items: [
+          "Cabeçalho principal simplificado com o rótulo Viagens",
+          "Atalho instalável do PWA renomeado para Viagens, com novo ícone de avião e trajetória em V",
+          "Navegação administrativa e cabeçalhos padronizados para uma experiência mais consistente",
+        ],
+      },
+    ],
+  },
+  {
     version: "v1.7.0",
     date: "18/08/2026",
     month: "Agosto 2026",
@@ -692,7 +747,7 @@ const sortedMonths = Object.keys(releasesByMonth).sort((a, b) => {
 
 export default function Changelog() {
   const [expandedReleases, setExpandedReleases] = useState<Set<string>>(
-    new Set(["v1.7.0"])
+    new Set(["v1.8.0"])
   );
 
   const toggleRelease = (version: string) => {
@@ -747,7 +802,7 @@ export default function Changelog() {
             </div>
           </Card>
           <Card className="p-4 text-center">
-            <div className="text-3xl font-bold text-green-600">259</div>
+            <div className="text-3xl font-bold text-green-600">307</div>
             <div className="text-sm text-slate-600 dark:text-slate-400">
               Testes
             </div>
