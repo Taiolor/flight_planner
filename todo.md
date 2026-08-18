@@ -687,4 +687,7 @@
 
 - [x] Auditar integralmente a performance de rotas, telas, funções, consultas, banco e tarefas automáticas
 
+- [x] Auditar segurança da informação com SAST, DAST não invasivo, APIs, autenticação, autorização e integrações
+- [x] Mapear vulnerabilidades e aderência ao OWASP Top 10 com plano de remediação priorizado
+
 - [x] Corrigir bloqueio de abertura da página administrativa
