@@ -3,11 +3,11 @@ import { OpenStreetMap, type OpenStreetMapPoint } from "@/components/OpenStreetM
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { StandardPageHeader } from "@/components/StandardPageHeader";
 import { queryCachePolicies } from "@/lib/queryCache";
 import { trpc } from "@/lib/trpc";
 import {
   Activity,
-  ArrowLeft,
   Loader2,
   MapPinned,
   MousePointerClick,
@@ -18,7 +18,6 @@ import {
   Waypoints,
 } from "lucide-react";
 import { useMemo, useState } from "react";
-import { useLocation } from "wouter";
 
 const EVENT_LABELS = {
   route: "Navegação",
@@ -47,25 +46,31 @@ export default function UsageTelemetryMap() {
 
   if (authCheckQuery.isLoading) {
     return (
-      <div className="min-h-screen bg-slate-950 flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-blue-400" />
+      <div className="min-h-screen bg-slate-950 text-white">
+        <StandardPageHeader icon={MapPinned} title="Locais · Telemetria" />
+        <div className="flex min-h-[calc(100vh-60px)] items-center justify-center">
+          <Loader2 className="h-8 w-8 animate-spin text-blue-400" />
+        </div>
       </div>
     );
   }
 
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen bg-slate-950 px-4 py-16 text-white">
-        <Card className="mx-auto max-w-lg border-slate-700 bg-slate-900 p-8 text-center">
-          <ShieldCheck className="mx-auto h-10 w-10 text-blue-400" />
-          <h1 className="mt-4 text-xl font-bold">Telemetria protegida</h1>
-          <p className="mt-2 text-sm text-slate-300">
-            Entre com a sessão interna para consultar o mapa administrativo de eventos consentidos.
-          </p>
-          <Button className="mt-5" onClick={() => setShowLoginModal(true)}>
-            Entrar
-          </Button>
-        </Card>
+      <div className="min-h-screen bg-slate-950 text-white">
+        <StandardPageHeader icon={MapPinned} title="Locais · Telemetria" />
+        <div className="flex min-h-[calc(100vh-60px)] items-center px-4 py-16">
+          <Card className="mx-auto max-w-lg border-slate-700 bg-slate-900 p-8 text-center">
+            <ShieldCheck className="mx-auto h-10 w-10 text-blue-400" />
+            <h2 className="mt-4 text-xl font-bold">Telemetria protegida</h2>
+            <p className="mt-2 text-sm text-slate-300">
+              Entre com a sessão interna para consultar o mapa administrativo de eventos consentidos.
+            </p>
+            <Button className="mt-5" onClick={() => setShowLoginModal(true)}>
+              Entrar
+            </Button>
+          </Card>
+        </div>
         <LoginModal open={showLoginModal} onOpenChange={setShowLoginModal} />
       </div>
     );
@@ -75,7 +80,6 @@ export default function UsageTelemetryMap() {
 }
 
 function UsageTelemetryMapContent() {
-  const [, setLocation] = useLocation();
   const [hours, setHours] = useState(24);
   const mapQuery = trpc.usageTelemetry.getMapData.useQuery(
     { hours, limit: 200 },
@@ -110,26 +114,14 @@ function UsageTelemetryMapContent() {
 
   return (
     <main className="min-h-screen bg-slate-950 text-white">
-      <header className="sticky top-0 z-20 border-b border-slate-800 bg-slate-950/95 backdrop-blur">
-        <div className="container flex flex-wrap items-center justify-between gap-3 py-4">
-          <div className="flex min-w-0 items-center gap-3">
-            <Button
-              variant="ghost"
-              size="icon"
-              aria-label="Voltar para a página inicial"
-              title="Voltar para a página inicial"
-              onClick={() => setLocation(LOCATIONS_BACK_ROUTE)}
-            >
-              <ArrowLeft className="h-5 w-5" />
-            </Button>
-            <div>
-              <p className="text-xs font-medium uppercase tracking-[0.18em] text-blue-300">Administração</p>
-              <h1 className="text-xl font-bold">Mapa de telemetria de uso</h1>
-            </div>
-          </div>
+      <StandardPageHeader
+        icon={MapPinned}
+        title="Locais · Telemetria"
+        backHref={LOCATIONS_BACK_ROUTE}
+        actions={
           <Button
             variant="outline"
-            className="border-slate-600 bg-slate-900"
+            className="border-white/40 bg-white/10 text-white hover:bg-white hover:text-blue-700"
             disabled={mapQuery.isFetching || summaryQuery.isFetching}
             onClick={() => {
               void mapQuery.refetch();
@@ -139,8 +131,8 @@ function UsageTelemetryMapContent() {
             <RefreshCw className={`mr-2 h-4 w-4 ${mapQuery.isFetching ? "animate-spin" : ""}`} />
             Atualizar
           </Button>
-        </div>
-      </header>
+        }
+      />
 
       <div className="container space-y-5 py-6">
         <Card className="border-emerald-900/60 bg-emerald-950/30 p-4">

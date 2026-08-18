@@ -89,6 +89,9 @@ describe("AdminNotifications", () => {
 
     const view = renderPage();
     expect(screen.getByText("Carregando painel...")).toBeTruthy();
+    expect(
+      screen.getByRole("heading", { name: "Admin · Notificações" })
+    ).toBeTruthy();
 
     mocks.authCheck.mockReturnValue({
       data: { authenticated: true, email: "admin@smartfly.test", isAdmin: true },
@@ -107,7 +110,7 @@ describe("AdminNotifications", () => {
         <AdminNotifications />
       </YearProvider>
     )).not.toThrow();
-    expect(screen.getByText("Painel de Notificações · 2026")).toBeTruthy();
+    expect(screen.getByText("Admin · Notificações · 2026")).toBeTruthy();
   });
 
   it("apresenta uma mensagem de falha quando a consulta administrativa autenticada não responde", () => {

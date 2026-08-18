@@ -40,6 +40,7 @@ import {
 import { AlertRow } from "@/components/admin-notifications/AlertRow";
 import { LoginModal } from "@/components/auth/LoginModal";
 import { GlobalYearSelector } from "@/components/GlobalYearSelector";
+import { StandardPageHeader } from "@/components/StandardPageHeader";
 import { useYear } from "@/contexts/YearContext";
 import { queryCachePolicies } from "@/lib/queryCache";
 
@@ -63,10 +64,13 @@ export default function AdminNotifications() {
 
   if (authCheckQuery.isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center space-y-3">
-          <div className="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto" />
-          <p className="text-gray-500 text-sm">Carregando painel...</p>
+      <div className="min-h-screen bg-gray-50">
+        <StandardPageHeader icon={Bell} title="Admin · Notificações" />
+        <div className="flex min-h-[calc(100vh-60px)] items-center justify-center">
+          <div className="space-y-3 text-center">
+            <div className="mx-auto h-10 w-10 animate-spin rounded-full border-4 border-blue-600 border-t-transparent" />
+            <p className="text-sm text-gray-500">Carregando painel...</p>
+          </div>
         </div>
       </div>
     );
@@ -74,8 +78,9 @@ export default function AdminNotifications() {
 
   if (!isAuthenticated) {
     return (
-      <>
-        <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6">
+      <div className="min-h-screen bg-gray-50">
+        <StandardPageHeader icon={Bell} title="Admin · Notificações" />
+        <div className="flex min-h-[calc(100vh-60px)] items-center justify-center p-6">
           <div className="text-center space-y-4 max-w-sm">
             <AlertCircle className="w-12 h-12 text-amber-500 mx-auto" />
             <div className="space-y-1">
@@ -101,7 +106,7 @@ export default function AdminNotifications() {
           </div>
         </div>
         <LoginModal open={showLoginModal} onOpenChange={setShowLoginModal} />
-      </>
+      </div>
     );
   }
 
@@ -196,10 +201,16 @@ function AdminNotificationsContent() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center space-y-3">
-          <div className="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto" />
-          <p className="text-gray-500 text-sm">Carregando painel...</p>
+      <div className="min-h-screen bg-gray-50">
+        <StandardPageHeader
+          icon={Bell}
+          title={`Admin · Notificações · ${selectedYear}`}
+        />
+        <div className="flex min-h-[calc(100vh-60px)] items-center justify-center">
+          <div className="space-y-3 text-center">
+            <div className="mx-auto h-10 w-10 animate-spin rounded-full border-4 border-blue-600 border-t-transparent" />
+            <p className="text-sm text-gray-500">Carregando painel...</p>
+          </div>
         </div>
       </div>
     );
@@ -207,22 +218,19 @@ function AdminNotificationsContent() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center space-y-4 max-w-sm">
-          <AlertCircle className="w-12 h-12 text-red-400 mx-auto" />
-          <p className="text-gray-700 font-medium">
-            Não foi possível carregar o painel
-          </p>
-          <p className="text-gray-500 text-sm">{error.message}</p>
-          <Link href="/">
-            <Button
-              variant="outline"
-              aria-label="Voltar para a página inicial"
-              className="gap-2"
-            >
-              <ArrowLeft className="w-4 h-4" /> Voltar
-            </Button>
-          </Link>
+      <div className="min-h-screen bg-gray-50">
+        <StandardPageHeader
+          icon={Bell}
+          title={`Admin · Notificações · ${selectedYear}`}
+        />
+        <div className="flex min-h-[calc(100vh-60px)] items-center justify-center">
+          <div className="max-w-sm space-y-4 text-center">
+            <AlertCircle className="mx-auto h-12 w-12 text-red-400" />
+            <p className="font-medium text-gray-700">
+              Não foi possível carregar o painel
+            </p>
+            <p className="text-sm text-gray-500">{error.message}</p>
+          </div>
         </div>
       </div>
     );
@@ -232,40 +240,24 @@ function AdminNotificationsContent() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white border-b border-gray-200 sticky top-0 z-10">
-        <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Link href="/">
-              <Button
-                variant="ghost"
-                size="sm"
-                aria-label="Voltar para a página inicial"
-                className="gap-2 text-gray-600"
-              >
-                <ArrowLeft className="w-4 h-4" />
-                <span className="hidden sm:inline">Voltar</span>
-              </Button>
-            </Link>
-            <div className="h-5 w-px bg-gray-200" />
-            <div className="flex items-center gap-2">
-              <Bell className="w-5 h-5 text-blue-600" />
-              <h1 className="font-semibold text-gray-800">
-                Painel de Notificações · {selectedYear}
-              </h1>
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
-            <GlobalYearSelector />
+      <StandardPageHeader
+        icon={Bell}
+        title={`Admin · Notificações · ${selectedYear}`}
+        actions={
+          <>
+            <GlobalYearSelector
+              compact
+              className="border-white/40 bg-white/10 text-white hover:bg-white/20"
+            />
             <Link href="/admin/telemetria">
               <Button
                 variant="outline"
                 size="sm"
-                className="gap-2"
+                className="gap-2 border-white/40 bg-white/10 text-white hover:bg-white hover:text-blue-700"
                 aria-label="Abrir mapa de telemetria de uso"
               >
                 <MapPinned className="w-4 h-4" />
-                <span className="hidden md:inline">Telemetria</span>
+                <span className="hidden md:inline">Locais</span>
               </Button>
             </Link>
             <Button
@@ -277,7 +269,7 @@ function AdminNotificationsContent() {
                   ? "Desativar atualização automática"
                   : "Ativar atualização automática"
               }
-              className={`gap-2 text-sm ${autoRefresh ? "text-green-600" : "text-gray-500"}`}
+              className={`gap-2 text-sm text-white hover:bg-white/10 hover:text-white ${autoRefresh ? "text-emerald-200" : "text-white/80"}`}
             >
               {autoRefresh ? (
                 <Wifi className="w-4 h-4" />
@@ -294,16 +286,16 @@ function AdminNotificationsContent() {
               onClick={() => refetch()}
               disabled={isFetching}
               aria-label="Atualizar"
-              className="gap-2"
+              className="gap-2 border-white/40 bg-white/10 text-white hover:bg-white hover:text-blue-700"
             >
               <RefreshCw
                 className={`w-4 h-4 ${isFetching ? "animate-spin" : ""}`}
               />
               <span className="hidden sm:inline">Atualizar</span>
             </Button>
-          </div>
-        </div>
-      </div>
+          </>
+        }
+      />
 
       <div className="max-w-5xl mx-auto px-4 py-6 space-y-6">
         {/* Cards de resumo */}
