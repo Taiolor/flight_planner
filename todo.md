@@ -728,8 +728,8 @@
 - [x] Restringir a CSP de produção, removendo permissões amplas e permitindo apenas origens necessárias
 - [x] Criar autorização administrativa persistente para todos os procedimentos de administração
 - [x] Escapar e validar campos de voo interpolados em e-mails HTML
-- [ ] Proteger a cota da RapidAPI com reserva atômica, limite específico, timeout e resposta limitada
-- [ ] Carregar gráficos secundários do Financeiro somente quando a respectiva seção for aberta
+- [x] Proteger a cota da RapidAPI com reserva atômica, limite específico, timeout e resposta limitada
+- [x] Carregar gráficos secundários do Financeiro somente quando a respectiva seção for aberta
 
 ## Reavaliação integral — versão mais recente
 

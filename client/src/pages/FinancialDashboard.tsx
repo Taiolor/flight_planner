@@ -1,25 +1,10 @@
-import { useMemo, useState } from "react";
+import { lazy, Suspense, useMemo, useState } from "react";
 import { trpc } from "@/lib/trpc";
 import { Link } from "wouter";
 import { useYear } from "@/contexts/YearContext";
 import { GlobalYearSelector } from "@/components/GlobalYearSelector";
 import { queryCachePolicies } from "@/lib/queryCache";
-import {
-  Area,
-  AreaChart,
-  Bar,
-  BarChart,
-  CartesianGrid,
-  Cell,
-  Legend,
-  Line,
-  Pie,
-  PieChart,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from "recharts";
+import type { FinancialChartProps } from "@/components/FinancialCharts";
 import {
   TrendingUp,
   TrendingDown,
@@ -35,6 +20,22 @@ import {
   AlertCircle,
   Info,
 } from "lucide-react";
+
+const FinancialChart = lazy(() => import("@/components/FinancialCharts"));
+
+function DeferredFinancialChart(props: FinancialChartProps) {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex h-[200px] items-center justify-center text-sm text-slate-400">
+          Carregando gráfico…
+        </div>
+      }
+    >
+      <FinancialChart {...props} />
+    </Suspense>
+  );
+}
 
 // ─── Constantes ───────────────────────────────────────────────────────────────
 
@@ -469,39 +470,11 @@ export default function FinancialDashboard() {
                     Nenhum dado disponível para {selectedYear}
                   </div>
                 ) : (
-                  <ResponsiveContainer width="100%" height={220}>
-                    <BarChart
-                      data={monthlyChartData}
-                      margin={{ top: 5, right: 5, left: -15, bottom: 5 }}
-                    >
-                      <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                      <XAxis dataKey="month" tick={{ fontSize: 12 }} />
-                      <YAxis
-                        tickFormatter={v =>
-                          showValues ? `R$${(v / 1000).toFixed(0)}k` : "R$ ••"
-                        }
-                        tick={{ fontSize: 11 }}
-                      />
-                      <Tooltip
-                        formatter={(value: number) =>
-                          showValues
-                            ? [formatBRL(value), "Total"]
-                            : ["R$ ••••", "Total"]
-                        }
-                        labelFormatter={label => `Mês: ${label}`}
-                        contentStyle={{
-                          borderRadius: 12,
-                          border: "1px solid #e2e8f0",
-                        }}
-                      />
-                      <Bar
-                        dataKey="cashBRL"
-                        fill="#3B82F6"
-                        radius={[6, 6, 0, 0]}
-                        name="Gasto (R$)"
-                      />
-                    </BarChart>
-                  </ResponsiveContainer>
+                  <DeferredFinancialChart
+                    kind="monthlyCash"
+                    data={monthlyChartData}
+                    hideValues={!showValues}
+                  />
                 )}
               </div>
 
@@ -518,77 +491,11 @@ export default function FinancialDashboard() {
                     Nenhum dado disponível
                   </div>
                 ) : (
-                  <ResponsiveContainer width="100%" height={200}>
-                    <AreaChart
-                      data={monthlyChartData}
-                      margin={{ top: 5, right: 5, left: -15, bottom: 5 }}
-                    >
-                      <defs>
-                        <linearGradient
-                          id="cashGrad"
-                          x1="0"
-                          y1="0"
-                          x2="0"
-                          y2="1"
-                        >
-                          <stop
-                            offset="5%"
-                            stopColor="#3B82F6"
-                            stopOpacity={0.3}
-                          />
-                          <stop
-                            offset="95%"
-                            stopColor="#3B82F6"
-                            stopOpacity={0}
-                          />
-                        </linearGradient>
-                      </defs>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                      <XAxis dataKey="month" tick={{ fontSize: 12 }} />
-                      <YAxis
-                        tickFormatter={v =>
-                          showValues ? `R$${(v / 1000).toFixed(0)}k` : "R$ ••"
-                        }
-                        tick={{ fontSize: 11 }}
-                      />
-                      <Tooltip
-                        formatter={(value: number, name: string) => {
-                          if (!showValues) return ["R$ ••••", name];
-                          if (name === "cashBRL")
-                            return [formatBRL(value), "Gasto"];
-                          if (name === "avgPrice")
-                            return [formatBRL(value), "Média/viagem"];
-                          return [value, name];
-                        }}
-                        contentStyle={{
-                          borderRadius: 12,
-                          border: "1px solid #e2e8f0",
-                        }}
-                      />
-                      <Area
-                        type="monotone"
-                        dataKey="cashBRL"
-                        stroke="#3B82F6"
-                        strokeWidth={2}
-                        fill="url(#cashGrad)"
-                        name="cashBRL"
-                      />
-                      <Line
-                        type="monotone"
-                        dataKey="avgPrice"
-                        stroke="#F59E0B"
-                        strokeWidth={2}
-                        strokeDasharray="5 5"
-                        dot={false}
-                        name="avgPrice"
-                      />
-                      <Legend
-                        formatter={v =>
-                          v === "cashBRL" ? "Total mensal" : "Média por viagem"
-                        }
-                      />
-                    </AreaChart>
-                  </ResponsiveContainer>
+                  <DeferredFinancialChart
+                    kind="cashTrend"
+                    data={monthlyChartData}
+                    hideValues={!showValues}
+                  />
                 )}
                 {trendData && (
                   <div className="mt-4 grid grid-cols-3 gap-3">
@@ -649,35 +556,11 @@ export default function FinancialDashboard() {
                     Nenhum dado de milhas disponível
                   </div>
                 ) : (
-                  <ResponsiveContainer width="100%" height={220}>
-                    <BarChart
-                      data={monthlyChartData}
-                      margin={{ top: 5, right: 5, left: -15, bottom: 5 }}
-                    >
-                      <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                      <XAxis dataKey="month" tick={{ fontSize: 12 }} />
-                      <YAxis
-                        tickFormatter={v => `${(v / 1000).toFixed(0)}k`}
-                        tick={{ fontSize: 11 }}
-                      />
-                      <Tooltip
-                        formatter={(value: number) => [
-                          formatMiles(value),
-                          "Milhas",
-                        ]}
-                        contentStyle={{
-                          borderRadius: 12,
-                          border: "1px solid #e2e8f0",
-                        }}
-                      />
-                      <Bar
-                        dataKey="miles"
-                        fill="#F59E0B"
-                        radius={[6, 6, 0, 0]}
-                        name="Milhas (pts)"
-                      />
-                    </BarChart>
-                  </ResponsiveContainer>
+                  <DeferredFinancialChart
+                    kind="monthlyMiles"
+                    data={monthlyChartData}
+                    hideValues={!showValues}
+                  />
                 )}
               </div>
 
@@ -784,37 +667,11 @@ export default function FinancialDashboard() {
                       Nenhum dado disponível
                     </div>
                   ) : (
-                    <ResponsiveContainer width="100%" height={240}>
-                      <PieChart>
-                        <Pie
-                          data={airlineChartData}
-                          dataKey="cashBRL"
-                          nameKey="name"
-                          cx="50%"
-                          cy="50%"
-                          outerRadius={90}
-                          label={({ name, percent }) =>
-                            `${name} ${(percent * 100).toFixed(0)}%`
-                          }
-                          labelLine={false}
-                        >
-                          {airlineChartData.map((entry, index) => (
-                            <Cell
-                              key={entry.airline}
-                              fill={AIRLINE_COLORS[entry.airline] ?? "#94A3B8"}
-                            />
-                          ))}
-                        </Pie>
-                        <Tooltip
-                          formatter={(value: number) =>
-                            showValues
-                              ? [formatBRL(value), "Total"]
-                              : ["R$ ••••", "Total"]
-                          }
-                          contentStyle={{ borderRadius: 12 }}
-                        />
-                      </PieChart>
-                    </ResponsiveContainer>
+                    <DeferredFinancialChart
+                      kind="airlineDistribution"
+                      data={airlineChartData}
+                      hideValues={!showValues}
+                    />
                   )}
                 </div>
 
@@ -831,51 +688,11 @@ export default function FinancialDashboard() {
                       Nenhum dado disponível
                     </div>
                   ) : (
-                    <ResponsiveContainer width="100%" height={240}>
-                      <BarChart
-                        data={airlineChartData}
-                        layout="vertical"
-                        margin={{ top: 5, right: 20, left: 40, bottom: 5 }}
-                      >
-                        <CartesianGrid
-                          strokeDasharray="3 3"
-                          stroke="#e2e8f0"
-                          horizontal={false}
-                        />
-                        <XAxis
-                          type="number"
-                          tickFormatter={v =>
-                            showValues ? `R$${(v / 1000).toFixed(0)}k` : "R$ ••"
-                          }
-                          tick={{ fontSize: 11 }}
-                        />
-                        <YAxis
-                          type="category"
-                          dataKey="name"
-                          tick={{ fontSize: 12 }}
-                        />
-                        <Tooltip
-                          formatter={(value: number) =>
-                            showValues
-                              ? [formatBRL(value), "Total"]
-                              : ["R$ ••••", "Total"]
-                          }
-                          contentStyle={{ borderRadius: 12 }}
-                        />
-                        <Bar
-                          dataKey="cashBRL"
-                          radius={[0, 6, 6, 0]}
-                          name="Total (R$)"
-                        >
-                          {airlineChartData.map(entry => (
-                            <Cell
-                              key={entry.airline}
-                              fill={AIRLINE_COLORS[entry.airline] ?? "#94A3B8"}
-                            />
-                          ))}
-                        </Bar>
-                      </BarChart>
-                    </ResponsiveContainer>
+                    <DeferredFinancialChart
+                      kind="airlineComparison"
+                      data={airlineChartData}
+                      hideValues={!showValues}
+                    />
                   )}
                 </div>
               </div>
@@ -1434,52 +1251,12 @@ export default function FinancialDashboard() {
                     <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-3">
                       Projeção {selectedYear + 1} vs Histórico {selectedYear}
                     </h3>
-                    <ResponsiveContainer width="100%" height={200}>
-                      <BarChart
-                        data={projectionChartData}
-                        margin={{ top: 5, right: 5, left: -15, bottom: 5 }}
-                      >
-                        <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                        <XAxis dataKey="month" tick={{ fontSize: 12 }} />
-                        <YAxis
-                          tickFormatter={v =>
-                            showValues ? `R$${(v / 1000).toFixed(0)}k` : "R$ ••"
-                          }
-                          tick={{ fontSize: 11 }}
-                        />
-                        <Tooltip
-                          formatter={(value: number, name: string) => {
-                            const label =
-                              name === "projetado"
-                                ? `Projetado ${selectedYear + 1}`
-                                : `Histórico ${selectedYear}`;
-                            return showValues
-                              ? [formatBRL(value), label]
-                              : ["R$ ••••", label];
-                          }}
-                          contentStyle={{ borderRadius: 12 }}
-                        />
-                        <Legend
-                          formatter={v =>
-                            v === "projetado"
-                              ? `Projetado ${selectedYear + 1}`
-                              : `Histórico ${selectedYear}`
-                          }
-                        />
-                        <Bar
-                          dataKey="historico"
-                          fill="#94A3B8"
-                          radius={[4, 4, 0, 0]}
-                          name="historico"
-                        />
-                        <Bar
-                          dataKey="projetado"
-                          fill="#A855F7"
-                          radius={[4, 4, 0, 0]}
-                          name="projetado"
-                        />
-                      </BarChart>
-                    </ResponsiveContainer>
+                    <DeferredFinancialChart
+                      kind="projection"
+                      data={projectionChartData}
+                      hideValues={!showValues}
+                      selectedYear={selectedYear}
+                    />
                   </div>
 
                   {/* Tabela de projeção por mês */}
