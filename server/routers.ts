@@ -1,6 +1,7 @@
 import { COOKIE_NAME } from "@shared/const";
 import { quotesRouter } from "./routers/quotes";
 import { financialRouter } from "./routers/financial";
+import { memoriesRouter } from "./routers/memories";
 import crypto from "crypto";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
@@ -1586,6 +1587,8 @@ export const appRouter = router({
         return { success: true };
       }),
   }),
+
+  memories: memoriesRouter,
 });
 
 export type AppRouter = typeof appRouter;

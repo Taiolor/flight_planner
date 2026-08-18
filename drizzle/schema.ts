@@ -119,6 +119,55 @@ export type FlightWeek = typeof flightWeeks.$inferSelect;
 export type InsertFlightWeek = typeof flightWeeks.$inferInsert;
 
 /**
+ * Uma memória editorial por passagem semanal. O vínculo anual impede a mistura
+ * de recordações entre exercícios de planejamento.
+ */
+export const flightMemories = mysqlTable(
+  "flight_memories",
+  {
+    id: int("id").autoincrement().primaryKey(),
+    year: int("year").notNull(),
+    weekNumber: int("weekNumber").notNull(),
+    title: varchar("title", { length: 160 }),
+    note: text("note"),
+    createdAt: timestamp("createdAt").defaultNow().notNull(),
+    updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+  },
+  table => [
+    uniqueIndex("uq_flight_memories_year_week").on(
+      table.year,
+      table.weekNumber
+    ),
+  ]
+);
+
+export type FlightMemory = typeof flightMemories.$inferSelect;
+export type InsertFlightMemory = typeof flightMemories.$inferInsert;
+
+/**
+ * Metadados de arquivos armazenados no S3. Os bytes não são mantidos no banco.
+ */
+export const flightMemoryMedia = mysqlTable(
+  "flight_memory_media",
+  {
+    id: int("id").autoincrement().primaryKey(),
+    memoryId: int("memoryId").notNull(),
+    storageKey: varchar("storageKey", { length: 512 }).notNull(),
+    storageUrl: text("storageUrl").notNull(),
+    mediaType: mysqlEnum("mediaType", ["image", "video"]).notNull(),
+    mimeType: varchar("mimeType", { length: 100 }).notNull(),
+    fileName: varchar("fileName", { length: 255 }).notNull(),
+    fileSizeBytes: int("fileSizeBytes").notNull(),
+    caption: varchar("caption", { length: 240 }),
+    createdAt: timestamp("createdAt").defaultNow().notNull(),
+  },
+  table => [index("idx_flight_memory_media_memory").on(table.memoryId)]
+);
+
+export type FlightMemoryMedia = typeof flightMemoryMedia.$inferSelect;
+export type InsertFlightMemoryMedia = typeof flightMemoryMedia.$inferInsert;
+
+/**
  * Campos adicionados:
  * - departureTerminal: Terminal de embarque do voo de ida
  * - returnTerminal: Terminal de embarque do voo de volta

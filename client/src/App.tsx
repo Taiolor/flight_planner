@@ -17,6 +17,7 @@ const FlightQuotes = lazy(() => import("./pages/FlightQuotes"));
 const Changelog = lazy(() => import("./pages/Changelog"));
 const FinancialDashboard = lazy(() => import("./pages/FinancialDashboard"));
 const UsageTelemetryMap = lazy(() => import("./pages/UsageTelemetryMap"));
+const Memories = lazy(() => import("./pages/Memories"));
 
 // Fallback de carregamento para rotas com lazy loading
 function PageLoader() {
@@ -63,6 +64,11 @@ function Router() {
       <Route path={"/financeiro"}>
         <Suspense fallback={<PageLoader />}>
           <FinancialDashboard />
+        </Suspense>
+      </Route>
+      <Route path={"/memorias"}>
+        <Suspense fallback={<PageLoader />}>
+          <Memories />
         </Suspense>
       </Route>
       <Route path={"/404"} component={NotFound} />

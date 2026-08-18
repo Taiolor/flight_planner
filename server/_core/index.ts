@@ -9,12 +9,16 @@ import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
 import { runScheduledFlightNotifications } from "../pushNotifications";
 import { runUsageTelemetryCleanup } from "../usageTelemetryCleanup";
+import crypto from "crypto";
 import rateLimit from "express-rate-limit";
 import helmet from "helmet";
 import { ENV } from "./env";
 import { createProxyMiddleware } from "http-proxy-middleware";
 import { createTrpcLoginRateLimiter } from "./trpcLoginRateLimit";
 import { getContentSecurityPolicy } from "./contentSecurityPolicy";
+import { getSessionFromCookie } from "../flightAuthMiddleware";
+import { addFlightMemoryMedia, upsertFlightMemory } from "../memoriesDb";
+import { storagePut } from "../storage";
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise(resolve => {
@@ -122,6 +126,78 @@ async function startServer() {
 
   app.post("/api/scheduled/flight-notifications", runScheduledFlightNotifications);
   app.post("/api/scheduled/usage-telemetry-cleanup", runUsageTelemetryCleanup);
+
+  app.post(
+    "/api/memories/upload",
+    express.raw({ type: ["image/*", "video/*"], limit: "25mb" }),
+    async (req, res) => {
+      try {
+        const session = await getSessionFromCookie(req);
+        if (!session) {
+          res.status(401).json({ error: "Faça login para acessar." });
+          return;
+        }
+
+        const year = Number(req.query.year);
+        const weekNumber = Number(req.query.weekNumber);
+        const fileName = String(req.query.fileName ?? "memoria").slice(0, 255);
+        const mimeType = String(req.headers["content-type"] ?? "").toLowerCase();
+        const mediaType = mimeType.startsWith("image/")
+          ? "image"
+          : mimeType.startsWith("video/")
+            ? "video"
+            : null;
+
+        if (
+          !Number.isInteger(year) ||
+          year < 2020 ||
+          year > 2100 ||
+          !Number.isInteger(weekNumber) ||
+          weekNumber < 1 ||
+          weekNumber > 54 ||
+          !mediaType ||
+          !Buffer.isBuffer(req.body) ||
+          req.body.length === 0
+        ) {
+          res.status(400).json({ error: "Arquivo ou passagem inválidos." });
+          return;
+        }
+
+        const memory = await upsertFlightMemory({ year, weekNumber });
+        if (!memory) {
+          res.status(503).json({ error: "Não foi possível preparar a memória." });
+          return;
+        }
+
+        const sessionHash = crypto
+          .createHash("sha256")
+          .update(session.email.toLowerCase())
+          .digest("hex")
+          .slice(0, 16);
+        const extension = fileName.includes(".")
+          ? fileName.split(".").pop()!.replace(/[^a-z0-9]/gi, "").slice(0, 12)
+          : mediaType === "image"
+            ? "jpg"
+            : "mp4";
+        const storageKey = `memories/${sessionHash}/${year}/week-${weekNumber}/${crypto.randomUUID()}.${extension}`;
+        const uploaded = await storagePut(storageKey, req.body, mimeType);
+        const media = await addFlightMemoryMedia({
+          memoryId: memory.id,
+          storageKey: uploaded.key,
+          storageUrl: uploaded.url,
+          mediaType,
+          mimeType,
+          fileName,
+          fileSizeBytes: req.body.length,
+        });
+
+        res.status(201).json({ media });
+      } catch (error) {
+        console.error("[Memories] Upload failed", error);
+        res.status(500).json({ error: "Não foi possível enviar a mídia." });
+      }
+    }
+  );
 
   // development mode uses Vite, production mode uses static files
   if (process.env.NODE_ENV === "development") {

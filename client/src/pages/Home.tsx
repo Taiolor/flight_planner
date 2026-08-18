@@ -2019,6 +2019,16 @@ export default function Home() {
                   <BarChart2 className="w-4 h-4 mr-1" /> Financeiro
                 </Button>
               </Link>
+              <Link href={`/memorias?ano=${selectedYear}`}>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="bg-white bg-opacity-10 border-white text-white hover:bg-white hover:text-fuchsia-600 btn-glow-cyan transition-all"
+                  title="Memórias de voo"
+                >
+                  <Sparkles className="w-4 h-4 mr-1" /> Memórias
+                </Button>
+              </Link>
               {isAuthenticated && (
                 <Link href="/admin/notifications">
                   <Button
