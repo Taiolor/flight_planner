@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import {
   ChevronDown,
   Sparkles,
@@ -36,8 +36,63 @@ interface Release {
   }>;
 }
 
-const releases: Release[] = [
+export const releases: Release[] = [
   // Agosto 2026
+  {
+    version: "v1.7.0",
+    date: "18/08/2026",
+    month: "Agosto 2026",
+    status: "released",
+    highlights:
+      "Planejamento Anual Completo, Cancelamentos por Trecho e Operação Mais Confiável",
+    features: [
+      {
+        icon: <Calendar className="w-5 h-5" />,
+        category: "Planejamento Multi-Ano",
+        items: [
+          "Seletor global de ano conectado à Home, Calendário, Cotações e Financeiro",
+          "Semanas geradas de forma idempotente para cada exercício, com ida aos domingos e retorno às sextas-feiras",
+          "Dados de semanas, preços, cotações, indicadores e notificações isolados por ano, sem fallback para 2026",
+        ],
+      },
+      {
+        icon: <Database className="w-5 h-5" />,
+        category: "Cotações, Financeiro e Documentos",
+        items: [
+          "Cotações e histórico de preços agora acompanham o exercício selecionado no cabeçalho",
+          "Indicadores, tabelas, gráficos e projeções financeiras passam a exigir o ano selecionado",
+          "Exportação PDF identifica o ano na capa e no nome do arquivo, preservando o contexto anual",
+        ],
+      },
+      {
+        icon: <Bell className="w-5 h-5" />,
+        category: "Notificações Operacionais",
+        items: [
+          "Callback anual e idempotente de notificações publicado com execução horária",
+          "Histórico e status de alertas filtrados pelo exercício selecionado",
+          "Validação controlada do alerta de cancelamento concluída exclusivamente pelo serviço Resend",
+        ],
+      },
+      {
+        icon: <Plane className="w-5 h-5" />,
+        category: "Cancelamentos por Trecho",
+        items: [
+          "Novos checkboxes independentes de cancelamento para ida e volta, persistidos por ano",
+          "Status de cancelamento destacado na Home, no Calendário, nos detalhes do bilhete e no PDF",
+          "Filtro exclusivo de voos cancelados no Calendário e e-mail automático quando um trecho é cancelado",
+        ],
+      },
+      {
+        icon: <Shield className="w-5 h-5" />,
+        category: "Qualidade, Performance e Segurança",
+        items: [
+          "259 testes automatizados aprovados e TypeScript sem erros nas entregas do ciclo",
+          "Auditorias integrais de performance e segurança concluídas, incluindo SAST, DAST não invasivo, APIs e OWASP",
+          "Plano de execução priorizado criado: otimizações de performance primeiro e remediações de segurança em seguida",
+        ],
+      },
+    ],
+  },
   {
     version: "v1.6.0",
     date: "16/08/2026",
@@ -637,7 +692,7 @@ const sortedMonths = Object.keys(releasesByMonth).sort((a, b) => {
 
 export default function Changelog() {
   const [expandedReleases, setExpandedReleases] = useState<Set<string>>(
-    new Set(["v1.6.0"])
+    new Set(["v1.7.0"])
   );
 
   const toggleRelease = (version: string) => {
@@ -692,7 +747,7 @@ export default function Changelog() {
             </div>
           </Card>
           <Card className="p-4 text-center">
-            <div className="text-3xl font-bold text-green-600">225</div>
+            <div className="text-3xl font-bold text-green-600">259</div>
             <div className="text-sm text-slate-600 dark:text-slate-400">
               Testes
             </div>

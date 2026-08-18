@@ -692,4 +692,6 @@
 
 - [x] Elaborar plano integrado para executar otimizações de performance e, em seguida, remediações de segurança
 
+- [x] Atualizar a página de Novidades com as entregas concluídas no mês corrente
+
 - [x] Corrigir bloqueio de abertura da página administrativa
