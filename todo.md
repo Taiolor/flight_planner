@@ -702,4 +702,6 @@
 
 - [x] P4: paginar histórico administrativo por ano e adicionar índices às consultas críticas
 
+- [x] P5: implementar telemetria anônima de Web Vitals e latência tRPC
+
 - [x] Corrigir bloqueio de abertura da página administrativa

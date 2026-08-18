@@ -271,6 +271,27 @@ export type NotificationLog = typeof notificationLogs.$inferSelect;
 export type InsertNotificationLog = typeof notificationLogs.$inferInsert;
 
 /**
+ * Métricas anônimas de desempenho da aplicação. Não armazena usuário, IP,
+ * identificadores de dispositivo, URL com parâmetros ou conteúdo de requisições.
+ */
+export const performanceMetrics = mysqlTable("performance_metrics", {
+  id: int("id").autoincrement().primaryKey(),
+  metric: varchar("metric", { length: 20 }).notNull(),
+  value: int("value").notNull(),
+  route: varchar("route", { length: 120 }),
+  procedure: varchar("procedure", { length: 160 }),
+  recordedAt: timestamp("recordedAt").defaultNow().notNull(),
+}, table => [
+  index("idx_performance_metrics_metric_recorded_at").on(
+    table.metric,
+    table.recordedAt
+  ),
+  index("idx_performance_metrics_recorded_at").on(table.recordedAt),
+]);
+
+export type InsertPerformanceMetric = typeof performanceMetrics.$inferInsert;
+
+/**
  * Tabela para armazenar cotações de preços de passagens aéreas
  * (Colunas adicionadas: outboundAirline, returnAirline, outboundDeparture, outboundArrival, returnDeparture, returnArrival)
  * source: 'api' = obtido via Sky Scrapper API | 'manual' = inserido manualmente via Kayak

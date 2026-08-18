@@ -7,6 +7,7 @@ import superjson from "superjson";
 import App from "./App";
 import "./index.css";
 import { queryCachePolicies } from "./lib/queryCache";
+import { getTrpcProcedure } from "./lib/performanceTelemetry";
 
 // Detecta se o erro é HTML em vez de JSON (ocorre quando o servidor está reiniciando após hibernação)
 const isHtmlResponse = (error: unknown): boolean => {
@@ -82,11 +83,27 @@ const trpcClient = trpc.createClient({
     httpBatchLink({
       url: "/api/trpc",
       transformer: superjson,
-      fetch(input, init) {
-        return globalThis.fetch(input, {
-          ...(init ?? {}),
-          credentials: "include",
-        });
+      async fetch(input, init) {
+        const procedure = getTrpcProcedure(input);
+        const startedAt = performance.now();
+        try {
+          return await globalThis.fetch(input, {
+            ...(init ?? {}),
+            credentials: "include",
+          });
+        } finally {
+          if (
+            procedure &&
+            procedure !== "performanceMetrics.record" &&
+            typeof window !== "undefined"
+          ) {
+            window.dispatchEvent(
+              new CustomEvent("flight:trpc-latency", {
+                detail: { procedure, duration: performance.now() - startedAt },
+              })
+            );
+          }
+        }
       },
     }),
   ],

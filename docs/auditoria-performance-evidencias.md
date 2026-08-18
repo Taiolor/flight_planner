@@ -29,3 +29,7 @@ Foi definida uma política de cache por domínio: planejamento e finanças anuai
 ## Execução P4 — Histórico administrativo paginado
 
 O histórico de notificações passou de uma resposta fixa de até 100 linhas para páginas anuais de 25 registros, usando cursor estável por `sentAt` e `id`. O painel administrativo agrega páginas já carregadas e oferece “Carregar mais” sem reconsultar o histórico anterior. O índice composto `idx_notification_logs_year_sent_at_id (year, sentAt, id)` foi aplicado; o plano de execução passou de `TableFullScan` com ordenação para `IndexRangeScan`, mantendo a ordem descendente e o limite no índice.
+
+## Execução P5 — Telemetria interna
+
+Foi adicionada telemetria protegida por sessão interna para FCP, LCP, INP, CLS e latência tRPC. A coleta normaliza a rota para o pathname sem parâmetros e limita procedimentos tRPC a seus nomes; não registra usuário, endereço IP, identificador de dispositivo, URL parametrizada ou conteúdo de requisições. As métricas são enviadas em lotes pequenos e o painel administrativo apresenta médias agregadas das últimas 24 horas.

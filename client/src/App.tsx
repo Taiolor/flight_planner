@@ -3,6 +3,7 @@ import NotFound from "@/pages/NotFound";
 import { lazy, Suspense } from "react";
 import { Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
+import PerformanceTelemetry from "./components/PerformanceTelemetry";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import { YearProvider } from "./contexts/YearContext";
 import Home from "./pages/Home";
@@ -71,6 +72,7 @@ function App() {
         <ThemeProvider defaultTheme="light">
           <TooltipProvider>
             <Toaster position="top-right" richColors />
+            <PerformanceTelemetry />
             <Router />
           </TooltipProvider>
         </ThemeProvider>

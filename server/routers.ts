@@ -53,6 +53,10 @@ import {
   formatDateToBrazilian,
 } from "./_core/calendarHelper";
 import { ENV } from "./_core/env";
+import {
+  getPerformanceMetricSummary,
+  recordPerformanceMetrics,
+} from "./performanceMetrics";
 import { parse } from "cookie";
 import {
   SESSION_COOKIE,
@@ -1482,6 +1486,41 @@ export const appRouter = router({
           return { success: true };
         }),
     }),
+  }),
+
+  performanceMetrics: router({
+    record: flightProtectedProcedure
+      .input(
+        z.object({
+          samples: z
+            .array(
+              z.object({
+                metric: z.enum(["CLS", "FCP", "INP", "LCP", "TRPC"]),
+                value: z.number().int().min(0).max(120_000),
+                route: z
+                  .string()
+                  .max(120)
+                  .regex(/^\/[a-zA-Z0-9_/-]*$/)
+                  .optional(),
+                procedure: z
+                  .string()
+                  .max(160)
+                  .regex(/^[a-zA-Z0-9_.,-]+$/)
+                  .optional(),
+              })
+            )
+            .min(1)
+            .max(20),
+        })
+      )
+      .mutation(async ({ input }) => {
+        await recordPerformanceMetrics(input.samples);
+        return { accepted: input.samples.length };
+      }),
+
+    getSummary: flightProtectedProcedure
+      .input(z.object({ hours: z.number().int().min(1).max(168).default(24) }))
+      .query(({ input }) => getPerformanceMetricSummary(input.hours)),
   }),
 });
 
