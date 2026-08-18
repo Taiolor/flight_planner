@@ -741,3 +741,4 @@
 ## Padronização visual
 
 - [x] Substituir em toda a interface o rótulo visual “GRU → NVT • 2026” por “Viagens”
+- [x] Atualizar o nome e o ícone do atalho PWA para a marca Viagens
