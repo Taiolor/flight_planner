@@ -685,4 +685,6 @@
 - [x] Validar o alerta de cancelamento com envio real para um destinatário de teste ativo
 - [x] Confirmar a validação de envio exclusivamente pelo Resend, sem consulta a caixas Gmail
 
+- [x] Auditar integralmente a performance de rotas, telas, funções, consultas, banco e tarefas automáticas
+
 - [x] Corrigir bloqueio de abertura da página administrativa
