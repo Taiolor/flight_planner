@@ -173,8 +173,8 @@ describe("AdditionalFlightsPanel form rules", () => {
 
   it("opens the additional-ticket form with the selected week as the date boundary", () => {
     const container = renderPanel([]);
-    const createButton = Array.from(container.querySelectorAll("button")).find(
-      button => button.textContent?.includes("Nova passagem")
+    const createButton = container.querySelector<HTMLButtonElement>(
+      'button[aria-label="Adicionar passagem adicional"]'
     );
 
     expect(createButton).toBeTruthy();
@@ -199,7 +199,7 @@ describe("AdditionalFlightsPanel form rules", () => {
     click(expandButton!);
 
     const deleteButton = container.querySelector<HTMLButtonElement>(
-      'button[aria-label="Excluir passagem adicional"]'
+      'button[aria-label="Remover passagem adicional"]'
     );
     expect(deleteButton).toBeTruthy();
     click(deleteButton!);

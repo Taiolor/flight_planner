@@ -6,7 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { airlines } from "@/lib/flightData";
 import { trpc } from "@/lib/trpc";
-import { ChevronDown, ChevronUp, CopyPlus, Loader2, Pencil, Plane, Plus, Trash2 } from "lucide-react";
+import { ChevronDown, ChevronUp, CopyPlus, Loader2, Minus, Pencil, Plane, Plus } from "lucide-react";
 import React, { useState } from "react";
 import { toast } from "sonner";
 
@@ -215,7 +215,7 @@ export function AdditionalFlightsPanel({
           <span><span className="block text-sm font-black text-violet-950">Passagens adicionais</span><span className="block text-xs text-violet-700">{flights.length ? `${flights.length} passagem${flights.length > 1 ? "ens" : ""} vinculada${flights.length > 1 ? "s" : ""} a esta semana` : "Adicione uma passagem de ida e volta ou somente ida"}</span></span>
           {open ? <ChevronUp className="h-4 w-4 text-violet-700" /> : <ChevronDown className="h-4 w-4 text-violet-700" />}
         </button>
-        <Button type="button" size="sm" onClick={beginCreate} className="bg-violet-600 hover:bg-violet-700"><Plus className="mr-1 h-4 w-4" /> Nova passagem</Button>
+        <Button type="button" size="icon" onClick={beginCreate} className="h-9 w-9 rounded-full bg-violet-600 shadow-sm hover:bg-violet-700" aria-label="Adicionar passagem adicional" title="Adicionar passagem"><Plus className="h-5 w-5" /></Button>
       </div>
 
       {open && (
@@ -225,7 +225,7 @@ export function AdditionalFlightsPanel({
               {flights.map((flight, index) => (
                 <div key={flight.id} className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2">
                   <div className="flex min-w-0 items-center gap-2"><Plane className="h-4 w-4 text-violet-600" /><span className="font-bold text-slate-800">Passagem {index + 1}</span><span className={`rounded-full px-1.5 py-0.5 text-[10px] font-bold ${flight.ticketType === "oneway" ? "bg-amber-100 text-amber-800" : "bg-violet-100 text-violet-800"}`}>{flight.ticketType === "oneway" ? "Somente ida" : "Ida e volta"}</span><span className="truncate text-xs text-slate-500">{flight.departureAirport || "—"} → {flight.returnAirport || "—"} · {flight.departureAirline || "Companhia a confirmar"}</span></div>
-                  <div className="flex gap-1"><Button type="button" size="icon" variant="ghost" onClick={() => beginEdit(flight)} aria-label="Editar passagem adicional"><Pencil className="h-4 w-4" /></Button><Button type="button" size="icon" variant="ghost" disabled={deleteMutation.isPending} onClick={() => setFlightPendingDeletion(flight)} aria-label="Excluir passagem adicional"><Trash2 className="h-4 w-4 text-rose-600" /></Button></div>
+                  <div className="flex gap-1"><Button type="button" size="icon" variant="ghost" onClick={() => beginEdit(flight)} aria-label="Editar passagem adicional" title="Editar passagem"><Pencil className="h-4 w-4" /></Button><Button type="button" size="icon" variant="ghost" disabled={deleteMutation.isPending} onClick={() => setFlightPendingDeletion(flight)} aria-label="Remover passagem adicional" title="Remover passagem"><Minus className="h-4 w-4 text-rose-600" /></Button></div>
                 </div>
               ))}
             </div>
