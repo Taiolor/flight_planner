@@ -18,7 +18,7 @@ import {
   Waypoints,
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Link } from "wouter";
+import { useLocation } from "wouter";
 
 const EVENT_LABELS = {
   route: "Navegação",
@@ -33,6 +33,8 @@ const EVENT_COLORS = {
   query: "#0891b2",
   mutation: "#dc2626",
 } as const;
+
+export const LOCATIONS_BACK_ROUTE = "/";
 
 function formatCount(value: number) {
   return new Intl.NumberFormat("pt-BR").format(value);
@@ -73,6 +75,7 @@ export default function UsageTelemetryMap() {
 }
 
 function UsageTelemetryMapContent() {
+  const [, setLocation] = useLocation();
   const [hours, setHours] = useState(24);
   const mapRef = useRef<google.maps.Map | null>(null);
   const markersRef = useRef<google.maps.marker.AdvancedMarkerElement[]>([]);
@@ -143,11 +146,15 @@ function UsageTelemetryMapContent() {
       <header className="sticky top-0 z-20 border-b border-slate-800 bg-slate-950/95 backdrop-blur">
         <div className="container flex flex-wrap items-center justify-between gap-3 py-4">
           <div className="flex min-w-0 items-center gap-3">
-            <Link href="/admin/notifications" className="inline-flex">
-              <Button variant="ghost" size="icon" aria-label="Voltar ao painel administrativo">
-                <ArrowLeft className="h-5 w-5" />
-              </Button>
-            </Link>
+            <Button
+              variant="ghost"
+              size="icon"
+              aria-label="Voltar para a página inicial"
+              title="Voltar para a página inicial"
+              onClick={() => setLocation(LOCATIONS_BACK_ROUTE)}
+            >
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
             <div>
               <p className="text-xs font-medium uppercase tracking-[0.18em] text-blue-300">Administração</p>
               <h1 className="text-xl font-bold">Mapa de telemetria de uso</h1>

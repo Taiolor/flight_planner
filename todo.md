@@ -715,6 +715,8 @@
 
 - [x] Corrigir o erro React #310 na tela administrativa de mapa de telemetria
 
+- [x] Corrigir o botão Voltar da tela Locais para retornar à Home sem erro React #310
+
 - [x] Corrigir a exibição do mapa interativo do Google Maps na tela de locais
 
 - [x] Permitir múltiplos voos adicionais de ida e volta por semana, com todos os dados e estados atuais
