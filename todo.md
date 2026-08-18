@@ -713,4 +713,6 @@
 
 - [x] Adicionar menu administrativo exclusivo para acessar o mapa de locais consentidos
 
+- [x] Corrigir o erro React #310 na tela administrativa de mapa de telemetria
+
 - [x] Corrigir bloqueio de abertura da página administrativa

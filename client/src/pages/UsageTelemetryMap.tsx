@@ -40,18 +40,49 @@ function formatCount(value: number) {
 
 export default function UsageTelemetryMap() {
   const [showLoginModal, setShowLoginModal] = useState(false);
+  const authCheckQuery = trpc.flightAuth.check.useQuery();
+  const isAuthenticated = authCheckQuery.data?.authenticated ?? false;
+
+  if (authCheckQuery.isLoading) {
+    return (
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-blue-400" />
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-slate-950 px-4 py-16 text-white">
+        <Card className="mx-auto max-w-lg border-slate-700 bg-slate-900 p-8 text-center">
+          <ShieldCheck className="mx-auto h-10 w-10 text-blue-400" />
+          <h1 className="mt-4 text-xl font-bold">Telemetria protegida</h1>
+          <p className="mt-2 text-sm text-slate-300">
+            Entre com a sessão interna para consultar o mapa administrativo de eventos consentidos.
+          </p>
+          <Button className="mt-5" onClick={() => setShowLoginModal(true)}>
+            Entrar
+          </Button>
+        </Card>
+        <LoginModal open={showLoginModal} onOpenChange={setShowLoginModal} />
+      </div>
+    );
+  }
+
+  return <UsageTelemetryMapContent />;
+}
+
+function UsageTelemetryMapContent() {
   const [hours, setHours] = useState(24);
   const mapRef = useRef<google.maps.Map | null>(null);
   const markersRef = useRef<google.maps.marker.AdvancedMarkerElement[]>([]);
-  const authCheckQuery = trpc.flightAuth.check.useQuery();
-  const isAuthenticated = authCheckQuery.data?.authenticated ?? false;
   const mapQuery = trpc.usageTelemetry.getMapData.useQuery(
     { hours, limit: 200 },
-    { enabled: isAuthenticated, ...queryCachePolicies.admin }
+    { enabled: true, ...queryCachePolicies.admin }
   );
   const summaryQuery = trpc.usageTelemetry.getSummary.useQuery(
     { hours },
-    { enabled: isAuthenticated, ...queryCachePolicies.admin }
+    { enabled: true, ...queryCachePolicies.admin }
   );
 
   const totalEvents = useMemo(
@@ -106,32 +137,6 @@ export default function UsageTelemetryMap() {
       renderMarkers(mapRef.current);
     }
   }, [renderMarkers]);
-
-  if (authCheckQuery.isLoading) {
-    return (
-      <div className="min-h-screen bg-slate-950 flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-blue-400" />
-      </div>
-    );
-  }
-
-  if (!isAuthenticated) {
-    return (
-      <div className="min-h-screen bg-slate-950 px-4 py-16 text-white">
-        <Card className="mx-auto max-w-lg border-slate-700 bg-slate-900 p-8 text-center">
-          <ShieldCheck className="mx-auto h-10 w-10 text-blue-400" />
-          <h1 className="mt-4 text-xl font-bold">Telemetria protegida</h1>
-          <p className="mt-2 text-sm text-slate-300">
-            Entre com a sessão interna para consultar o mapa administrativo de eventos consentidos.
-          </p>
-          <Button className="mt-5" onClick={() => setShowLoginModal(true)}>
-            Entrar
-          </Button>
-        </Card>
-        <LoginModal open={showLoginModal} onOpenChange={setShowLoginModal} />
-      </div>
-    );
-  }
 
   return (
     <main className="min-h-screen bg-slate-950 text-white">
