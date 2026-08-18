@@ -259,6 +259,11 @@ export const notificationLogs = mysqlTable("notification_logs", {
   sentAt: timestamp("sentAt").defaultNow().notNull(),
 }, table => [
   index("idx_notification_logs_year_week").on(table.year, table.weekNumber),
+  index("idx_notification_logs_year_sent_at_id").on(
+    table.year,
+    table.sentAt,
+    table.id
+  ),
   uniqueIndex("uq_notification_logs_delivery_key").on(table.deliveryKey),
 ]);
 

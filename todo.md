@@ -700,4 +700,6 @@
 
 - [x] P3: aplicar cache tRPC por domínio e invalidação anual granular
 
+- [x] P4: paginar histórico administrativo por ano e adicionar índices às consultas críticas
+
 - [x] Corrigir bloqueio de abertura da página administrativa

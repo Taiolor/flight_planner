@@ -25,3 +25,7 @@ Os gráficos da Home agora são renderizados somente depois de uma solicitação
 ## Execução P3 — Cache tRPC e invalidação anual
 
 Foi definida uma política de cache por domínio: planejamento e finanças anuais permanecem recentes por dois minutos, cotações por um minuto, consumo de API e administração por trinta segundos, e a chave pública VAPID é tratada como estática. O refetch em foco foi desabilitado para essas leituras. Mutações de semana, preço e milhas invalidam apenas o exercício correspondente e seus resumos financeiros; mutações de cotações invalidam somente as cotações e o consumo de API do mesmo ano.
+
+## Execução P4 — Histórico administrativo paginado
+
+O histórico de notificações passou de uma resposta fixa de até 100 linhas para páginas anuais de 25 registros, usando cursor estável por `sentAt` e `id`. O painel administrativo agrega páginas já carregadas e oferece “Carregar mais” sem reconsultar o histórico anterior. O índice composto `idx_notification_logs_year_sent_at_id (year, sentAt, id)` foi aplicado; o plano de execução passou de `TableFullScan` com ordenação para `IndexRangeScan`, mantendo a ordem descendente e o limite no índice.

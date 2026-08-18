@@ -1122,12 +1122,17 @@ export const appRouter = router({
       .input(
         z.object({
           year: planningYearSchema,
-          limit: z.number().min(1).max(500).optional(),
+          limit: z.number().min(1).max(100).default(25),
+          cursor: z
+            .object({
+              id: z.number().int().positive(),
+              sentAt: z.date(),
+            })
+            .nullish(),
         })
       )
       .query(async ({ input }) => {
-        const logs = await getNotificationLogs(input.limit ?? 100, input.year);
-        return logs;
+        return getNotificationLogs(input.year, input.limit, input.cursor ?? undefined);
       }),
   }),
 

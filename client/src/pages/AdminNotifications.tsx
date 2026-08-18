@@ -85,15 +85,19 @@ export default function AdminNotifications() {
       refetchInterval: autoRefresh ? 60_000 : false,
     });
 
-  const { data: logs, refetch: refetchLogs } =
-    trpc.adminNotifications.getLogs.useQuery(
-      { year: selectedYear, limit: 100 },
-      {
-        enabled: isAuthenticated,
-        ...queryCachePolicies.admin,
-        refetchInterval: autoRefresh ? 60_000 : false,
-      }
-    );
+  const logsQuery = trpc.adminNotifications.getLogs.useInfiniteQuery(
+    { year: selectedYear, limit: 25 },
+    {
+      enabled: isAuthenticated,
+      ...queryCachePolicies.admin,
+      refetchInterval: autoRefresh ? 60_000 : false,
+      getNextPageParam: lastPage => lastPage.nextCursor,
+    }
+  );
+  const logs = useMemo(
+    () => logsQuery.data?.pages.flatMap(page => page.items) ?? [],
+    [logsQuery.data]
+  );
 
   const sendTestMutation = trpc.push.sendTest.useMutation({
     onSuccess: result => {
@@ -531,13 +535,13 @@ export default function AdminNotifications() {
             aria-controls="section-history"
           >
             <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide">
-              Histórico de Envios ({logs?.length ?? 0})
+              Histórico de Envios ({logs.length})
             </h2>
             <div className="flex items-center gap-2">
               <button
                 onClick={e => {
                   e.stopPropagation();
-                  refetchLogs();
+                  logsQuery.refetch();
                 }}
                 className="text-xs text-gray-400 hover:text-gray-600 flex items-center gap-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm"
               >
@@ -553,7 +557,7 @@ export default function AdminNotifications() {
 
           {expandedSections.has("history") && (
             <Card id="section-history" className="overflow-hidden mt-3">
-              {!logs || logs.length === 0 ? (
+              {logs.length === 0 ? (
                 <div className="p-8 text-center">
                   <History className="w-10 h-10 text-gray-300 mx-auto mb-3" />
                   <p className="text-gray-500 text-sm">
@@ -638,6 +642,26 @@ export default function AdminNotifications() {
                       </div>
                     </div>
                   ))}
+                  {logsQuery.hasNextPage && (
+                    <div className="p-4 bg-gray-50 border-t border-gray-100 flex justify-center">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => logsQuery.fetchNextPage()}
+                        disabled={logsQuery.isFetchingNextPage}
+                        className="gap-2"
+                      >
+                        {logsQuery.isFetchingNextPage ? (
+                          <>
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                            Carregando...
+                          </>
+                        ) : (
+                          "Carregar mais"
+                        )}
+                      </Button>
+                    </div>
+                  )}
                 </div>
               )}
             </Card>

@@ -1,5 +1,5 @@
 import crypto from "crypto";
-import { and, desc, eq, gt, lt, sql } from "drizzle-orm";
+import { and, desc, eq, gt, lt, or, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import {
   FlightWeek,
@@ -27,6 +27,10 @@ import {
   TicketNotificationEmail,
 } from "../drizzle/schema";
 import { ENV } from "./_core/env";
+import {
+  buildNotificationLogPage,
+  type NotificationLogCursor,
+} from "./notificationLogPagination";
 
 let _db: ReturnType<typeof drizzle> | null = null;
 
@@ -577,17 +581,34 @@ export async function insertNotificationLog(
 }
 
 export async function getNotificationLogs(
-  limit = 100,
-  year: number
+  year: number,
+  limit = 25,
+  cursor?: NotificationLogCursor
 ) {
   const db = await getDb();
-  if (!db) return [];
-  return db
+  if (!db) return { items: [], nextCursor: null };
+
+  const cursorCondition = cursor
+    ? or(
+        lt(notificationLogs.sentAt, cursor.sentAt),
+        and(
+          eq(notificationLogs.sentAt, cursor.sentAt),
+          lt(notificationLogs.id, cursor.id)
+        )
+      )
+    : undefined;
+  const whereClause = cursorCondition
+    ? and(eq(notificationLogs.year, year), cursorCondition)
+    : eq(notificationLogs.year, year);
+
+  const rows = await db
     .select()
     .from(notificationLogs)
-    .where(eq(notificationLogs.year, year))
-    .orderBy(desc(notificationLogs.sentAt))
-    .limit(limit);
+    .where(whereClause)
+    .orderBy(desc(notificationLogs.sentAt), desc(notificationLogs.id))
+    .limit(limit + 1);
+
+  return buildNotificationLogPage(rows, limit);
 }
 
 /**
