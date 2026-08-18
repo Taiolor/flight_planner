@@ -119,6 +119,48 @@ export type FlightWeek = typeof flightWeeks.$inferSelect;
 export type InsertFlightWeek = typeof flightWeeks.$inferInsert;
 
 /**
+ * Pares extras de ida e volta vinculados a uma semana do exercício. Mantém os
+ * mesmos campos de emissão, milhas e estados do bilhete principal.
+ */
+export const additionalFlights = mysqlTable(
+  "additional_flights",
+  {
+    id: int("id").autoincrement().primaryKey(),
+    year: int("year").notNull(),
+    weekNumber: int("weekNumber").notNull(),
+    isTicketIssued: int("isTicketIssued").default(0).notNull(),
+    departureAirline: varchar("departureAirline", { length: 50 }),
+    returnAirline: varchar("returnAirline", { length: 50 }),
+    departureFlightDatetime: varchar("departureFlightDatetime", { length: 30 }),
+    returnFlightDatetime: varchar("returnFlightDatetime", { length: 30 }),
+    departureAirport: varchar("departureAirport", { length: 10 }),
+    returnAirport: varchar("returnAirport", { length: 10 }),
+    departureLocator: varchar("departureLocator", { length: 20 }),
+    returnLocator: varchar("returnLocator", { length: 20 }),
+    departureFlightNumber: varchar("departureFlightNumber", { length: 20 }),
+    returnFlightNumber: varchar("returnFlightNumber", { length: 20 }),
+    departureTerminal: varchar("departureTerminal", { length: 20 }),
+    returnTerminal: varchar("returnTerminal", { length: 20 }),
+    ticketType: varchar("ticketType", { length: 20 }).default("roundtrip"),
+    smilesPoints: int("smilesPoints"),
+    latamPassPoints: int("latamPassPoints"),
+    departureRescheduled: int("departureRescheduled").default(0).notNull(),
+    returnRescheduled: int("returnRescheduled").default(0).notNull(),
+    departureCancelled: int("departureCancelled").default(0).notNull(),
+    returnCancelled: int("returnCancelled").default(0).notNull(),
+    createdAt: timestamp("createdAt").defaultNow().notNull(),
+    updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+  },
+  table => [
+    index("idx_additional_flights_year_week").on(table.year, table.weekNumber),
+    index("idx_additional_flights_issued").on(table.year, table.isTicketIssued),
+  ]
+);
+
+export type AdditionalFlight = typeof additionalFlights.$inferSelect;
+export type InsertAdditionalFlight = typeof additionalFlights.$inferInsert;
+
+/**
  * Uma memória editorial por passagem semanal. O vínculo anual impede a mistura
  * de recordações entre exercícios de planejamento.
  */

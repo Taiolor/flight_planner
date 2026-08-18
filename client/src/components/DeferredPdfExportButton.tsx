@@ -15,7 +15,11 @@ interface DeferredPdfExportButtonProps extends FlightPdfExportProps {
 }
 
 export function hasIssuedPdfTickets(weeksData: FlightPdfExportProps["weeksData"]) {
-  return weeksData.some(week => !!week.isTicketIssued && !week.isDeleted);
+  return weeksData.some(
+    week =>
+      !week.isDeleted &&
+      (!!week.isTicketIssued || week.additionalFlights?.some(flight => !!flight.isTicketIssued))
+  );
 }
 
 export async function loadAndExportPdf(

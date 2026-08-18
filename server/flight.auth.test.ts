@@ -37,6 +37,13 @@ vi.mock("./_core/emailNotification", () => ({
   sendShareByEmailNotification: vi.fn().mockResolvedValue(true),
 }));
 
+vi.mock("./additionalFlightsDb", () => ({
+  getAdditionalFlightsForYear: vi.fn().mockResolvedValue([]),
+  createAdditionalFlight: vi.fn().mockResolvedValue({ id: 1 }),
+  updateAdditionalFlight: vi.fn().mockResolvedValue(undefined),
+  deleteAdditionalFlight: vi.fn().mockResolvedValue(undefined),
+}));
+
 function createTestContext(cookieOverride = ""): TrpcContext {
   const cookies: Array<{
     name: string;
@@ -164,6 +171,46 @@ describe("usageTelemetry access", () => {
         events: [{ eventType: "route", route: "/" }],
       })
     ).rejects.toThrow("Faça login para acessar.");
+  });
+});
+
+describe("additionalFlights", () => {
+  it("should reject creation without the internal session", async () => {
+    const caller = appRouter.createCaller(createTestContext());
+
+    await expect(
+      caller.additionalFlights.create({
+        year: 2027,
+        weekNumber: 3,
+        ticketType: "roundtrip",
+      })
+    ).rejects.toThrow("Faça login para acessar.");
+  });
+
+  it("should create a second annual flight pair for an authenticated session", async () => {
+    const { validateAuthSession } = await import("./db");
+    const { createAdditionalFlight } = await import("./additionalFlightsDb");
+    (validateAuthSession as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+      email: "taiolor@gmail.com",
+    });
+
+    const caller = appRouter.createCaller(
+      createTestContext("flight_session=owner-session")
+    );
+    await caller.additionalFlights.create({
+      year: 2027,
+      weekNumber: 3,
+      ticketType: "roundtrip",
+      departureAirline: "LATAM",
+      returnAirline: "LATAM",
+      departureAirport: "GRU",
+      returnAirport: "NVT",
+      isTicketIssued: 1,
+    });
+
+    expect(createAdditionalFlight).toHaveBeenCalledWith(
+      expect.objectContaining({ year: 2027, weekNumber: 3, ticketType: "roundtrip" })
+    );
   });
 });
 

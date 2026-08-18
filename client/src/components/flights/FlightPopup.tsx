@@ -354,6 +354,27 @@ export default function FlightPopup({
             </div>
           )}
 
+          {!!mark.additionalFlights?.length && (
+            <div className="rounded-xl border border-violet-100 bg-violet-50 overflow-hidden">
+              <div className="bg-violet-600 px-3 py-1.5 flex items-center gap-1.5">
+                <Plane className="w-3 h-3 text-white" />
+                <span className="text-[11px] font-bold text-white uppercase tracking-wider">Trechos adicionais</span>
+              </div>
+              <div className="divide-y divide-violet-100">
+                {mark.additionalFlights.map(flight => (
+                  <div key={`${flight.id}-${flight.direction}`} className="px-3 py-2 text-xs text-slate-700">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="font-bold text-violet-800">{flight.direction === "departure" ? "Ida" : "Volta"} · {flight.airline || "Companhia"}</span>
+                      {(flight.cancelled || flight.rescheduled) && <span className={`rounded-full px-1.5 py-0.5 text-[10px] font-bold ${flight.cancelled ? "bg-rose-100 text-rose-700" : "bg-amber-100 text-amber-700"}`}>{flight.cancelled ? "Cancelado" : "Remarcado"}</span>}
+                    </div>
+                    <div className="mt-0.5 text-[11px] text-slate-500">{flight.flightDatetime?.replace("T", " ") || "Data a confirmar"} · {flight.airport || "Aeroporto"} · {flight.flightNumber || "Voo a confirmar"}</div>
+                    {flight.locator && <div className="mt-0.5 font-mono text-[11px] font-bold tracking-wider text-slate-600">{flight.locator}</div>}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Ações de compartilhamento */}
           <div className="border-t border-slate-100 pt-3 flex flex-col gap-2">
             <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wide">

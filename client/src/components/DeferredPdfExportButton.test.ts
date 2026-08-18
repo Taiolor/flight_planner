@@ -29,6 +29,18 @@ describe("DeferredPdfExportButton", () => {
     ).toBe(false);
   });
 
+  it("considera um voo adicional emitido mesmo sem bilhete principal", () => {
+    expect(
+      hasIssuedPdfTickets([
+        {
+          ...pdfProps.weeksData[0],
+          isTicketIssued: 0,
+          additionalFlights: [{ id: 7, isTicketIssued: 1 }],
+        },
+      ])
+    ).toBe(true);
+  });
+
   it("carrega o módulo de PDF somente quando a exportação é solicitada", async () => {
     const exportFlightPdf = vi.fn().mockResolvedValue(undefined);
     const loadPdfModule: PdfModuleLoader = vi.fn().mockResolvedValue({

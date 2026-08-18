@@ -21,6 +21,19 @@ export type WeekRow = {
   returnCancelled?: number;
 };
 
+export type AdditionalCalendarFlight = {
+  id: number;
+  weekNumber: number;
+  direction: "departure" | "return";
+  airline?: string | null;
+  airport?: string | null;
+  flightDatetime?: string | null;
+  flightNumber?: string | null;
+  locator?: string | null;
+  rescheduled?: number | boolean | null;
+  cancelled?: number | boolean | null;
+};
+
 export type DayMark = {
   departure: boolean;
   return: boolean;
@@ -30,6 +43,7 @@ export type DayMark = {
   returnRescheduled?: boolean;
   departureCancelled?: boolean;
   returnCancelled?: boolean;
+  additionalFlights?: AdditionalCalendarFlight[];
 };
 
 export function hasCancelledFlight(mark: DayMark | undefined): boolean {

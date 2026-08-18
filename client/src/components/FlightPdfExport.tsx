@@ -28,6 +28,27 @@ interface WeekData {
   returnRescheduled?: number | boolean | null;
   departureCancelled?: number | boolean | null;
   returnCancelled?: number | boolean | null;
+  additionalFlights?: AdditionalFlightData[];
+}
+
+interface AdditionalFlightData {
+  id: number;
+  isTicketIssued: number;
+  departureAirline?: string | null;
+  returnAirline?: string | null;
+  departureFlightNumber?: string | null;
+  returnFlightNumber?: string | null;
+  departureLocator?: string | null;
+  returnLocator?: string | null;
+  departureFlightDatetime?: string | null;
+  returnFlightDatetime?: string | null;
+  departureAirport?: string | null;
+  returnAirport?: string | null;
+  ticketType?: string | null;
+  departureRescheduled?: number | boolean | null;
+  returnRescheduled?: number | boolean | null;
+  departureCancelled?: number | boolean | null;
+  returnCancelled?: number | boolean | null;
 }
 
 interface PriceMap {
@@ -466,6 +487,7 @@ function WeekCard({
       : null;
   const depAirlineInfo = AIRLINE_COLORS[depAirlineKey];
   const retAirlineInfo = AIRLINE_COLORS[retAirlineKey];
+  const additionalFlights = week.additionalFlights?.filter(flight => !!flight.isTicketIssued) ?? [];
 
   return (
     <div
@@ -544,6 +566,45 @@ function WeekCard({
           />
         )}
       </div>
+      {additionalFlights.map((flight, index) => {
+        const additionalOneway = flight.ticketType === "oneway";
+        const departureKey = flight.departureAirline?.toLowerCase() ?? "";
+        const returnKey = flight.returnAirline?.toLowerCase() ?? "";
+        return (
+          <div key={flight.id} style={{ borderTop: "1px dashed #cbd5e1" }}>
+            <div style={{ padding: "8px 20px", color: "#6d28d9", fontSize: "11px", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.06em" }}>
+              Voo adicional {index + 1}{additionalOneway ? " • somente ida" : ""}
+            </div>
+            <div style={{ display: "flex", flexDirection: additionalOneway ? "column" : "row" }}>
+              <FlightDetailsSection
+                title={additionalOneway ? "→ IDA • SOMENTE IDA" : "→ IDA"}
+                titleColor="#6d28d9"
+                borderRight={!additionalOneway}
+                airline={flight.departureAirline}
+                airlineInfo={AIRLINE_COLORS[departureKey]}
+                flightNumber={flight.departureFlightNumber}
+                locator={flight.departureLocator}
+                flightDatetime={flight.departureFlightDatetime}
+                airport={flight.departureAirport}
+                rescheduled={isRescheduled(flight.departureRescheduled)}
+                cancelled={isRescheduled(flight.departureCancelled)}
+              />
+              {!additionalOneway && <FlightDetailsSection
+                title="↩ VOLTA"
+                titleColor="#ea580c"
+                airline={flight.returnAirline}
+                airlineInfo={AIRLINE_COLORS[returnKey]}
+                flightNumber={flight.returnFlightNumber}
+                locator={flight.returnLocator}
+                flightDatetime={flight.returnFlightDatetime}
+                airport={flight.returnAirport}
+                rescheduled={isRescheduled(flight.returnRescheduled)}
+                cancelled={isRescheduled(flight.returnCancelled)}
+              />}
+            </div>
+          </div>
+        );
+      })}
     </div>
   );
 }
@@ -778,7 +839,11 @@ export async function exportFlightPdf({
   priceMap,
   totalInvested,
 }: FlightPdfExportProps): Promise<void> {
-  const issued = weeksData.filter(w => !!w.isTicketIssued && !w.isDeleted);
+  const issued = weeksData.filter(
+    week =>
+      !week.isDeleted &&
+      (!!week.isTicketIssued || week.additionalFlights?.some(flight => !!flight.isTicketIssued))
+  );
   if (issued.length === 0) return;
 
   // Agrupar por mês
@@ -836,7 +901,9 @@ export async function exportFlightPdf({
 export function ExportPdfButton(props: FlightPdfExportProps) {
   const [exporting, setExporting] = useState(false);
   const hasIssuedTickets = props.weeksData.some(
-    week => !!week.isTicketIssued && !week.isDeleted
+    week =>
+      !week.isDeleted &&
+      (!!week.isTicketIssued || week.additionalFlights?.some(flight => !!flight.isTicketIssued))
   );
 
   const handleExport = async () => {

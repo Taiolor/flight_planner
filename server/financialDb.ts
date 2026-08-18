@@ -5,7 +5,7 @@
  */
 import { and, eq, isNotNull } from "drizzle-orm";
 import { getDb } from "./db";
-import { flightWeeks, flightPrices } from "../drizzle/schema";
+import { additionalFlights, flightWeeks, flightPrices } from "../drizzle/schema";
 
 // ─── Tipos ────────────────────────────────────────────────────────────────────
 
@@ -28,6 +28,7 @@ export interface WeekFinancialData {
   smilesPoints: number | null;
   latamPassPoints: number | null;
   totalMiles: number | null;
+  additionalFlightCount: number;
   // Mês derivado da data de ida
   month: number;
 }
@@ -111,6 +112,17 @@ export async function getFinancialDataByYear(
     .from(flightPrices)
     .where(eq(flightPrices.year, year));
 
+  const additional = await db
+    .select()
+    .from(additionalFlights)
+    .where(and(eq(additionalFlights.year, year), eq(additionalFlights.isTicketIssued, 1)));
+  const additionalByWeek = new Map<number, typeof additional>();
+  for (const flight of additional) {
+    const rows = additionalByWeek.get(flight.weekNumber) ?? [];
+    rows.push(flight);
+    additionalByWeek.set(flight.weekNumber, rows);
+  }
+
   // Indexar preços por semana+companhia
   const priceMap = new Map<string, number>();
   const weekPricesMap = new Map<number, number[]>(); // Todos os preços de uma semana
@@ -150,7 +162,12 @@ export async function getFinancialDataByYear(
         ? (priceMap.get(`${w.weekNumber}:${retAirline}`) ?? null)
         : null;
 
-    const totalMiles = (w.smilesPoints ?? 0) + (w.latamPassPoints ?? 0);
+    const additionalForWeek = additionalByWeek.get(w.weekNumber) ?? [];
+    const additionalSmiles = additionalForWeek.reduce((sum, flight) => sum + (flight.smilesPoints ?? 0), 0);
+    const additionalLatam = additionalForWeek.reduce((sum, flight) => sum + (flight.latamPassPoints ?? 0), 0);
+    const smilesPoints = (w.smilesPoints ?? 0) + additionalSmiles;
+    const latamPassPoints = (w.latamPassPoints ?? 0) + additionalLatam;
+    const totalMiles = smilesPoints + latamPassPoints;
 
     return {
       weekNumber: w.weekNumber,
@@ -160,15 +177,16 @@ export async function getFinancialDataByYear(
       departureAirline: depAirline,
       returnAirline: retAirline,
       ticketType: w.ticketType,
-      isTicketIssued: w.isTicketIssued,
+      isTicketIssued: w.isTicketIssued || additionalForWeek.length > 0 ? 1 : 0,
       departureRescheduled: w.departureRescheduled,
       returnRescheduled: w.returnRescheduled,
       paidPriceDeparture: paidDep,
       paidPriceReturn: paidRet,
       paidPriceTotal: paidTotal,
-      smilesPoints: w.smilesPoints ?? null,
-      latamPassPoints: w.latamPassPoints ?? null,
+      smilesPoints: smilesPoints > 0 ? smilesPoints : null,
+      latamPassPoints: latamPassPoints > 0 ? latamPassPoints : null,
       totalMiles: totalMiles > 0 ? totalMiles : null,
+      additionalFlightCount: additionalForWeek.length,
       month: parseMonth(w.departureDate),
     };
   });
@@ -203,7 +221,7 @@ export async function getFinancialSummaryByMonth(
       });
     }
     const ms = monthMap.get(m)!;
-    ms.issuedCount++;
+    ms.issuedCount += 1 + w.additionalFlightCount;
     ms.weeksCount++;
 
     const cash = w.paidPriceTotal ?? 0;

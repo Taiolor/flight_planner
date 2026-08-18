@@ -213,7 +213,7 @@ function getExtendedWeekends(
   return extended;
 }
 
-import { WeekRow, DayMark, hasCancelledFlight } from "@/components/flights/types";
+import { WeekRow, DayMark, AdditionalCalendarFlight, hasCancelledFlight } from "@/components/flights/types";
 import FlightPopup from "@/components/flights/FlightPopup";
 import { useYear } from "@/contexts/YearContext";
 import { GlobalYearSelector } from "@/components/GlobalYearSelector";
@@ -224,6 +224,14 @@ export default function CalendarView() {
   const weeksQuery = trpc.flights.getWeeks.useQuery(
     { year },
     queryCachePolicies.annualPlanning
+  );
+  const authCheckQuery = trpc.flightAuth.check.useQuery(undefined, { retry: false });
+  const additionalFlightsQuery = trpc.additionalFlights.getYear.useQuery(
+    { year },
+    {
+      ...queryCachePolicies.annualPlanning,
+      enabled: Boolean(authCheckQuery.data?.authenticated),
+    }
   );
   const [selectedMark, setSelectedMark] = useState<DayMark | null>(null);
   const [showOnlyHolidaysAndWeekends, setShowOnlyHolidaysAndWeekends] =
@@ -279,7 +287,10 @@ export default function CalendarView() {
       };
     }
 
-    for (const week of weeksQuery.data as WeekRow[]) {
+    const weeks = weeksQuery.data as WeekRow[];
+    const weekByNumber = new Map(weeks.map(week => [week.weekNumber, week]));
+
+    for (const week of weeks) {
       if (!week.isTicketIssued) {
         if (!week.isDeleted) {
           unissuedCount++;
@@ -328,6 +339,69 @@ export default function CalendarView() {
         }
       }
     }
+
+    for (const flight of additionalFlightsQuery.data ?? []) {
+      if (!flight.isTicketIssued) continue;
+      const week = weekByNumber.get(flight.weekNumber);
+      if (!week) continue;
+
+      const legs: Array<{
+        direction: "departure" | "return";
+        datetime: string | null;
+        airline: string | null;
+        airport: string | null;
+        flightNumber: string | null;
+        locator: string | null;
+        rescheduled: number;
+        cancelled: number;
+      }> = [
+        {
+          direction: "departure",
+          datetime: flight.departureFlightDatetime,
+          airline: flight.departureAirline,
+          airport: flight.departureAirport,
+          flightNumber: flight.departureFlightNumber,
+          locator: flight.departureLocator,
+          rescheduled: flight.departureRescheduled,
+          cancelled: flight.departureCancelled,
+        },
+        {
+          direction: "return",
+          datetime: flight.ticketType === "oneway" ? null : flight.returnFlightDatetime,
+          airline: flight.returnAirline,
+          airport: flight.returnAirport,
+          flightNumber: flight.returnFlightNumber,
+          locator: flight.returnLocator,
+          rescheduled: flight.returnRescheduled,
+          cancelled: flight.returnCancelled,
+        },
+      ];
+
+      for (const leg of legs) {
+        if (!leg.datetime) continue;
+        const date = parseDate(leg.datetime.slice(0, 10));
+        if (!date) continue;
+        const key = toKey(date);
+        const isPast = date < today;
+        if (!map[key]) map[key] = { departure: false, return: false, isPast, week, additionalFlights: [] };
+        const additional: AdditionalCalendarFlight = {
+          id: flight.id,
+          weekNumber: flight.weekNumber,
+          direction: leg.direction,
+          airline: leg.airline,
+          airport: leg.airport,
+          flightDatetime: leg.datetime,
+          flightNumber: leg.flightNumber,
+          locator: leg.locator,
+          rescheduled: leg.rescheduled,
+          cancelled: leg.cancelled,
+        };
+        map[key].additionalFlights ??= [];
+        map[key].additionalFlights.push(additional);
+        if (date.getFullYear() === year) issuedPerMonth[date.getMonth()]++;
+        if (isPast) pastIssuedCount++; else futureIssuedCount++;
+      }
+    }
     return {
       markedDays: map,
       issuedPerMonth,
@@ -335,7 +409,7 @@ export default function CalendarView() {
       pastIssuedCount,
       unissuedCount,
     };
-  }, [weeksQuery.data, today]);
+  }, [additionalFlightsQuery.data, weeksQuery.data, today, year]);
 
   function buildMonthGrid(year: number, month: number): (number | null)[][] {
     const firstDay = new Date(year, month, 1).getDay();
@@ -629,7 +703,10 @@ export default function CalendarView() {
                         // Construir tooltip com informação do feriado
                         let tooltipText: string | undefined = undefined;
                         if (mark) {
-                          tooltipText = `Semana ${mark.week.weekNumber} — clique para detalhes`;
+                          const additionalLabel = mark.additionalFlights?.length
+                            ? ` • ${mark.additionalFlights.length} trecho${mark.additionalFlights.length > 1 ? "s" : ""} adicional${mark.additionalFlights.length > 1 ? "is" : ""}`
+                            : "";
+                          tooltipText = `Semana ${mark.week.weekNumber}${additionalLabel} — clique para detalhes`;
                         } else if (cupMatch) {
                           const isBrazilHome =
                             cupMatch.homeTeam === "Brasil" ||
@@ -698,6 +775,9 @@ export default function CalendarView() {
                                   <span
                                     className={`w-1 h-1 rounded-full ${mark.isPast ? "bg-slate-300" : "bg-emerald-200"}`}
                                   />
+                                )}
+                                {!!mark.additionalFlights?.length && (
+                                  <span className="w-1 h-1 rounded-full bg-violet-200" />
                                 )}
                               </span>
                             )}

@@ -717,7 +717,7 @@
 
 - [x] Corrigir a exibição do mapa interativo do Google Maps na tela de locais
 
-- [ ] Permitir múltiplos voos adicionais de ida e volta por semana, com todos os dados e estados atuais
+- [x] Permitir múltiplos voos adicionais de ida e volta por semana, com todos os dados e estados atuais
 
 - [x] Criar a área Memórias com quilômetros dinâmicos, mapa de rotas e mídias por passagem emitida
 

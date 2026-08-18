@@ -113,6 +113,7 @@ import { useTheme, COLOR_PRESETS } from "@/contexts/ThemeContext";
 import type { ColorPreset } from "@/contexts/ThemeContext";
 import { useYear } from "@/contexts/YearContext";
 import { GlobalYearSelector } from "@/components/GlobalYearSelector";
+import { AdditionalFlightsPanel, type AdditionalFlightRecord } from "@/components/AdditionalFlightsPanel";
 import type { MonthlyChartData } from "@/components/HomeCharts";
 import { shouldRenderDeferredCharts } from "@/lib/chartLoading";
 import { queryCachePolicies } from "@/lib/queryCache";
@@ -604,6 +605,18 @@ export default function Home() {
     enabled: !isAuthenticated,
   });
 
+  const additionalFlightsQuery = trpc.additionalFlights.getYear.useQuery(
+    { year: selectedYear },
+    { ...queryCachePolicies.annualPlanning, enabled: isAuthenticated }
+  );
+  const additionalFlightsByWeek = useMemo(() => {
+    const grouped: Record<number, AdditionalFlightRecord[]> = {};
+    for (const flight of additionalFlightsQuery.data ?? []) {
+      (grouped[flight.weekNumber] ??= []).push(flight as AdditionalFlightRecord);
+    }
+    return grouped;
+  }, [additionalFlightsQuery.data]);
+
   const currentPricesData: (FlightPrice | PublicPrice)[] | undefined =
     isAuthenticated
       ? (pricesQuery.data as FlightPrice[] | undefined)
@@ -939,11 +952,12 @@ export default function Home() {
         returnRescheduled: (w as any).returnRescheduled ?? 0,
         departureCancelled: (w as any).departureCancelled ?? 0,
         returnCancelled: (w as any).returnCancelled ?? 0,
+        additionalFlights: additionalFlightsByWeek[w.weekNumber] ?? [],
       }));
     }
     // Não usar fallback estático: semanas de outro exercício jamais podem ser exibidas.
     return [];
-  }, [weeksQuery.data]);
+  }, [weeksQuery.data, additionalFlightsByWeek]);
 
   // ⚡ Otimização: pré-computa o menor preço de cada semana em um mapa
   // Reduz operações de O(n) array allocations por chamada para O(1) lookup
@@ -5726,6 +5740,19 @@ export default function Home() {
                                       </div>
                                     )}
                                   </div>
+                                  {isAuthenticated && (
+                                    <AdditionalFlightsPanel
+                                      year={selectedYear}
+                                      weekNumber={week.weekNumber}
+                                      flights={additionalFlightsByWeek[week.weekNumber] ?? []}
+                                      onChanged={() =>
+                                        Promise.all([
+                                          utils.additionalFlights.getYear.invalidate({ year: selectedYear }),
+                                          utils.flights.getWeeks.invalidate({ year: selectedYear }),
+                                        ])
+                                      }
+                                    />
+                                  )}
                                 </div>
                               </Card>
                             );
