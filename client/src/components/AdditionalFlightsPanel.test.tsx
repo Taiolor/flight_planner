@@ -175,7 +175,7 @@ describe("AdditionalFlightsPanel form rules", () => {
     expect(error).toBe("A volta não pode ocorrer antes da ida.");
   });
 
-  it("opens the additional-ticket form with the selected week as the date boundary", () => {
+  it("opens the additional-ticket form com as datas padrão e os controles do cartão semanal", () => {
     const container = renderPanel([]);
     const createButton = container.querySelector<HTMLButtonElement>(
       'button[aria-label="Adicionar passagem adicional"]'
@@ -185,19 +185,42 @@ describe("AdditionalFlightsPanel form rules", () => {
     click(createButton!);
 
     expect(container.textContent).toContain("Adicionar passagem adicional");
-    expect(container.textContent).toContain("2027-01-10 a 2027-01-16");
-    const datetimeInput = container.querySelector<HTMLInputElement>(
-      'input[type="datetime-local"]'
+    expect(container.textContent).toContain("Tipo de Bilhete");
+    expect(container.textContent).toContain("Pagamento em Milhas");
+    expect(container.textContent).toContain("Localizador (PNR)");
+    const datetimeInputs = Array.from(
+      container.querySelectorAll<HTMLInputElement>('input[type="datetime-local"]')
     );
-    expect(datetimeInput?.min).toBe("2027-01-10T00:00");
-    expect(datetimeInput?.max).toBe("2027-01-16T23:59");
+    expect(datetimeInputs.map(input => input.value)).toEqual([
+      "2027-01-10T00:00",
+      "2027-01-16T00:00",
+    ]);
   });
 
   it("opens the form when a weekly header requests a new additional ticket", () => {
     const container = renderPanel([makeFlight()], 1);
 
     expect(container.textContent).toContain("Adicionar passagem adicional");
-    expect(container.textContent).toContain("2027-01-10 a 2027-01-16");
+    expect(container.textContent).toContain("✈ Ida e Volta");
+    expect(container.textContent).toContain("→ Somente Ida");
+  });
+
+  it("fecha e descarta o formulário ao cancelar uma nova passagem adicional", () => {
+    const container = renderPanel([]);
+    const createButton = container.querySelector<HTMLButtonElement>(
+      'button[aria-label="Adicionar passagem adicional"]'
+    );
+
+    click(createButton!);
+    expect(container.textContent).toContain("Use os mesmos dados e padrões do cartão da semana.");
+
+    const cancelButton = Array.from(container.querySelectorAll("button")).find(
+      button => button.textContent === "Cancelar"
+    );
+    expect(cancelButton).toBeTruthy();
+    click(cancelButton!);
+
+    expect(container.textContent).not.toContain("Use os mesmos dados e padrões do cartão da semana.");
   });
 
   it("asks for confirmation before deleting an additional ticket", () => {

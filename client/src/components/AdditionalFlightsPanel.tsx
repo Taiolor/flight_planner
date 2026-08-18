@@ -1,12 +1,10 @@
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { airlines } from "@/lib/flightData";
 import { trpc } from "@/lib/trpc";
-import { ChevronDown, ChevronUp, CopyPlus, Loader2, Minus, Pencil, Plane, Plus } from "lucide-react";
+import { ChevronDown, ChevronUp, Copy, CopyPlus, Loader2, Minus, Pencil, Plane, Plus } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { toast } from "sonner";
 
@@ -65,10 +63,50 @@ const blankDraft = (): Draft => ({
 
 const toDatetimeValue = (value: string | null) => value?.slice(0, 16) ?? "";
 
+const STANDARD_AIRLINES = [
+  { id: "latam", label: "LATAM", logo: "https://d2xsxph8kpxj0f.cloudfront.net/310419663028456038/HQ655wm9a6bck22hJAwYRc/logo-latam_a13bb510.png" },
+  { id: "gol", label: "Gol", logo: "https://d2xsxph8kpxj0f.cloudfront.net/310419663028456038/HQ655wm9a6bck22hJAwYRc/logo-gol_c86ba55a.png" },
+  { id: "azul", label: "Azul", logo: "https://d2xsxph8kpxj0f.cloudfront.net/310419663028456038/HQ655wm9a6bck22hJAwYRc/logo-azul_e89c8b63.png" },
+] as const;
+
+const AIRPORT_OPTIONS = [
+  ["GRU", "🛫 Guarulhos (GRU)"],
+  ["CGH", "🛫 Congonhas (CGH)"],
+  ["VCP", "🛫 Viracopos (VCP)"],
+  ["NVT", "🛬 Navegantes (NVT)"],
+  ["JOI", "🛬 Joinville (JOI)"],
+] as const;
+
+const AIRLINE_IATA_CODES: Record<string, string> = { latam: "LA", gol: "G3", azul: "AD" };
+
+// Mantém as variantes estáticas disponíveis ao Tailwind para os cartões de ida e volta.
+const STANDARD_LEG_CLASSNAMES = "border-blue-200 border-orange-200 border-blue-600 border-orange-600 focus:ring-blue-400 focus:ring-orange-400 bg-blue-100 bg-orange-100 text-blue-700 text-orange-700";
+
 function toIsoDay(value: string) {
   if (/^\d{4}-\d{2}-\d{2}$/.test(value)) return value;
   const match = value.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
   return match ? `${match[3]}-${match[2]}-${match[1]}` : "";
+}
+
+function dateAtMidnight(value: string) {
+  const iso = toIsoDay(value);
+  return iso ? `${iso}T00:00` : "";
+}
+
+function weekdayLabel(value: string | null, fallbackDate: string) {
+  const raw = value || dateAtMidnight(fallbackDate);
+  if (!raw) return null;
+  const date = new Date(raw.includes("T") ? raw : `${raw}T12:00`);
+  if (Number.isNaN(date.getTime())) return null;
+  const label = date.toLocaleDateString("pt-BR", { weekday: "long" });
+  return label.charAt(0).toUpperCase() + label.slice(1);
+}
+
+function normalizeAirlineId(value: string | null) {
+  const normalized = value?.trim().toLowerCase() ?? "";
+  return STANDARD_AIRLINES.some(airline => airline.id === normalized)
+    ? normalized
+    : value;
 }
 
 function isOutsideWeek(datetime: string | null, start: string, end: string) {
@@ -160,7 +198,11 @@ export function AdditionalFlightsPanel({
   const beginCreate = () => {
     setEditing(null);
     setIsCreating(true);
-    setDraft(blankDraft());
+    setDraft({
+      ...blankDraft(),
+      departureFlightDatetime: dateAtMidnight(weekStartDate) || null,
+      returnFlightDatetime: dateAtMidnight(weekEndDate) || null,
+    });
     setOpen(true);
   };
 
@@ -175,6 +217,8 @@ export function AdditionalFlightsPanel({
     setEditing(flight);
     setDraft({
       ...values,
+      departureAirline: normalizeAirlineId(values.departureAirline),
+      returnAirline: normalizeAirlineId(values.returnAirline),
       ticketType:
         values.ticketType === "oneway" || values.ticketType === "roundtrip"
           ? values.ticketType
@@ -251,7 +295,12 @@ export function AdditionalFlightsPanel({
               weekStartDate={weekStartDate}
               weekEndDate={weekEndDate}
               onSave={persist}
-              onCancel={() => { setEditing(null); setIsCreating(false); setOpen(flights.length === 0); }}
+              onCancel={() => {
+                setEditing(null);
+                setIsCreating(false);
+                setDraft(blankDraft());
+                setOpen(false);
+              }}
             />
           ) : null}
         </div>
@@ -276,40 +325,75 @@ export function AdditionalFlightsPanel({
 
 function FlightForm({ draft, setDraft, title, isSaving, weekStartDate, weekEndDate, onSave, onCancel }: { draft: Draft; setDraft: (next: Draft) => void; title: string; isSaving: boolean; weekStartDate: string; weekEndDate: string; onSave: () => Promise<void>; onCancel: () => void }) {
   const set = <K extends keyof Draft>(key: K, value: Draft[K]) => setDraft({ ...draft, [key]: value });
+  const isRoundTrip = draft.ticketType !== "oneway";
+  const setTicketType = (ticketType: "roundtrip" | "oneway") => set("ticketType", ticketType);
+  const clearLeg = (direction: "departure" | "return") => {
+    const prefix = direction === "departure" ? "departure" : "return";
+    setDraft({ ...draft, [`${prefix}Airport`]: null, [`${prefix}Airline`]: null, [`${prefix}FlightDatetime`]: null, [`${prefix}FlightNumber`]: null, [`${prefix}Locator`]: null, [`${prefix}Terminal`]: null } as Draft);
+  };
+  const copyDepartureField = (field: "Airline" | "Locator") => {
+    setDraft({ ...draft, [`return${field}`]: draft[`departure${field}` as keyof Draft] } as Draft);
+  };
   const toggleStatus = (key: "departureRescheduled" | "returnRescheduled" | "departureCancelled" | "returnCancelled", active: boolean) => {
     const counterpart = key.includes("Rescheduled") ? key.replace("Rescheduled", "Cancelled") : key.replace("Cancelled", "Rescheduled");
     setDraft({ ...draft, [key]: active ? 1 : 0, [counterpart]: active ? 0 : draft[counterpart as keyof Draft] });
   };
-  const isRoundTrip = draft.ticketType !== "oneway";
-  const periodLabel = weekStartDate && weekEndDate ? `${weekStartDate} a ${weekEndDate}` : "o período da semana selecionada";
 
   return (
-    <div className="rounded-2xl border border-violet-200 bg-violet-50/60 p-4">
-      <div className="mb-4 flex items-center justify-between"><h4 className="font-black text-violet-950">{title}</h4><label className="flex items-center gap-2 text-sm font-bold text-violet-950"><Checkbox checked={Boolean(draft.isTicketIssued)} onCheckedChange={checked => set("isTicketIssued", checked ? 1 : 0)} /> Emitido</label></div>
-      <p className="mb-4 rounded-lg border border-violet-200 bg-white/80 px-3 py-2 text-xs text-violet-900">Os trechos desta passagem devem ocorrer entre <strong>{periodLabel}</strong>.</p>
-      <div className="grid gap-3 sm:grid-cols-2">
-        <Field label="Tipo de passagem"><Select value={draft.ticketType || "roundtrip"} onValueChange={value => set("ticketType", value as Draft["ticketType"])}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="roundtrip">Ida e volta</SelectItem><SelectItem value="oneway">Somente ida</SelectItem></SelectContent></Select></Field>
-        <Field label="Milhas Smiles"><Input inputMode="numeric" value={draft.smilesPoints ?? ""} onChange={event => set("smilesPoints", optionalNumber(event.target.value))} /></Field>
-        <Field label="Milhas LATAM Pass"><Input inputMode="numeric" value={draft.latamPassPoints ?? ""} onChange={event => set("latamPassPoints", optionalNumber(event.target.value))} /></Field>
+    <div className="space-y-3">
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2">
+        <div><p className="text-sm font-bold text-slate-800">{title}</p><p className="text-xs text-slate-500">Use os mesmos dados e padrões do cartão da semana.</p></div>
+        <label className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-wide text-slate-600"><Checkbox checked={Boolean(draft.isTicketIssued)} onCheckedChange={checked => set("isTicketIssued", checked ? 1 : 0)} /> Bilhete emitido</label>
       </div>
-      <div className="mt-5 grid gap-4 lg:grid-cols-2">
-        <LegFields title="Ida" direction="departure" draft={draft} set={set} onToggle={toggleStatus} minDate={toIsoDay(weekStartDate)} maxDate={toIsoDay(weekEndDate)} />
-        {isRoundTrip && <LegFields title="Volta" direction="return" draft={draft} set={set} onToggle={toggleStatus} minDate={toIsoDay(weekStartDate)} maxDate={toIsoDay(weekEndDate)} />}
+      <div className="flex items-center gap-2">
+        <span className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">Tipo de Bilhete</span>
+        <div className="flex overflow-hidden rounded-lg border border-slate-200 shadow-sm" role="group" aria-label="Tipo de Bilhete">
+          <button type="button" aria-label="Selecionar ida e volta" aria-pressed={isRoundTrip} onClick={() => setTicketType("roundtrip")} className={`px-3 py-1 text-xs font-semibold transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-inset ${isRoundTrip ? "bg-blue-600 text-white" : "bg-white text-slate-500 hover:bg-slate-50"}`}>✈ Ida e Volta</button>
+          <button type="button" aria-label="Selecionar somente ida" aria-pressed={!isRoundTrip} onClick={() => setTicketType("oneway")} className={`border-l border-slate-200 px-3 py-1 text-xs font-semibold transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-inset ${!isRoundTrip ? "bg-orange-500 text-white" : "bg-white text-slate-500 hover:bg-slate-50"}`}>→ Somente Ida</button>
+        </div>
       </div>
-      <div className="mt-5 flex flex-wrap justify-end gap-2"><Button type="button" variant="outline" onClick={onCancel}>Cancelar</Button><Button type="button" onClick={() => void onSave()} disabled={isSaving} className="bg-violet-600 hover:bg-violet-700">{isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}Salvar voo</Button></div>
+      <div className={`grid gap-3 ${isRoundTrip ? "grid-cols-1 sm:grid-cols-2" : "grid-cols-1"}`}>
+        <LegFields title="Ida" direction="departure" draft={draft} set={set} setDraft={setDraft} onToggle={toggleStatus} defaultDate={weekStartDate} onClear={() => clearLeg("departure")} onCopy={copyDepartureField} />
+        {isRoundTrip && <LegFields title="Volta" direction="return" draft={draft} set={set} setDraft={setDraft} onToggle={toggleStatus} defaultDate={weekEndDate} onClear={() => clearLeg("return")} />}
+      </div>
+      <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
+        <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">Pagamento em Milhas</span>
+        <div className="mt-2 grid gap-2 sm:grid-cols-2"><MileageField label="SMILES" value={draft.smilesPoints} onChange={value => set("smilesPoints", value)} /><MileageField label="LATAM PASS" value={draft.latamPassPoints} onChange={value => set("latamPassPoints", value)} /></div>
+      </div>
+      <div className="flex flex-wrap justify-end gap-2"><Button type="button" variant="outline" onClick={onCancel}>Cancelar</Button><Button type="button" onClick={() => void onSave()} disabled={isSaving} className="bg-blue-600 hover:bg-blue-700">{isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}Salvar voo</Button></div>
     </div>
   );
 }
 
-function LegFields({ title, direction, draft, set, onToggle, minDate, maxDate }: { title: string; direction: "departure" | "return"; draft: Draft; set: <K extends keyof Draft>(key: K, value: Draft[K]) => void; onToggle: (key: "departureRescheduled" | "returnRescheduled" | "departureCancelled" | "returnCancelled", active: boolean) => void; minDate: string; maxDate: string }) {
+function LegFields({ title, direction, draft, set, setDraft, onToggle, defaultDate, onClear, onCopy }: { title: string; direction: "departure" | "return"; draft: Draft; set: <K extends keyof Draft>(key: K, value: Draft[K]) => void; setDraft: (next: Draft) => void; onToggle: (key: "departureRescheduled" | "returnRescheduled" | "departureCancelled" | "returnCancelled", active: boolean) => void; defaultDate: string; onClear: () => void; onCopy?: (field: "Airline" | "Locator") => void }) {
   const isDeparture = direction === "departure";
   const prefix = isDeparture ? "departure" : "return";
   const key = (suffix: string) => `${prefix}${suffix}` as keyof Draft;
+  const airlineKey = key("Airline");
+  const airportKey = key("Airport");
+  const datetimeKey = key("FlightDatetime");
+  const flightNumberKey = key("FlightNumber");
+  const locatorKey = key("Locator");
+  const terminalKey = key("Terminal");
   const rescheduledKey = key("Rescheduled") as "departureRescheduled" | "returnRescheduled";
   const cancelledKey = key("Cancelled") as "departureCancelled" | "returnCancelled";
-  return <div className="rounded-xl border border-white bg-white p-3 shadow-sm"><p className="mb-3 font-black text-slate-800">{title}</p><div className="grid gap-3"><Field label="Companhia"><Select value={(draft[key("Airline")] as string) || "none"} onValueChange={value => set(key("Airline"), value === "none" ? null : value)}><SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger><SelectContent><SelectItem value="none">Não definida</SelectItem>{airlines.filter(airline => airline.id !== "kayak").map(airline => <SelectItem key={airline.id} value={airline.name}>{airline.name}</SelectItem>)}</SelectContent></Select></Field><div className="grid grid-cols-2 gap-3"><Field label="Aeroporto"><Select value={(draft[key("Airport")] as string) || (isDeparture ? "GRU" : "NVT")} onValueChange={value => set(key("Airport"), value)}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="GRU">GRU</SelectItem><SelectItem value="CGH">CGH</SelectItem><SelectItem value="NVT">NVT</SelectItem></SelectContent></Select></Field><Field label="Terminal"><Input value={(draft[key("Terminal")] as string) || ""} onChange={event => set(key("Terminal"), event.target.value || null)} /></Field></div><Field label="Data e hora"><Input type="datetime-local" min={minDate ? `${minDate}T00:00` : undefined} max={maxDate ? `${maxDate}T23:59` : undefined} value={toDatetimeValue(draft[key("FlightDatetime")] as string | null)} onChange={event => set(key("FlightDatetime"), event.target.value || null)} /></Field><div className="grid grid-cols-2 gap-3"><Field label="Número do voo"><Input value={(draft[key("FlightNumber")] as string) || ""} onChange={event => set(key("FlightNumber"), event.target.value || null)} /></Field><Field label="Localizador"><Input value={(draft[key("Locator")] as string) || ""} onChange={event => set(key("Locator"), event.target.value || null)} /></Field></div><div className="flex flex-wrap gap-3 pt-1"><label className="flex items-center gap-2 text-xs font-semibold text-amber-700"><Checkbox checked={Boolean(draft[rescheduledKey])} onCheckedChange={checked => onToggle(rescheduledKey, Boolean(checked))} /> Remarcado</label><label className="flex items-center gap-2 text-xs font-semibold text-rose-700"><Checkbox checked={Boolean(draft[cancelledKey])} onCheckedChange={checked => onToggle(cancelledKey, Boolean(checked))} /> Cancelado</label></div></div></div>;
+  const airline = String(draft[airlineKey] ?? "").toLowerCase();
+  const selectedAirline = STANDARD_AIRLINES.find(item => item.id === airline);
+  const datetime = (draft[datetimeKey] as string | null) || dateAtMidnight(defaultDate);
+  const weekday = weekdayLabel(draft[datetimeKey] as string | null, defaultDate);
+  const color = isDeparture ? "blue" : "orange";
+  const setAirline = (nextAirline: string) => {
+    const currentNumber = String(draft[flightNumberKey] ?? "").trim();
+    const previousCode = AIRLINE_IATA_CODES[airline] ?? airline.toUpperCase().slice(0, 2);
+    const nextCode = AIRLINE_IATA_CODES[nextAirline] ?? nextAirline.toUpperCase().slice(0, 2);
+    setDraft({ ...draft, [airlineKey]: nextAirline, [flightNumberKey]: !currentNumber || currentNumber === previousCode ? nextCode : currentNumber } as Draft);
+  };
+
+  return <div className="overflow-hidden rounded-2xl border border-slate-200 bg-slate-50/50 shadow-sm dark:border-slate-700 dark:bg-slate-700/50 dark:shadow-slate-900/40"><div className="flex items-center justify-between gap-2 border-b border-slate-200 bg-slate-100/50 px-4 py-2 dark:border-slate-600 dark:bg-slate-700"><div className="flex items-center gap-2"><Plane className={`h-4 w-4 text-slate-400 ${isDeparture ? "" : "rotate-180"}`} /><span className="text-[11px] font-bold uppercase tracking-widest text-slate-600 dark:text-slate-200">{title}</span></div><button type="button" onClick={onClear} className={`px-2 py-1 text-[10px] font-semibold text-slate-500 transition-colors hover:text-slate-700 focus:outline-none focus-visible:ring-1 ${isDeparture ? "focus-visible:ring-blue-400" : "focus-visible:ring-orange-400"}`} title={`Limpar dados do voo de ${title.toLowerCase()}`} aria-label={`Limpar dados do voo de ${title.toLowerCase()}`}>🗑️ Limpar</button></div><div className="flex flex-col gap-2.5 p-3"><div className="flex flex-col gap-1"><label className="text-[10px] font-semibold uppercase tracking-wide text-slate-600 dark:text-slate-300">Aeroporto</label><Select value={(draft[airportKey] as string) || ""} onValueChange={value => set(airportKey, value as Draft[typeof airportKey])}><SelectTrigger aria-label={`Aeroporto de ${title}`} className={`h-8 w-full border-${color}-200 bg-white text-xs dark:bg-slate-700 dark:text-slate-100`}><SelectValue placeholder="Selecionar aeroporto" /></SelectTrigger><SelectContent>{AIRPORT_OPTIONS.map(([value, label]) => <SelectItem key={value} value={value}>{label}</SelectItem>)}</SelectContent></Select></div><div className="flex flex-col gap-1"><div className="flex items-center justify-between"><label className="text-[10px] font-semibold uppercase tracking-wide text-slate-600 dark:text-slate-300">Companhia Aérea</label>{isDeparture && airline && onCopy && <CopyButton label="Copiar → Volta" onClick={() => onCopy("Airline")} />}</div><Select value={airline || "none"} onValueChange={value => value !== "none" && setAirline(value)}><SelectTrigger aria-label={`Companhia Aérea de ${title}`} className={`h-8 w-full border-${color}-200 bg-white text-xs dark:bg-slate-700 dark:text-slate-100`}><SelectValue placeholder="Selecionar companhia">{selectedAirline ? <span className="flex items-center gap-1.5"><img src={selectedAirline.logo} className="h-4 w-auto object-contain" alt={selectedAirline.label} />{selectedAirline.label}</span> : <span className="text-slate-400">Selecionar companhia</span>}</SelectValue></SelectTrigger><SelectContent><SelectItem value="none">Não definida</SelectItem>{STANDARD_AIRLINES.map(item => <SelectItem key={item.id} value={item.id}><span className="flex items-center gap-2"><img src={item.logo} className="h-5 w-auto object-contain" alt={item.label} />{item.label}</span></SelectItem>)}</SelectContent></Select></div><div className="flex flex-col gap-1"><label className="text-[10px] font-semibold uppercase tracking-wide text-slate-600 dark:text-slate-300">Data e Hora do Voo</label><input aria-label={`Data e Hora do Voo de ${title}`} type="datetime-local" className={`h-8 w-full rounded-md border border-${color}-200 bg-white px-2 text-xs text-slate-700 focus:outline-none focus:ring-2 focus:ring-${color}-400 dark:bg-slate-700 dark:text-slate-100`} value={datetime} onChange={event => set(datetimeKey, event.target.value as Draft[typeof datetimeKey])} />{weekday && <span className={`w-fit rounded-md bg-${color}-100 px-2 py-0.5 text-[11px] font-semibold text-${color}-700`}>{weekday}</span>}</div><div className="flex flex-col gap-1"><label className="text-[10px] font-semibold uppercase tracking-wide text-slate-600 dark:text-slate-300">Número do Voo</label><input aria-label={`Número do Voo de ${title}`} type="text" maxLength={10} placeholder="Ex: LA3045" className={`h-8 w-full rounded-md border border-${color}-200 bg-white px-2 text-xs font-mono uppercase text-slate-700 focus:outline-none focus:ring-2 focus:ring-${color}-400`} value={(draft[flightNumberKey] as string) || ""} onChange={event => set(flightNumberKey, event.target.value.toUpperCase() as Draft[typeof flightNumberKey])} /></div><div className="flex flex-col gap-1"><div className="flex items-center justify-between"><label className="text-[10px] font-semibold uppercase tracking-wide text-slate-600 dark:text-slate-300">Localizador (PNR)</label>{isDeparture && String(draft[locatorKey] ?? "").trim() && onCopy && <CopyButton label="Copiar → Volta" onClick={() => onCopy("Locator")} />}</div><input aria-label={`Localizador do Voo de ${title}`} type="text" maxLength={20} placeholder="Ex: ABC123" className={`h-8 w-full rounded-md border border-${color}-200 bg-white px-2 text-xs font-mono uppercase text-slate-700 focus:outline-none focus:ring-2 focus:ring-${color}-400`} value={(draft[locatorKey] as string) || ""} onChange={event => set(locatorKey, event.target.value.toUpperCase() as Draft[typeof locatorKey])} /></div><div className="flex flex-col gap-1"><label className="text-[10px] font-semibold uppercase tracking-wide text-slate-600 dark:text-slate-300">Terminal</label><Input value={(draft[terminalKey] as string) || ""} className={`h-8 border-${color}-200 text-xs`} onChange={event => set(terminalKey, (event.target.value || null) as Draft[typeof terminalKey])} /></div><div className="flex items-center gap-2 pt-1"><Checkbox checked={Boolean(draft[rescheduledKey])} onCheckedChange={checked => onToggle(rescheduledKey, Boolean(checked))} className="border-red-400 data-[state=checked]:border-red-500 data-[state=checked]:bg-red-500" /><span className="text-[10px] font-semibold uppercase tracking-wide text-red-600 dark:text-red-400">Voo Remarcado</span></div><div className="flex items-center gap-2 pt-1"><Checkbox checked={Boolean(draft[cancelledKey])} onCheckedChange={checked => onToggle(cancelledKey, Boolean(checked))} className="border-slate-500 data-[state=checked]:border-slate-700 data-[state=checked]:bg-slate-700" /><span className="text-[10px] font-semibold uppercase tracking-wide text-slate-700 dark:text-slate-200">Voo Cancelado</span></div></div></div>;
 }
 
-function Field({ label, children }: { label: string; children: React.ReactNode }) { return <div className="space-y-1"><Label className="text-xs font-bold text-slate-600">{label}</Label>{children}</div>; }
+function CopyButton({ label, onClick }: { label: string; onClick: () => void }) { return <button type="button" onClick={onClick} className="flex items-center gap-0.5 rounded border border-blue-200 bg-blue-50 px-1.5 py-0.5 text-[10px] font-medium text-blue-500 transition-colors hover:bg-blue-100 hover:text-blue-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500" title={label} aria-label={label}><Copy className="h-3 w-3" />{label}</button>; }
+
+function MileageField({ label, value, onChange }: { label: string; value: number | null; onChange: (value: number | null) => void }) { return <div className="flex items-center gap-2"><span className="w-20 flex-shrink-0 rounded bg-slate-700 px-2 py-1 text-center text-xs font-semibold text-white">{label}</span><Input inputMode="numeric" placeholder="0 pontos" className="h-8 text-xs" value={value ?? ""} onChange={event => onChange(optionalNumber(event.target.value))} /></div>; }
 
 function optionalNumber(value: string) { const number = Number(value); return value === "" || !Number.isFinite(number) ? null : Math.max(0, Math.trunc(number)); }

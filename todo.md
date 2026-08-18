@@ -746,3 +746,8 @@
 ## Conteúdo editorial
 
 - [x] Atualizar a página Novidades com os últimos lançamentos, novidades e implementações
+
+## Viagens adicionais
+
+- [x] Corrigir o botão Cancelar na adição de viagens adicionais
+- [x] Replicar integralmente os campos, combos, dados, posições e layout do cartão semanal no formulário de viagens adicionais
