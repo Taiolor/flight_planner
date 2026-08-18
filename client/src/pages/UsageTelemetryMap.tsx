@@ -1,5 +1,5 @@
 import { LoginModal } from "@/components/auth/LoginModal";
-import { MapView } from "@/components/Map";
+import { OpenStreetMap, type OpenStreetMapPoint } from "@/components/OpenStreetMap";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -17,7 +17,7 @@ import {
   ShieldCheck,
   Waypoints,
 } from "lucide-react";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useState } from "react";
 import { useLocation } from "wouter";
 
 const EVENT_LABELS = {
@@ -77,8 +77,6 @@ export default function UsageTelemetryMap() {
 function UsageTelemetryMapContent() {
   const [, setLocation] = useLocation();
   const [hours, setHours] = useState(24);
-  const mapRef = useRef<google.maps.Map | null>(null);
-  const markersRef = useRef<google.maps.marker.AdvancedMarkerElement[]>([]);
   const mapQuery = trpc.usageTelemetry.getMapData.useQuery(
     { hours, limit: 200 },
     { enabled: true, ...queryCachePolicies.admin }
@@ -96,50 +94,19 @@ function UsageTelemetryMapContent() {
     () => (summaryQuery.data ?? []).reduce((total, item) => total + Number(item.located), 0),
     [summaryQuery.data]
   );
-
-  const renderMarkers = useCallback(
-    (map: google.maps.Map) => {
-      markersRef.current.forEach(marker => {
-        marker.map = null;
-      });
-      markersRef.current = [];
-      const events = mapQuery.data ?? [];
-      if (events.length === 0) return;
-
-      const bounds = new google.maps.LatLngBounds();
-      markersRef.current = events.map(event => {
-        const position = {
+  const mapPoints = useMemo<OpenStreetMapPoint[]>(
+    () =>
+      (mapQuery.data ?? []).map(event => ({
+        id: event.id,
+        position: {
           lat: Number(event.latitudeE2) / 100,
           lng: Number(event.longitudeE2) / 100,
-        };
-        bounds.extend(position);
-        const marker = new google.maps.marker.AdvancedMarkerElement({
-          map,
-          position,
-          title: `${EVENT_LABELS[event.eventType]} · ${event.route}`,
-        });
-        const markerElement = marker.element as HTMLElement | undefined;
-        if (markerElement) {
-          markerElement.style.setProperty("--gmpx-color", EVENT_COLORS[event.eventType]);
-        }
-        return marker;
-      });
-
-      if (events.length === 1) {
-        map.setCenter(bounds.getCenter());
-        map.setZoom(7);
-      } else {
-        map.fitBounds(bounds, 56);
-      }
-    },
+        },
+        color: EVENT_COLORS[event.eventType],
+        label: `${EVENT_LABELS[event.eventType]} · ${event.route}`,
+      })),
     [mapQuery.data]
   );
-
-  useEffect(() => {
-    if (mapRef.current && window.google?.maps?.marker) {
-      renderMarkers(mapRef.current);
-    }
-  }, [renderMarkers]);
 
   return (
     <main className="min-h-screen bg-slate-950 text-white">
@@ -218,14 +185,11 @@ function UsageTelemetryMapContent() {
               Não foi possível carregar os dados administrativos desta sessão.
             </div>
           ) : (
-            <MapView
+            <OpenStreetMap
               className="h-[540px]"
               initialCenter={{ lat: -14.235, lng: -51.9253 }}
               initialZoom={4}
-              onMapReady={map => {
-                mapRef.current = map;
-                renderMarkers(map);
-              }}
+              points={mapPoints}
             />
           )}
         </Card>
