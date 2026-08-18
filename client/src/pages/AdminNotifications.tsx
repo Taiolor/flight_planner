@@ -129,6 +129,26 @@ export default function AdminNotifications() {
     },
   });
 
+  // Este Hook deve ser executado em todos os estados de autenticação. Mantê-lo
+  // antes dos retornos condicionais evita alterar a ordem de Hooks após o
+  // carregamento da sessão e dos dados do painel.
+  const { pendingAlerts, sentAlerts, pastAlerts } = useMemo(() => {
+    type AlertArray = NonNullable<typeof data>["scheduledAlerts"];
+    const pending: AlertArray = [];
+    const sent: AlertArray = [];
+    const past: AlertArray = [];
+
+    if (data?.scheduledAlerts) {
+      for (const alert of data.scheduledAlerts) {
+        if (alert.status === "pending") pending.push(alert);
+        else if (alert.status === "sent") sent.push(alert);
+        else if (alert.status === "past") past.push(alert);
+      }
+    }
+
+    return { pendingAlerts: pending, sentAlerts: sent, pastAlerts: past };
+  }, [data?.scheduledAlerts]);
+
   if (accessState === "checking" || (isAuthenticated && isLoading)) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -196,24 +216,6 @@ export default function AdminNotifications() {
     );
   }
 
-  // ⚡ Bolt Optimization: Single-pass iteration to categorize alerts
-  // Replaces 3x O(N) .filter() array iterations with 1x O(N) pass, reducing overhead
-  const { pendingAlerts, sentAlerts, pastAlerts } = useMemo(() => {
-    type AlertArray = NonNullable<typeof data>["scheduledAlerts"];
-    const pending: AlertArray = [];
-    const sent: AlertArray = [];
-    const past: AlertArray = [];
-
-    if (data?.scheduledAlerts) {
-      for (const alert of data.scheduledAlerts) {
-        if (alert.status === "pending") pending.push(alert);
-        else if (alert.status === "sent") sent.push(alert);
-        else if (alert.status === "past") past.push(alert);
-      }
-    }
-
-    return { pendingAlerts: pending, sentAlerts: sent, pastAlerts: past };
-  }, [data?.scheduledAlerts]);
   const nextAlert = pendingAlerts[0];
 
   return (
@@ -609,33 +611,32 @@ export default function AdminNotifications() {
 
         {/* Histórico Persistente de Envios */}
         <div>
-          <button
-            type="button"
-            onClick={() => toggleSection("history")}
-            className="w-full flex items-center justify-between p-4 bg-white hover:bg-gray-50 transition-colors border border-gray-200 rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
-            aria-expanded={expandedSections.has("history")}
-            aria-controls="section-history"
-          >
+          <div className="w-full flex items-center gap-2 p-4 bg-white hover:bg-gray-50 transition-colors border border-gray-200 rounded-lg">
+            <button
+              type="button"
+              onClick={() => toggleSection("history")}
+              className="min-w-0 flex flex-1 items-center justify-between gap-3 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded-sm"
+              aria-expanded={expandedSections.has("history")}
+              aria-controls="section-history"
+            >
             <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide">
               Histórico de Envios ({logs.length})
             </h2>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={e => {
-                  e.stopPropagation();
-                  logsQuery.refetch();
-                }}
-                className="text-xs text-gray-400 hover:text-gray-600 flex items-center gap-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm"
-              >
-                <RefreshCw className="w-3 h-3" /> Atualizar
-              </button>
               <ChevronDown
                 className={`w-5 h-5 text-slate-400 transition-transform duration-200 flex-shrink-0 ${
                   expandedSections.has("history") ? "rotate-180" : ""
                 }`}
               />
-            </div>
-          </button>
+            </button>
+            <button
+              type="button"
+              onClick={() => logsQuery.refetch()}
+              className="text-xs text-gray-400 hover:text-gray-600 flex items-center gap-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm"
+              aria-label="Atualizar histórico de envios"
+            >
+              <RefreshCw className="w-3 h-3" /> Atualizar
+            </button>
+          </div>
 
           {expandedSections.has("history") && (
             <Card id="section-history" className="overflow-hidden mt-3">
