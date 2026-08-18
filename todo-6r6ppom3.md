@@ -8,3 +8,6 @@
 - [x] Remover a marcação de botão aninhado no histórico de envios para evitar erro de hidratação no navegador.
 - [ ] Validar manualmente a rota /admin/notifications com a sessão interna ativa após publicar o checkpoint.
 - [x] Cobrir o estado de erro autenticado da página administrativa com teste de regressão.
+- [x] Investigar o erro React #310 que persiste no fluxo autenticado da versão publicada de /admin/notifications.
+- [x] Corrigir estruturalmente qualquer Hook restante que dependa de estado condicional na página administrativa.
+- [ ] Validar a página administrativa publicada com uma sessão interna autenticada após a nova correção.

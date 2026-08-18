@@ -57,18 +57,63 @@ export function getAdminAccessState({
 }
 
 export default function AdminNotifications() {
+  const [showLoginModal, setShowLoginModal] = useState(false);
+  const authCheckQuery = trpc.flightAuth.check.useQuery();
+  const isAuthenticated = authCheckQuery.data?.authenticated ?? false;
+
+  if (authCheckQuery.isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center space-y-3">
+          <div className="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto" />
+          <p className="text-gray-500 text-sm">Carregando painel...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return (
+      <>
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6">
+          <div className="text-center space-y-4 max-w-sm">
+            <AlertCircle className="w-12 h-12 text-amber-500 mx-auto" />
+            <div className="space-y-1">
+              <p className="text-gray-800 font-semibold">Acesso restrito</p>
+              <p className="text-gray-500 text-sm">
+                Entre com sua conta para acompanhar alertas e notificações de voo.
+              </p>
+            </div>
+            <div className="flex items-center justify-center gap-2">
+              <Button onClick={() => setShowLoginModal(true)} className="gap-2">
+                <Bell className="w-4 h-4" /> Entrar
+              </Button>
+              <Link href="/">
+                <Button
+                  variant="outline"
+                  aria-label="Voltar para a página inicial"
+                  className="gap-2"
+                >
+                  <ArrowLeft className="w-4 h-4" /> Voltar
+                </Button>
+              </Link>
+            </div>
+          </div>
+        </div>
+        <LoginModal open={showLoginModal} onOpenChange={setShowLoginModal} />
+      </>
+    );
+  }
+
+  return <AdminNotificationsContent />;
+}
+
+function AdminNotificationsContent() {
   const { selectedYear } = useYear();
   const [autoRefresh, setAutoRefresh] = useState(false);
-  const [showLoginModal, setShowLoginModal] = useState(false);
   const [expandedSections, setExpandedSections] = useState<Set<string>>(
     new Set()
   );
-  const authCheckQuery = trpc.flightAuth.check.useQuery();
-  const isAuthenticated = authCheckQuery.data?.authenticated ?? false;
-  const accessState = getAdminAccessState({
-    isCheckingAuthentication: authCheckQuery.isLoading,
-    isAuthenticated,
-  });
 
   const toggleSection = (section: string) => {
     const newSet = new Set(expandedSections);
@@ -82,7 +127,7 @@ export default function AdminNotifications() {
 
   const { data, isLoading, error, refetch, isFetching } =
     trpc.adminNotifications.getStatus.useQuery({ year: selectedYear }, {
-      enabled: isAuthenticated,
+      enabled: true,
       ...queryCachePolicies.admin,
       refetchInterval: autoRefresh ? 60_000 : false,
     });
@@ -90,7 +135,7 @@ export default function AdminNotifications() {
   const logsQuery = trpc.adminNotifications.getLogs.useInfiniteQuery(
     { year: selectedYear, limit: 25 },
     {
-      enabled: isAuthenticated,
+      enabled: true,
       ...queryCachePolicies.admin,
       refetchInterval: autoRefresh ? 60_000 : false,
       getNextPageParam: lastPage => lastPage.nextCursor,
@@ -103,7 +148,7 @@ export default function AdminNotifications() {
   const performanceSummaryQuery = trpc.performanceMetrics.getSummary.useQuery(
     { hours: 24 },
     {
-      enabled: isAuthenticated,
+      enabled: true,
       ...queryCachePolicies.admin,
     }
   );
@@ -149,7 +194,7 @@ export default function AdminNotifications() {
     return { pendingAlerts: pending, sentAlerts: sent, pastAlerts: past };
   }, [data?.scheduledAlerts]);
 
-  if (accessState === "checking" || (isAuthenticated && isLoading)) {
+  if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center space-y-3">
@@ -157,39 +202,6 @@ export default function AdminNotifications() {
           <p className="text-gray-500 text-sm">Carregando painel...</p>
         </div>
       </div>
-    );
-  }
-
-  if (accessState === "login-required") {
-    return (
-      <>
-        <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6">
-          <div className="text-center space-y-4 max-w-sm">
-            <AlertCircle className="w-12 h-12 text-amber-500 mx-auto" />
-            <div className="space-y-1">
-              <p className="text-gray-800 font-semibold">Acesso restrito</p>
-              <p className="text-gray-500 text-sm">
-                Entre com sua conta para acompanhar alertas e notificações de voo.
-              </p>
-            </div>
-            <div className="flex items-center justify-center gap-2">
-              <Button onClick={() => setShowLoginModal(true)} className="gap-2">
-                <Bell className="w-4 h-4" /> Entrar
-              </Button>
-              <Link href="/">
-                <Button
-                  variant="outline"
-                  aria-label="Voltar para a página inicial"
-                  className="gap-2"
-                >
-                  <ArrowLeft className="w-4 h-4" /> Voltar
-                </Button>
-              </Link>
-            </div>
-          </div>
-        </div>
-        <LoginModal open={showLoginModal} onOpenChange={setShowLoginModal} />
-      </>
     );
   }
 
