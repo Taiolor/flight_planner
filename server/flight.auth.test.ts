@@ -118,6 +118,25 @@ describe("flightAuth.check", () => {
     const result = await caller.flightAuth.check();
     expect(result.authenticated).toBe(false);
     expect(result.email).toBeNull();
+    expect(result.isAdmin).toBe(false);
+  });
+
+  it("should expose the administrative capability only for the internal owner session", async () => {
+    const { validateAuthSession } = await import("./db");
+    (validateAuthSession as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+      email: "taiolor@gmail.com",
+    });
+
+    const caller = appRouter.createCaller(
+      createTestContext("flight_session=owner-session")
+    );
+    const result = await caller.flightAuth.check();
+
+    expect(result).toMatchObject({
+      authenticated: true,
+      email: "taiolor@gmail.com",
+      isAdmin: true,
+    });
   });
 });
 

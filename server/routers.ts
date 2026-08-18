@@ -172,8 +172,16 @@ export const appRouter = router({
     // Verificar sessão atual
     check: publicProcedure.query(async ({ ctx }) => {
       const session = await getSessionFromCookie(ctx.req);
-      if (!session) return { authenticated: false, email: null };
-      return { authenticated: true, email: session.email };
+      if (!session) {
+        return { authenticated: false, email: null, isAdmin: false };
+      }
+      return {
+        authenticated: true,
+        email: session.email,
+        isAdmin:
+          Boolean(ENV.authEmail) &&
+          session.email.toLowerCase() === ENV.authEmail.toLowerCase(),
+      };
     }),
 
     // Logout da sessão de passagens

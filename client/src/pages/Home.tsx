@@ -78,6 +78,7 @@ import {
   Wand2,
   CalendarDays,
   ShieldCheck,
+  MapPinned,
   Sun,
   Moon,
   DollarSign,
@@ -2027,6 +2028,18 @@ export default function Home() {
                     title="Painel de Notificações"
                   >
                     <ShieldCheck className="w-4 h-4 mr-1" /> Admin
+                  </Button>
+                </Link>
+              )}
+              {authCheckQuery.data?.isAdmin && (
+                <Link href="/admin/telemetria">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="bg-white bg-opacity-10 border-white text-white hover:bg-white hover:text-blue-700 btn-glow-cyan transition-all"
+                    title="Mapa administrativo de locais consentidos"
+                  >
+                    <MapPinned className="w-4 h-4 mr-1" /> Locais
                   </Button>
                 </Link>
               )}

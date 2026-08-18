@@ -711,4 +711,6 @@
 - [x] Implementar telemetria de uso com consentimento por sessão, localização aproximada e mapa administrativo protegido
 - [ ] Publicar e ativar a limpeza periódica de eventos de uso com retenção de 30 dias
 
+- [x] Adicionar menu administrativo exclusivo para acessar o mapa de locais consentidos
+
 - [x] Corrigir bloqueio de abertura da página administrativa
