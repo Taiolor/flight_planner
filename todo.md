@@ -698,4 +698,6 @@
 
 - [x] P2: carregar gráficos e Recharts somente sob demanda
 
+- [x] P3: aplicar cache tRPC por domínio e invalidação anual granular
+
 - [x] Corrigir bloqueio de abertura da página administrativa

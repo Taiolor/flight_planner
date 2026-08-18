@@ -39,6 +39,7 @@ import { AlertRow } from "@/components/admin-notifications/AlertRow";
 import { LoginModal } from "@/components/auth/LoginModal";
 import { GlobalYearSelector } from "@/components/GlobalYearSelector";
 import { useYear } from "@/contexts/YearContext";
+import { queryCachePolicies } from "@/lib/queryCache";
 
 export type AdminAccessState = "checking" | "login-required" | "authorized";
 
@@ -80,6 +81,7 @@ export default function AdminNotifications() {
   const { data, isLoading, error, refetch, isFetching } =
     trpc.adminNotifications.getStatus.useQuery({ year: selectedYear }, {
       enabled: isAuthenticated,
+      ...queryCachePolicies.admin,
       refetchInterval: autoRefresh ? 60_000 : false,
     });
 
@@ -88,6 +90,7 @@ export default function AdminNotifications() {
       { year: selectedYear, limit: 100 },
       {
         enabled: isAuthenticated,
+        ...queryCachePolicies.admin,
         refetchInterval: autoRefresh ? 60_000 : false,
       }
     );

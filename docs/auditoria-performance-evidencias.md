@@ -21,3 +21,7 @@ Após a separação do acionador leve na Home, o build de produção passou a ma
 ## Execução P2 — Gráficos sob demanda
 
 Os gráficos da Home agora são renderizados somente depois de uma solicitação explícita do usuário. O build separou o painel leve `HomeCharts` (**9.488 bytes brutos; 1.961 bytes gzip**) e a biblioteca de gráficos (**408.539 bytes brutos; 112.865 bytes gzip**) em chunks dinâmicos. O HTML inicial não contém referências a Recharts ou aos chunks de gráficos; o JavaScript inicial ficou em **178.638 bytes gzip** nesta medição.
+
+## Execução P3 — Cache tRPC e invalidação anual
+
+Foi definida uma política de cache por domínio: planejamento e finanças anuais permanecem recentes por dois minutos, cotações por um minuto, consumo de API e administração por trinta segundos, e a chave pública VAPID é tratada como estática. O refetch em foco foi desabilitado para essas leituras. Mutações de semana, preço e milhas invalidam apenas o exercício correspondente e seus resumos financeiros; mutações de cotações invalidam somente as cotações e o consumo de API do mesmo ano.

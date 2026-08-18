@@ -9,6 +9,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { trpc } from "@/lib/trpc";
+import { queryCachePolicies } from "@/lib/queryCache";
 
 export type NotificationStatus =
   | "unsupported" // Navegador não suporta push
@@ -36,7 +37,10 @@ export function usePushNotifications(year: number) {
   );
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const { data: vapidData } = trpc.push.getVapidPublicKey.useQuery();
+  const { data: vapidData } = trpc.push.getVapidPublicKey.useQuery(
+    undefined,
+    queryCachePolicies.staticPublicKey
+  );
   const subscribeMutation = trpc.push.subscribe.useMutation();
   const unsubscribeMutation = trpc.push.unsubscribe.useMutation();
   const sendTestMutation = trpc.push.sendTest.useMutation();

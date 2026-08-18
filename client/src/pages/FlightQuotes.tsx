@@ -47,6 +47,7 @@ import {
 import { Link } from "wouter";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useYear } from "@/contexts/YearContext";
+import { queryCachePolicies } from "@/lib/queryCache";
 import { GlobalYearSelector } from "@/components/GlobalYearSelector";
 import { toIsoDate } from "@/lib/utils";
 
@@ -853,16 +854,20 @@ export default function FlightQuotes() {
   const { selectedYear: year } = useYear();
   const _isDark = theme === "dark";
   const [loadingWeek, setLoadingWeek] = useState<number | null>(null);
+  const utils = trpc.useUtils();
+
+  const invalidateQuotesForYear = () =>
+    utils.quotes.getAll.invalidate({ year });
+  const invalidateQuoteUsageForYear = () =>
+    utils.quotes.getApiUsage.invalidate({ year });
 
   // As cotações e semanas são sempre carregadas pelo exercício selecionado.
-  const { data: allQuotes = EMPTY_ARRAY, refetch: refetchQuotes } =
-    trpc.quotes.getAll.useQuery({ year });
+  const { data: allQuotes = EMPTY_ARRAY } =
+    trpc.quotes.getAll.useQuery({ year }, queryCachePolicies.quotes);
   const { data: planningWeeks = EMPTY_ARRAY, isLoading: isLoadingWeeks } =
-    trpc.flights.getWeeks.useQuery({ year });
-  const {
-    data: apiUsage = { requestsUsed: 0, requestsLimit: 20 },
-    refetch: refetchUsage,
-  } = trpc.quotes.getApiUsage.useQuery({ year });
+    trpc.flights.getWeeks.useQuery({ year }, queryCachePolicies.annualPlanning);
+  const { data: apiUsage = { requestsUsed: 0, requestsLimit: 20 } } =
+    trpc.quotes.getApiUsage.useQuery({ year }, queryCachePolicies.apiUsage);
 
   // Mutations
   const fetchFromApi = trpc.quotes.fetchFromApi.useMutation({
@@ -873,8 +878,7 @@ export default function FlightQuotes() {
           description: `Requisições usadas: ${data.requestsUsed}/${data.requestsLimit}`,
         }
       );
-      refetchQuotes();
-      refetchUsage();
+      void Promise.all([invalidateQuotesForYear(), invalidateQuoteUsageForYear()]);
       setLoadingWeek(null);
     },
     onError: err => {
@@ -886,7 +890,7 @@ export default function FlightQuotes() {
   const saveManual = trpc.quotes.saveManual.useMutation({
     onSuccess: data => {
       toast.success(`Preço salvo: ${data.lowestPriceFormatted}`);
-      refetchQuotes();
+      void invalidateQuotesForYear();
     },
     onError: err => {
       toast.error("Erro ao salvar preço", { description: err.message });
@@ -896,7 +900,7 @@ export default function FlightQuotes() {
   const deleteQuote = trpc.quotes.delete.useMutation({
     onSuccess: () => {
       toast.success("Cotação excluída");
-      refetchQuotes();
+      void invalidateQuotesForYear();
     },
     onError: err => {
       toast.error("Erro ao excluir cotação", { description: err.message });

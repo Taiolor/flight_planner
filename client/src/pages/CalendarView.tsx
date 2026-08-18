@@ -217,10 +217,14 @@ import { WeekRow, DayMark, hasCancelledFlight } from "@/components/flights/types
 import FlightPopup from "@/components/flights/FlightPopup";
 import { useYear } from "@/contexts/YearContext";
 import { GlobalYearSelector } from "@/components/GlobalYearSelector";
+import { queryCachePolicies } from "@/lib/queryCache";
 
 export default function CalendarView() {
   const { selectedYear: year } = useYear();
-  const weeksQuery = trpc.flights.getWeeks.useQuery({ year });
+  const weeksQuery = trpc.flights.getWeeks.useQuery(
+    { year },
+    queryCachePolicies.annualPlanning
+  );
   const [selectedMark, setSelectedMark] = useState<DayMark | null>(null);
   const [showOnlyHolidaysAndWeekends, setShowOnlyHolidaysAndWeekends] =
     useState(false);

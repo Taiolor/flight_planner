@@ -6,6 +6,7 @@ import { createRoot } from "react-dom/client";
 import superjson from "superjson";
 import App from "./App";
 import "./index.css";
+import { queryCachePolicies } from "./lib/queryCache";
 
 // Detecta se o erro é HTML em vez de JSON (ocorre quando o servidor está reiniciando após hibernação)
 const isHtmlResponse = (error: unknown): boolean => {
@@ -20,6 +21,7 @@ const isHtmlResponse = (error: unknown): boolean => {
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
+      ...queryCachePolicies.default,
       // Retry automático para erros transitórios (servidor reiniciando após hibernação)
       retry: (failureCount, error) => {
         // Não fazer retry para erros de autenticação

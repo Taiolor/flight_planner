@@ -3,6 +3,7 @@ import { trpc } from "@/lib/trpc";
 import { Link } from "wouter";
 import { useYear } from "@/contexts/YearContext";
 import { GlobalYearSelector } from "@/components/GlobalYearSelector";
+import { queryCachePolicies } from "@/lib/queryCache";
 import {
   BarChart,
   Bar,
@@ -218,13 +219,13 @@ export default function FinancialDashboard() {
   const { data: yearSummary, isLoading: loadingYear } =
     trpc.financial.getYearSummary.useQuery(
       { year: selectedYear },
-      { enabled: isAuthenticated }
+      { ...queryCachePolicies.financial, enabled: isAuthenticated }
     );
 
   const { data: weeklyData, isLoading: loadingWeekly } =
     trpc.financial.getWeeklyData.useQuery(
       { year: selectedYear },
-      { enabled: isAuthenticated }
+      { ...queryCachePolicies.financial, enabled: isAuthenticated }
     );
 
   const { data: projections, isLoading: loadingProjections } =
@@ -235,7 +236,10 @@ export default function FinancialDashboard() {
         inflationRate: inflationRate / 100,
         tripsPerMonth,
       },
-      { enabled: isAuthenticated && showProjections }
+      {
+        ...queryCachePolicies.financial,
+        enabled: isAuthenticated && showProjections,
+      }
     );
 
   // ─── Dados derivados ───────────────────────────────────────────────────────

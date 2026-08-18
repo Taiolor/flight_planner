@@ -114,6 +114,7 @@ import { useYear } from "@/contexts/YearContext";
 import { GlobalYearSelector } from "@/components/GlobalYearSelector";
 import type { MonthlyChartData } from "@/components/HomeCharts";
 import { shouldRenderDeferredCharts } from "@/lib/chartLoading";
+import { queryCachePolicies } from "@/lib/queryCache";
 
 const AnnualSpendChart = lazy(() =>
   import("@/components/HomeCharts").then(module => ({
@@ -588,12 +589,17 @@ export default function Home() {
   const { selectedYear } = useYear();
 
   // tRPC queries
-  const weeksQuery = trpc.flights.getWeeks.useQuery({ year: selectedYear });
+  const weeksQuery = trpc.flights.getWeeks.useQuery(
+    { year: selectedYear },
+    queryCachePolicies.annualPlanning
+  );
   const pricesQuery = trpc.flights.getPrices.useQuery({ year: selectedYear }, {
+    ...queryCachePolicies.annualPlanning,
     enabled: isAuthenticated,
   });
 
   const publicPricesQuery = trpc.flights.getPublicPrices.useQuery({ year: selectedYear }, {
+    ...queryCachePolicies.annualPlanning,
     enabled: !isAuthenticated,
   });
 
@@ -845,6 +851,25 @@ export default function Home() {
   const updateStatusMutation = trpc.flights.updateWeekStatus.useMutation();
   const updateDatesMutation = trpc.flights.updateWeekDates.useMutation();
   const savePriceMutation = trpc.flights.savePrice.useMutation();
+
+  const invalidateFinancialYear = () =>
+    Promise.all([
+      utils.financial.getYearSummary.invalidate({ year: selectedYear }),
+      utils.financial.getWeeklyData.invalidate({ year: selectedYear }),
+      utils.financial.getProjections.invalidate(),
+    ]);
+
+  const invalidatePlanningAndFinancialYear = () =>
+    Promise.all([
+      utils.flights.getWeeks.invalidate({ year: selectedYear }),
+      invalidateFinancialYear(),
+    ]);
+
+  const invalidatePricesAndFinancialYear = () =>
+    Promise.all([
+      utils.flights.getPrices.invalidate({ year: selectedYear }),
+      invalidateFinancialYear(),
+    ]);
 
   // Gera o calendário do exercício somente após login. A operação é idempotente
   // e nunca substitui semanas que já foram personalizadas.
@@ -1538,8 +1563,7 @@ export default function Home() {
       updateStatusMutation.mutate(
         { year: selectedYear, weekNumber, isSelected: current ? 0 : 1 },
         {
-          onSuccess: () =>
-            utils.flights.getWeeks.invalidate({ year: selectedYear }),
+          onSuccess: () => void invalidatePlanningAndFinancialYear(),
         }
       );
     });
@@ -1551,7 +1575,7 @@ export default function Home() {
         { year: selectedYear, weekNumber, isDeleted: 1 },
         {
           onSuccess: () => {
-            utils.flights.getWeeks.invalidate({ year: selectedYear });
+            void invalidatePlanningAndFinancialYear();
             toast.success(`Semana ${weekNumber} excluída`);
           },
         }
@@ -1565,7 +1589,7 @@ export default function Home() {
         { year: selectedYear, weekNumber, isDeleted: 0 },
         {
           onSuccess: () => {
-            utils.flights.getWeeks.invalidate({ year: selectedYear });
+            void invalidatePlanningAndFinancialYear();
             toast.success(`Semana ${weekNumber} restaurada`);
           },
         }
@@ -1618,7 +1642,7 @@ export default function Home() {
         { year: selectedYear, weekNumber, isTicketIssued: current ? 0 : 1 },
         {
           onSuccess: () => {
-            utils.flights.getWeeks.invalidate({ year: selectedYear });
+            void invalidatePlanningAndFinancialYear();
             toast.success(
               current
                 ? "Bilhete marcado como não emitido"
@@ -1644,7 +1668,7 @@ export default function Home() {
       { year: selectedYear, weekNumber, airline, price: value },
       {
         onSuccess: () => {
-          utils.flights.getPrices.invalidate({ year: selectedYear });
+          void invalidatePricesAndFinancialYear();
           setSavingPrice(null);
         },
         onError: err => {
@@ -1671,7 +1695,7 @@ export default function Home() {
       { year: selectedYear, weekNumber, [field]: numValue },
       {
         onSuccess: () => {
-          utils.flights.getWeeks.invalidate({ year: selectedYear });
+          void invalidatePlanningAndFinancialYear();
           setSavingMiles(null);
         },
         onError: () => {
