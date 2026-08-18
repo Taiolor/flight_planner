@@ -5744,6 +5744,8 @@ export default function Home() {
                                     <AdditionalFlightsPanel
                                       year={selectedYear}
                                       weekNumber={week.weekNumber}
+                                      weekStartDate={week.departureDate}
+                                      weekEndDate={week.returnDate}
                                       flights={additionalFlightsByWeek[week.weekNumber] ?? []}
                                       onChanged={() =>
                                         Promise.all([

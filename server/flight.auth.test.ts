@@ -39,6 +39,7 @@ vi.mock("./_core/emailNotification", () => ({
 
 vi.mock("./additionalFlightsDb", () => ({
   getAdditionalFlightsForYear: vi.fn().mockResolvedValue([]),
+  getAdditionalFlight: vi.fn().mockResolvedValue(null),
   createAdditionalFlight: vi.fn().mockResolvedValue({ id: 1 }),
   updateAdditionalFlight: vi.fn().mockResolvedValue(undefined),
   deleteAdditionalFlight: vi.fn().mockResolvedValue(undefined),
@@ -188,10 +189,17 @@ describe("additionalFlights", () => {
   });
 
   it("should create a second annual flight pair for an authenticated session", async () => {
-    const { validateAuthSession } = await import("./db");
+    const { validateAuthSession, getFlightWeek } = await import("./db");
     const { createAdditionalFlight } = await import("./additionalFlightsDb");
     (validateAuthSession as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
       email: "taiolor@gmail.com",
+    });
+    (getFlightWeek as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+      year: 2027,
+      weekNumber: 3,
+      departureDate: "2027-01-10",
+      returnDate: "2027-01-16",
+      isDeleted: 0,
     });
 
     const caller = appRouter.createCaller(
@@ -206,10 +214,176 @@ describe("additionalFlights", () => {
       departureAirport: "GRU",
       returnAirport: "NVT",
       isTicketIssued: 1,
+      departureFlightDatetime: "2027-01-11T09:00",
+      returnFlightDatetime: "2027-01-15T19:00",
     });
 
     expect(createAdditionalFlight).toHaveBeenCalledWith(
       expect.objectContaining({ year: 2027, weekNumber: 3, ticketType: "roundtrip" })
+    );
+  });
+
+  it("should keep a one-way additional ticket free of return data", async () => {
+    const { validateAuthSession, getFlightWeek } = await import("./db");
+    const { createAdditionalFlight } = await import("./additionalFlightsDb");
+    (validateAuthSession as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+      email: "taiolor@gmail.com",
+    });
+    (getFlightWeek as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+      year: 2027,
+      weekNumber: 4,
+      departureDate: "2027-01-17",
+      returnDate: "2027-01-23",
+      isDeleted: 0,
+    });
+
+    const caller = appRouter.createCaller(
+      createTestContext("flight_session=owner-session")
+    );
+    await caller.additionalFlights.create({
+      year: 2027,
+      weekNumber: 4,
+      ticketType: "oneway",
+      isTicketIssued: 1,
+      departureFlightDatetime: "2027-01-18T09:00",
+      returnFlightDatetime: "2027-01-20T19:00",
+      returnFlightNumber: "LA9999",
+      returnAirline: "LATAM",
+    });
+
+    expect(createAdditionalFlight).toHaveBeenCalledWith(
+      expect.objectContaining({
+        ticketType: "oneway",
+        returnFlightDatetime: null,
+        returnFlightNumber: null,
+        returnAirline: null,
+        returnCancelled: 0,
+        returnRescheduled: 0,
+      })
+    );
+  });
+
+  it("should reject an additional leg outside the selected week period", async () => {
+    const { validateAuthSession, getFlightWeek } = await import("./db");
+    (validateAuthSession as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+      email: "taiolor@gmail.com",
+    });
+    (getFlightWeek as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+      year: 2027,
+      weekNumber: 5,
+      departureDate: "2027-01-24",
+      returnDate: "2027-01-30",
+      isDeleted: 0,
+    });
+
+    const caller = appRouter.createCaller(
+      createTestContext("flight_session=owner-session")
+    );
+    await expect(
+      caller.additionalFlights.create({
+        year: 2027,
+        weekNumber: 5,
+        ticketType: "oneway",
+        isTicketIssued: 1,
+        departureFlightDatetime: "2027-01-31T09:00",
+      })
+    ).rejects.toThrow("A data do voo de ida deve estar dentro do período da semana selecionada.");
+  });
+
+  it("should notify recipients when an issued additional ticket changes", async () => {
+    const { validateAuthSession, getFlightWeek, getTicketNotificationEmails } =
+      await import("./db");
+    const { getAdditionalFlight, updateAdditionalFlight } = await import(
+      "./additionalFlightsDb"
+    );
+    const { sendTicketNotificationEmail } = await import(
+      "./_core/emailNotification"
+    );
+    (validateAuthSession as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+      email: "taiolor@gmail.com",
+    });
+    (getAdditionalFlight as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+      id: 22,
+      year: 2027,
+      weekNumber: 6,
+      isTicketIssued: 1,
+      ticketType: "oneway",
+      departureFlightDatetime: "2027-01-31T09:00",
+      departureFlightNumber: "LA1234",
+      departureAirline: "LATAM",
+      departureAirport: "GRU",
+      departureLocator: "ABC123",
+      departureTerminal: null,
+      departureRescheduled: 0,
+      departureCancelled: 0,
+      returnAirline: null,
+      returnFlightDatetime: null,
+      returnAirport: null,
+      returnLocator: null,
+      returnFlightNumber: null,
+      returnTerminal: null,
+      returnRescheduled: 0,
+      returnCancelled: 0,
+      smilesPoints: null,
+      latamPassPoints: null,
+    });
+    (getFlightWeek as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+      year: 2027,
+      weekNumber: 6,
+      departureDate: "2027-01-31",
+      returnDate: "2027-02-06",
+      isDeleted: 0,
+    });
+    (updateAdditionalFlight as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+      id: 22,
+      year: 2027,
+      weekNumber: 6,
+      isTicketIssued: 1,
+      ticketType: "oneway",
+      departureFlightDatetime: "2027-01-31T09:00",
+      departureFlightNumber: "LA9999",
+      departureAirline: "LATAM",
+      departureAirport: "GRU",
+      departureLocator: "ABC123",
+      departureTerminal: null,
+      departureRescheduled: 0,
+      departureCancelled: 0,
+      returnAirline: null,
+      returnFlightDatetime: null,
+      returnAirport: null,
+      returnLocator: null,
+      returnFlightNumber: null,
+      returnTerminal: null,
+      returnRescheduled: 0,
+      returnCancelled: 0,
+      smilesPoints: null,
+      latamPassPoints: null,
+    });
+    (getTicketNotificationEmails as ReturnType<typeof vi.fn>).mockResolvedValueOnce([
+      { email: "alertas@example.com" },
+    ]);
+    (sendTicketNotificationEmail as ReturnType<typeof vi.fn>).mockClear();
+
+    const caller = appRouter.createCaller(
+      createTestContext("flight_session=owner-session")
+    );
+    await caller.additionalFlights.update({
+      id: 22,
+      year: 2027,
+      departureFlightNumber: "LA9999",
+    });
+
+    expect(sendTicketNotificationEmail).toHaveBeenCalledWith(
+      ["alertas@example.com"],
+      expect.objectContaining({
+        eventLabel: "✏️ Passagem adicional alterada",
+        weekNumber: 6,
+        ticketType: "departure",
+        changes: expect.objectContaining({
+          before: expect.objectContaining({ "Número do voo": "LA1234" }),
+          after: expect.objectContaining({ "Número do voo": "LA9999" }),
+        }),
+      })
     );
   });
 });

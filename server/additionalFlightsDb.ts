@@ -16,6 +16,17 @@ export async function getAdditionalFlightsForYear(year: number) {
     .where(eq(additionalFlights.year, year));
 }
 
+export async function getAdditionalFlight(id: number, year: number) {
+  const db = await getDb();
+  if (!db) return null;
+  const result = await db
+    .select()
+    .from(additionalFlights)
+    .where(and(eq(additionalFlights.id, id), eq(additionalFlights.year, year)))
+    .limit(1);
+  return result[0] ?? null;
+}
+
 export async function createAdditionalFlight(
   input: Omit<AdditionalFlightInput, "id">
 ): Promise<AdditionalFlight | null> {
