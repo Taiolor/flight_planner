@@ -1,17 +1,13 @@
-import { useState, useMemo, useEffect, useCallback, useRef } from "react";
-import type { FlightPrice, PublicPrice } from "../../../drizzle/schema";
 import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  LineChart,
-  Line,
-  ResponsiveContainer,
-} from "recharts";
+  lazy,
+  Suspense,
+  useState,
+  useMemo,
+  useEffect,
+  useCallback,
+  useRef,
+} from "react";
+import type { FlightPrice, PublicPrice } from "../../../drizzle/schema";
 import { toast } from "sonner";
 import {
   flightData,
@@ -116,6 +112,19 @@ import { useTheme, COLOR_PRESETS } from "@/contexts/ThemeContext";
 import type { ColorPreset } from "@/contexts/ThemeContext";
 import { useYear } from "@/contexts/YearContext";
 import { GlobalYearSelector } from "@/components/GlobalYearSelector";
+import type { MonthlyChartData } from "@/components/HomeCharts";
+import { shouldRenderDeferredCharts } from "@/lib/chartLoading";
+
+const AnnualSpendChart = lazy(() =>
+  import("@/components/HomeCharts").then(module => ({
+    default: module.AnnualSpendChart,
+  }))
+);
+const PriceVariationCharts = lazy(() =>
+  import("@/components/HomeCharts").then(module => ({
+    default: module.PriceVariationCharts,
+  }))
+);
 
 /**
  * Memória histórica de números de voo.
@@ -468,6 +477,8 @@ export default function Home() {
   const [chartSelectedAirlines, setChartSelectedAirlines] = useState<
     Set<string>
   >(() => new Set(airlines.map(a => a.id)));
+  const [isAnnualChartVisible, setIsAnnualChartVisible] = useState(false);
+  const [isPriceChartVisible, setIsPriceChartVisible] = useState(false);
   const toggleChartAirline = (id: string) => {
     setChartSelectedAirlines(prev => {
       const next = new Set(prev);
@@ -1359,10 +1370,10 @@ export default function Home() {
     }
 
     // Format output exactly as expected
-    const result: Record<string, string | number>[] = [];
+    const result: MonthlyChartData[] = [];
     for (let i = 0; i < CHART_MONTHS.length; i++) {
       const stats = monthStats[CHART_MONTHS[i].num];
-      const entry: Record<string, string | number> = { mes: stats.mes };
+      const entry: MonthlyChartData = { mes: stats.mes };
 
       for (const airline of airlines) {
         const airStats = stats.airlines[airline.id];
@@ -1934,9 +1945,12 @@ export default function Home() {
                 variant="outline"
                 className="bg-white bg-opacity-10 border-white text-white hover:bg-white hover:text-blue-700 btn-glow-cyan transition-all"
                 onClick={() => {
-                  const el = document.getElementById("price-chart-section");
-                  if (el)
-                    el.scrollIntoView({ behavior: "smooth", block: "start" });
+                  setIsPriceChartVisible(true);
+                  requestAnimationFrame(() => {
+                    document
+                      .getElementById("price-chart-section")
+                      ?.scrollIntoView({ behavior: "smooth", block: "start" });
+                  });
                 }}
               >
                 <TrendingUp className="w-4 h-4 mr-1" /> Ver Gráfico
@@ -2115,87 +2129,30 @@ export default function Home() {
                     )}
                   </div>
                 </div>
-                {annualHasData ? (
+                {shouldRenderDeferredCharts(
+                  annualHasData,
+                  isAnnualChartVisible
+                ) ? (
                   <div>
                     <p className="text-blue-100 text-xs uppercase tracking-wider mb-3">
                       Gasto por Mês (R$)
                     </p>
-                    <ResponsiveContainer
-                      width="100%"
-                      height={160}
-                      className="chart-container"
-                    >
-                      <BarChart
+                    <Suspense fallback={<SkeletonChart />}>
+                      <AnnualSpendChart
                         data={annualSummaryData}
-                        margin={{ top: 0, right: 8, left: 0, bottom: 0 }}
-                      >
-                        <CartesianGrid
-                          strokeDasharray="3 3"
-                          stroke={
-                            theme === "dark"
-                              ? "rgba(100,116,139,0.2)"
-                              : "rgba(255,255,255,0.1)"
-                          }
-                        />
-                        <XAxis
-                          dataKey="mes"
-                          tick={{
-                            fill: theme === "dark" ? "#94a3b8" : "#e0f2fe",
-                            fontSize: 12,
-                          }}
-                          axisLine={false}
-                          tickLine={false}
-                        />
-                        <YAxis
-                          tick={{
-                            fill: theme === "dark" ? "#94a3b8" : "#e0f2fe",
-                            fontSize: 11,
-                          }}
-                          axisLine={false}
-                          tickLine={false}
-                          tickFormatter={v =>
-                            v > 0 ? `R$${(v / 1000).toFixed(0)}k` : ""
-                          }
-                        />
-                        <Tooltip
-                          contentStyle={{
-                            background:
-                              theme === "dark" ? "#1e293b" : "#1e3a5f",
-                            border:
-                              theme === "dark" ? "1px solid #475569" : "none",
-                            borderRadius: 8,
-                            color: "#fff",
-                          }}
-                          formatter={(value: number) => [
-                            hideValues
-                              ? "••••"
-                              : `R$ ${value.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`,
-                            "Total Emitido",
-                          ]}
-                          labelStyle={{
-                            color: theme === "dark" ? "#cbd5e1" : "#e0f2fe",
-                            fontWeight: 600,
-                          }}
-                        />
-                        <Bar
-                          dataKey="total"
-                          fill={theme === "dark" ? "#10b981" : "#34d399"}
-                          radius={[4, 4, 0, 0]}
-                          label={{
-                            position: "top",
-                            fill: theme === "dark" ? "#22d3ee" : "#06b6d4",
-                            fontSize: 10,
-                            formatter: (v: number) =>
-                              v > 0
-                                ? hideValues
-                                  ? "•••"
-                                  : `R$${(v / 1000).toFixed(1)}k`
-                                : "",
-                          }}
-                        />
-                      </BarChart>
-                    </ResponsiveContainer>
+                        theme={theme}
+                        hideValues={hideValues}
+                      />
+                    </Suspense>
                   </div>
+                ) : annualHasData ? (
+                  <button
+                    type="button"
+                    onClick={() => setIsAnnualChartVisible(true)}
+                    className="w-full flex items-center justify-center h-24 rounded-xl border border-blue-300 border-dashed text-blue-100 hover:bg-white/10 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
+                  >
+                    Carregar gráfico mensal
+                  </button>
                 ) : (
                   <div className="flex items-center justify-center h-24 rounded-xl border border-blue-500 border-dashed">
                     <p className="text-blue-300 text-sm">
@@ -5919,247 +5876,32 @@ export default function Home() {
               </p>
             </div>
           ) : (
-            <div className="space-y-8">
-              {/* Gráfico de Barras por Companhia */}
-              <div>
-                <h3
-                  className={`text-sm font-semibold mb-4 uppercase tracking-wide transition-colors duration-300 ${
-                    theme === "dark" ? "text-slate-400" : "text-slate-600"
-                  }`}
-                >
-                  Preço Médio por Companhia (R$)
-                </h3>
-                <ResponsiveContainer
-                  width="100%"
-                  height={320}
-                  className="chart-container"
-                >
-                  <BarChart
-                    data={chartData}
-                    margin={{ top: 5, right: 20, left: 10, bottom: 5 }}
-                  >
-                    <CartesianGrid
-                      strokeDasharray="3 3"
-                      stroke={theme === "dark" ? "#334155" : "#f1f5f9"}
-                    />
-                    <XAxis
-                      dataKey="mes"
-                      tick={{
-                        fontSize: 12,
-                        fill: theme === "dark" ? "#94a3b8" : "#64748b",
-                      }}
-                    />
-                    <YAxis
-                      tick={{
-                        fontSize: 12,
-                        fill: theme === "dark" ? "#94a3b8" : "#64748b",
-                      }}
-                      tickFormatter={v => (hideValues ? "•••" : `R$${v}`)}
-                    />
-                    <Tooltip
-                      contentStyle={{
-                        background: theme === "dark" ? "#1e293b" : "#ffffff",
-                        border:
-                          theme === "dark"
-                            ? "2px solid #7c3aed"
-                            : "2px solid #06b6d4",
-                        borderRadius: 12,
-                        color: theme === "dark" ? "#f1f5f9" : "#1e293b",
-                        boxShadow:
-                          theme === "dark"
-                            ? "0 8px 16px rgba(124, 58, 237, 0.2)"
-                            : "0 8px 16px rgba(6, 182, 212, 0.2)",
-                        padding: "12px 16px",
-                      }}
-                      formatter={(value: number) => [
-                        hideValues ? "••••" : `R$ ${value.toFixed(2)}`,
-                        "",
-                      ]}
-                      labelStyle={{
-                        color: theme === "dark" ? "#cbd5e1" : "#64748b",
-                        fontWeight: 700,
-                        fontSize: 14,
-                      }}
-                      cursor={{
-                        fill:
-                          theme === "dark"
-                            ? "rgba(124, 58, 237, 0.1)"
-                            : "rgba(6, 182, 212, 0.1)",
-                      }}
-                    />
-                    <Legend
-                      wrapperStyle={{
-                        color: theme === "dark" ? "#cbd5e1" : "#64748b",
-                      }}
-                    />
-                    {chartSelectedAirlines.has("kayak") && (
-                      <Bar
-                        dataKey="kayak"
-                        name="Kayak"
-                        fill="#ef4444"
-                        radius={[8, 8, 0, 0]}
-                        isAnimationActive={true}
-                      />
-                    )}
-                    {chartSelectedAirlines.has("latam") && (
-                      <Bar
-                        dataKey="latam"
-                        name="LATAM"
-                        fill="#2563eb"
-                        radius={[8, 8, 0, 0]}
-                        isAnimationActive={true}
-                      />
-                    )}
-                    {chartSelectedAirlines.has("gol") && (
-                      <Bar
-                        dataKey="gol"
-                        name="Gol"
-                        fill="#eab308"
-                        radius={[8, 8, 0, 0]}
-                        isAnimationActive={true}
-                      />
-                    )}
-                    {chartSelectedAirlines.has("azul") && (
-                      <Bar
-                        dataKey="azul"
-                        name="Azul"
-                        fill="#38bdf8"
-                        radius={[8, 8, 0, 0]}
-                        isAnimationActive={true}
-                      />
-                    )}
-                    {chartSelectedAirlines.has("onhappy") && (
-                      <Bar
-                        dataKey="onhappy"
-                        name="Onhappy"
-                        fill="#16a34a"
-                        radius={[8, 8, 0, 0]}
-                        isAnimationActive={true}
-                      />
-                    )}
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-
-              {/* Gráfico de Linha - Menor Preço e Média */}
-              <div>
-                <h3
-                  className={`text-sm font-semibold mb-4 uppercase tracking-wide transition-colors duration-300 ${
-                    theme === "dark" ? "text-slate-400" : "text-slate-600"
-                  }`}
-                >
-                  Menor Preço vs. Preço Médio por Mês (R$)
-                </h3>
-                <ResponsiveContainer
-                  width="100%"
-                  height={260}
-                  className="chart-container"
-                >
-                  <LineChart
-                    data={chartData}
-                    margin={{ top: 5, right: 20, left: 10, bottom: 5 }}
-                  >
-                    <CartesianGrid
-                      strokeDasharray="3 3"
-                      stroke={theme === "dark" ? "#334155" : "#f1f5f9"}
-                    />
-                    <XAxis
-                      dataKey="mes"
-                      tick={{
-                        fontSize: 12,
-                        fill: theme === "dark" ? "#94a3b8" : "#64748b",
-                      }}
-                    />
-                    <YAxis
-                      tick={{
-                        fontSize: 12,
-                        fill: theme === "dark" ? "#94a3b8" : "#64748b",
-                      }}
-                      tickFormatter={v => (hideValues ? "•••" : `R$${v}`)}
-                    />
-                    <Tooltip
-                      contentStyle={{
-                        background: theme === "dark" ? "#1e293b" : "#ffffff",
-                        border:
-                          theme === "dark"
-                            ? "2px solid #7c3aed"
-                            : "2px solid #06b6d4",
-                        borderRadius: 12,
-                        color: theme === "dark" ? "#f1f5f9" : "#1e293b",
-                        boxShadow:
-                          theme === "dark"
-                            ? "0 8px 16px rgba(124, 58, 237, 0.2)"
-                            : "0 8px 16px rgba(6, 182, 212, 0.2)",
-                        padding: "12px 16px",
-                      }}
-                      formatter={(value: number) => [
-                        hideValues ? "••••" : `R$ ${value.toFixed(2)}`,
-                        "",
-                      ]}
-                      labelStyle={{
-                        color: theme === "dark" ? "#cbd5e1" : "#64748b",
-                        fontWeight: 700,
-                        fontSize: 14,
-                      }}
-                      cursor={{
-                        fill:
-                          theme === "dark"
-                            ? "rgba(124, 58, 237, 0.1)"
-                            : "rgba(6, 182, 212, 0.1)",
-                      }}
-                    />
-                    <Legend
-                      wrapperStyle={{
-                        color: theme === "dark" ? "#cbd5e1" : "#64748b",
-                      }}
-                    />
-                    <Line
-                      type="monotone"
-                      dataKey="menor"
-                      name="Menor Preço"
-                      stroke="#16a34a"
-                      strokeWidth={3}
-                      dot={{
-                        r: 6,
-                        fill: "#16a34a",
-                        strokeWidth: 2,
-                        stroke: "#ffffff",
-                      }}
-                      activeDot={{
-                        r: 8,
-                        fill: "#16a34a",
-                        strokeWidth: 2,
-                        stroke: "#ffffff",
-                      }}
-                      connectNulls
-                      isAnimationActive={true}
-                    />
-                    <Line
-                      type="monotone"
-                      dataKey="media"
-                      name="Preço Médio"
-                      stroke="#f97316"
-                      strokeWidth={3}
-                      strokeDasharray="5 5"
-                      dot={{
-                        r: 5,
-                        fill: "#f97316",
-                        strokeWidth: 2,
-                        stroke: "#ffffff",
-                      }}
-                      activeDot={{
-                        r: 7,
-                        fill: "#f97316",
-                        strokeWidth: 2,
-                        stroke: "#ffffff",
-                      }}
-                      connectNulls
-                      isAnimationActive={true}
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
+            shouldRenderDeferredCharts(hasChartData, isPriceChartVisible) ? (
+              <Suspense fallback={<SkeletonChart />}>
+                <PriceVariationCharts
+                  data={chartData}
+                  theme={theme}
+                  hideValues={hideValues}
+                  selectedAirlines={chartSelectedAirlines}
+                />
+              </Suspense>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setIsPriceChartVisible(true)}
+                className={`w-full flex flex-col items-center justify-center py-12 text-center rounded-xl border border-dashed transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 ${
+                  theme === "dark"
+                    ? "border-slate-600 text-slate-300 hover:bg-slate-700/50"
+                    : "border-slate-300 text-slate-600 hover:bg-slate-50"
+                }`}
+              >
+                <TrendingUp className="w-10 h-10 mb-3 text-blue-500" />
+                <span className="font-medium">Carregar gráficos de preços</span>
+                <span className="mt-1 text-sm opacity-80">
+                  Os gráficos são carregados somente quando solicitados
+                </span>
+              </button>
+            )
           )}
         </Card>
 

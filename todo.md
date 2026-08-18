@@ -696,4 +696,6 @@
 
 - [x] P1: carregar a exportação PDF somente sob demanda na Home
 
+- [x] P2: carregar gráficos e Recharts somente sob demanda
+
 - [x] Corrigir bloqueio de abertura da página administrativa

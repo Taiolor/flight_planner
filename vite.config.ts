@@ -211,7 +211,6 @@ export default defineConfig({
             "@trpc/react-query",
             "@tanstack/react-query",
           ],
-          "vendor-charts": ["recharts"],
           "vendor-forms": ["react-hook-form", "@hookform/resolvers"],
           "vendor-utils": [
             "date-fns",

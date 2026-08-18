@@ -17,3 +17,7 @@ Os planos `EXPLAIN` mostram busca ordenada pelo índice anual de semanas. Em con
 ## Execução P1 — PDF sob demanda
 
 Após a separação do acionador leve na Home, o build de produção passou a manter todo o gerador de PDF em um chunk dinâmico de **927.354 bytes brutos** e **273.199 bytes gzip**. O documento inicial não contém referências a `FlightPdfExport`, `jspdf` ou `html2canvas`; o chunk só é solicitado pelo import dinâmico após o clique de exportação. O chunk inicial JavaScript ficou em **179.583 bytes gzip** nesta medição.
+
+## Execução P2 — Gráficos sob demanda
+
+Os gráficos da Home agora são renderizados somente depois de uma solicitação explícita do usuário. O build separou o painel leve `HomeCharts` (**9.488 bytes brutos; 1.961 bytes gzip**) e a biblioteca de gráficos (**408.539 bytes brutos; 112.865 bytes gzip**) em chunks dinâmicos. O HTML inicial não contém referências a Recharts ou aos chunks de gráficos; o JavaScript inicial ficou em **178.638 bytes gzip** nesta medição.
