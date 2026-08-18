@@ -690,4 +690,6 @@
 - [x] Auditar segurança da informação com SAST, DAST não invasivo, APIs, autenticação, autorização e integrações
 - [x] Mapear vulnerabilidades e aderência ao OWASP Top 10 com plano de remediação priorizado
 
+- [x] Elaborar plano integrado para executar otimizações de performance e, em seguida, remediações de segurança
+
 - [x] Corrigir bloqueio de abertura da página administrativa
