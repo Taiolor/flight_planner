@@ -28,3 +28,5 @@ Somente a sessão administrativa interna pode consultar o mapa e os agregados. O
 O acesso sem sessão interna foi validado na rota administrativa: a página não consulta nem mostra eventos e apresenta somente o acesso interno. Testes automatizados confirmam o arredondamento de coordenadas, o descarte de valores inválidos, a remoção de parâmetros de rota, a pseudonimização do nonce de sessão e o bloqueio do mapa a uma sessão não administrativa.
 
 Após a correção de ordem de hooks, a rota protegida foi reaberta em desenvolvimento sem sessão interna e permaneceu estável, exibindo somente a tela de acesso. A tela autenticada passou a ser montada em componente separado, evitando a alternância de conjuntos de hooks durante a transição de autenticação.
+
+O carregador do Google Maps foi atualizado para reutilizar uma única solicitação de script, confirmar a disponibilidade da API antes da inicialização e mostrar uma mensagem clara de erro caso o carregamento falhe. O componente foi validado com teste automatizado de criação do mapa e callback de prontidão.

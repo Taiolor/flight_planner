@@ -715,4 +715,6 @@
 
 - [x] Corrigir o erro React #310 na tela administrativa de mapa de telemetria
 
+- [x] Corrigir a exibição do mapa interativo do Google Maps na tela de locais
+
 - [x] Corrigir bloqueio de abertura da página administrativa

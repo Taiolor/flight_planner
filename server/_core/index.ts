@@ -86,24 +86,19 @@ async function startServer() {
     createProxyMiddleware({
       target: ENV.forgeApiUrl || "https://forge.butterfly-effect.dev",
       changeOrigin: true,
-      pathRewrite: {
-        "^/api/maps/proxy": "/v1/maps/proxy",
-      },
-      on: {
-        proxyReq: (proxyReq, req, res) => {
-          if (!ENV.forgeApiKey) {
-            console.error("Maps proxy credentials missing");
-            return;
-          }
-          // The proxy library has a path property we can parse and update
-          try {
-            const url = new URL(proxyReq.path, "http://localhost");
-            url.searchParams.set("key", ENV.forgeApiKey);
-            proxyReq.path = url.pathname + url.search + url.hash;
-          } catch (e) {
-            console.error("Error setting proxy key:", e);
-          }
-        },
+      pathRewrite: requestPath => {
+        if (!ENV.forgeApiKey) {
+          console.error("Maps proxy credentials missing");
+          return `/v1/maps/proxy${requestPath}`;
+        }
+        try {
+          const url = new URL(`/v1/maps/proxy${requestPath}`, "http://localhost");
+          url.searchParams.set("key", ENV.forgeApiKey);
+          return url.pathname + url.search + url.hash;
+        } catch (e) {
+          console.error("Error setting proxy key:", e);
+          return `/v1/maps/proxy${requestPath}`;
+        }
       },
     })
   );
