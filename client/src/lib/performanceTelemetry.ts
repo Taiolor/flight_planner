@@ -7,6 +7,12 @@ export interface PerformanceSample {
   procedure?: string;
 }
 
+export function canRecordPerformanceTelemetry(
+  isInternalSessionAuthenticated: boolean
+): boolean {
+  return isInternalSessionAuthenticated;
+}
+
 export function getSafeRoute(pathname: string): string {
   return /^\/[a-zA-Z0-9_/-]*$/.test(pathname) ? pathname : "/";
 }

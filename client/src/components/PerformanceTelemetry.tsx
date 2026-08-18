@@ -1,6 +1,6 @@
-import { useAuth } from "@/_core/hooks/useAuth";
 import { trpc } from "@/lib/trpc";
 import {
+  canRecordPerformanceTelemetry,
   getSafeRoute,
   observeWebVitals,
   type PerformanceSample,
@@ -10,7 +10,13 @@ import { useCallback, useEffect, useRef } from "react";
 const MAX_BATCH_SIZE = 20;
 
 export default function PerformanceTelemetry() {
-  const { isAuthenticated } = useAuth();
+  const internalSessionQuery = trpc.flightAuth.check.useQuery(undefined, {
+    retry: false,
+    refetchOnWindowFocus: false,
+  });
+  const isAuthenticated = canRecordPerformanceTelemetry(
+    internalSessionQuery.data?.authenticated ?? false
+  );
   const recordMutation = trpc.performanceMetrics.record.useMutation();
   const samplesRef = useRef<PerformanceSample[]>([]);
   const flushTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);

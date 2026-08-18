@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { getSafeRoute, getTrpcProcedure } from "./performanceTelemetry";
+import {
+  canRecordPerformanceTelemetry,
+  getSafeRoute,
+  getTrpcProcedure,
+} from "./performanceTelemetry";
 
 describe("telemetria de performance", () => {
   it("mantém somente rotas sem parâmetros ou identificadores pessoais", () => {
@@ -13,5 +17,10 @@ describe("telemetria de performance", () => {
     );
     expect(getTrpcProcedure("/api/trpc/../../secret")).toBeUndefined();
     expect(getTrpcProcedure("/calendar")).toBeUndefined();
+  });
+
+  it("só permite coleta quando a sessão interna protegida está autenticada", () => {
+    expect(canRecordPerformanceTelemetry(false)).toBe(false);
+    expect(canRecordPerformanceTelemetry(true)).toBe(true);
   });
 });

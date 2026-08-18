@@ -33,3 +33,7 @@ O histórico de notificações passou de uma resposta fixa de até 100 linhas pa
 ## Execução P5 — Telemetria interna
 
 Foi adicionada telemetria protegida por sessão interna para FCP, LCP, INP, CLS e latência tRPC. A coleta normaliza a rota para o pathname sem parâmetros e limita procedimentos tRPC a seus nomes; não registra usuário, endereço IP, identificador de dispositivo, URL parametrizada ou conteúdo de requisições. As métricas são enviadas em lotes pequenos e o painel administrativo apresenta médias agregadas das últimas 24 horas.
+
+## Correção de autenticação da telemetria
+
+A coleta passou a consultar `flightAuth.check`, a mesma sessão interna exigida pelo procedimento protegido de gravação. Assim, uma sessão externa ou estado de identidade isolado não é suficiente para iniciar a mutação; sem a sessão interna autenticada, nenhuma métrica é enfileirada ou enviada.

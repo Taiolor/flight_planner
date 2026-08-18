@@ -706,4 +706,6 @@
 
 - [x] S1: corrigir dependências transitivas com vulnerabilidades altas e validar regressões
 
+- [x] Corrigir a telemetria para não enviar mutações antes da sessão interna estar autenticada
+
 - [x] Corrigir bloqueio de abertura da página administrativa
