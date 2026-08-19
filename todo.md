@@ -776,6 +776,7 @@
 ## Experiência de planejamento
 
 - [x] Criar uma Central de atenção inteligente na Home com prazos de compra, cancelamentos e variações de preço
+- [x] Permitir dispensar temporariamente e reativar alertas da Central de atenção
 
 ## Preferências da Home
 

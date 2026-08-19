@@ -1,8 +1,16 @@
-import { describe, expect, it } from "vitest";
-import { buildAttentionItems } from "./attentionCenter";
+import { beforeEach, describe, expect, it } from "vitest";
+// @vitest-environment jsdom
+import {
+  buildAttentionItems,
+  dismissAttentionItem,
+  readAttentionDismissals,
+  restoreAttentionItem,
+} from "./attentionCenter";
 
 describe("Central de atenção inteligente", () => {
   const now = new Date(2026, 7, 19);
+
+  beforeEach(() => window.localStorage.clear());
 
   it("prioriza cancelamentos e compras não emitidas nos próximos 15 dias", () => {
     const items = buildAttentionItems(
@@ -79,5 +87,21 @@ describe("Central de atenção inteligente", () => {
     );
 
     expect(items).toEqual([]);
+  });
+
+  it("mantém um alerta adiado por 24 horas e permite reativá-lo", () => {
+    const first = dismissAttentionItem("purchase-deadline-34", now);
+    expect(first["purchase-deadline-34"]).toBe("2026-08-20T00:00:00.000Z");
+    expect(readAttentionDismissals(now)).toEqual(first);
+
+    const restored = restoreAttentionItem("purchase-deadline-34", now);
+    expect(restored).toEqual({});
+  });
+
+  it("remove automaticamente um alerta cuja dispensa expirou", () => {
+    dismissAttentionItem("price-variation-36", now);
+    const nextDay = new Date(now.getTime() + 25 * 60 * 60 * 1000);
+
+    expect(readAttentionDismissals(nextDay)).toEqual({});
   });
 });

@@ -119,7 +119,12 @@ import { AttentionCenter } from "@/components/AttentionCenter";
 import type { MonthlyChartData } from "@/components/HomeCharts";
 import { shouldRenderDeferredCharts } from "@/lib/chartLoading";
 import { queryCachePolicies } from "@/lib/queryCache";
-import { buildAttentionItems } from "@/lib/attentionCenter";
+import {
+  buildAttentionItems,
+  dismissAttentionItem,
+  readAttentionDismissals,
+  restoreAttentionItem,
+} from "@/lib/attentionCenter";
 
 const AnnualSpendChart = lazy(() =>
   import("@/components/HomeCharts").then(module => ({
@@ -1063,6 +1068,25 @@ export default function Home() {
     () => buildAttentionItems(weeksData, priceMap),
     [weeksData, priceMap]
   );
+  const [attentionDismissals, setAttentionDismissals] = useState(() =>
+    readAttentionDismissals()
+  );
+  const activeAttentionItems = useMemo(
+    () => attentionItems.filter(item => !attentionDismissals[item.id]),
+    [attentionDismissals, attentionItems]
+  );
+  const dismissedAttentionItems = useMemo(
+    () => attentionItems.filter(item => attentionDismissals[item.id]),
+    [attentionDismissals, attentionItems]
+  );
+  const handleDismissAttention = (itemId: string) => {
+    setAttentionDismissals(dismissAttentionItem(itemId));
+    toast.success("Alerta adiado por 24 horas.");
+  };
+  const handleRestoreAttention = (itemId: string) => {
+    setAttentionDismissals(restoreAttentionItem(itemId));
+    toast.success("Alerta reativado.");
+  };
 
   // Soma TODOS os valores em dinheiro pagos na semana (todas as companhias)
   const totalWeekCostMap = useMemo(() => {
@@ -2337,9 +2361,12 @@ export default function Home() {
 
         {!weeksQuery.isLoading && (
           <AttentionCenter
-            items={attentionItems}
+            items={activeAttentionItems}
+            dismissedItems={dismissedAttentionItems}
             hideValues={hideValues}
             onOpenWeek={openAttentionWeek}
+            onDismiss={handleDismissAttention}
+            onRestore={handleRestoreAttention}
           />
         )}
 

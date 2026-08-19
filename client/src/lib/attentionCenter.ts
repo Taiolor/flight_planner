@@ -19,6 +19,62 @@ export type AttentionItem = {
   variationPercent?: number;
 };
 
+export type DismissedAttentionItems = Record<string, string>;
+
+export const ATTENTION_DISMISSALS_STORAGE_KEY =
+  "viagens.attention-dismissals.v1";
+export const ATTENTION_DISMISSAL_DURATION_MS = 24 * 60 * 60 * 1000;
+
+export function readAttentionDismissals(
+  now = new Date(),
+  storage: Pick<Storage, "getItem" | "setItem"> | null =
+    typeof window === "undefined" ? null : window.localStorage
+): DismissedAttentionItems {
+  if (!storage) return {};
+
+  try {
+    const raw = storage.getItem(ATTENTION_DISMISSALS_STORAGE_KEY);
+    if (!raw) return {};
+    const parsed = JSON.parse(raw) as Record<string, unknown>;
+    const valid = Object.fromEntries(
+      Object.entries(parsed).filter(([, expiresAt]) => {
+        const expiry = typeof expiresAt === "string" ? new Date(expiresAt) : null;
+        return expiry !== null && !Number.isNaN(expiry.getTime()) && expiry > now;
+      })
+    ) as DismissedAttentionItems;
+    storage.setItem(ATTENTION_DISMISSALS_STORAGE_KEY, JSON.stringify(valid));
+    return valid;
+  } catch {
+    return {};
+  }
+}
+
+export function dismissAttentionItem(
+  itemId: string,
+  now = new Date(),
+  storage: Pick<Storage, "getItem" | "setItem"> | null =
+    typeof window === "undefined" ? null : window.localStorage
+): DismissedAttentionItems {
+  const next = {
+    ...readAttentionDismissals(now, storage),
+    [itemId]: new Date(now.getTime() + ATTENTION_DISMISSAL_DURATION_MS).toISOString(),
+  };
+  storage?.setItem(ATTENTION_DISMISSALS_STORAGE_KEY, JSON.stringify(next));
+  return next;
+}
+
+export function restoreAttentionItem(
+  itemId: string,
+  now = new Date(),
+  storage: Pick<Storage, "getItem" | "setItem"> | null =
+    typeof window === "undefined" ? null : window.localStorage
+): DismissedAttentionItems {
+  const next = readAttentionDismissals(now, storage);
+  delete next[itemId];
+  storage?.setItem(ATTENTION_DISMISSALS_STORAGE_KEY, JSON.stringify(next));
+  return next;
+}
+
 function parsePlannerDate(value: string): Date | null {
   const br = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(value);
   const iso = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
