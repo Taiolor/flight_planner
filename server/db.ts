@@ -234,6 +234,8 @@ export async function updateFlightWeekStatus(
     returnLocator?: string | null;
     departureFlightNumber?: string | null;
     returnFlightNumber?: string | null;
+    departureTerminal?: string | null;
+    returnTerminal?: string | null;
     ticketType?: string | null;
     smilesPoints?: number | null;
     latamPassPoints?: number | null;

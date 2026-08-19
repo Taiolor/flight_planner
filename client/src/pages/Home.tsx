@@ -263,6 +263,8 @@ interface WeekData {
   returnLocator?: string | null;
   departureFlightNumber?: string | null;
   returnFlightNumber?: string | null;
+  departureTerminal?: string | null;
+  returnTerminal?: string | null;
   ticketType?: string | null;
   smilesPoints?: number | null;
   latamPassPoints?: number | null;
@@ -561,6 +563,12 @@ export default function Home() {
     [weekNumber: number]: string;
   }>({});
   const [tempReturnAirline, setTempReturnAirline] = useState<{
+    [weekNumber: number]: string;
+  }>({});
+  const [tempDepartureTerminal, setTempDepartureTerminal] = useState<{
+    [weekNumber: number]: string;
+  }>({});
+  const [tempReturnTerminal, setTempReturnTerminal] = useState<{
     [weekNumber: number]: string;
   }>({});
   const [tempTicketType, setTempTicketType] = useState<{
@@ -3954,6 +3962,12 @@ export default function Home() {
                                                       [week.weekNumber]: "",
                                                     })
                                                   );
+                                                  setTempDepartureTerminal(
+                                                    (prev: any) => ({
+                                                      ...prev,
+                                                      [week.weekNumber]: "",
+                                                    })
+                                                  );
                                                   setSuggestedDepartureFlightNumber(
                                                     (prev: any) => ({
                                                       ...prev,
@@ -4430,6 +4444,36 @@ export default function Home() {
                                                   }
                                                 />
                                               </div>
+                                              <div className="flex flex-col gap-1">
+                                                <label
+                                                  htmlFor={`departure-terminal-${week.weekNumber}`}
+                                                  className="text-[10px] font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wide"
+                                                >
+                                                  Terminal
+                                                </label>
+                                                <input
+                                                  id={`departure-terminal-${week.weekNumber}`}
+                                                  aria-label="Terminal do Voo de Ida"
+                                                  type="text"
+                                                  maxLength={20}
+                                                  placeholder="Ex: Terminal 2"
+                                                  className="h-8 text-xs border border-blue-200 dark:border-blue-600 rounded-md px-2 bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-400 dark:focus:ring-blue-500 w-full"
+                                                  value={
+                                                    tempDepartureTerminal[
+                                                      week.weekNumber
+                                                    ] ?? week.departureTerminal ?? ""
+                                                  }
+                                                  onChange={e =>
+                                                    setTempDepartureTerminal(
+                                                      prev => ({
+                                                        ...prev,
+                                                        [week.weekNumber]:
+                                                          e.target.value,
+                                                      })
+                                                    )
+                                                  }
+                                                />
+                                              </div>
                                               {/* Checkbox Voo Remarcado - Ida */}
                                               <div className="flex items-center gap-2 pt-1">
                                                 <Checkbox
@@ -4563,12 +4607,18 @@ export default function Home() {
                                                         [week.weekNumber]: "",
                                                       })
                                                     );
-                                                    setTempReturnLocator(
-                                                      (prev: any) => ({
-                                                        ...prev,
-                                                        [week.weekNumber]: "",
-                                                      })
-                                                    );
+                                                  setTempReturnLocator(
+                                                    (prev: any) => ({
+                                                      ...prev,
+                                                      [week.weekNumber]: "",
+                                                    })
+                                                  );
+                                                  setTempReturnTerminal(
+                                                    (prev: any) => ({
+                                                      ...prev,
+                                                      [week.weekNumber]: "",
+                                                    })
+                                                  );
                                                     setSuggestedReturnFlightNumber(
                                                       (prev: any) => ({
                                                         ...prev,
@@ -4981,6 +5031,36 @@ export default function Home() {
                                                     }
                                                   />
                                                 </div>
+                                                <div className="flex flex-col gap-1">
+                                                  <label
+                                                    htmlFor={`return-terminal-${week.weekNumber}`}
+                                                    className="text-[10px] font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wide"
+                                                  >
+                                                    Terminal
+                                                  </label>
+                                                  <input
+                                                    id={`return-terminal-${week.weekNumber}`}
+                                                    aria-label="Terminal do Voo de Volta"
+                                                    type="text"
+                                                    maxLength={20}
+                                                    placeholder="Ex: Terminal 1"
+                                                    className="h-8 text-xs border border-orange-200 dark:border-orange-600 rounded-md px-2 bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-orange-400 dark:focus:ring-orange-500 w-full"
+                                                    value={
+                                                      tempReturnTerminal[
+                                                        week.weekNumber
+                                                      ] ?? week.returnTerminal ?? ""
+                                                    }
+                                                    onChange={e =>
+                                                      setTempReturnTerminal(
+                                                        prev => ({
+                                                          ...prev,
+                                                          [week.weekNumber]:
+                                                            e.target.value,
+                                                        })
+                                                      )
+                                                    }
+                                                  />
+                                                </div>
                                                 {/* Checkbox Voo Remarcado - Volta */}
                                                 <div className="flex items-center gap-2 pt-1">
                                                   <Checkbox
@@ -5125,6 +5205,18 @@ export default function Home() {
                                                     tempReturnFlightNumber[
                                                       week.weekNumber
                                                     ] ?? ""
+                                                  ).trim() || null,
+                                                departureTerminal:
+                                                  (
+                                                    tempDepartureTerminal[
+                                                      week.weekNumber
+                                                    ] ?? week.departureTerminal ?? ""
+                                                  ).trim() || null,
+                                                returnTerminal:
+                                                  (
+                                                    tempReturnTerminal[
+                                                      week.weekNumber
+                                                    ] ?? week.returnTerminal ?? ""
                                                   ).trim() || null,
                                                 departureFlightDatetime:
                                                   tempDepartureDatetime[
@@ -5748,6 +5840,20 @@ export default function Home() {
                                                               week.weekNumber
                                                             ] ||
                                                             week.returnFlightDatetime ||
+                                                            ""
+                                                          }
+                                                          departureTerminal={
+                                                            tempDepartureTerminal[
+                                                              week.weekNumber
+                                                            ] ??
+                                                            week.departureTerminal ??
+                                                            ""
+                                                          }
+                                                          returnTerminal={
+                                                            tempReturnTerminal[
+                                                              week.weekNumber
+                                                            ] ??
+                                                            week.returnTerminal ??
                                                             ""
                                                           }
                                                         />

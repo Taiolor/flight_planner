@@ -422,7 +422,7 @@ describe("flights.updateWeekStatus with airline fields", () => {
     process.env.JWT_SECRET = "test-secret";
   });
 
-  it("should accept departureAirline and returnAirline fields", async () => {
+  it("should accept airline and terminal fields for both weekly legs", async () => {
     const { validateAuthSession, updateFlightWeekStatus } = await import(
       "./db"
     );
@@ -439,6 +439,8 @@ describe("flights.updateWeekStatus with airline fields", () => {
       isTicketIssued: 1,
       departureAirline: "latam",
       returnAirline: "gol",
+      departureTerminal: "Terminal 2",
+      returnTerminal: "Terminal 1",
     });
 
     expect(result.success).toBe(true);
@@ -449,6 +451,8 @@ describe("flights.updateWeekStatus with airline fields", () => {
         isTicketIssued: 1,
         departureAirline: "latam",
         returnAirline: "gol",
+        departureTerminal: "Terminal 2",
+        returnTerminal: "Terminal 1",
       })
     );
   });

@@ -752,3 +752,7 @@
 - [x] Corrigir o botão Cancelar na adição de viagens adicionais
 - [x] Replicar integralmente os campos, combos, dados, posições e layout do cartão semanal no formulário de viagens adicionais
 - [x] Incluir preço pago em viagens adicionais e somá-lo ao Financeiro anual com centavos
+
+## Bilhetes semanais
+
+- [x] Incluir campos de Terminal na Ida, Volta e Somente Ida de todas as semanas
