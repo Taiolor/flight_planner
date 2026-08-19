@@ -266,7 +266,7 @@ const QuoteRow = ({
       {/* Detalhes de ida e volta (apenas quando disponível via API) */}
       {hasFlightDetails && (
         <div
-          className={`px-3 pb-2.5 pt-0 border-t grid grid-cols-2 gap-2 ${
+          className={`px-3 pb-2.5 pt-0 border-t grid grid-cols-1 min-[380px]:grid-cols-2 gap-2 ${
             isPast
               ? "border-slate-200 dark:border-slate-700"
               : "border-slate-200 dark:border-slate-600"
@@ -529,10 +529,10 @@ const WeekCard = ({
         }
         aria-controls={`quote-content-${week.semana}`}
       >
-        <div className="flex items-center gap-3">
+        <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-3">
           {/* Badge de número da semana */}
           <div
-            className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1 ${weekNumBg}`}
+            className={`flex shrink-0 items-center gap-1 whitespace-nowrap rounded-lg px-2 py-1 ${weekNumBg}`}
           >
             <span
               className={`text-xs font-bold uppercase tracking-wider ${weekLabelText}`}
@@ -543,8 +543,8 @@ const WeekCard = ({
               {week.semana}
             </span>
             {isCurrent && (
-              <span className="ml-0.5 text-[10px] font-semibold text-blue-600 dark:text-blue-400 uppercase tracking-wide">
-                ● atual
+              <span className="ml-0.5 whitespace-nowrap text-[10px] font-semibold text-blue-600 dark:text-blue-400 uppercase tracking-wide">
+                ●<span className="hidden min-[360px]:inline"> atual</span>
               </span>
             )}
           </div>
