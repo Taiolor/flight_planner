@@ -115,9 +115,11 @@ import type { ColorPreset } from "@/contexts/ThemeContext";
 import { useYear } from "@/contexts/YearContext";
 import { GlobalYearSelector } from "@/components/GlobalYearSelector";
 import { AdditionalFlightsPanel, type AdditionalFlightRecord } from "@/components/AdditionalFlightsPanel";
+import { AttentionCenter } from "@/components/AttentionCenter";
 import type { MonthlyChartData } from "@/components/HomeCharts";
 import { shouldRenderDeferredCharts } from "@/lib/chartLoading";
 import { queryCachePolicies } from "@/lib/queryCache";
+import { buildAttentionItems } from "@/lib/attentionCenter";
 
 const AnnualSpendChart = lazy(() =>
   import("@/components/HomeCharts").then(module => ({
@@ -1057,6 +1059,11 @@ export default function Home() {
     [lowestPriceMap]
   );
 
+  const attentionItems = useMemo(
+    () => buildAttentionItems(weeksData, priceMap),
+    [weeksData, priceMap]
+  );
+
   // Soma TODOS os valores em dinheiro pagos na semana (todas as companhias)
   const totalWeekCostMap = useMemo(() => {
     const map: Record<number, number> = {};
@@ -1382,6 +1389,25 @@ export default function Home() {
       weekNumber,
       requestId: (previous?.requestId ?? 0) + 1,
     }));
+  };
+
+  const openAttentionWeek = (weekNumber: number) => {
+    const week = weeksData.find(item => item.weekNumber === weekNumber);
+    if (!week) return;
+
+    const monthKey = week.departureDate.substring(3, 5);
+    setFilterMonth(monthKey);
+    setFilterAirline("all");
+    setFilterTicketStatus("all");
+    setShowCheapestOnly(false);
+    setExpandedMonths(previous => new Set(previous).add(monthKey));
+    setExpandedWeekCards(previous => new Set(previous).add(weekNumber));
+
+    window.setTimeout(() => {
+      document
+        .getElementById(`week-card-${weekNumber}`)
+        ?.scrollIntoView({ behavior: "smooth", block: "center" });
+    }, 80);
   };
 
   const expandAllWeeks = () => {
@@ -2309,6 +2335,14 @@ export default function Home() {
           </div>
         )}
 
+        {!weeksQuery.isLoading && (
+          <AttentionCenter
+            items={attentionItems}
+            hideValues={hideValues}
+            onOpenWeek={openAttentionWeek}
+          />
+        )}
+
         {/* Filtros com Accordion */}
         {weeksQuery.isLoading ? (
           <SkeletonFilters />
@@ -2930,6 +2964,7 @@ export default function Home() {
                             return (
                               <Card
                                 key={week.weekNumber}
+                                id={`week-card-${week.weekNumber}`}
                                 className={`p-3 sm:p-6 border-0 shadow-md transition-all hover:shadow-lg dark:bg-slate-800 dark:shadow-slate-900/40 rounded-lg relative ${
                                   week.isSelected
                                     ? "ring-2 ring-green-500 bg-green-50 dark:bg-green-900/30"

@@ -773,6 +773,10 @@
 - [x] Adicionar botões acessíveis para limpar o histórico local de ações administrativas
 - [x] Criar uma linha do tempo centralizada para exibir ações administrativas recentes
 
+## Experiência de planejamento
+
+- [x] Criar uma Central de atenção inteligente na Home com prazos de compra, cancelamentos e variações de preço
+
 ## Preferências da Home
 
 - [x] Persistir os estados aberto e fechado do Resumo Anual e de Filtros e Controles
