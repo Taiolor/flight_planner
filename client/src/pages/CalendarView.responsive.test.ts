@@ -1,0 +1,26 @@
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
+import { describe, expect, it } from "vitest";
+
+describe("Calendar mobile responsiveness", () => {
+  const calendarSource = readFileSync(
+    resolve(process.cwd(), "client/src/pages/CalendarView.tsx"),
+    "utf8"
+  );
+  const cupSource = readFileSync(
+    resolve(process.cwd(), "client/src/components/BrazilWorldCupPanel.tsx"),
+    "utf8"
+  );
+
+  it("uses a compact, non-growing monthly flight counter", () => {
+    expect(calendarSource).toContain("flex shrink-0 items-center gap-0.5");
+    expect(calendarSource).toContain('text-[9px] font-semibold px-1 py-0.5');
+  });
+
+  it("keeps long World Cup opponent names visible instead of truncating them", () => {
+    expect(cupSource).toContain("min-w-0 break-words text-right");
+    expect(cupSource).not.toContain(
+      'text-xs font-bold text-slate-800 truncate text-right'
+    );
+  });
+});

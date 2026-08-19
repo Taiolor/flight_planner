@@ -571,8 +571,8 @@ export default function CalendarView() {
                     {monthName}
                   </span>
                   {issuedCount > 0 && (
-                    <span className="flex items-center gap-1 bg-cyan-400/20 border border-cyan-300/40 text-cyan-100 text-[10px] font-semibold px-2 py-0.5 rounded-full">
-                      <Plane className="w-2.5 h-2.5" />
+                    <span className="flex shrink-0 items-center gap-0.5 bg-cyan-400/20 border border-cyan-300/40 text-cyan-100 text-[9px] font-semibold px-1 py-0.5 rounded-full">
+                      <Plane className="w-2 h-2" />
                       {issuedCount} {issuedCount === 1 ? "voo" : "voos"}
                     </span>
                   )}
