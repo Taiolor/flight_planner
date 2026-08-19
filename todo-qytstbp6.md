@@ -10,7 +10,7 @@
 - [x] Verificar se o projeto Google AI Studio **FlyAI** possui faturamento ativo e está no **Paid Tier** da Gemini API.
 - [x] Documentar a recarga pré-paga de R$ 100,00 do projeto FlyAI e a gestão de gastos pelo usuário.
 - [x] Confirmar em arquivo a persistência da documentação da recarga pré-paga e do controle de gastos.
-- [ ] Salvar checkpoint final após registrar a ativação pré-paga do FlyAI.
+- [x] Salvar checkpoint final após registrar a ativação pré-paga do FlyAI.
 - [x] Registrar que a confirmação de sistema operacional, RAM e GPU não é necessária nesta versão baseada em Gemini API.
 - [x] Registrar que a infraestrutura local de LLM foi substituída pela Gemini API nesta versão.
 - [x] Implementar o gatilho flutuante discreto do Fly.IA, disponível em toda a aplicação.
