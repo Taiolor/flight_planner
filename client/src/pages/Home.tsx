@@ -116,7 +116,9 @@ import { useYear } from "@/contexts/YearContext";
 import { GlobalYearSelector } from "@/components/GlobalYearSelector";
 import { AdditionalFlightsPanel, type AdditionalFlightRecord } from "@/components/AdditionalFlightsPanel";
 import { AttentionCenter } from "@/components/AttentionCenter";
+import { AnnualPlanningProgress } from "@/components/AnnualPlanningProgress";
 import type { MonthlyChartData } from "@/components/HomeCharts";
+import { getAnnualProgress } from "@/lib/annualProgress";
 import { shouldRenderDeferredCharts } from "@/lib/chartLoading";
 import { queryCachePolicies } from "@/lib/queryCache";
 import {
@@ -1068,6 +1070,10 @@ export default function Home() {
     () => buildAttentionItems(weeksData, priceMap),
     [weeksData, priceMap]
   );
+  const annualProgress = useMemo(
+    () => getAnnualProgress(weeksData),
+    [weeksData]
+  );
   const [attentionDismissals, setAttentionDismissals] = useState(() =>
     readAttentionDismissals()
   );
@@ -1086,6 +1092,16 @@ export default function Home() {
   const handleRestoreAttention = (itemId: string) => {
     setAttentionDismissals(restoreAttentionItem(itemId));
     toast.success("Alerta reativado.");
+  };
+  const showPendingWeeks = () => {
+    setFilterTicketStatus("notIssued");
+    setShowCheapestOnly(false);
+    setExpandFilters(true);
+    window.setTimeout(() => {
+      document
+        .getElementById("filters-content")
+        ?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 80);
   };
 
   // Soma TODOS os valores em dinheiro pagos na semana (todas as companhias)
@@ -2357,6 +2373,14 @@ export default function Home() {
               </Card>
             )}
           </div>
+        )}
+
+        {!weeksQuery.isLoading && (
+          <AnnualPlanningProgress
+            progress={annualProgress}
+            year={selectedYear}
+            onShowPending={showPendingWeeks}
+          />
         )}
 
         {!weeksQuery.isLoading && (
