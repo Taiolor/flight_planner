@@ -2331,14 +2331,14 @@ export default function Home() {
             {expandFilters && (
               <Card
                 id="filters-content"
-                className={`p-4 sm:p-6 mb-4 sm:mb-8 backdrop-blur-md border rounded-b-3xl rounded-t-none shadow-xl transition-colors duration-300 ${
+                className={`overflow-hidden p-4 sm:p-6 mb-4 sm:mb-8 backdrop-blur-md border rounded-b-3xl rounded-t-none shadow-xl transition-colors duration-300 ${
                   theme === "dark"
                     ? "bg-slate-800/80 border-slate-700/30"
                     : "bg-white/80 border-white/20"
                 }`}
               >
                 {/* Linha 1: Mês, Companhia, Ordenar por, Filtro de Preço, Status do Bilhete */}
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
+                <div className="grid min-w-0 grid-cols-1 min-[480px]:grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4 [&>div]:min-w-0">
                   <div>
                     <label
                       className={`text-sm font-semibold mb-2 block transition-colors duration-300 ${
@@ -2696,26 +2696,26 @@ export default function Home() {
         {!isLoading && (
           <div className="space-y-3">
             {sortedWeeks.length === 0 ? (
-              <Card className="p-12 text-center border-0 shadow-md bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
-                <div className="flex flex-col items-center">
+              <Card className="p-6 sm:p-12 text-center border-0 shadow-md bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
+                <div className="flex w-full max-w-full flex-col items-center">
                   <Calendar className="w-16 h-16 text-slate-300 dark:text-slate-600 mb-4" />
-                  <h3 className="text-xl font-semibold text-slate-700 dark:text-slate-300 mb-2">
+                  <h3 className="max-w-full break-words text-xl font-semibold text-slate-700 dark:text-slate-300 mb-2">
                     {weeksData.length === 0
                       ? `Planejamento de ${selectedYear} ainda não disponível`
                       : "Nenhum voo encontrado"}
                   </h3>
-                  <p className="text-slate-600 dark:text-slate-400 mb-6 max-w-md">
+                  <p className="w-full max-w-md text-slate-600 dark:text-slate-400 mb-6">
                     {weeksData.length === 0
                       ? isAuthenticated
                         ? "As semanas serão criadas automaticamente para este exercício. Se a criação não concluir, tente gerar novamente."
                         : "Entre para criar e administrar as semanas deste exercício sem misturar dados de outros anos."
                       : "Desculpe, não encontramos voos que correspondam aos seus filtros. Tente ajustar os horários, mês ou outras opções de filtro."}
                   </p>
-                  <div className="flex gap-3 justify-center flex-wrap">
+                  <div className="flex w-full max-w-full gap-3 justify-center flex-wrap">
                     {weeksData.length === 0 ? (
                       <Button
                         variant="outline"
-                        className="border-slate-300 text-slate-700 dark:border-slate-600 dark:text-slate-300"
+                        className="min-w-0 max-w-full whitespace-normal border-slate-300 text-slate-700 dark:border-slate-600 dark:text-slate-300"
                         disabled={ensureYearWeeksMutation.isPending}
                         onClick={() => {
                           if (!isAuthenticated) {
@@ -2741,7 +2741,7 @@ export default function Home() {
                     ) : (
                       <Button
                         variant="outline"
-                        className="border-slate-300 text-slate-700 dark:border-slate-600 dark:text-slate-300"
+                        className="min-w-0 max-w-full whitespace-normal border-slate-300 text-slate-700 dark:border-slate-600 dark:text-slate-300"
                         onClick={() => {
                           setFilterMonth("all");
                           setFilterAirline("all");
@@ -6055,13 +6055,13 @@ export default function Home() {
 
           {/* Filtro de empresas do gráfico - sempre visível */}
           <div
-            className={`mb-6 p-4 rounded-xl border transition-colors duration-300 ${
+            className={`mb-6 max-w-full overflow-hidden p-4 rounded-xl border transition-colors duration-300 ${
               theme === "dark"
                 ? "bg-slate-700/50 border-slate-600"
                 : "bg-slate-50 border-slate-200"
             }`}
           >
-            <div className="flex items-center justify-between mb-3">
+            <div className="mb-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
               <span
                 className={`text-sm font-semibold transition-colors duration-300 ${
                   theme === "dark" ? "text-slate-300" : "text-slate-700"
@@ -6069,7 +6069,7 @@ export default function Home() {
               >
                 Filtrar Empresas no Gráfico
               </span>
-              <div className="flex gap-2">
+              <div className="flex flex-wrap gap-1 sm:gap-2">
                 <button
                   onClick={selectAllChartAirlines}
                   className="text-xs text-blue-600 hover:text-blue-800 font-medium px-2 py-1 rounded hover:bg-blue-50 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
