@@ -778,6 +778,8 @@
 - [x] Criar uma Central de atenção inteligente na Home com prazos de compra, cancelamentos e variações de preço
 - [x] Permitir dispensar temporariamente e reativar alertas da Central de atenção
 - [x] Adicionar resumo visual de progresso anual com semanas emitidas e pendentes
+- [x] Permitir configurar e acompanhar uma meta anual de emissões
+- [x] Transformar Central de atenção e Progresso anual em sanfonas com estado persistido individualmente
 
 ## Preferências da Home
 

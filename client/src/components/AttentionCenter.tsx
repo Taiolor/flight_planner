@@ -2,7 +2,9 @@ import {
   AlertCircle,
   CalendarClock,
   CheckCircle2,
+  ChevronDown,
   ChevronRight,
+  ChevronUp,
   EyeOff,
   RotateCcw,
   TrendingUp,
@@ -15,6 +17,8 @@ type AttentionCenterProps = {
   items: AttentionItem[];
   dismissedItems: AttentionItem[];
   hideValues: boolean;
+  isOpen: boolean;
+  onToggle: () => void;
   onOpenWeek: (weekNumber: number) => void;
   onDismiss: (itemId: string) => void;
   onRestore: (itemId: string) => void;
@@ -39,6 +43,8 @@ export function AttentionCenter({
   items,
   dismissedItems,
   hideValues,
+  isOpen,
+  onToggle,
   onOpenWeek,
   onDismiss,
   onRestore,
@@ -49,8 +55,14 @@ export function AttentionCenter({
   return (
     <section aria-labelledby="attention-center-title" className="mb-4 sm:mb-8">
       <Card className="overflow-hidden border-slate-200 bg-white shadow-md dark:border-slate-700 dark:bg-slate-800">
-        <div className="flex flex-col gap-3 border-b border-slate-100 bg-gradient-to-r from-slate-900 via-blue-950 to-slate-900 px-4 py-4 text-white sm:flex-row sm:items-center sm:justify-between sm:px-6">
-          <div>
+        <button
+          type="button"
+          onClick={onToggle}
+          aria-expanded={isOpen}
+          aria-controls="attention-center-content"
+          className="flex w-full flex-col gap-3 border-b border-slate-100 bg-gradient-to-r from-slate-900 via-blue-950 to-slate-900 px-4 py-4 text-left text-white transition-colors hover:from-slate-800 hover:via-blue-900 hover:to-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300 sm:flex-row sm:items-center sm:justify-between sm:px-6"
+        >
+          <div className="min-w-0">
             <h2 id="attention-center-title" className="text-base font-bold sm:text-lg">
               Central de atenção
             </h2>
@@ -58,7 +70,7 @@ export function AttentionCenter({
               Prioridades de prazo, cancelamento e preço para agir primeiro.
             </p>
           </div>
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2 self-start sm:self-auto">
             {dismissedItems.length > 0 && (
               <span className="w-fit rounded-full bg-white/10 px-2.5 py-1 text-xs font-medium text-blue-100">
                 {dismissedItems.length} adiado{dismissedItems.length === 1 ? "" : "s"} por 24h
@@ -69,10 +81,15 @@ export function AttentionCenter({
               ? "Tudo sob controle"
               : `${items.length} ${items.length === 1 ? "atenção" : "atenções"}`}
             </span>
+            {isOpen ? (
+              <ChevronUp className="h-5 w-5 shrink-0" aria-hidden="true" />
+            ) : (
+              <ChevronDown className="h-5 w-5 shrink-0" aria-hidden="true" />
+            )}
           </div>
-        </div>
+        </button>
 
-        {visibleItems.length === 0 ? (
+        {isOpen && <div id="attention-center-content">{visibleItems.length === 0 ? (
           <div className="flex items-start gap-3 p-4 text-sm text-slate-600 sm:p-6 dark:text-slate-300">
             <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-emerald-500" />
             <p>
@@ -171,7 +188,7 @@ export function AttentionCenter({
               </p>
             )}
           </div>
-        )}
+        )}</div>}
       </Card>
     </section>
   );

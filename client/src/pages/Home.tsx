@@ -117,6 +117,11 @@ import { GlobalYearSelector } from "@/components/GlobalYearSelector";
 import { AdditionalFlightsPanel, type AdditionalFlightRecord } from "@/components/AdditionalFlightsPanel";
 import { AttentionCenter } from "@/components/AttentionCenter";
 import { AnnualPlanningProgress } from "@/components/AnnualPlanningProgress";
+import {
+  getAnnualGoalProgress,
+  readAnnualEmissionGoal,
+  saveAnnualEmissionGoal,
+} from "@/lib/annualEmissionGoal";
 import type { MonthlyChartData } from "@/components/HomeCharts";
 import { getAnnualProgress } from "@/lib/annualProgress";
 import { shouldRenderDeferredCharts } from "@/lib/chartLoading";
@@ -127,6 +132,10 @@ import {
   readAttentionDismissals,
   restoreAttentionItem,
 } from "@/lib/attentionCenter";
+import {
+  persistHomeExpandablePanels,
+  readHomeExpandablePanels,
+} from "@/lib/homeExpandablePanels";
 
 const AnnualSpendChart = lazy(() =>
   import("@/components/HomeCharts").then(module => ({
@@ -1074,6 +1083,39 @@ export default function Home() {
     () => getAnnualProgress(weeksData),
     [weeksData]
   );
+  const [annualEmissionGoal, setAnnualEmissionGoal] = useState(() =>
+    readAnnualEmissionGoal(selectedYear, annualProgress.totalWeeks)
+  );
+  const [expandablePanels, setExpandablePanels] = useState(() =>
+    readHomeExpandablePanels()
+  );
+  useEffect(() => {
+    setAnnualEmissionGoal(
+      readAnnualEmissionGoal(selectedYear, annualProgress.totalWeeks)
+    );
+  }, [annualProgress.totalWeeks, selectedYear]);
+  const annualGoalProgress = useMemo(
+    () => getAnnualGoalProgress(annualProgress.issuedWeeks, annualEmissionGoal),
+    [annualEmissionGoal, annualProgress.issuedWeeks]
+  );
+  const updateExpandablePanel = (
+    panel: "annualProgress" | "attentionCenter"
+  ) => {
+    setExpandablePanels(previous => {
+      const next = { ...previous, [panel]: !previous[panel] };
+      persistHomeExpandablePanels(next);
+      return next;
+    });
+  };
+  const handleSaveAnnualGoal = (goal: number) => {
+    const savedGoal = saveAnnualEmissionGoal(
+      selectedYear,
+      goal,
+      annualProgress.totalWeeks
+    );
+    setAnnualEmissionGoal(savedGoal);
+    toast.success(`Meta anual atualizada para ${savedGoal} emissões.`);
+  };
   const [attentionDismissals, setAttentionDismissals] = useState(() =>
     readAttentionDismissals()
   );
@@ -2378,8 +2420,13 @@ export default function Home() {
         {!weeksQuery.isLoading && (
           <AnnualPlanningProgress
             progress={annualProgress}
+            goal={annualEmissionGoal}
+            goalProgress={annualGoalProgress}
             year={selectedYear}
+            isOpen={expandablePanels.annualProgress}
+            onToggle={() => updateExpandablePanel("annualProgress")}
             onShowPending={showPendingWeeks}
+            onSaveGoal={handleSaveAnnualGoal}
           />
         )}
 
@@ -2388,6 +2435,8 @@ export default function Home() {
             items={activeAttentionItems}
             dismissedItems={dismissedAttentionItems}
             hideValues={hideValues}
+            isOpen={expandablePanels.attentionCenter}
+            onToggle={() => updateExpandablePanel("attentionCenter")}
             onOpenWeek={openAttentionWeek}
             onDismiss={handleDismissAttention}
             onRestore={handleRestoreAttention}

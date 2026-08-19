@@ -1,24 +1,61 @@
-import { CheckCircle2, Clock3, TriangleAlert } from "lucide-react";
+import {
+  CheckCircle2,
+  ChevronDown,
+  ChevronUp,
+  Clock3,
+  Pencil,
+  Target,
+  TriangleAlert,
+} from "lucide-react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import type { AnnualGoalProgress } from "@/lib/annualEmissionGoal";
 import type { AnnualProgress } from "@/lib/annualProgress";
 
 type AnnualPlanningProgressProps = {
   progress: AnnualProgress;
+  goal: number;
+  goalProgress: AnnualGoalProgress;
   year: number;
+  isOpen: boolean;
+  onToggle: () => void;
   onShowPending: () => void;
+  onSaveGoal: (goal: number) => void;
 };
 
 export function AnnualPlanningProgress({
   progress,
+  goal,
+  goalProgress,
   year,
+  isOpen,
+  onToggle,
   onShowPending,
+  onSaveGoal,
 }: AnnualPlanningProgressProps) {
+  const [isEditingGoal, setIsEditingGoal] = useState(false);
+  const [draftGoal, setDraftGoal] = useState(String(goal));
+
+  useEffect(() => setDraftGoal(String(goal)), [goal]);
+
+  const saveGoal = () => {
+    onSaveGoal(Number(draftGoal));
+    setIsEditingGoal(false);
+  };
+
   return (
     <section aria-labelledby="annual-progress-title" className="mb-4 sm:mb-8">
-      <Card className="overflow-hidden border-slate-200 bg-white p-4 shadow-md sm:p-6 dark:border-slate-700 dark:bg-slate-800">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
+      <Card className="overflow-hidden border-slate-200 bg-white shadow-md dark:border-slate-700 dark:bg-slate-800">
+        <button
+          type="button"
+          onClick={onToggle}
+          aria-expanded={isOpen}
+          aria-controls="annual-progress-content"
+          className="flex w-full flex-col gap-3 px-4 py-4 text-left transition-colors hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 sm:flex-row sm:items-center sm:justify-between sm:px-6 dark:hover:bg-slate-700/40"
+        >
+          <div className="min-w-0">
             <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
               Planejamento {year}
             </p>
@@ -29,14 +66,20 @@ export function AnnualPlanningProgress({
               {progress.issuedWeeks} de {progress.totalWeeks} semanas já possuem passagem emitida.
             </p>
           </div>
-          <div className="flex items-end gap-2">
+          <div className="flex items-center gap-2 self-start sm:self-auto">
             <span className="text-3xl font-black text-emerald-600 dark:text-emerald-400">
               {progress.completionPercent}%
             </span>
             <span className="mb-1 text-xs text-slate-500 dark:text-slate-400">concluído</span>
+            {isOpen ? (
+              <ChevronUp className="h-5 w-5 text-slate-500" aria-hidden="true" />
+            ) : (
+              <ChevronDown className="h-5 w-5 text-slate-500" aria-hidden="true" />
+            )}
           </div>
-        </div>
+        </button>
 
+        {isOpen && <div id="annual-progress-content" className="border-t border-slate-100 p-4 sm:p-6 dark:border-slate-700">
         <div
           className="mt-5 h-3 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-700"
           role="progressbar"
@@ -49,6 +92,64 @@ export function AnnualPlanningProgress({
             className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-cyan-500 transition-[width] duration-500"
             style={{ width: `${progress.completionPercent}%` }}
           />
+        </div>
+
+        <div className="mt-4 flex flex-col gap-3 rounded-lg border border-cyan-100 bg-cyan-50 px-3 py-3 sm:flex-row sm:items-center sm:justify-between dark:border-cyan-900/50 dark:bg-cyan-950/20">
+          <div className="flex min-w-0 items-start gap-2">
+            <Target className="mt-0.5 h-5 w-5 shrink-0 text-cyan-700 dark:text-cyan-300" />
+            <div>
+              <p className="text-sm font-semibold text-cyan-900 dark:text-cyan-100">
+                Meta anual: {goal} emiss{goal === 1 ? "ão" : "ões"}
+              </p>
+              <p className="mt-0.5 text-xs text-cyan-800 dark:text-cyan-200">
+                {goalProgress.achieved
+                  ? "Meta atingida. Continue registrando as emissões adicionais."
+                  : `${goalProgress.percent}% da meta concluída · faltam ${goalProgress.remaining} emiss${goalProgress.remaining === 1 ? "ão" : "ões"}.`}
+              </p>
+            </div>
+          </div>
+          {isEditingGoal ? (
+            <form
+              className="flex w-full gap-2 sm:w-auto"
+              onSubmit={event => {
+                event.preventDefault();
+                saveGoal();
+              }}
+            >
+              <Input
+                type="number"
+                min={1}
+                max={Math.max(1, progress.totalWeeks)}
+                value={draftGoal}
+                onChange={event => setDraftGoal(event.target.value)}
+                aria-label="Meta anual de emissões"
+                className="h-9 w-full bg-white sm:w-20 dark:bg-slate-900"
+              />
+              <Button type="submit" size="sm">Salvar</Button>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  setDraftGoal(String(goal));
+                  setIsEditingGoal(false);
+                }}
+              >
+                Cancelar
+              </Button>
+            </form>
+          ) : (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="w-full gap-1.5 sm:w-auto"
+              onClick={() => setIsEditingGoal(true)}
+            >
+              <Pencil className="h-3.5 w-3.5" />
+              Ajustar meta
+            </Button>
+          )}
         </div>
 
         <div className="mt-5 grid grid-cols-1 gap-3 min-[480px]:grid-cols-3">
@@ -82,6 +183,7 @@ export function AnnualPlanningProgress({
             </Button>
           </div>
         )}
+        </div>}
       </Card>
     </section>
   );
