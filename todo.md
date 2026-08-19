@@ -766,6 +766,10 @@
 - [x] Reavaliar e corrigir a responsividade de todos os elementos da página Financeiro para telas de celular
 - [x] Reavaliar e corrigir a responsividade de todas as telas administrativas para telas de celular
 
+## Experiência administrativa
+
+- [x] Adicionar animações de carregamento e mensagens de feedback visual ao salvar formulários administrativos
+
 ## Preferências da Home
 
 - [x] Persistir os estados aberto e fechado do Resumo Anual e de Filtros e Controles

@@ -119,6 +119,10 @@ function AdminNotificationsContent() {
   const [expandedSections, setExpandedSections] = useState<Set<string>>(
     new Set()
   );
+  const [testFeedback, setTestFeedback] = useState<{
+    kind: "success" | "error";
+    message: string;
+  } | null>(null);
 
   const toggleSection = (section: string) => {
     const newSet = new Set(expandedSections);
@@ -170,12 +174,14 @@ function AdminNotificationsContent() {
 
   const sendTestMutation = trpc.push.sendTest.useMutation({
     onSuccess: result => {
-      toast.success(
-        `Notificação de teste enviada para ${result.sent} dispositivo(s).`
-      );
+      const message = `Notificação de teste enviada para ${result.sent} dispositivo(s).`;
+      setTestFeedback({ kind: "success", message });
+      toast.success(message);
     },
     onError: err => {
-      toast.error(err.message || "Erro ao enviar notificação de teste.");
+      const message = err.message || "Erro ao enviar notificação de teste.";
+      setTestFeedback({ kind: "error", message });
+      toast.error(message);
     },
   });
 
@@ -206,10 +212,14 @@ function AdminNotificationsContent() {
           icon={Bell}
           title={`Admin · Notificações · ${selectedYear}`}
         />
-        <div className="flex min-h-[calc(100vh-60px)] items-center justify-center">
-          <div className="space-y-3 text-center">
-            <div className="mx-auto h-10 w-10 animate-spin rounded-full border-4 border-blue-600 border-t-transparent" />
-            <p className="text-sm text-gray-500">Carregando painel...</p>
+          <div className="flex min-h-[calc(100vh-60px)] items-center justify-center px-4">
+            <div className="w-full max-w-sm space-y-4 rounded-2xl bg-white p-6 text-center shadow-sm">
+              <div className="mx-auto h-10 w-10 animate-spin rounded-full border-4 border-blue-600 border-t-transparent" />
+              <div className="space-y-2 animate-pulse">
+                <div className="mx-auto h-3 w-32 rounded bg-slate-200" />
+                <div className="mx-auto h-3 w-48 rounded bg-slate-100" />
+              </div>
+              <p className="text-sm text-gray-500">Carregando painel e histórico...</p>
           </div>
         </div>
       </div>
@@ -788,6 +798,24 @@ function AdminNotificationsContent() {
               </Button>
             </Link>
           </div>
+          {testFeedback && (
+            <div
+              role="status"
+              aria-live="polite"
+              className={`mt-3 flex items-start gap-2 rounded-lg border p-3 text-sm animate-in fade-in slide-in-from-top-1 duration-200 ${
+                testFeedback.kind === "success"
+                  ? "border-emerald-200 bg-emerald-50 text-emerald-800"
+                  : "border-red-200 bg-red-50 text-red-800"
+              }`}
+            >
+              {testFeedback.kind === "success" ? (
+                <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0" />
+              ) : (
+                <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+              )}
+              <span>{testFeedback.message}</span>
+            </div>
+          )}
           {(data?.totalSubscriptions ?? 0) === 0 && (
             <p className="text-xs text-amber-600 mt-2 flex items-center gap-1">
               <AlertCircle className="w-3 h-3" />
@@ -847,6 +875,10 @@ function TicketNotificationEmailsSection() {
   const [newName, setNewName] = useState("");
   const [testEmail, setTestEmail] = useState("");
   const [showTestForm, setShowTestForm] = useState(false);
+  const [emailFeedback, setEmailFeedback] = useState<{
+    kind: "success" | "error";
+    message: string;
+  } | null>(null);
 
   const { data: recipients, refetch } =
     trpc.ticketNotifications.getRecipients.useQuery();
@@ -854,36 +886,48 @@ function TicketNotificationEmailsSection() {
   const addRecipientMutation =
     trpc.ticketNotifications.addRecipient.useMutation({
       onSuccess: () => {
-        toast.success("E-mail adicionado com sucesso!");
+        const message = "Destinatário adicionado com sucesso.";
+        setEmailFeedback({ kind: "success", message });
+        toast.success(message);
         setNewEmail("");
         setNewName("");
         refetch();
       },
       onError: err => {
-        toast.error(err.message || "Erro ao adicionar e-mail.");
+        const message = err.message || "Erro ao adicionar e-mail.";
+        setEmailFeedback({ kind: "error", message });
+        toast.error(message);
       },
     });
 
   const removeRecipientMutation =
     trpc.ticketNotifications.removeRecipient.useMutation({
       onSuccess: () => {
-        toast.success("E-mail removido com sucesso!");
+        const message = "Destinatário removido com sucesso.";
+        setEmailFeedback({ kind: "success", message });
+        toast.success(message);
         refetch();
       },
       onError: err => {
-        toast.error(err.message || "Erro ao remover e-mail.");
+        const message = err.message || "Erro ao remover e-mail.";
+        setEmailFeedback({ kind: "error", message });
+        toast.error(message);
       },
     });
 
   const sendTestEmailMutation =
     trpc.ticketNotifications.sendTestEmail.useMutation({
       onSuccess: () => {
-        toast.success("E-mail de teste enviado com sucesso!");
+        const message = "E-mail de teste enviado com sucesso.";
+        setEmailFeedback({ kind: "success", message });
+        toast.success(message);
         setTestEmail("");
         setShowTestForm(false);
       },
       onError: err => {
-        toast.error(err.message || "Erro ao enviar e-mail de teste.");
+        const message = err.message || "Erro ao enviar e-mail de teste.";
+        setEmailFeedback({ kind: "error", message });
+        toast.error(message);
       },
     });
 
@@ -910,6 +954,24 @@ function TicketNotificationEmailsSection() {
 
   return (
     <div className="space-y-5 p-4 sm:p-5">
+      {emailFeedback && (
+        <div
+          role="status"
+          aria-live="polite"
+          className={`flex items-start gap-2 rounded-lg border p-3 text-sm animate-in fade-in slide-in-from-top-1 duration-200 ${
+            emailFeedback.kind === "success"
+              ? "border-emerald-200 bg-emerald-50 text-emerald-800"
+              : "border-red-200 bg-red-50 text-red-800"
+          }`}
+        >
+          {emailFeedback.kind === "success" ? (
+            <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0" />
+          ) : (
+            <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+          )}
+          <span>{emailFeedback.message}</span>
+        </div>
+      )}
       {/* Formulário para adicionar novo e-mail */}
       <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
         <h3 className="font-medium text-gray-800 mb-3 text-sm">
