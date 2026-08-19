@@ -789,6 +789,8 @@
 - [x] Suavizar o fade e tornar os controles de pausa do carrossel mais evidentes
 - [x] Corrigir “Diário de borda” para “Diário de Bordo” na página Memórias
 - [x] Corrigir o carregamento das imagens do carrossel de cidades em Memórias
+- [x] Adicionar fotos reais de Guarulhos, Piracicaba e Novo Hamburgo ao carrossel de Memórias
+- [x] Permitir escolher e persistir uma foto favorita no carrossel de Memórias
 
 ## Preferências da Home
 

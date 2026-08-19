@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { ChevronLeft, ChevronRight, Pause, Play } from "lucide-react";
+import { ChevronLeft, ChevronRight, Heart, Pause, Play } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const CITY_BACKDROPS = [
   {
+    id: "blumenau",
     city: "Blumenau",
     subject: "Parque Vila Germânica",
     src: "/manus-storage/blumenau_0c5430d7.jpg",
@@ -12,6 +13,7 @@ const CITY_BACKDROPS = [
       "https://commons.wikimedia.org/wiki/File:Blumenau_sc_-_panoramio_(18).jpg",
   },
   {
+    id: "sao-paulo",
     city: "São Paulo",
     subject: "Panorama do centro",
     src: "/manus-storage/sao-paulo_da0e548a.jpg",
@@ -20,6 +22,7 @@ const CITY_BACKDROPS = [
       "https://commons.wikimedia.org/wiki/File:Panoramic_view_of_S%C3%A3o_Paulo_city_center.jpg",
   },
   {
+    id: "rio-de-janeiro",
     city: "Rio de Janeiro",
     subject: "Botafogo visto da Urca",
     src: "/manus-storage/rio-de-janeiro_3f37d89b.jpg",
@@ -28,6 +31,7 @@ const CITY_BACKDROPS = [
       "https://commons.wikimedia.org/wiki/File:Rio_de_Janeiro_at_night.jpg",
   },
   {
+    id: "porto-alegre",
     city: "Porto Alegre",
     subject: "Paisagem noturna",
     src: "/manus-storage/porto-alegre_14400559.jpg",
@@ -36,6 +40,7 @@ const CITY_BACKDROPS = [
       "https://commons.wikimedia.org/wiki/File:Porto_Alegre_-_Brazil_Landscape-Night.jpg",
   },
   {
+    id: "joinville",
     city: "Joinville",
     subject: "Centro e bairro América",
     src: "/manus-storage/joinville_af0d11c7.jpg",
@@ -44,6 +49,7 @@ const CITY_BACKDROPS = [
       "https://commons.wikimedia.org/wiki/File:Panoramicajoinvillecentroamerica_big.jpg",
   },
   {
+    id: "goiania",
     city: "Goiânia",
     subject: "Panorama urbano",
     src: "/manus-storage/goiania_c168de7c.jpg",
@@ -52,6 +58,7 @@ const CITY_BACKDROPS = [
       "https://commons.wikimedia.org/wiki/File:Goi%C3%A2nia_Panorama.jpg",
   },
   {
+    id: "ribeirao-preto",
     city: "Ribeirão Preto",
     subject: "Panorama visto de Cravinhos",
     src: "/manus-storage/ribeirao-preto_2765aed4.jpg",
@@ -60,6 +67,7 @@ const CITY_BACKDROPS = [
       "https://commons.wikimedia.org/wiki/File:Panorama_Cravinhos_Ribeir%C3%A3o_Preto.jpg",
   },
   {
+    id: "itu",
     city: "Itu",
     subject: "Vista aérea do centro",
     src: "/manus-storage/itu_6771c3c3.jpg",
@@ -67,12 +75,65 @@ const CITY_BACKDROPS = [
     creditUrl:
       "https://commons.wikimedia.org/wiki/File:Vista_a%C3%A9rea_de_Itu_2021_01.jpg",
   },
+  {
+    id: "guarulhos",
+    city: "Guarulhos",
+    subject: "Vista panorâmica da cidade",
+    src: "/manus-storage/guarulhos_dab4a2d7.jpg",
+    credit: "Humanoo · domínio público",
+    creditUrl:
+      "https://commons.wikimedia.org/wiki/File:Vista_da_cidade_de_Guarulhos_(SP).JPG",
+  },
+  {
+    id: "piracicaba",
+    city: "Piracicaba",
+    subject: "Rio Piracicaba e a cidade",
+    src: "/manus-storage/piracicaba_9040475e.jpg",
+    credit: "Ultimo Romântico · CC BY-SA 2.0",
+    creditUrl: "https://commons.wikimedia.org/wiki/File:Piracicaba-SP.jpg",
+  },
+  {
+    id: "novo-hamburgo",
+    city: "Novo Hamburgo",
+    subject: "Biblioteca Pública histórica",
+    src: "/manus-storage/novo-hamburgo_f09cf41e.jpg",
+    credit: "Viviane Lauck · CC BY-SA 4.0",
+    creditUrl:
+      "https://commons.wikimedia.org/wiki/File:Biblioteca_P%C3%BAblica_-_Novo_Hamburgo_-_20240929164508.jpg",
+  },
 ] as const;
 
 const AUTO_ADVANCE_MS = 10_000;
+export const FAVORITE_BACKDROP_STORAGE_KEY = "smartfly:memories:favorite-backdrop";
+
+export function getFavoriteBackdropId() {
+  if (typeof window === "undefined") return null;
+  const backdropId = window.localStorage.getItem(FAVORITE_BACKDROP_STORAGE_KEY);
+  return CITY_BACKDROPS.some(backdrop => backdrop.id === backdropId)
+    ? backdropId
+    : null;
+}
+
+export function setFavoriteBackdropId(backdropId: string | null) {
+  if (typeof window === "undefined") return;
+  if (backdropId) {
+    window.localStorage.setItem(FAVORITE_BACKDROP_STORAGE_KEY, backdropId);
+  } else {
+    window.localStorage.removeItem(FAVORITE_BACKDROP_STORAGE_KEY);
+  }
+}
 
 export function CityBackgroundCarousel() {
-  const [activeIndex, setActiveIndex] = useState(0);
+  const [favoriteBackdropId, setFavoriteBackdropIdState] = useState(
+    getFavoriteBackdropId
+  );
+  const [activeIndex, setActiveIndex] = useState(() => {
+    const favoriteBackdropId = getFavoriteBackdropId();
+    const favoriteIndex = CITY_BACKDROPS.findIndex(
+      backdrop => backdrop.id === favoriteBackdropId
+    );
+    return favoriteIndex >= 0 ? favoriteIndex : 0;
+  });
   const [isPlaying, setIsPlaying] = useState(true);
 
   useEffect(() => {
@@ -89,8 +150,17 @@ export function CityBackgroundCarousel() {
   }, [isPlaying]);
 
   const activeBackdrop = CITY_BACKDROPS[activeIndex];
+  const favoriteBackdrop = CITY_BACKDROPS.find(
+    backdrop => backdrop.id === favoriteBackdropId
+  );
   const goTo = (index: number) => {
     setActiveIndex((index + CITY_BACKDROPS.length) % CITY_BACKDROPS.length);
+  };
+  const toggleFavorite = () => {
+    const nextFavoriteId =
+      favoriteBackdropId === activeBackdrop.id ? null : activeBackdrop.id;
+    setFavoriteBackdropId(nextFavoriteId);
+    setFavoriteBackdropIdState(nextFavoriteId);
   };
 
   return (
@@ -153,6 +223,31 @@ export function CityBackgroundCarousel() {
               type="button"
               variant="ghost"
               size="icon"
+              className={`h-8 w-8 rounded-full text-white hover:bg-white/15 hover:text-white ${
+                favoriteBackdropId === activeBackdrop.id ? "bg-fuchsia-500/35 text-fuchsia-100" : ""
+              }`}
+              onClick={toggleFavorite}
+              aria-label={
+                favoriteBackdropId === activeBackdrop.id
+                  ? `Remover ${activeBackdrop.city} das favoritas`
+                  : `Favoritar foto de ${activeBackdrop.city}`
+              }
+              aria-pressed={favoriteBackdropId === activeBackdrop.id}
+              title={
+                favoriteBackdropId === activeBackdrop.id
+                  ? "Remover foto favorita"
+                  : "Usar esta foto como favorita"
+              }
+            >
+              <Heart
+                className="h-4 w-4"
+                fill={favoriteBackdropId === activeBackdrop.id ? "currentColor" : "none"}
+              />
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
               className="h-8 w-8 rounded-full text-white hover:bg-white/15 hover:text-white"
               onClick={() => goTo(activeIndex + 1)}
               aria-label="Ver próxima cidade"
@@ -176,14 +271,21 @@ export function CityBackgroundCarousel() {
               />
             ))}
           </div>
-          <a
-            href={activeBackdrop.creditUrl}
-            target="_blank"
-            rel="noreferrer"
-            className="truncate text-[10px] text-slate-300 underline-offset-2 hover:text-white hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
-          >
-            Foto: {activeBackdrop.credit}
-          </a>
+          <div className="min-w-0 text-right">
+            <a
+              href={activeBackdrop.creditUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="block truncate text-[10px] text-slate-300 underline-offset-2 hover:text-white hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+            >
+              Foto: {activeBackdrop.credit}
+            </a>
+            {favoriteBackdrop && (
+              <p className="mt-0.5 truncate text-[10px] font-semibold text-fuchsia-100" aria-live="polite">
+                Favorita: {favoriteBackdrop.city}
+              </p>
+            )}
+          </div>
         </div>
       </aside>
     </>

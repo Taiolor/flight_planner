@@ -12,6 +12,9 @@ As imagens de fundo foram selecionadas no Wikimedia Commons e publicadas como at
 | Goiânia | Panorama urbano | A C Moraes | CC BY 2.0 |
 | Ribeirão Preto | Panorama visto de Cravinhos | Anderson Bueno Pereira | CC BY-SA 4.0 |
 | Itu | Vista aérea do centro | Victor de Andrade Lopes | CC BY-SA 4.0 |
+| Guarulhos | Vista panorâmica da cidade | Humanoo | Domínio público |
+| Piracicaba | Rio Piracicaba e a cidade | Ultimo Romântico | CC BY-SA 2.0 |
+| Novo Hamburgo | Biblioteca Pública histórica | Viviane Lauck | CC BY-SA 4.0 |
 
 ## Fontes pesquisadas para expansão
 

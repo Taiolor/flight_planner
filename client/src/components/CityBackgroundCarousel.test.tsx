@@ -5,10 +5,12 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
   CITY_BACKDROPS,
   CityBackgroundCarousel,
+  FAVORITE_BACKDROP_STORAGE_KEY,
 } from "./CityBackgroundCarousel";
 
 describe("CityBackgroundCarousel", () => {
   beforeEach(() => {
+    window.localStorage.clear();
     Object.defineProperty(window, "matchMedia", {
       configurable: true,
       value: vi.fn().mockReturnValue({ matches: false }),
@@ -16,9 +18,12 @@ describe("CityBackgroundCarousel", () => {
   });
 
   it("usa os ativos fotográficos publicados e preserva os créditos", () => {
-    expect(CITY_BACKDROPS).toHaveLength(8);
+    expect(CITY_BACKDROPS).toHaveLength(11);
     expect(CITY_BACKDROPS.every(backdrop => backdrop.src.startsWith("/manus-storage/"))).toBe(true);
     expect(CITY_BACKDROPS.every(backdrop => backdrop.creditUrl.startsWith("https://commons.wikimedia.org/"))).toBe(true);
+    expect(CITY_BACKDROPS.map(backdrop => backdrop.city)).toEqual(
+      expect.arrayContaining(["Guarulhos", "Piracicaba", "Novo Hamburgo"])
+    );
   });
 
   it("permite navegar e pausar o carrossel por controles acessíveis", () => {
@@ -37,5 +42,24 @@ describe("CityBackgroundCarousel", () => {
     ).toBeTruthy();
     expect(screen.getByText("Retomar")).toBeTruthy();
     expect(screen.getByText("Carrossel pausado")).toBeTruthy();
+  });
+
+  it("permite favoritar uma foto e restaurá-la no próximo carregamento", () => {
+    const { unmount } = render(<CityBackgroundCarousel />);
+
+    fireEvent.click(
+      screen.getByRole("button", { name: "Favoritar foto de Blumenau" })
+    );
+    expect(window.localStorage.getItem(FAVORITE_BACKDROP_STORAGE_KEY)).toBe(
+      "blumenau"
+    );
+    expect(screen.getByText("Favorita: Blumenau")).toBeTruthy();
+
+    unmount();
+    render(<CityBackgroundCarousel />);
+    expect(screen.getByText("Blumenau")).toBeTruthy();
+    expect(
+      screen.getByRole("button", { name: "Remover Blumenau das favoritas" })
+    ).toBeTruthy();
   });
 });
