@@ -24,6 +24,10 @@ O projeto precisa usar a chave `GEMINI_API_KEY` criada em um projeto Google AI S
 
 O Fly.IA não deve ser interpretado como fonte independente de dados. As respostas devem refletir exclusivamente o contexto do exercício selecionado; se um dado estiver ausente, a orientação do sistema é declarar a limitação em vez de inferir ou inventar uma resposta.
 
+## Configuração identificada
+
+O projeto informado no Google AI Studio é **FlyAI** e a chave associada também está identificada como **FlyAI**. Os painéis de consumo do Google já registram requisições bem-sucedidas com essa chave, confirmando sua ativação operacional. O projeto recebeu uma recarga pré-paga de **R$ 100,00**, sob gestão de gastos do usuário, confirmando o faturamento ativo da Gemini API. Somente essa identificação é registrada na documentação; o valor da chave permanece armazenado exclusivamente como segredo `GEMINI_API_KEY` no ambiente do servidor.
+
 ## Verificação
 
 Os testes automatizados cobrem validação da credencial, redução do histórico, limitação de uso, redação de localizadores, construção do prompt e tratamento de resposta ou falha do provedor. A suíte deve ser executada com `pnpm test`, e a compilação de produção com `pnpm build`.

@@ -6,7 +6,11 @@
 - [x] Comparar APIs remotas de LLM com camada gratuita ou custo inicial reduzido, incluindo limites, política de dados e qualidade em português.
 - [x] Decidir entre o modelo local leve e a Gemini API paga para a primeira versão do Fly.IA.
 - [x] Confirmar Gemini 2.5 Flash como provedor e modelo remoto, com política de privacidade da modalidade paga.
-- [ ] Verificar se a conta Google Pro possui um projeto Google Cloud com faturamento ativo para habilitar a modalidade paga da Gemini API.
+- [x] Confirmar que os painéis de consumo do Google registram requisições bem-sucedidas pela chave FlyAI.
+- [x] Verificar se o projeto Google AI Studio **FlyAI** possui faturamento ativo e está no **Paid Tier** da Gemini API.
+- [x] Documentar a recarga pré-paga de R$ 100,00 do projeto FlyAI e a gestão de gastos pelo usuário.
+- [x] Confirmar em arquivo a persistência da documentação da recarga pré-paga e do controle de gastos.
+- [ ] Salvar checkpoint final após registrar a ativação pré-paga do FlyAI.
 - [x] Registrar que a confirmação de sistema operacional, RAM e GPU não é necessária nesta versão baseada em Gemini API.
 - [x] Registrar que a infraestrutura local de LLM foi substituída pela Gemini API nesta versão.
 - [x] Implementar o gatilho flutuante discreto do Fly.IA, disponível em toda a aplicação.
@@ -20,4 +24,4 @@
 - [x] Adicionar teste renderizado do widget para orientar visitantes a entrar e abrir o chat após autenticação.
 - [x] Adicionar testes tRPC de `flyIa.chat` para sessão ausente, limite excedido, indisponibilidade do provedor e resposta bem-sucedida.
 - [x] Validar a interface em desktop e celular e revisar o arquivo de tarefas.
-- [ ] Salvar o checkpoint da versão validada do Fly.IA.
+- [x] Salvar o checkpoint da versão validada do Fly.IA.
