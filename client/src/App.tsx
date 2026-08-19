@@ -3,6 +3,7 @@ import NotFound from "@/pages/NotFound";
 import { lazy, Suspense } from "react";
 import { Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
+import FlyIA from "./components/FlyIA";
 import PerformanceTelemetry from "./components/PerformanceTelemetry";
 import UsageTelemetry from "./components/UsageTelemetry";
 import { ThemeProvider } from "./contexts/ThemeContext";
@@ -88,6 +89,7 @@ function App() {
             <PerformanceTelemetry />
             <UsageTelemetry />
             <Router />
+            <FlyIA />
           </TooltipProvider>
         </ThemeProvider>
       </YearProvider>

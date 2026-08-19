@@ -24,4 +24,5 @@ export const ENV = {
   authPassword: process.env.AUTH_PASSWORD ?? "",
   rapidapiKey: process.env.RAPIDAPI_KEY ?? "",
   resendApiKey: process.env.RESEND_API_KEY ?? "",
+  geminiApiKey: process.env.GEMINI_API_KEY ?? "",
 };

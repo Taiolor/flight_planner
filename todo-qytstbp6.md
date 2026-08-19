@@ -1,0 +1,23 @@
+# Project TODO
+
+- [x] Auditar os componentes atuais, as rotas tRPC e as fontes de dados de voos, compras, cancelamentos e cidades.
+- [x] Definir e documentar a arquitetura do Fly.IA com Gemini 2.5 Flash no servidor, contexto mínimo do banco, proteção da sessão e limitação de uso.
+- [x] Comparar modelos de linguagem locais de baixo investimento, com foco em português, requisitos de memória e compatibilidade com o Fly.IA.
+- [x] Comparar APIs remotas de LLM com camada gratuita ou custo inicial reduzido, incluindo limites, política de dados e qualidade em português.
+- [x] Decidir entre o modelo local leve e a Gemini API paga para a primeira versão do Fly.IA.
+- [x] Confirmar Gemini 2.5 Flash como provedor e modelo remoto, com política de privacidade da modalidade paga.
+- [ ] Verificar se a conta Google Pro possui um projeto Google Cloud com faturamento ativo para habilitar a modalidade paga da Gemini API.
+- [x] Registrar que a confirmação de sistema operacional, RAM e GPU não é necessária nesta versão baseada em Gemini API.
+- [x] Registrar que a infraestrutura local de LLM foi substituída pela Gemini API nesta versão.
+- [x] Implementar o gatilho flutuante discreto do Fly.IA, disponível em toda a aplicação.
+- [x] Implementar a janela de chatbot acessível, responsiva e em português, com sugestões de perguntas relacionadas aos dados do planejamento.
+- [x] Criar uma rota segura de consulta contextual aos dados do banco, sem expor dados além da sessão autorizada.
+- [x] Integrar o mecanismo de resposta Gemini 2.5 Flash para perguntas sobre próximos voos, compras, cancelamentos, cidades e distâncias.
+- [x] Criar e executar testes automatizados para as consultas e a interface do Fly.IA.
+- [x] Documentar em arquivo técnico o fluxo cliente→tRPC→Gemini, o contexto mínimo, a proteção de sessão e o limite de uso.
+- [x] Adicionar testes do procedimento Fly.IA para autorização, limitação, falha do provedor e resposta bem-sucedida.
+- [x] Adicionar testes explícitos de sanitização que comprovem a exclusão de localizadores e identificadores sensíveis do contexto do Gemini.
+- [x] Adicionar teste renderizado do widget para orientar visitantes a entrar e abrir o chat após autenticação.
+- [x] Adicionar testes tRPC de `flyIa.chat` para sessão ausente, limite excedido, indisponibilidade do provedor e resposta bem-sucedida.
+- [x] Validar a interface em desktop e celular e revisar o arquivo de tarefas.
+- [ ] Salvar o checkpoint da versão validada do Fly.IA.

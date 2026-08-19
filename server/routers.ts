@@ -74,6 +74,13 @@ import {
   getUsageTelemetrySummary,
   recordUsageTelemetryEvents,
 } from "./usageTelemetry";
+import {
+  askFlyIa,
+  buildFlyIaContext,
+  FlyIaProviderError,
+  FlyIaRateLimitError,
+  flyIaRateLimiter,
+} from "./flyIa";
 
 interface NextAlert {
   year: number;
@@ -198,6 +205,52 @@ export const appRouter = router({
       ctx.res.clearCookie(SESSION_COOKIE, { ...cookieOptions, maxAge: -1 });
       return { success: true };
     }),
+  }),
+
+  // =====================
+  // Fly.IA — assistente de planejamento
+  // =====================
+  flyIa: router({
+    chat: flightProtectedProcedure
+      .input(
+        z.object({
+          year: planningYearSchema,
+          messages: z
+            .array(
+              z.object({
+                role: z.enum(["user", "assistant"]),
+                content: z.string().trim().min(1).max(1200),
+              })
+            )
+            .min(1)
+            .max(8),
+        })
+      )
+      .mutation(async ({ ctx, input }) => {
+        try {
+          flyIaRateLimiter.consume(ctx.flightSession.email.toLowerCase());
+          const context = await buildFlyIaContext(input.year);
+          const response = await askFlyIa(context, input.messages);
+          return { response };
+        } catch (error) {
+          if (error instanceof FlyIaRateLimitError) {
+            throw new TRPCError({
+              code: "TOO_MANY_REQUESTS",
+              message: error.message,
+            });
+          }
+          if (error instanceof FlyIaProviderError) {
+            throw new TRPCError({
+              code: "SERVICE_UNAVAILABLE",
+              message: error.message,
+            });
+          }
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Não foi possível preparar os dados para o Fly.IA.",
+          });
+        }
+      }),
   }),
 
   // =====================
