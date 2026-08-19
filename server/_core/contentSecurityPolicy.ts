@@ -11,6 +11,7 @@ export const productionCspDirectives = {
     "data:",
     "blob:",
     "https://d2xsxph8kpxj0f.cloudfront.net",
+    "https://d36hbw14aib5lz.cloudfront.net",
     "https://maps.googleapis.com",
     "https://maps.gstatic.com",
     "https://*.googleusercontent.com",

@@ -160,7 +160,7 @@ export default function Memories() {
   const trips = overviewQuery.data?.trips ?? [];
 
   return (
-    <main className="relative min-h-screen overflow-x-hidden bg-[#081225] text-slate-950">
+    <main className="relative isolate min-h-screen overflow-x-hidden bg-transparent text-slate-950">
       <CityBackgroundCarousel />
       <header className="relative z-10 overflow-hidden border-b border-white/10 bg-[#0e1b39]/45 text-white backdrop-blur-[2px]">
         <div className="pointer-events-none absolute inset-0 opacity-70 [background-image:radial-gradient(circle_at_15%_20%,rgba(244,114,182,.32),transparent_20%),radial-gradient(circle_at_85%_15%,rgba(96,165,250,.30),transparent_18%),radial-gradient(circle_at_60%_110%,rgba(250,204,21,.20),transparent_24%)]" />
@@ -174,7 +174,7 @@ export default function Memories() {
           <div className="mt-12 grid gap-8 lg:grid-cols-[1.2fr_.8fr] lg:items-end">
             <div>
               <p className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-1 text-xs font-bold uppercase tracking-[.18em] text-fuchsia-100">
-                <Sparkles className="h-3.5 w-3.5" /> Diário de borda
+                <Sparkles className="h-3.5 w-3.5" /> Diário de Bordo
               </p>
               <h1 className="mt-5 max-w-3xl text-4xl font-black tracking-tight sm:text-6xl">
                 Cada trecho guarda uma história.

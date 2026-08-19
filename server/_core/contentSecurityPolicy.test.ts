@@ -28,6 +28,9 @@ describe("contentSecurityPolicy", () => {
     expect(productionCspDirectives.imgSrc).toContain(
       "https://*.tile.openstreetmap.org"
     );
+    expect(productionCspDirectives.imgSrc).toContain(
+      "https://d36hbw14aib5lz.cloudfront.net"
+    );
   });
 
   it("não permite blocos de estilo inline em produção", () => {

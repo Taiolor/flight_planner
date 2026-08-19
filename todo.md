@@ -787,6 +787,8 @@
 
 - [x] Criar um fundo dinâmico em carrossel com fotos reais em alta resolução das cidades das viagens
 - [x] Suavizar o fade e tornar os controles de pausa do carrossel mais evidentes
+- [x] Corrigir “Diário de borda” para “Diário de Bordo” na página Memórias
+- [x] Corrigir o carregamento das imagens do carrossel de cidades em Memórias
 
 ## Preferências da Home
 

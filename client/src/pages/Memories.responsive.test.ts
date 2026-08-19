@@ -16,4 +16,9 @@ describe("Memories mobile responsiveness", () => {
   it("keeps destructive media actions visible on touch screens", () => {
     expect(source).toContain("opacity-100 transition sm:opacity-0");
   });
+
+  it("preserves the correct diary label and exposes the carousel above its background layer", () => {
+    expect(source).toContain("Diário de Bordo");
+    expect(source).toContain("relative isolate min-h-screen");
+  });
 });

@@ -95,7 +95,7 @@ export function CityBackgroundCarousel() {
 
   return (
     <>
-      <div aria-hidden="true" className="pointer-events-none fixed inset-0 z-0 overflow-hidden bg-[#081225]">
+      <div aria-hidden="true" className="pointer-events-none fixed inset-0 z-[1] overflow-hidden bg-[#081225]">
         {CITY_BACKDROPS.map((backdrop, index) => (
           <div
             key={backdrop.city}
