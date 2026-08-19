@@ -2,7 +2,10 @@
 
 import { beforeEach, describe, expect, it } from "vitest";
 import {
+  appendAdminActionTimeline,
+  clearAdminActionTimeline,
   clearAdminFormAction,
+  readAdminActionTimeline,
   readAdminFormAction,
   saveAdminFormAction,
   type AdminFormAction,
@@ -48,5 +51,26 @@ describe("admin form action history", () => {
     expect(readAdminFormAction("viagens.admin.other-action")).toMatchObject({
       label: "Outro registro",
     });
+  });
+
+  it("keeps a consolidated timeline ordered by the newest action", () => {
+    appendAdminActionTimeline("recipients", action);
+    appendAdminActionTimeline("push", {
+      ...action,
+      label: "Teste de notificação enviado",
+      timestamp: "2026-08-19T17:30:00.000Z",
+    });
+
+    expect(readAdminActionTimeline()).toMatchObject([
+      { source: "push", label: "Teste de notificação enviado" },
+      { source: "recipients", label: "E-mail de teste enviado" },
+    ]);
+  });
+
+  it("keeps the consolidated timeline cleared after a reload", () => {
+    appendAdminActionTimeline("test-email", action);
+    clearAdminActionTimeline();
+
+    expect(readAdminActionTimeline()).toEqual([]);
   });
 });

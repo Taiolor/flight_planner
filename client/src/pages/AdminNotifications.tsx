@@ -63,6 +63,14 @@ export type AdminFormAction = {
   status: "success" | "error";
 };
 
+export type AdminActionTimelineEntry = AdminFormAction & {
+  id: string;
+  source: "push" | "recipients" | "test-email";
+};
+
+const ADMIN_ACTION_TIMELINE_KEY = "viagens.admin.action-timeline";
+const MAX_ADMIN_ACTION_TIMELINE_ENTRIES = 30;
+
 export function readAdminFormAction(key: string): AdminFormAction | null {
   if (typeof window === "undefined") return null;
 
@@ -92,6 +100,73 @@ export function saveAdminFormAction(key: string, action: AdminFormAction) {
 export function clearAdminFormAction(key: string) {
   if (typeof window !== "undefined") {
     window.localStorage.removeItem(key);
+  }
+}
+
+export function readAdminActionTimeline(): AdminActionTimelineEntry[] {
+  if (typeof window === "undefined") return [];
+
+  try {
+    const stored = window.localStorage.getItem(ADMIN_ACTION_TIMELINE_KEY);
+    if (stored) {
+      const parsed = JSON.parse(stored) as Partial<AdminActionTimelineEntry>[];
+      if (!Array.isArray(parsed)) return [];
+      return parsed
+        .filter(
+          entry =>
+            typeof entry.id === "string" &&
+            typeof entry.label === "string" &&
+            typeof entry.timestamp === "string" &&
+            (entry.status === "success" || entry.status === "error") &&
+            (entry.source === "push" ||
+              entry.source === "recipients" ||
+              entry.source === "test-email")
+        )
+        .map(entry => entry as AdminActionTimelineEntry)
+        .sort((a, b) => b.timestamp.localeCompare(a.timestamp))
+        .slice(0, MAX_ADMIN_ACTION_TIMELINE_ENTRIES);
+    }
+
+    const legacyEntries = [
+      ["push", readAdminFormAction("viagens.admin.last-push-action")],
+      ["recipients", readAdminFormAction("viagens.admin.last-recipient-action")],
+      ["test-email", readAdminFormAction("viagens.admin.last-test-email-action")],
+    ] as const;
+    return legacyEntries
+      .filter(([, action]) => action !== null)
+      .map(([source, action]) => ({
+        ...action!,
+        id: `${source}-${action!.timestamp}`,
+        source,
+      }))
+      .sort((a, b) => b.timestamp.localeCompare(a.timestamp));
+  } catch {
+    return [];
+  }
+}
+
+export function appendAdminActionTimeline(
+  source: AdminActionTimelineEntry["source"],
+  action: AdminFormAction
+): AdminActionTimelineEntry[] {
+  const entry: AdminActionTimelineEntry = {
+    ...action,
+    source,
+    id: `${source}-${action.timestamp}-${Math.random().toString(36).slice(2, 8)}`,
+  };
+  const entries = [entry, ...readAdminActionTimeline()]
+    .sort((a, b) => b.timestamp.localeCompare(a.timestamp))
+    .slice(0, MAX_ADMIN_ACTION_TIMELINE_ENTRIES);
+
+  if (typeof window !== "undefined") {
+    window.localStorage.setItem(ADMIN_ACTION_TIMELINE_KEY, JSON.stringify(entries));
+  }
+  return entries;
+}
+
+export function clearAdminActionTimeline() {
+  if (typeof window !== "undefined") {
+    window.localStorage.setItem(ADMIN_ACTION_TIMELINE_KEY, "[]");
   }
 }
 
@@ -224,6 +299,9 @@ function AdminNotificationsContent() {
   const [lastPushAction, setLastPushAction] = useState<AdminFormAction | null>(
     () => readAdminFormAction("viagens.admin.last-push-action")
   );
+  const [actionTimeline, setActionTimeline] = useState<AdminActionTimelineEntry[]>(
+    () => readAdminActionTimeline()
+  );
   const [expandedSections, setExpandedSections] = useState<Set<string>>(
     new Set()
   );
@@ -238,11 +316,23 @@ function AdminNotificationsContent() {
     const action = { label, status, timestamp: new Date().toISOString() };
     setLastPushAction(action);
     saveAdminFormAction("viagens.admin.last-push-action", action);
+    setActionTimeline(appendAdminActionTimeline("push", action));
   };
   const clearPushAction = () => {
     clearAdminFormAction("viagens.admin.last-push-action");
     setLastPushAction(null);
     toast.success("Registro local de teste de notificação limpo.");
+  };
+  const registerTimelineAction = (
+    source: AdminActionTimelineEntry["source"],
+    action: AdminFormAction
+  ) => {
+    setActionTimeline(appendAdminActionTimeline(source, action));
+  };
+  const clearTimeline = () => {
+    clearAdminActionTimeline();
+    setActionTimeline([]);
+    toast.success("Linha do tempo local limpa.");
   };
 
   const toggleSection = (section: string) => {
@@ -746,6 +836,120 @@ function AdminNotificationsContent() {
           )}
         </div>
 
+        {/* Linha do tempo local de ações administrativas */}
+        <div>
+          <div className="w-full flex items-center gap-2 p-4 bg-white hover:bg-gray-50 transition-colors border border-gray-200 rounded-lg">
+            <button
+              type="button"
+              onClick={() => toggleSection("local-timeline")}
+              className="min-w-0 flex flex-1 items-center justify-between gap-3 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded-sm"
+              aria-expanded={expandedSections.has("local-timeline")}
+              aria-controls="section-local-timeline"
+            >
+              <div>
+                <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide">
+                  Ações administrativas recentes ({actionTimeline.length})
+                </h2>
+                <p className="mt-1 text-xs text-gray-400">
+                  Histórico local deste navegador, organizado da ação mais recente à mais antiga.
+                </p>
+              </div>
+              <ChevronDown
+                className={`w-5 h-5 text-slate-400 transition-transform duration-200 flex-shrink-0 ${
+                  expandedSections.has("local-timeline") ? "rotate-180" : ""
+                }`}
+              />
+            </button>
+            {actionTimeline.length > 0 && (
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="shrink-0 text-xs text-slate-500 hover:bg-slate-100 hover:text-slate-800"
+                    aria-label="Limpar todas as ações administrativas locais"
+                  >
+                    Limpar tudo
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Limpar a linha do tempo local?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Esta ação remove todas as ações administrativas salvas neste navegador. O histórico persistido de notificações não será alterado.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                    <AlertDialogAction onClick={clearTimeline}>
+                      Limpar tudo
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            )}
+          </div>
+
+          {expandedSections.has("local-timeline") && (
+            <Card id="section-local-timeline" className="mt-3 overflow-hidden">
+              {actionTimeline.length === 0 ? (
+                <div className="p-8 text-center">
+                  <History className="mx-auto mb-3 h-10 w-10 text-gray-300" />
+                  <p className="text-sm text-gray-500">
+                    Nenhuma ação administrativa local registrada ainda.
+                  </p>
+                </div>
+              ) : (
+                <div className="divide-y divide-slate-100">
+                  {actionTimeline.map(entry => {
+                    const sourceLabel =
+                      entry.source === "push"
+                        ? "Notificação push"
+                        : entry.source === "recipients"
+                          ? "Destinatários"
+                          : "E-mail de teste";
+                    return (
+                      <div
+                        key={entry.id}
+                        className="flex items-start gap-3 px-4 py-3 sm:items-center"
+                      >
+                        <div
+                          className={`mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full sm:mt-0 ${
+                            entry.status === "success"
+                              ? "bg-emerald-100 text-emerald-700"
+                              : "bg-amber-100 text-amber-700"
+                          }`}
+                        >
+                          {entry.status === "success" ? (
+                            <CheckCircle2 className="h-4 w-4" />
+                          ) : (
+                            <AlertCircle className="h-4 w-4" />
+                          )}
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <p className="text-sm font-medium text-slate-800">
+                            {entry.label}
+                          </p>
+                          <p className="mt-0.5 text-xs text-slate-500">
+                            {sourceLabel}
+                          </p>
+                        </div>
+                        <time
+                          dateTime={entry.timestamp}
+                          className="max-w-28 shrink-0 text-right text-xs text-slate-400"
+                        >
+                          {new Date(entry.timestamp).toLocaleString("pt-BR")}
+                        </time>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </Card>
+          )}
+        </div>
+
         {/* Histórico Persistente de Envios */}
         <div>
           <div className="w-full flex items-center gap-2 p-4 bg-white hover:bg-gray-50 transition-colors border border-gray-200 rounded-lg">
@@ -985,7 +1189,7 @@ function AdminNotificationsContent() {
             </div>
           </div>
         </div>
-        <TicketNotificationEmailsSection />
+        <TicketNotificationEmailsSection onRecordAction={registerTimelineAction} />
       </div>
     </div>
   );
@@ -994,7 +1198,14 @@ function AdminNotificationsContent() {
 /**
  * Seção de gerenciamento de e-mails de notificação de bilhetes
  */
-function TicketNotificationEmailsSection() {
+function TicketNotificationEmailsSection({
+  onRecordAction,
+}: {
+  onRecordAction: (
+    source: AdminActionTimelineEntry["source"],
+    action: AdminFormAction
+  ) => void;
+}) {
   const [newEmail, setNewEmail] = useState("");
   const [newName, setNewName] = useState("");
   const [testEmail, setTestEmail] = useState("");
@@ -1019,6 +1230,7 @@ function TicketNotificationEmailsSection() {
     const action = { label, status, timestamp: new Date().toISOString() };
     setLastRecipientsAction(action);
     saveAdminFormAction("viagens.admin.last-recipient-action", action);
+    onRecordAction("recipients", action);
   };
   const registerTestEmailAction = (
     label: string,
@@ -1027,6 +1239,7 @@ function TicketNotificationEmailsSection() {
     const action = { label, status, timestamp: new Date().toISOString() };
     setLastTestEmailAction(action);
     saveAdminFormAction("viagens.admin.last-test-email-action", action);
+    onRecordAction("test-email", action);
   };
   const clearRecipientsAction = () => {
     clearAdminFormAction("viagens.admin.last-recipient-action");

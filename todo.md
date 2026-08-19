@@ -771,6 +771,7 @@
 - [x] Adicionar animações de carregamento e mensagens de feedback visual ao salvar formulários administrativos
 - [x] Registrar e exibir a data e hora da última ação em cada formulário administrativo de Notificações
 - [x] Adicionar botões acessíveis para limpar o histórico local de ações administrativas
+- [x] Criar uma linha do tempo centralizada para exibir ações administrativas recentes
 
 ## Preferências da Home
 
