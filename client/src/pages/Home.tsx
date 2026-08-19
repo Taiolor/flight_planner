@@ -278,6 +278,55 @@ interface PriceMap {
   [weekNumber: number]: { [airline: string]: string };
 }
 
+export const HOME_PANEL_PREFERENCES_STORAGE_KEY =
+  "smartfly.home.panel-preferences.v1";
+
+export type HomePanelPreferences = {
+  summary: boolean;
+  filters: boolean;
+};
+
+export const DEFAULT_HOME_PANEL_PREFERENCES: HomePanelPreferences = {
+  summary: true,
+  filters: true,
+};
+
+export function readHomePanelPreferences(
+  storage: Pick<Storage, "getItem"> | null =
+    typeof window === "undefined" ? null : window.localStorage
+): HomePanelPreferences {
+  if (!storage) return DEFAULT_HOME_PANEL_PREFERENCES;
+
+  try {
+    const raw = storage.getItem(HOME_PANEL_PREFERENCES_STORAGE_KEY);
+    if (!raw) return DEFAULT_HOME_PANEL_PREFERENCES;
+    const parsed = JSON.parse(raw) as Partial<HomePanelPreferences>;
+    return {
+      summary:
+        typeof parsed.summary === "boolean"
+          ? parsed.summary
+          : DEFAULT_HOME_PANEL_PREFERENCES.summary,
+      filters:
+        typeof parsed.filters === "boolean"
+          ? parsed.filters
+          : DEFAULT_HOME_PANEL_PREFERENCES.filters,
+    };
+  } catch {
+    return DEFAULT_HOME_PANEL_PREFERENCES;
+  }
+}
+
+export function persistHomePanelPreferences(
+  preferences: HomePanelPreferences,
+  storage: Pick<Storage, "setItem"> | null =
+    typeof window === "undefined" ? null : window.localStorage
+) {
+  storage?.setItem(
+    HOME_PANEL_PREFERENCES_STORAGE_KEY,
+    JSON.stringify(preferences)
+  );
+}
+
 // ⚡ Bolt Optimization: Hoisted static date parsing functions outside the render loop
 // to avoid O(N*M) object creation and garbage collection.
 const parseBR = (s: string) => {
@@ -521,8 +570,18 @@ export default function Home() {
   // Estado para ocultar valores monetários (privacidade)
   // Sempre inicia oculto (true); só pode ser alternado quando autenticado
   const [hideValues, setHideValues] = useState<boolean>(true);
-  const [expandSummary, setExpandSummary] = useState<boolean>(true);
-  const [expandFilters, setExpandFilters] = useState<boolean>(true);
+  const [expandSummary, setExpandSummary] = useState<boolean>(
+    () => readHomePanelPreferences().summary
+  );
+  const [expandFilters, setExpandFilters] = useState<boolean>(
+    () => readHomePanelPreferences().filters
+  );
+  useEffect(() => {
+    persistHomePanelPreferences({
+      summary: expandSummary,
+      filters: expandFilters,
+    });
+  }, [expandSummary, expandFilters]);
   const toggleHideValues = () => {
     if (!isAuthenticated) {
       setShowLoginModal(true);

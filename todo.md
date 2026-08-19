@@ -756,3 +756,11 @@
 ## Bilhetes semanais
 
 - [x] Incluir campos de Terminal na Ida, Volta e Somente Ida de todas as semanas
+
+## Responsividade mobile
+
+- [ ] Reavaliar e corrigir a responsividade de todos os elementos da Home para telas de celular
+
+## Preferências da Home
+
+- [x] Persistir os estados aberto e fechado do Resumo Anual e de Filtros e Controles
