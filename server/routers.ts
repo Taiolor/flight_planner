@@ -6,6 +6,9 @@ import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import { publicProcedure, router } from "./_core/trpc";
 import { z } from "zod";
+
+
+
 import { TRPCError } from "@trpc/server";
 import {
   getAllFlightWeeks,
@@ -58,6 +61,17 @@ import {
   getSessionFromCookie,
   flightProtectedProcedure,
 } from "./flightAuthMiddleware";
+
+function escapeHtml(unsafe: string | number | null | undefined): string {
+  if (unsafe == null) return "";
+  return String(unsafe)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
 
 interface NextAlert {
   weekNumber: number;
@@ -470,11 +484,11 @@ export const appRouter = router({
                     
                     <div style="background-color: #f3f4f6; border-radius: 8px; padding: 16px; margin-bottom: 20px;">
                       <h3 style="color: #1f2937; margin-top: 0;">Voo de Ida 🛫</h3>
-                      <p style="margin: 8px 0;"><strong>Data:</strong> ${departureDate} às ${departureTime}</p>
-                      <p style="margin: 8px 0;"><strong>Rota:</strong> ${input.departureAirport} → ${input.returnAirport}</p>
-                      <p style="margin: 8px 0;"><strong>Companhia:</strong> ${input.departureAirline?.toUpperCase() || "N/A"} ${input.departureFlightNumber}</p>
-                      ${(input as any).departureTerminal ? `<p style="margin: 8px 0;"><strong>Terminal:</strong> ${(input as any).departureTerminal}</p>` : ""}
-                      <p style="margin: 8px 0;"><strong>Localizador:</strong> <code style="background-color: #e5e7eb; padding: 2px 6px; border-radius: 3px;">${input.departureLocator || "N/A"}</code></p>
+                      <p style="margin: 8px 0;"><strong>Data:</strong> ${escapeHtml(departureDate)} às ${escapeHtml(departureTime)}</p>
+                      <p style="margin: 8px 0;"><strong>Rota:</strong> ${escapeHtml(input.departureAirport)} → ${escapeHtml(input.returnAirport)}</p>
+                      <p style="margin: 8px 0;"><strong>Companhia:</strong> ${escapeHtml(input.departureAirline?.toUpperCase() || "N/A")} ${escapeHtml(input.departureFlightNumber)}</p>
+                      ${(input as any).departureTerminal ? `<p style="margin: 8px 0;"><strong>Terminal:</strong> ${escapeHtml((input as any).departureTerminal)}</p>` : ""}
+                      <p style="margin: 8px 0;"><strong>Localizador:</strong> <code style="background-color: #e5e7eb; padding: 2px 6px; border-radius: 3px;">${escapeHtml(input.departureLocator || "N/A")}</code></p>
                       <p style="margin: 8px 0;">
                         <a href="${outlookDepLink}" style="color: #0078d4; margin-right: 10px; text-decoration: none;">📅 Outlook • Ida</a>
                         <a href="${googleDepLink}" style="color: #1f2937; margin-right: 10px; text-decoration: none;">📅 Google • Ida</a>
@@ -484,11 +498,11 @@ export const appRouter = router({
                     
                     <div style="background-color: #f3f4f6; border-radius: 8px; padding: 16px; margin-bottom: 20px;">
                       <h3 style="color: #1f2937; margin-top: 0;">Voo de Volta 🛬</h3>
-                      <p style="margin: 8px 0;"><strong>Data:</strong> ${returnDate} às ${returnTime}</p>
-                      <p style="margin: 8px 0;"><strong>Rota:</strong> ${input.returnAirport} → ${input.departureAirport}</p>
-                      <p style="margin: 8px 0;"><strong>Companhia:</strong> ${input.returnAirline?.toUpperCase() || "N/A"} ${input.returnFlightNumber}</p>
-                      ${(input as any).returnTerminal ? `<p style="margin: 8px 0;"><strong>Terminal:</strong> ${(input as any).returnTerminal}</p>` : ""}
-                      <p style="margin: 8px 0;"><strong>Localizador:</strong> <code style="background-color: #e5e7eb; padding: 2px 6px; border-radius: 3px;">${input.returnLocator || "N/A"}</code></p>
+                      <p style="margin: 8px 0;"><strong>Data:</strong> ${escapeHtml(returnDate)} às ${escapeHtml(returnTime)}</p>
+                      <p style="margin: 8px 0;"><strong>Rota:</strong> ${escapeHtml(input.returnAirport)} → ${escapeHtml(input.departureAirport)}</p>
+                      <p style="margin: 8px 0;"><strong>Companhia:</strong> ${escapeHtml(input.returnAirline?.toUpperCase() || "N/A")} ${escapeHtml(input.returnFlightNumber)}</p>
+                      ${(input as any).returnTerminal ? `<p style="margin: 8px 0;"><strong>Terminal:</strong> ${escapeHtml((input as any).returnTerminal)}</p>` : ""}
+                      <p style="margin: 8px 0;"><strong>Localizador:</strong> <code style="background-color: #e5e7eb; padding: 2px 6px; border-radius: 3px;">${escapeHtml(input.returnLocator || "N/A")}</code></p>
                       <p style="margin: 8px 0;">
                         <a href="${outlookRetLink}" style="color: #0078d4; margin-right: 10px; text-decoration: none;">📅 Outlook • Volta</a>
                         <a href="${googleRetLink}" style="color: #1f2937; margin-right: 10px; text-decoration: none;">📅 Google • Volta</a>
@@ -1245,15 +1259,15 @@ export const appRouter = router({
         const emailHtml = `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
             <h2 style="color: #1f2937; margin-bottom: 20px;">Compartilhamento de Bilhetes ✈️</h2>
-            <p style="color: #4b5563; margin-bottom: 20px;"><strong>${input.weekLabel}</strong></p>
+            <p style="color: #4b5563; margin-bottom: 20px;"><strong>${escapeHtml(input.weekLabel)}</strong></p>
             
             <div style="background-color: #f3f4f6; border-radius: 8px; padding: 16px; margin-bottom: 20px;">
               <h3 style="color: #1f2937; margin-top: 0;">Voo de Ida 🛫</h3>
-              <p style="margin: 8px 0;"><strong>Data:</strong> ${departureDateBrazilian} às ${input.departureTime}</p>
-              <p style="margin: 8px 0;"><strong>Rota:</strong> ${input.departureAirport} → ${input.returnAirport}</p>
-              <p style="margin: 8px 0;"><strong>Companhia:</strong> ${input.departureAirline.toUpperCase()}</p>
-              <p style="margin: 8px 0;"><strong>Voo:</strong> ${input.departureFlightNumber}</p>
-              <p style="margin: 8px 0;"><strong>Localizador:</strong> <code style="background-color: #e5e7eb; padding: 2px 6px; border-radius: 3px;">${input.departureLocator}</code></p>
+              <p style="margin: 8px 0;"><strong>Data:</strong> ${escapeHtml(departureDateBrazilian)} às ${escapeHtml(input.departureTime)}</p>
+              <p style="margin: 8px 0;"><strong>Rota:</strong> ${escapeHtml(input.departureAirport)} → ${escapeHtml(input.returnAirport)}</p>
+              <p style="margin: 8px 0;"><strong>Companhia:</strong> ${escapeHtml(input.departureAirline.toUpperCase())}</p>
+              <p style="margin: 8px 0;"><strong>Voo:</strong> ${escapeHtml(input.departureFlightNumber)}</p>
+              <p style="margin: 8px 0;"><strong>Localizador:</strong> <code style="background-color: #e5e7eb; padding: 2px 6px; border-radius: 3px;">${escapeHtml(input.departureLocator)}</code></p>
               <p style="margin: 8px 0;">
                 <a href="${outlookDepLink}" style="color: #0078d4; margin-right: 10px; text-decoration: none;">📅 Outlook • Ida</a>
                 <a href="${googleDepLink}" style="color: #1f2937; margin-right: 10px; text-decoration: none;">📅 Google • Ida</a>
@@ -1263,11 +1277,11 @@ export const appRouter = router({
             
             <div style="background-color: #f3f4f6; border-radius: 8px; padding: 16px; margin-bottom: 20px;">
               <h3 style="color: #1f2937; margin-top: 0;">Voo de Volta 🛬</h3>
-              <p style="margin: 8px 0;"><strong>Data:</strong> ${returnDateBrazilian} às ${input.returnTime}</p>
-              <p style="margin: 8px 0;"><strong>Rota:</strong> ${input.returnAirport} → ${input.departureAirport}</p>
-              <p style="margin: 8px 0;"><strong>Companhia:</strong> ${input.returnAirline.toUpperCase()}</p>
-              <p style="margin: 8px 0;"><strong>Voo:</strong> ${input.returnFlightNumber}</p>
-              <p style="margin: 8px 0;"><strong>Localizador:</strong> <code style="background-color: #e5e7eb; padding: 2px 6px; border-radius: 3px;">${input.returnLocator}</code></p>
+              <p style="margin: 8px 0;"><strong>Data:</strong> ${escapeHtml(returnDateBrazilian)} às ${escapeHtml(input.returnTime)}</p>
+              <p style="margin: 8px 0;"><strong>Rota:</strong> ${escapeHtml(input.returnAirport)} → ${escapeHtml(input.departureAirport)}</p>
+              <p style="margin: 8px 0;"><strong>Companhia:</strong> ${escapeHtml(input.returnAirline.toUpperCase())}</p>
+              <p style="margin: 8px 0;"><strong>Voo:</strong> ${escapeHtml(input.returnFlightNumber)}</p>
+              <p style="margin: 8px 0;"><strong>Localizador:</strong> <code style="background-color: #e5e7eb; padding: 2px 6px; border-radius: 3px;">${escapeHtml(input.returnLocator)}</code></p>
               <p style="margin: 8px 0;">
                 <a href="${outlookRetLink}" style="color: #0078d4; margin-right: 10px; text-decoration: none;">📅 Outlook • Volta</a>
                 <a href="${googleRetLink}" style="color: #1f2937; margin-right: 10px; text-decoration: none;">📅 Google • Volta</a>

@@ -43,6 +43,17 @@ function getResendClient(): Resend {
 /**
  * Format ticket change details for email body
  */
+
+function escapeHtml(unsafe: string | number | null | undefined): string {
+  if (unsafe == null) return "";
+  return String(unsafe)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
 function formatTicketDetails(notification: TicketChangeNotification): string {
   const {
     type,
@@ -104,9 +115,9 @@ function formatTicketDetails(notification: TicketChangeNotification): string {
       if (before !== after) {
         html += `
           <tr>
-            <td style="border: 1px solid #90caf9; padding: 12px;"><strong>${key}</strong></td>
-            <td style="border: 1px solid #90caf9; padding: 12px; color: #666;">${before}</td>
-            <td style="border: 1px solid #90caf9; padding: 12px; background-color: #fff9c4; font-weight: bold;">${after}</td>
+            <td style="border: 1px solid #90caf9; padding: 12px;"><strong>${escapeHtml(key)}</strong></td>
+            <td style="border: 1px solid #90caf9; padding: 12px; color: #666;">${escapeHtml(String(before))}</td>
+            <td style="border: 1px solid #90caf9; padding: 12px; background-color: #fff9c4; font-weight: bold;">${escapeHtml(String(after))}</td>
           </tr>
         `;
       }
@@ -127,10 +138,10 @@ function formatTicketDetails(notification: TicketChangeNotification): string {
       <div style="margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid #ddd;">
         <h4 style="color: #0d47a1; margin: 0 0 10px 0;">🔵 Voo de Ida</h4>
         <p><strong>Data:</strong> ${departureDate || "—"}</p>
-        <p><strong>Companhia Aérea:</strong> ${departureAirline || "—"}</p>
-        <p><strong>Número do Voo:</strong> ${departureFlightNumber || "—"}</p>
+        <p><strong>Companhia Aérea:</strong> ${escapeHtml(departureAirline) || "—"}</p>
+        <p><strong>Número do Voo:</strong> ${escapeHtml(departureFlightNumber) || "—"}</p>
         <p><strong>Data/Hora de Partida:</strong> ${departureFlightDatetime || "—"}</p>
-        <p><strong>Localizador:</strong> <span style="font-family: monospace; background-color: #fff9c4; padding: 2px 6px; border-radius: 3px; font-weight: bold;">${departureLocator || "—"}</span></p>
+        <p><strong>Localizador:</strong> <span style="font-family: monospace; background-color: #fff9c4; padding: 2px 6px; border-radius: 3px; font-weight: bold;">${escapeHtml(departureLocator) || "—"}</span></p>
       </div>
     `;
   }
@@ -141,10 +152,10 @@ function formatTicketDetails(notification: TicketChangeNotification): string {
       <div>
         <h4 style="color: #0d47a1; margin: 0 0 10px 0;">🔴 Voo de Volta</h4>
         <p><strong>Data:</strong> ${returnDate || "—"}</p>
-        <p><strong>Companhia Aérea:</strong> ${returnAirline || "—"}</p>
-        <p><strong>Número do Voo:</strong> ${returnFlightNumber || "—"}</p>
+        <p><strong>Companhia Aérea:</strong> ${escapeHtml(returnAirline) || "—"}</p>
+        <p><strong>Número do Voo:</strong> ${escapeHtml(returnFlightNumber) || "—"}</p>
         <p><strong>Data/Hora de Partida:</strong> ${returnFlightDatetime || "—"}</p>
-        <p><strong>Localizador:</strong> <span style="font-family: monospace; background-color: #fff9c4; padding: 2px 6px; border-radius: 3px; font-weight: bold;">${returnLocator || "—"}</span></p>
+        <p><strong>Localizador:</strong> <span style="font-family: monospace; background-color: #fff9c4; padding: 2px 6px; border-radius: 3px; font-weight: bold;">${escapeHtml(returnLocator) || "—"}</span></p>
       </div>
     `;
   }
