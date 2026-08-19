@@ -769,6 +769,7 @@
 ## Experiência administrativa
 
 - [x] Adicionar animações de carregamento e mensagens de feedback visual ao salvar formulários administrativos
+- [x] Registrar e exibir a data e hora da última ação em cada formulário administrativo de Notificações
 
 ## Preferências da Home
 

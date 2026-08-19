@@ -46,6 +46,59 @@ import { queryCachePolicies } from "@/lib/queryCache";
 
 export type AdminAccessState = "checking" | "login-required" | "authorized";
 
+export type AdminFormAction = {
+  label: string;
+  timestamp: string;
+  status: "success" | "error";
+};
+
+export function readAdminFormAction(key: string): AdminFormAction | null {
+  if (typeof window === "undefined") return null;
+
+  try {
+    const stored = window.localStorage.getItem(key);
+    if (!stored) return null;
+    const parsed = JSON.parse(stored) as Partial<AdminFormAction>;
+    if (
+      typeof parsed.label !== "string" ||
+      typeof parsed.timestamp !== "string" ||
+      (parsed.status !== "success" && parsed.status !== "error")
+    ) {
+      return null;
+    }
+    return parsed as AdminFormAction;
+  } catch {
+    return null;
+  }
+}
+
+export function saveAdminFormAction(key: string, action: AdminFormAction) {
+  if (typeof window !== "undefined") {
+    window.localStorage.setItem(key, JSON.stringify(action));
+  }
+}
+
+function LastAdminFormAction({ action }: { action: AdminFormAction | null }) {
+  if (!action) {
+    return (
+      <p className="mt-3 text-xs text-slate-400">
+        Nenhuma ação registrada neste navegador.
+      </p>
+    );
+  }
+
+  return (
+    <p
+      className={`mt-3 flex items-center gap-1.5 text-xs ${
+        action.status === "success" ? "text-emerald-700" : "text-amber-700"
+      }`}
+    >
+      <Clock className="h-3.5 w-3.5 shrink-0" />
+      Última ação: {action.label} em {new Date(action.timestamp).toLocaleString("pt-BR")}
+    </p>
+  );
+}
+
 export function getAdminAccessState({
   isCheckingAuthentication,
   isAuthenticated,
@@ -116,6 +169,9 @@ export default function AdminNotifications() {
 function AdminNotificationsContent() {
   const { selectedYear } = useYear();
   const [autoRefresh, setAutoRefresh] = useState(false);
+  const [lastPushAction, setLastPushAction] = useState<AdminFormAction | null>(
+    () => readAdminFormAction("viagens.admin.last-push-action")
+  );
   const [expandedSections, setExpandedSections] = useState<Set<string>>(
     new Set()
   );
@@ -123,6 +179,14 @@ function AdminNotificationsContent() {
     kind: "success" | "error";
     message: string;
   } | null>(null);
+  const registerPushAction = (
+    label: string,
+    status: AdminFormAction["status"]
+  ) => {
+    const action = { label, status, timestamp: new Date().toISOString() };
+    setLastPushAction(action);
+    saveAdminFormAction("viagens.admin.last-push-action", action);
+  };
 
   const toggleSection = (section: string) => {
     const newSet = new Set(expandedSections);
@@ -176,11 +240,13 @@ function AdminNotificationsContent() {
     onSuccess: result => {
       const message = `Notificação de teste enviada para ${result.sent} dispositivo(s).`;
       setTestFeedback({ kind: "success", message });
+      registerPushAction("Teste de notificação enviado", "success");
       toast.success(message);
     },
     onError: err => {
       const message = err.message || "Erro ao enviar notificação de teste.";
       setTestFeedback({ kind: "error", message });
+      registerPushAction("Tentativa de teste de notificação", "error");
       toast.error(message);
     },
   });
@@ -816,6 +882,7 @@ function AdminNotificationsContent() {
               <span>{testFeedback.message}</span>
             </div>
           )}
+          <LastAdminFormAction action={lastPushAction} />
           {(data?.totalSubscriptions ?? 0) === 0 && (
             <p className="text-xs text-amber-600 mt-2 flex items-center gap-1">
               <AlertCircle className="w-3 h-3" />
@@ -879,6 +946,31 @@ function TicketNotificationEmailsSection() {
     kind: "success" | "error";
     message: string;
   } | null>(null);
+  const [lastRecipientsAction, setLastRecipientsAction] =
+    useState<AdminFormAction | null>(() =>
+      readAdminFormAction("viagens.admin.last-recipient-action")
+    );
+  const [lastTestEmailAction, setLastTestEmailAction] =
+    useState<AdminFormAction | null>(() =>
+      readAdminFormAction("viagens.admin.last-test-email-action")
+    );
+
+  const registerRecipientsAction = (
+    label: string,
+    status: AdminFormAction["status"]
+  ) => {
+    const action = { label, status, timestamp: new Date().toISOString() };
+    setLastRecipientsAction(action);
+    saveAdminFormAction("viagens.admin.last-recipient-action", action);
+  };
+  const registerTestEmailAction = (
+    label: string,
+    status: AdminFormAction["status"]
+  ) => {
+    const action = { label, status, timestamp: new Date().toISOString() };
+    setLastTestEmailAction(action);
+    saveAdminFormAction("viagens.admin.last-test-email-action", action);
+  };
 
   const { data: recipients, refetch } =
     trpc.ticketNotifications.getRecipients.useQuery();
@@ -888,6 +980,7 @@ function TicketNotificationEmailsSection() {
       onSuccess: () => {
         const message = "Destinatário adicionado com sucesso.";
         setEmailFeedback({ kind: "success", message });
+        registerRecipientsAction("Destinatário adicionado", "success");
         toast.success(message);
         setNewEmail("");
         setNewName("");
@@ -896,6 +989,7 @@ function TicketNotificationEmailsSection() {
       onError: err => {
         const message = err.message || "Erro ao adicionar e-mail.";
         setEmailFeedback({ kind: "error", message });
+        registerRecipientsAction("Tentativa de adicionar destinatário", "error");
         toast.error(message);
       },
     });
@@ -905,12 +999,14 @@ function TicketNotificationEmailsSection() {
       onSuccess: () => {
         const message = "Destinatário removido com sucesso.";
         setEmailFeedback({ kind: "success", message });
+        registerRecipientsAction("Destinatário removido", "success");
         toast.success(message);
         refetch();
       },
       onError: err => {
         const message = err.message || "Erro ao remover e-mail.";
         setEmailFeedback({ kind: "error", message });
+        registerRecipientsAction("Tentativa de remover destinatário", "error");
         toast.error(message);
       },
     });
@@ -920,6 +1016,7 @@ function TicketNotificationEmailsSection() {
       onSuccess: () => {
         const message = "E-mail de teste enviado com sucesso.";
         setEmailFeedback({ kind: "success", message });
+        registerTestEmailAction("E-mail de teste enviado", "success");
         toast.success(message);
         setTestEmail("");
         setShowTestForm(false);
@@ -927,6 +1024,7 @@ function TicketNotificationEmailsSection() {
       onError: err => {
         const message = err.message || "Erro ao enviar e-mail de teste.";
         setEmailFeedback({ kind: "error", message });
+        registerTestEmailAction("Tentativa de envio de e-mail de teste", "error");
         toast.error(message);
       },
     });
@@ -1022,6 +1120,7 @@ function TicketNotificationEmailsSection() {
             </Button>
           </div>
         </form>
+        <LastAdminFormAction action={lastRecipientsAction} />
       </div>
 
       {/* Lista de destinatários */}
@@ -1087,6 +1186,7 @@ function TicketNotificationEmailsSection() {
           {showTestForm ? "Cancelar" : "Enviar E-mail de Teste"}
         </Button>
       </div>
+      <LastAdminFormAction action={lastTestEmailAction} />
 
       {/* Formulário para enviar e-mail de teste */}
       {showTestForm && (
