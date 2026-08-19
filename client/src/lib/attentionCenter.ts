@@ -24,6 +24,11 @@ export type DismissedAttentionItems = Record<string, string>;
 export const ATTENTION_DISMISSALS_STORAGE_KEY =
   "viagens.attention-dismissals.v1";
 export const ATTENTION_DISMISSAL_DURATION_MS = 24 * 60 * 60 * 1000;
+export const ATTENTION_DISMISSAL_OPTIONS = [
+  { label: "8 horas", durationMs: 8 * 60 * 60 * 1000 },
+  { label: "24 horas", durationMs: ATTENTION_DISMISSAL_DURATION_MS },
+  { label: "3 dias", durationMs: 3 * 24 * 60 * 60 * 1000 },
+] as const;
 
 export function readAttentionDismissals(
   now = new Date(),
@@ -51,13 +56,19 @@ export function readAttentionDismissals(
 
 export function dismissAttentionItem(
   itemId: string,
+  durationMsOrNow: number | Date = ATTENTION_DISMISSAL_DURATION_MS,
   now = new Date(),
   storage: Pick<Storage, "getItem" | "setItem"> | null =
     typeof window === "undefined" ? null : window.localStorage
 ): DismissedAttentionItems {
+  const durationMs =
+    durationMsOrNow instanceof Date
+      ? ATTENTION_DISMISSAL_DURATION_MS
+      : durationMsOrNow;
+  const referenceNow = durationMsOrNow instanceof Date ? durationMsOrNow : now;
   const next = {
-    ...readAttentionDismissals(now, storage),
-    [itemId]: new Date(now.getTime() + ATTENTION_DISMISSAL_DURATION_MS).toISOString(),
+    ...readAttentionDismissals(referenceNow, storage),
+    [itemId]: new Date(referenceNow.getTime() + durationMs).toISOString(),
   };
   storage?.setItem(ATTENTION_DISMISSALS_STORAGE_KEY, JSON.stringify(next));
   return next;

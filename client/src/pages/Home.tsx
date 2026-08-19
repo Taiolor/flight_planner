@@ -1127,9 +1127,13 @@ export default function Home() {
     () => attentionItems.filter(item => attentionDismissals[item.id]),
     [attentionDismissals, attentionItems]
   );
-  const handleDismissAttention = (itemId: string) => {
-    setAttentionDismissals(dismissAttentionItem(itemId));
-    toast.success("Alerta adiado por 24 horas.");
+  const handleDismissAttention = (
+    itemId: string,
+    durationMs: number,
+    durationLabel: string
+  ) => {
+    setAttentionDismissals(dismissAttentionItem(itemId, durationMs));
+    toast.success(`Alerta adiado por ${durationLabel}.`);
   };
   const handleRestoreAttention = (itemId: string) => {
     setAttentionDismissals(restoreAttentionItem(itemId));
@@ -2434,6 +2438,7 @@ export default function Home() {
           <AttentionCenter
             items={activeAttentionItems}
             dismissedItems={dismissedAttentionItems}
+            dismissals={attentionDismissals}
             hideValues={hideValues}
             isOpen={expandablePanels.attentionCenter}
             onToggle={() => updateExpandablePanel("attentionCenter")}

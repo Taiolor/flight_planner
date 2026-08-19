@@ -98,6 +98,26 @@ describe("Central de atenção inteligente", () => {
     expect(restored).toEqual({});
   });
 
+  it("aceita prazos configuráveis de adiamento", () => {
+    const eightHours = dismissAttentionItem(
+      "purchase-deadline-34",
+      8 * 60 * 60 * 1000,
+      now
+    );
+    expect(eightHours["purchase-deadline-34"]).toBe(
+      "2026-08-19T08:00:00.000Z"
+    );
+
+    const threeDays = dismissAttentionItem(
+      "price-variation-36",
+      3 * 24 * 60 * 60 * 1000,
+      now
+    );
+    expect(threeDays["price-variation-36"]).toBe(
+      "2026-08-22T00:00:00.000Z"
+    );
+  });
+
   it("remove automaticamente um alerta cuja dispensa expirou", () => {
     dismissAttentionItem("price-variation-36", now);
     const nextDay = new Date(now.getTime() + 25 * 60 * 60 * 1000);

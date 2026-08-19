@@ -780,6 +780,7 @@
 - [x] Adicionar resumo visual de progresso anual com semanas emitidas e pendentes
 - [x] Permitir configurar e acompanhar uma meta anual de emissões
 - [x] Transformar Central de atenção e Progresso anual em sanfonas com estado persistido individualmente
+- [x] Permitir escolher o prazo de adiamento dos alertas da Central de atenção
 
 ## Preferências da Home
 
