@@ -2,6 +2,7 @@
 
 import { beforeEach, describe, expect, it } from "vitest";
 import {
+  clearAdminFormAction,
   readAdminFormAction,
   saveAdminFormAction,
   type AdminFormAction,
@@ -32,5 +33,20 @@ describe("admin form action history", () => {
       JSON.stringify({ ...action, status: "pending" })
     );
     expect(readAdminFormAction(key)).toBeNull();
+  });
+
+  it("clears only the selected local action record", () => {
+    saveAdminFormAction(key, action);
+    saveAdminFormAction("viagens.admin.other-action", {
+      ...action,
+      label: "Outro registro",
+    });
+
+    clearAdminFormAction(key);
+
+    expect(readAdminFormAction(key)).toBeNull();
+    expect(readAdminFormAction("viagens.admin.other-action")).toMatchObject({
+      label: "Outro registro",
+    });
   });
 });

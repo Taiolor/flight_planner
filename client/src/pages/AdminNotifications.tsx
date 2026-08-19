@@ -10,6 +10,17 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import {
   ArrowLeft,
   Bell,
   BellOff,
@@ -78,7 +89,19 @@ export function saveAdminFormAction(key: string, action: AdminFormAction) {
   }
 }
 
-function LastAdminFormAction({ action }: { action: AdminFormAction | null }) {
+export function clearAdminFormAction(key: string) {
+  if (typeof window !== "undefined") {
+    window.localStorage.removeItem(key);
+  }
+}
+
+function LastAdminFormAction({
+  action,
+  onClear,
+}: {
+  action: AdminFormAction | null;
+  onClear: () => void;
+}) {
   if (!action) {
     return (
       <p className="mt-3 text-xs text-slate-400">
@@ -88,14 +111,43 @@ function LastAdminFormAction({ action }: { action: AdminFormAction | null }) {
   }
 
   return (
-    <p
-      className={`mt-3 flex items-center gap-1.5 text-xs ${
-        action.status === "success" ? "text-emerald-700" : "text-amber-700"
-      }`}
-    >
-      <Clock className="h-3.5 w-3.5 shrink-0" />
-      Última ação: {action.label} em {new Date(action.timestamp).toLocaleString("pt-BR")}
-    </p>
+    <div className="mt-3 flex flex-col gap-2 rounded-md border border-slate-200 bg-slate-50 px-3 py-2 sm:flex-row sm:items-center sm:justify-between">
+      <p
+        className={`flex items-center gap-1.5 text-xs ${
+          action.status === "success" ? "text-emerald-700" : "text-amber-700"
+        }`}
+      >
+        <Clock className="h-3.5 w-3.5 shrink-0" />
+        Última ação: {action.label} em {new Date(action.timestamp).toLocaleString("pt-BR")}
+      </p>
+      <AlertDialog>
+        <AlertDialogTrigger asChild>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="h-8 self-start px-2 text-xs text-slate-600 hover:bg-slate-200 hover:text-slate-900 sm:self-auto"
+            aria-label="Limpar registro local da última ação"
+          >
+            Limpar registro
+          </Button>
+        </AlertDialogTrigger>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Limpar registro local?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta ação remove apenas a data e a hora exibidas neste navegador. O histórico persistido de notificações não será alterado.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={onClear}>
+              Limpar registro
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </div>
   );
 }
 
@@ -186,6 +238,11 @@ function AdminNotificationsContent() {
     const action = { label, status, timestamp: new Date().toISOString() };
     setLastPushAction(action);
     saveAdminFormAction("viagens.admin.last-push-action", action);
+  };
+  const clearPushAction = () => {
+    clearAdminFormAction("viagens.admin.last-push-action");
+    setLastPushAction(null);
+    toast.success("Registro local de teste de notificação limpo.");
   };
 
   const toggleSection = (section: string) => {
@@ -882,7 +939,7 @@ function AdminNotificationsContent() {
               <span>{testFeedback.message}</span>
             </div>
           )}
-          <LastAdminFormAction action={lastPushAction} />
+          <LastAdminFormAction action={lastPushAction} onClear={clearPushAction} />
           {(data?.totalSubscriptions ?? 0) === 0 && (
             <p className="text-xs text-amber-600 mt-2 flex items-center gap-1">
               <AlertCircle className="w-3 h-3" />
@@ -970,6 +1027,16 @@ function TicketNotificationEmailsSection() {
     const action = { label, status, timestamp: new Date().toISOString() };
     setLastTestEmailAction(action);
     saveAdminFormAction("viagens.admin.last-test-email-action", action);
+  };
+  const clearRecipientsAction = () => {
+    clearAdminFormAction("viagens.admin.last-recipient-action");
+    setLastRecipientsAction(null);
+    toast.success("Registro local de destinatários limpo.");
+  };
+  const clearTestEmailAction = () => {
+    clearAdminFormAction("viagens.admin.last-test-email-action");
+    setLastTestEmailAction(null);
+    toast.success("Registro local de e-mail de teste limpo.");
   };
 
   const { data: recipients, refetch } =
@@ -1120,7 +1187,10 @@ function TicketNotificationEmailsSection() {
             </Button>
           </div>
         </form>
-        <LastAdminFormAction action={lastRecipientsAction} />
+        <LastAdminFormAction
+          action={lastRecipientsAction}
+          onClear={clearRecipientsAction}
+        />
       </div>
 
       {/* Lista de destinatários */}
@@ -1186,7 +1256,10 @@ function TicketNotificationEmailsSection() {
           {showTestForm ? "Cancelar" : "Enviar E-mail de Teste"}
         </Button>
       </div>
-      <LastAdminFormAction action={lastTestEmailAction} />
+      <LastAdminFormAction
+        action={lastTestEmailAction}
+        onClear={clearTestEmailAction}
+      />
 
       {/* Formulário para enviar e-mail de teste */}
       {showTestForm && (
