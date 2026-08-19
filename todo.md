@@ -781,6 +781,7 @@
 - [x] Permitir configurar e acompanhar uma meta anual de emissões
 - [x] Transformar Central de atenção e Progresso anual em sanfonas com estado persistido individualmente
 - [x] Permitir escolher o prazo de adiamento dos alertas da Central de atenção
+- [x] Adicionar comparativo de emissões e pendências entre anos no progresso anual
 
 ## Preferências da Home
 

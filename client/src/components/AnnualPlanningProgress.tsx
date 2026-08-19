@@ -7,7 +7,7 @@ import {
   Target,
   TriangleAlert,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -23,6 +23,14 @@ type AnnualPlanningProgressProps = {
   onToggle: () => void;
   onShowPending: () => void;
   onSaveGoal: (goal: number) => void;
+  comparison: Array<{
+    year: number;
+    totalWeeks: number;
+    issuedWeeks: number;
+    pendingWeeks: number;
+    completionPercent: number;
+  }>;
+  isComparisonLoading?: boolean;
 };
 
 export function AnnualPlanningProgress({
@@ -34,6 +42,8 @@ export function AnnualPlanningProgress({
   onToggle,
   onShowPending,
   onSaveGoal,
+  comparison,
+  isComparisonLoading = false,
 }: AnnualPlanningProgressProps) {
   const [isEditingGoal, setIsEditingGoal] = useState(false);
   const [draftGoal, setDraftGoal] = useState(String(goal));
@@ -175,6 +185,86 @@ export function AnnualPlanningProgress({
             </div>
           </div>
         </div>
+
+        <section
+          aria-labelledby="annual-comparison-title"
+          className="mt-5 rounded-lg border border-slate-200 bg-slate-50 p-3 sm:p-4 dark:border-slate-700 dark:bg-slate-900/30"
+        >
+          <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h3
+                id="annual-comparison-title"
+                className="text-sm font-bold text-slate-800 dark:text-slate-100"
+              >
+                Comparativo entre anos
+              </h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400">
+                Emissões e pendências por exercício de planejamento.
+              </p>
+            </div>
+            <span className="text-xs font-medium text-slate-500 dark:text-slate-400">
+              {comparison.length} exercício{comparison.length === 1 ? "" : "s"}
+            </span>
+          </div>
+
+          {isComparisonLoading ? (
+            <div className="mt-4 space-y-3" aria-label="Carregando comparativo anual">
+              {[1, 2, 3].map(item => (
+                <div key={item} className="animate-pulse space-y-1.5">
+                  <div className="h-3 w-20 rounded bg-slate-200 dark:bg-slate-700" />
+                  <div className="h-2 rounded-full bg-slate-200 dark:bg-slate-700" />
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="mt-4 space-y-3">
+              {comparison.map(item => {
+                const isSelectedYear = item.year === year;
+                return (
+                  <div
+                    key={item.year}
+                    className={`rounded-md px-2.5 py-2 ${
+                      isSelectedYear
+                        ? "bg-white shadow-sm ring-1 ring-emerald-200 dark:bg-slate-800 dark:ring-emerald-900"
+                        : ""
+                    }`}
+                  >
+                    <div className="flex items-baseline justify-between gap-3 text-xs">
+                      <p className="font-semibold text-slate-700 dark:text-slate-200">
+                        {item.year}
+                        {isSelectedYear && (
+                          <span className="ml-1.5 rounded bg-emerald-100 px-1.5 py-0.5 text-[10px] font-bold text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300">
+                            Atual
+                          </span>
+                        )}
+                      </p>
+                      <p className="text-slate-500 dark:text-slate-400">
+                        {item.totalWeeks === 0
+                          ? "Ainda não iniciado"
+                          : `${item.issuedWeeks}/${item.totalWeeks} emitidas · ${item.pendingWeeks} pendentes`}
+                      </p>
+                    </div>
+                    <div
+                      className="mt-1.5 h-2 overflow-hidden rounded-full bg-slate-200 dark:bg-slate-700"
+                      role="progressbar"
+                      aria-label={`Progresso de emissões em ${item.year}`}
+                      aria-valuemin={0}
+                      aria-valuemax={100}
+                      aria-valuenow={item.completionPercent}
+                    >
+                      <div
+                        className={`h-full rounded-full ${
+                          isSelectedYear ? "bg-emerald-500" : "bg-cyan-500"
+                        }`}
+                        style={{ width: `${item.completionPercent}%` }}
+                      />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </section>
 
         {progress.pendingWeeks > 0 && (
           <div className="mt-4 flex justify-end">

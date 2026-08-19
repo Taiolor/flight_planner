@@ -36,6 +36,7 @@ import {
   updateTicketNotificationEmail,
 } from "./db";
 import { ensurePlanningYearWeeks } from "./planningYears";
+import { summarizeYearPlanningProgress } from "./planningProgress";
 import {
   sendTicketNotificationEmail,
   sendTestEmail,
@@ -301,6 +302,25 @@ export const appRouter = router({
           smilesPoints: null,
           latamPassPoints: null,
         }));
+      }),
+
+    getProgressComparison: publicProcedure
+      .input(
+        z.object({
+          years: z
+            .array(z.number().int().min(2020).max(2100))
+            .min(1)
+            .max(5),
+        })
+      )
+      .query(async ({ input }) => {
+        const years = [...new Set(input.years)].sort((a, b) => a - b);
+        const results = await Promise.all(
+          years.map(async year =>
+            summarizeYearPlanningProgress(year, await getAllFlightWeeks(year))
+          )
+        );
+        return results;
       }),
 
     getPrices: flightProtectedProcedure

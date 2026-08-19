@@ -112,7 +112,7 @@ import { trpc } from "@/lib/trpc";
 import { LoginModal } from "@/components/auth/LoginModal";
 import { useTheme, COLOR_PRESETS } from "@/contexts/ThemeContext";
 import type { ColorPreset } from "@/contexts/ThemeContext";
-import { useYear } from "@/contexts/YearContext";
+import { AVAILABLE_PLANNING_YEARS, useYear } from "@/contexts/YearContext";
 import { GlobalYearSelector } from "@/components/GlobalYearSelector";
 import { AdditionalFlightsPanel, type AdditionalFlightRecord } from "@/components/AdditionalFlightsPanel";
 import { AttentionCenter } from "@/components/AttentionCenter";
@@ -681,6 +681,10 @@ export default function Home() {
     { year: selectedYear },
     queryCachePolicies.annualPlanning
   );
+  const progressComparisonQuery = trpc.flights.getProgressComparison.useQuery(
+    { years: [...AVAILABLE_PLANNING_YEARS] },
+    queryCachePolicies.annualPlanning
+  );
   const pricesQuery = trpc.flights.getPrices.useQuery({ year: selectedYear }, {
     ...queryCachePolicies.annualPlanning,
     enabled: isAuthenticated,
@@ -713,6 +717,9 @@ export default function Home() {
   const handleRefresh = useCallback(async () => {
     await Promise.all([
       utils.flights.getWeeks.invalidate({ year: selectedYear }),
+      utils.flights.getProgressComparison.invalidate({
+        years: [...AVAILABLE_PLANNING_YEARS],
+      }),
       utils.flights.getPrices.invalidate({ year: selectedYear }),
     ]);
     toast.success("Dados atualizados!", { duration: 1500 });
@@ -2431,6 +2438,8 @@ export default function Home() {
             onToggle={() => updateExpandablePanel("annualProgress")}
             onShowPending={showPendingWeeks}
             onSaveGoal={handleSaveAnnualGoal}
+            comparison={progressComparisonQuery.data ?? []}
+            isComparisonLoading={progressComparisonQuery.isLoading}
           />
         )}
 
