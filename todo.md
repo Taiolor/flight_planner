@@ -786,6 +786,7 @@
 ## Experiência de Memórias
 
 - [x] Criar um fundo dinâmico em carrossel com fotos reais em alta resolução das cidades das viagens
+- [x] Suavizar o fade e tornar os controles de pausa do carrossel mais evidentes
 
 ## Preferências da Home
 

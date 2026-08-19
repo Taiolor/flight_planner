@@ -99,8 +99,10 @@ export function CityBackgroundCarousel() {
         {CITY_BACKDROPS.map((backdrop, index) => (
           <div
             key={backdrop.city}
-            className={`absolute inset-0 bg-cover bg-center transition-opacity duration-[1800ms] motion-reduce:transition-none ${
-              index === activeIndex ? "opacity-100" : "opacity-0"
+            className={`absolute inset-0 bg-cover bg-center will-change-[opacity,transform] transition-[opacity,transform] duration-[2600ms] ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none ${
+              index === activeIndex
+                ? "scale-100 opacity-100"
+                : "scale-[1.035] opacity-0"
             }`}
             style={{ backgroundImage: `url(${backdrop.src})` }}
           />
@@ -109,11 +111,19 @@ export function CityBackgroundCarousel() {
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_85%_20%,rgba(217,70,239,.26),transparent_28%),radial-gradient(circle_at_18%_85%,rgba(14,165,233,.24),transparent_30%)]" />
       </div>
 
-      <div className="absolute right-4 top-20 z-20 w-[min(20rem,calc(100vw-2rem))] rounded-2xl border border-white/20 bg-slate-950/45 p-2.5 text-white shadow-xl backdrop-blur-md sm:right-8 sm:top-24">
+      <aside
+        aria-label="Controle do carrossel de cidades"
+        className="absolute right-4 top-20 z-20 w-[min(22rem,calc(100vw-2rem))] rounded-2xl border border-white/20 bg-slate-950/50 p-2.5 text-white shadow-xl backdrop-blur-md sm:right-8 sm:top-24"
+      >
         <div className="flex items-center justify-between gap-2">
           <div className="min-w-0 px-1">
             <p className="truncate text-sm font-black">{activeBackdrop.city}</p>
-            <p className="truncate text-[11px] text-slate-300">{activeBackdrop.subject}</p>
+            <p className="truncate text-[11px] text-slate-300">
+              {activeBackdrop.subject} <span className="text-slate-400">•</span>{" "}
+              <span className="font-medium text-cyan-100" aria-live="polite">
+                {isPlaying ? "Transição suave ativa" : "Carrossel pausado"}
+              </span>
+            </p>
           </div>
           <div className="flex shrink-0 items-center gap-1">
             <Button
@@ -129,13 +139,15 @@ export function CityBackgroundCarousel() {
             <Button
               type="button"
               variant="ghost"
-              size="icon"
-              className="h-8 w-8 rounded-full text-white hover:bg-white/15 hover:text-white"
+              size="sm"
+              className="h-8 gap-1.5 rounded-full px-2.5 text-white hover:bg-white/15 hover:text-white"
               onClick={() => setIsPlaying(playing => !playing)}
               aria-label={isPlaying ? "Pausar carrossel de cidades" : "Reproduzir carrossel de cidades"}
-              aria-pressed={!isPlaying}
+              aria-pressed={isPlaying}
+              title={isPlaying ? "Pausar transição automática" : "Retomar transição automática"}
             >
               {isPlaying ? <Pause className="h-3.5 w-3.5" /> : <Play className="h-3.5 w-3.5" />}
+              <span className="text-xs font-bold">{isPlaying ? "Pausar" : "Retomar"}</span>
             </Button>
             <Button
               type="button"
@@ -173,7 +185,7 @@ export function CityBackgroundCarousel() {
             Foto: {activeBackdrop.credit}
           </a>
         </div>
-      </div>
+      </aside>
     </>
   );
 }

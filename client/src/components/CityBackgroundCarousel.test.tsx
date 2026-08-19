@@ -35,5 +35,7 @@ describe("CityBackgroundCarousel", () => {
     expect(
       screen.getByRole("button", { name: "Reproduzir carrossel de cidades" })
     ).toBeTruthy();
+    expect(screen.getByText("Retomar")).toBeTruthy();
+    expect(screen.getByText("Carrossel pausado")).toBeTruthy();
   });
 });
