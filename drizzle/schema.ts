@@ -142,6 +142,8 @@ export const additionalFlights = mysqlTable(
     departureTerminal: varchar("departureTerminal", { length: 20 }),
     returnTerminal: varchar("returnTerminal", { length: 20 }),
     ticketType: varchar("ticketType", { length: 20 }).default("roundtrip"),
+    // Valor total pago pelo bilhete adicional, em centavos, para evitar perda de precisão.
+    paidPriceCents: int("paidPriceCents"),
     smilesPoints: int("smilesPoints"),
     latamPassPoints: int("latamPassPoints"),
     departureRescheduled: int("departureRescheduled").default(0).notNull(),

@@ -1,0 +1,1 @@
+ALTER TABLE `additional_flights` ADD `paidPriceCents` int;

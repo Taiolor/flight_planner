@@ -26,6 +26,7 @@ export type AdditionalFlightRecord = {
   departureTerminal: string | null;
   returnTerminal: string | null;
   ticketType: string | null;
+  paidPriceCents: number | null;
   smilesPoints: number | null;
   latamPassPoints: number | null;
   departureRescheduled: number;
@@ -53,6 +54,7 @@ const blankDraft = (): Draft => ({
   departureTerminal: null,
   returnTerminal: null,
   ticketType: "roundtrip",
+  paidPriceCents: null,
   smilesPoints: null,
   latamPassPoints: null,
   departureRescheduled: 0,
@@ -81,6 +83,21 @@ const AIRLINE_IATA_CODES: Record<string, string> = { latam: "LA", gol: "G3", azu
 
 // Mantém as variantes estáticas disponíveis ao Tailwind para os cartões de ida e volta.
 const STANDARD_LEG_CLASSNAMES = "border-blue-200 border-orange-200 border-blue-600 border-orange-600 focus:ring-blue-400 focus:ring-orange-400 bg-blue-100 bg-orange-100 text-blue-700 text-orange-700";
+
+const currencyFormatter = new Intl.NumberFormat("pt-BR", {
+  style: "currency",
+  currency: "BRL",
+});
+
+function formatCents(cents: number | null) {
+  return cents === null ? null : currencyFormatter.format(cents / 100);
+}
+
+function toCents(value: string) {
+  if (!value.trim()) return null;
+  const parsed = Number(value.replace(",", "."));
+  return Number.isFinite(parsed) && parsed >= 0 ? Math.round(parsed * 100) : null;
+}
 
 function toIsoDay(value: string) {
   if (/^\d{4}-\d{2}-\d{2}$/.test(value)) return value;
@@ -279,7 +296,7 @@ export function AdditionalFlightsPanel({
             <div className="mb-4 space-y-2">
               {flights.map((flight, index) => (
                 <div key={flight.id} className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2">
-                  <div className="flex min-w-0 items-center gap-2"><Plane className="h-4 w-4 text-violet-600" /><span className="font-bold text-slate-800">Passagem {index + 1}</span><span className={`rounded-full px-1.5 py-0.5 text-[10px] font-bold ${flight.ticketType === "oneway" ? "bg-amber-100 text-amber-800" : "bg-violet-100 text-violet-800"}`}>{flight.ticketType === "oneway" ? "Somente ida" : "Ida e volta"}</span><span className="truncate text-xs text-slate-500">{flight.departureAirport || "—"} → {flight.returnAirport || "—"} · {flight.departureAirline || "Companhia a confirmar"}</span></div>
+                  <div className="flex min-w-0 items-center gap-2"><Plane className="h-4 w-4 text-violet-600" /><span className="font-bold text-slate-800">Passagem {index + 1}</span><span className={`rounded-full px-1.5 py-0.5 text-[10px] font-bold ${flight.ticketType === "oneway" ? "bg-amber-100 text-amber-800" : "bg-violet-100 text-violet-800"}`}>{flight.ticketType === "oneway" ? "Somente ida" : "Ida e volta"}</span><span className="truncate text-xs text-slate-500">{flight.departureAirport || "—"} → {flight.returnAirport || "—"} · {flight.departureAirline || "Companhia a confirmar"}</span>{formatCents(flight.paidPriceCents) && <span className="rounded bg-emerald-100 px-1.5 py-0.5 text-xs font-bold text-emerald-800">{formatCents(flight.paidPriceCents)}</span>}</div>
                   <div className="flex gap-1"><Button type="button" size="icon" variant="ghost" onClick={() => beginEdit(flight)} aria-label="Editar passagem adicional" title="Editar passagem"><Pencil className="h-4 w-4" /></Button><Button type="button" size="icon" variant="ghost" disabled={deleteMutation.isPending} onClick={() => setFlightPendingDeletion(flight)} aria-label="Remover passagem adicional" title="Remover passagem"><Minus className="h-4 w-4 text-rose-600" /></Button></div>
                 </div>
               ))}
@@ -357,7 +374,9 @@ function FlightForm({ draft, setDraft, title, isSaving, weekStartDate, weekEndDa
         {isRoundTrip && <LegFields title="Volta" direction="return" draft={draft} set={set} setDraft={setDraft} onToggle={toggleStatus} defaultDate={weekEndDate} onClear={() => clearLeg("return")} />}
       </div>
       <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
-        <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">Pagamento em Milhas</span>
+        <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">Pagamento</span>
+        <div className="mt-2"><PaidPriceField value={draft.paidPriceCents} onChange={value => set("paidPriceCents", value)} /></div>
+        <span className="mt-3 block text-[10px] font-semibold uppercase tracking-wider text-slate-500">Pagamento em Milhas</span>
         <div className="mt-2 grid gap-2 sm:grid-cols-2"><MileageField label="SMILES" value={draft.smilesPoints} onChange={value => set("smilesPoints", value)} /><MileageField label="LATAM PASS" value={draft.latamPassPoints} onChange={value => set("latamPassPoints", value)} /></div>
       </div>
       <div className="flex flex-wrap justify-end gap-2"><Button type="button" variant="outline" onClick={onCancel}>Cancelar</Button><Button type="button" onClick={() => void onSave()} disabled={isSaving} className="bg-blue-600 hover:bg-blue-700">{isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}Salvar voo</Button></div>
@@ -395,5 +414,7 @@ function LegFields({ title, direction, draft, set, setDraft, onToggle, defaultDa
 function CopyButton({ label, onClick }: { label: string; onClick: () => void }) { return <button type="button" onClick={onClick} className="flex items-center gap-0.5 rounded border border-blue-200 bg-blue-50 px-1.5 py-0.5 text-[10px] font-medium text-blue-500 transition-colors hover:bg-blue-100 hover:text-blue-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500" title={label} aria-label={label}><Copy className="h-3 w-3" />{label}</button>; }
 
 function MileageField({ label, value, onChange }: { label: string; value: number | null; onChange: (value: number | null) => void }) { return <div className="flex items-center gap-2"><span className="w-20 flex-shrink-0 rounded bg-slate-700 px-2 py-1 text-center text-xs font-semibold text-white">{label}</span><Input inputMode="numeric" placeholder="0 pontos" className="h-8 text-xs" value={value ?? ""} onChange={event => onChange(optionalNumber(event.target.value))} /></div>; }
+
+function PaidPriceField({ value, onChange }: { value: number | null; onChange: (value: number | null) => void }) { return <div className="flex items-center gap-2"><span className="w-20 flex-shrink-0 rounded bg-emerald-600 px-2 py-1 text-center text-xs font-semibold text-white">VALOR PAGO</span><Input aria-label="Preço pago da passagem adicional" inputMode="decimal" placeholder="R$ 0,00" className="h-8 text-xs" value={value === null ? "" : (value / 100).toFixed(2)} onChange={event => onChange(toCents(event.target.value))} /><span className="text-[10px] text-slate-500">em R$</span></div>; }
 
 function optionalNumber(value: string) { const number = Number(value); return value === "" || !Number.isFinite(number) ? null : Math.max(0, Math.trunc(number)); }

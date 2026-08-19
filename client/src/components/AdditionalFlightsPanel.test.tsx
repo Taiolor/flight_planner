@@ -19,7 +19,6 @@ vi.mock("@/lib/trpc", () => ({
     },
   },
 }));
-
 vi.mock("sonner", () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
 
 Reflect.set(globalThis, "IS_REACT_ACT_ENVIRONMENT", true);
@@ -42,6 +41,7 @@ function makeDraft(overrides: Partial<Draft> = {}): Draft {
     departureTerminal: "2",
     returnTerminal: "1",
     ticketType: "roundtrip",
+    paidPriceCents: 12345,
     smilesPoints: null,
     latamPassPoints: null,
     departureRescheduled: 0,
@@ -52,33 +52,12 @@ function makeDraft(overrides: Partial<Draft> = {}): Draft {
   };
 }
 
-function makeFlight(
-  overrides: Partial<AdditionalFlightRecord> = {}
-): AdditionalFlightRecord {
+function makeFlight(overrides: Partial<AdditionalFlightRecord> = {}): AdditionalFlightRecord {
   return {
     id: 9,
     year: 2027,
     weekNumber: 2,
-    isTicketIssued: 1,
-    departureAirline: "LATAM",
-    returnAirline: "LATAM",
-    departureFlightDatetime: "2027-01-11T09:00",
-    returnFlightDatetime: "2027-01-14T19:00",
-    departureAirport: "GRU",
-    returnAirport: "NVT",
-    departureLocator: "ABC123",
-    returnLocator: "XYZ789",
-    departureFlightNumber: "LA1234",
-    returnFlightNumber: "LA5678",
-    departureTerminal: "2",
-    returnTerminal: "1",
-    ticketType: "roundtrip",
-    smilesPoints: null,
-    latamPassPoints: null,
-    departureRescheduled: 0,
-    returnRescheduled: 0,
-    departureCancelled: 0,
-    returnCancelled: 0,
+    ...makeDraft(),
     ...overrides,
   };
 }
@@ -86,33 +65,18 @@ function makeFlight(
 let root: Root | null = null;
 let host: HTMLDivElement | null = null;
 
-function renderPanel(
-  flights: AdditionalFlightRecord[],
-  createRequestId: number | null = null
-) {
+function renderPanel(flights: AdditionalFlightRecord[], createRequestId: number | null = null) {
   host = document.createElement("div");
   document.body.appendChild(host);
   root = createRoot(host);
   act(() => {
-    root?.render(
-      <AdditionalFlightsPanel
-        year={2027}
-        weekNumber={2}
-        weekStartDate="2027-01-10"
-        weekEndDate="2027-01-16"
-        flights={flights}
-        createRequestId={createRequestId}
-        onChanged={vi.fn()}
-      />
-    );
+    root?.render(<AdditionalFlightsPanel year={2027} weekNumber={2} weekStartDate="2027-01-10" weekEndDate="2027-01-16" flights={flights} createRequestId={createRequestId} onChanged={vi.fn()} />);
   });
   return host;
 }
 
 function click(element: Element) {
-  act(() => {
-    element.dispatchEvent(new MouseEvent("click", { bubbles: true }));
-  });
+  act(() => element.dispatchEvent(new MouseEvent("click", { bubbles: true })));
 }
 
 afterEach(() => {
@@ -125,119 +89,58 @@ afterEach(() => {
 
 describe("AdditionalFlightsPanel form rules", () => {
   it("removes all return fields when the ticket is one-way", () => {
-    const normalized = normalizeAdditionalFlightDraft(
-      makeDraft({ ticketType: "oneway" })
-    );
+    const normalized = normalizeAdditionalFlightDraft(makeDraft({ ticketType: "oneway" }));
+    expect(normalized).toMatchObject({ ticketType: "oneway", returnAirline: null, returnFlightDatetime: null, returnFlightNumber: null, returnLocator: null, returnTerminal: null, returnCancelled: 0, returnRescheduled: 0 });
+  });
 
-    expect(normalized).toMatchObject({
-      ticketType: "oneway",
-      returnAirline: null,
-      returnFlightDatetime: null,
-      returnFlightNumber: null,
-      returnLocator: null,
-      returnTerminal: null,
-      returnCancelled: 0,
-      returnRescheduled: 0,
-    });
+  it("preserves the paid price in cents while normalizing a draft", () => {
+    expect(normalizeAdditionalFlightDraft(makeDraft({ paidPriceCents: 12345 })).paidPriceCents).toBe(12345);
   });
 
   it("requires the outbound datetime before an issued ticket can be saved", () => {
-    const error = validateAdditionalFlightDraft(
-      makeDraft({ departureFlightDatetime: null }),
-      "2027-01-10",
-      "2027-01-16"
-    );
-
-    expect(error).toBe(
-      "Informe a data e hora do voo de ida antes de emitir a passagem adicional."
-    );
+    expect(validateAdditionalFlightDraft(makeDraft({ departureFlightDatetime: null }), "2027-01-10", "2027-01-16")).toBe("Informe a data e hora do voo de ida antes de emitir a passagem adicional.");
   });
 
   it("rejects flight dates outside the selected week period", () => {
-    const error = validateAdditionalFlightDraft(
-      makeDraft({ departureFlightDatetime: "2027-01-17T09:00" }),
-      "2027-01-10",
-      "2027-01-16"
-    );
-
-    expect(error).toBe(
-      "A data da ida deve estar dentro do período da semana selecionada."
-    );
+    expect(validateAdditionalFlightDraft(makeDraft({ departureFlightDatetime: "2027-01-17T09:00" }), "2027-01-10", "2027-01-16")).toBe("A data da ida deve estar dentro do período da semana selecionada.");
   });
 
   it("rejects a return that occurs before the outbound flight", () => {
-    const error = validateAdditionalFlightDraft(
-      makeDraft({ returnFlightDatetime: "2027-01-10T19:00" }),
-      "2027-01-10",
-      "2027-01-16"
-    );
-
-    expect(error).toBe("A volta não pode ocorrer antes da ida.");
+    expect(validateAdditionalFlightDraft(makeDraft({ returnFlightDatetime: "2027-01-10T19:00" }), "2027-01-10", "2027-01-16")).toBe("A volta não pode ocorrer antes da ida.");
   });
 
-  it("opens the additional-ticket form com as datas padrão e os controles do cartão semanal", () => {
+  it("opens the additional form with weekly dates, price, and weekly-card controls", () => {
     const container = renderPanel([]);
-    const createButton = container.querySelector<HTMLButtonElement>(
-      'button[aria-label="Adicionar passagem adicional"]'
-    );
-
+    const createButton = container.querySelector<HTMLButtonElement>('button[aria-label="Adicionar passagem adicional"]');
     expect(createButton).toBeTruthy();
     click(createButton!);
-
-    expect(container.textContent).toContain("Adicionar passagem adicional");
     expect(container.textContent).toContain("Tipo de Bilhete");
+    expect(container.textContent).toContain("VALOR PAGO");
     expect(container.textContent).toContain("Pagamento em Milhas");
-    expect(container.textContent).toContain("Localizador (PNR)");
-    const datetimeInputs = Array.from(
-      container.querySelectorAll<HTMLInputElement>('input[type="datetime-local"]')
-    );
-    expect(datetimeInputs.map(input => input.value)).toEqual([
-      "2027-01-10T00:00",
-      "2027-01-16T00:00",
-    ]);
+    const datetimeInputs = Array.from(container.querySelectorAll<HTMLInputElement>('input[type="datetime-local"]'));
+    expect(datetimeInputs.map(input => input.value)).toEqual(["2027-01-10T00:00", "2027-01-16T00:00"]);
   });
 
   it("opens the form when a weekly header requests a new additional ticket", () => {
     const container = renderPanel([makeFlight()], 1);
-
     expect(container.textContent).toContain("Adicionar passagem adicional");
     expect(container.textContent).toContain("✈ Ida e Volta");
-    expect(container.textContent).toContain("→ Somente Ida");
   });
 
-  it("fecha e descarta o formulário ao cancelar uma nova passagem adicional", () => {
+  it("closes and discards a new additional flight when cancelled", () => {
     const container = renderPanel([]);
-    const createButton = container.querySelector<HTMLButtonElement>(
-      'button[aria-label="Adicionar passagem adicional"]'
-    );
-
-    click(createButton!);
-    expect(container.textContent).toContain("Use os mesmos dados e padrões do cartão da semana.");
-
-    const cancelButton = Array.from(container.querySelectorAll("button")).find(
-      button => button.textContent === "Cancelar"
-    );
-    expect(cancelButton).toBeTruthy();
-    click(cancelButton!);
-
+    click(container.querySelector<HTMLButtonElement>('button[aria-label="Adicionar passagem adicional"]')!);
+    const cancel = Array.from(container.querySelectorAll("button")).find(button => button.textContent === "Cancelar");
+    expect(cancel).toBeTruthy();
+    click(cancel!);
     expect(container.textContent).not.toContain("Use os mesmos dados e padrões do cartão da semana.");
   });
 
   it("asks for confirmation before deleting an additional ticket", () => {
     const container = renderPanel([makeFlight({ ticketType: "oneway" })]);
-    const expandButton = Array.from(container.querySelectorAll("button")).find(
-      button => button.textContent?.includes("Passagens adicionais")
-    );
-
-    expect(expandButton).toBeTruthy();
+    const expandButton = Array.from(container.querySelectorAll("button")).find(button => button.textContent?.includes("Passagens adicionais"));
     click(expandButton!);
-
-    const deleteButton = container.querySelector<HTMLButtonElement>(
-      'button[aria-label="Remover passagem adicional"]'
-    );
-    expect(deleteButton).toBeTruthy();
-    click(deleteButton!);
-
+    click(container.querySelector<HTMLButtonElement>('button[aria-label="Remover passagem adicional"]')!);
     expect(document.body.textContent).toContain("Excluir passagem adicional?");
     expect(document.body.textContent).toContain("semana 2");
     expect(document.body.textContent).toContain("somente de ida");

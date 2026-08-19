@@ -37,6 +37,7 @@ const fieldsSchema = z.object({
   departureTerminal: nullableText,
   returnTerminal: nullableText,
   ticketType: z.enum(["roundtrip", "oneway"]).nullable().optional(),
+  paidPriceCents: z.number().int().min(0).max(100_000_000).nullable().optional(),
   smilesPoints: z.number().int().min(0).nullable().optional(),
   latamPassPoints: z.number().int().min(0).nullable().optional(),
   departureRescheduled: z.number().int().min(0).max(1).optional(),
@@ -60,6 +61,7 @@ type AdditionalFlightFields = {
   departureTerminal: string | null;
   returnTerminal: string | null;
   ticketType: "roundtrip" | "oneway";
+  paidPriceCents: number | null;
   smilesPoints: number | null;
   latamPassPoints: number | null;
   departureRescheduled: number;
@@ -105,6 +107,7 @@ function normalizeFields(source: Record<string, unknown>): AdditionalFlightField
     departureTerminal: nullableString(source, "departureTerminal"),
     returnTerminal: nullableString(source, "returnTerminal"),
     ticketType,
+    paidPriceCents: nullableNumber(source, "paidPriceCents"),
     smilesPoints: nullableNumber(source, "smilesPoints"),
     latamPassPoints: nullableNumber(source, "latamPassPoints"),
     departureRescheduled: binaryNumber(source, "departureRescheduled"),
@@ -247,6 +250,9 @@ function directionSnapshot(
     "Número do voo": flight[`${prefix}FlightNumber` as keyof typeof flight] ?? null,
     Localizador: flight[`${prefix}Locator` as keyof typeof flight] ?? null,
     Terminal: flight[`${prefix}Terminal` as keyof typeof flight] ?? null,
+    "Preço pago": typeof flight.paidPriceCents === "number"
+      ? new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(flight.paidPriceCents / 100)
+      : null,
     Status: flight[`${prefix}Cancelled` as keyof typeof flight]
       ? "Cancelado"
       : flight[`${prefix}Rescheduled` as keyof typeof flight]

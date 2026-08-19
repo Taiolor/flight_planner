@@ -29,6 +29,9 @@ export interface WeekFinancialData {
   latamPassPoints: number | null;
   totalMiles: number | null;
   additionalFlightCount: number;
+  additionalPaidPriceTotal: number;
+  additionalCashByAirline: Record<string, { cashBRL: number; count: number }>;
+  primaryTicketIssued: number;
   // Mês derivado da data de ida
   month: number;
 }
@@ -86,6 +89,10 @@ function parseYear(dateStr: string): number {
     if (parts.length >= 3) return parseInt(parts[2], 10);
   }
   return new Date().getFullYear();
+}
+
+function roundBRL(value: number) {
+  return Math.round((value + Number.EPSILON) * 100) / 100;
 }
 
 // ─── Funções exportadas ───────────────────────────────────────────────────────
@@ -163,6 +170,23 @@ export async function getFinancialDataByYear(
         : null;
 
     const additionalForWeek = additionalByWeek.get(w.weekNumber) ?? [];
+    const additionalCashByAirline: Record<string, { cashBRL: number; count: number }> = {};
+    const additionalPaidPriceCents = additionalForWeek.reduce((sum, flight) => {
+      const priceCents = flight.paidPriceCents ?? 0;
+      const cashBRL = priceCents / 100;
+      if (cashBRL > 0) {
+        const airline = flight.departureAirline ?? flight.returnAirline ?? "viagem adicional";
+        if (!additionalCashByAirline[airline]) {
+          additionalCashByAirline[airline] = { cashBRL: 0, count: 0 };
+        }
+        additionalCashByAirline[airline].cashBRL = roundBRL(
+          additionalCashByAirline[airline].cashBRL + cashBRL
+        );
+        additionalCashByAirline[airline].count += 1;
+      }
+      return sum + priceCents;
+    }, 0);
+    const additionalPaidPriceTotal = additionalPaidPriceCents / 100;
     const additionalSmiles = additionalForWeek.reduce((sum, flight) => sum + (flight.smilesPoints ?? 0), 0);
     const additionalLatam = additionalForWeek.reduce((sum, flight) => sum + (flight.latamPassPoints ?? 0), 0);
     const smilesPoints = (w.smilesPoints ?? 0) + additionalSmiles;
@@ -182,11 +206,14 @@ export async function getFinancialDataByYear(
       returnRescheduled: w.returnRescheduled,
       paidPriceDeparture: paidDep,
       paidPriceReturn: paidRet,
-      paidPriceTotal: paidTotal,
+      paidPriceTotal: roundBRL((paidTotal ?? 0) + additionalPaidPriceTotal) || null,
       smilesPoints: smilesPoints > 0 ? smilesPoints : null,
       latamPassPoints: latamPassPoints > 0 ? latamPassPoints : null,
       totalMiles: totalMiles > 0 ? totalMiles : null,
       additionalFlightCount: additionalForWeek.length,
+      additionalPaidPriceTotal,
+      additionalCashByAirline,
+      primaryTicketIssued: w.isTicketIssued,
       month: parseMonth(w.departureDate),
     };
   });
@@ -221,28 +248,44 @@ export async function getFinancialSummaryByMonth(
       });
     }
     const ms = monthMap.get(m)!;
-    ms.issuedCount += 1 + w.additionalFlightCount;
+    ms.issuedCount += w.primaryTicketIssued + w.additionalFlightCount;
     ms.weeksCount++;
 
     const cash = w.paidPriceTotal ?? 0;
-    ms.totalCashBRL += cash;
+    const primaryCash = roundBRL(Math.max(0, cash - w.additionalPaidPriceTotal));
+    ms.totalCashBRL = roundBRL(ms.totalCashBRL + cash);
     ms.totalSmilesPoints += w.smilesPoints ?? 0;
     ms.totalLatamPassPoints += w.latamPassPoints ?? 0;
     ms.totalMiles += w.totalMiles ?? 0;
 
     // Agrega por companhia (usa a companhia de ida como referência)
-    const airline = w.departureAirline ?? "desconhecida";
-    if (!ms.byAirline[airline]) {
-      ms.byAirline[airline] = { cashBRL: 0, miles: 0, count: 0 };
+    if (w.primaryTicketIssued === 1) {
+      const airline = w.departureAirline ?? "desconhecida";
+      if (!ms.byAirline[airline]) {
+        ms.byAirline[airline] = { cashBRL: 0, miles: 0, count: 0 };
+      }
+      ms.byAirline[airline].cashBRL = roundBRL(
+        ms.byAirline[airline].cashBRL + primaryCash
+      );
+      ms.byAirline[airline].miles += w.totalMiles ?? 0;
+      ms.byAirline[airline].count++;
     }
-    ms.byAirline[airline].cashBRL += cash;
-    ms.byAirline[airline].miles += w.totalMiles ?? 0;
-    ms.byAirline[airline].count++;
+    for (const [airline, data] of Object.entries(w.additionalCashByAirline)) {
+      if (!ms.byAirline[airline]) {
+        ms.byAirline[airline] = { cashBRL: 0, miles: 0, count: 0 };
+      }
+      ms.byAirline[airline].cashBRL = roundBRL(
+        ms.byAirline[airline].cashBRL + data.cashBRL
+      );
+      ms.byAirline[airline].count += data.count;
+    }
   }
 
   // Calcular médias
   monthMap.forEach(ms => {
-    ms.avgCashBRL = ms.issuedCount > 0 ? ms.totalCashBRL / ms.issuedCount : 0;
+    ms.avgCashBRL = ms.issuedCount > 0
+      ? roundBRL(ms.totalCashBRL / ms.issuedCount)
+      : 0;
   });
 
   const result: MonthSummary[] = [];
@@ -269,7 +312,9 @@ export async function getFinancialYearSummary(
     for (const [airline, data] of Object.entries(ms.byAirline)) {
       if (!byAirline[airline])
         byAirline[airline] = { cashBRL: 0, miles: 0, count: 0 };
-      byAirline[airline].cashBRL += data.cashBRL;
+      byAirline[airline].cashBRL = roundBRL(
+        byAirline[airline].cashBRL + data.cashBRL
+      );
       byAirline[airline].miles += data.miles;
       byAirline[airline].count += data.count;
     }
@@ -282,12 +327,15 @@ export async function getFinancialYearSummary(
   let totalMiles = 0;
 
   for (const m of byMonth) {
-    totalCashBRL += m.totalCashBRL;
+    totalCashBRL = roundBRL(totalCashBRL + m.totalCashBRL);
     totalSmilesPoints += m.totalSmilesPoints;
     totalLatamPassPoints += m.totalLatamPassPoints;
     totalMiles += m.totalMiles;
   }
-  const issuedCount = issued.length;
+  const issuedCount = issued.reduce(
+    (sum, week) => sum + week.primaryTicketIssued + week.additionalFlightCount,
+    0
+  );
 
   return {
     year,
