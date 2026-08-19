@@ -336,8 +336,8 @@ function AdminNotificationsContent() {
 
         {/* Próximo alerta */}
         {nextAlert && (
-          <Card className="p-5 bg-blue-50 border-blue-200">
-            <div className="flex items-start justify-between gap-4">
+          <Card className="p-4 sm:p-5 bg-blue-50 border-blue-200">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center flex-shrink-0">
                   <Bell className="w-5 h-5 text-white" />
@@ -360,7 +360,7 @@ function AdminNotificationsContent() {
                   </p>
                 </div>
               </div>
-              <div className="flex flex-col items-end gap-3 flex-shrink-0">
+              <div className="flex flex-row items-end justify-between gap-3 sm:flex-col sm:items-end">
                 <div className="text-right">
                   <p className="text-lg font-bold text-blue-700">
                     {formatRelativeTime(nextAlert.alertDatetime)}
@@ -450,7 +450,7 @@ function AdminNotificationsContent() {
               </Card>
             ))}
             {(!data?.avisos || data.avisos.length === 0) && (
-              <Card className="p-4 flex items-center gap-3 col-span-2">
+              <Card className="p-4 flex items-center gap-3 sm:col-span-2">
                 <BellOff className="w-5 h-5 text-gray-400" />
                 <p className="text-gray-500 text-sm">
                   Nenhum aviso configurado. Configure em Notificações.
@@ -465,15 +465,15 @@ function AdminNotificationsContent() {
           <button
             type="button"
             onClick={() => toggleSection("alerts")}
-            className="w-full flex items-center justify-between p-4 bg-white hover:bg-gray-50 transition-colors border border-gray-200 rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+            className="w-full flex items-start justify-between p-4 bg-white hover:bg-gray-50 transition-colors border border-gray-200 rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
             aria-expanded={expandedSections.has("alerts")}
             aria-controls="section-alerts"
           >
-            <div className="flex items-center justify-between flex-1 gap-4">
+            <div className="flex min-w-0 flex-1 flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
               <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide">
                 Alertas Agendados ({data?.scheduledAlerts.length ?? 0})
               </h2>
-              <div className="flex gap-2 text-xs text-gray-400">
+              <div className="hidden gap-2 text-xs text-gray-400 sm:flex">
                 <span className="flex items-center gap-1">
                   <span className="w-2 h-2 rounded-full bg-blue-400 inline-block" />{" "}
                   Pendente
@@ -656,7 +656,7 @@ function AdminNotificationsContent() {
                 </div>
               ) : (
                 <div className="divide-y divide-gray-100">
-                  <div className="grid grid-cols-[auto_1fr_auto_auto] gap-x-3 px-4 py-2 bg-gray-50 text-xs font-semibold text-gray-400 uppercase tracking-wide">
+                  <div className="hidden grid-cols-[auto_1fr_auto_auto] gap-x-3 bg-gray-50 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-gray-400 sm:grid">
                     <span>Status</span>
                     <span>Voo</span>
                     <span className="text-right">Dispositivos</span>
@@ -665,7 +665,7 @@ function AdminNotificationsContent() {
                   {logs.map(log => (
                     <div
                       key={log.id}
-                      className="grid grid-cols-[auto_1fr_auto_auto] gap-x-3 items-center px-4 py-3"
+                      className="flex flex-wrap items-start gap-x-3 gap-y-1 px-4 py-3 sm:grid sm:grid-cols-[auto_1fr_auto_auto] sm:items-center"
                     >
                       {/* Status */}
                       <div className="flex-shrink-0">
@@ -678,7 +678,7 @@ function AdminNotificationsContent() {
                         )}
                       </div>
                       {/* Descrição */}
-                      <div className="min-w-0">
+                      <div className="min-w-[10rem] flex-1 sm:min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
                           {log.isTest ? (
                             <span className="flex items-center gap-1 text-sm font-medium text-purple-700">
@@ -705,7 +705,7 @@ function AdminNotificationsContent() {
                         )}
                       </div>
                       {/* Dispositivos */}
-                      <div className="text-right text-sm text-gray-600 flex-shrink-0">
+                      <div className="ml-auto text-right text-sm text-gray-600 sm:ml-0">
                         <span
                           className={
                             log.devicesReached === 0
@@ -720,7 +720,7 @@ function AdminNotificationsContent() {
                         </span>
                       </div>
                       {/* Timestamp */}
-                      <div className="text-right text-xs text-gray-400 flex-shrink-0">
+                      <div className="basis-full text-left text-xs text-gray-400 sm:basis-auto sm:text-right">
                         {formatDatetimeBRT(
                           log.sentAt instanceof Date
                             ? log.sentAt.toISOString()
@@ -760,14 +760,14 @@ function AdminNotificationsContent() {
           <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">
             Ações
           </h2>
-          <div className="flex flex-wrap gap-3">
+          <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
             <Button
               onClick={() => sendTestMutation.mutate({ year: selectedYear })}
               disabled={
                 sendTestMutation.isPending ||
                 (data?.totalSubscriptions ?? 0) === 0
               }
-              className="gap-2 bg-blue-600 hover:bg-blue-700"
+              className="w-full gap-2 bg-blue-600 hover:bg-blue-700 sm:w-auto"
             >
               {sendTestMutation.isPending ? (
                 <>
@@ -782,7 +782,7 @@ function AdminNotificationsContent() {
               )}
             </Button>
             <Link href="/">
-              <Button variant="outline" className="gap-2">
+              <Button variant="outline" className="w-full gap-2 sm:w-auto">
                 <Plane className="w-4 h-4" />
                 Ver Voos
               </Button>
@@ -909,7 +909,7 @@ function TicketNotificationEmailsSection() {
   };
 
   return (
-    <div className="p-5 space-y-5">
+    <div className="space-y-5 p-4 sm:p-5">
       {/* Formulário para adicionar novo e-mail */}
       <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
         <h3 className="font-medium text-gray-800 mb-3 text-sm">
@@ -949,7 +949,7 @@ function TicketNotificationEmailsSection() {
             <Button
               type="submit"
               disabled={addRecipientMutation.isPending}
-              className="bg-purple-600 hover:bg-purple-700 text-white gap-2"
+              className="w-full bg-purple-600 text-white gap-2 hover:bg-purple-700 sm:w-auto"
             >
               {addRecipientMutation.isPending ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
@@ -1019,7 +1019,7 @@ function TicketNotificationEmailsSection() {
         <Button
           variant="outline"
           onClick={() => setShowTestForm(!showTestForm)}
-          className="gap-2"
+          className="w-full gap-2 sm:w-auto"
         >
           <FlaskConical className="w-4 h-4" />
           {showTestForm ? "Cancelar" : "Enviar E-mail de Teste"}
@@ -1033,7 +1033,7 @@ function TicketNotificationEmailsSection() {
             Enviar E-mail de Teste
           </h3>
           <form onSubmit={handleSendTestEmail} className="space-y-3">
-            <div className="flex gap-2">
+            <div className="flex flex-col gap-2 sm:flex-row">
               <label htmlFor="test-email" className="sr-only">
                 E-mail para teste
               </label>
@@ -1050,7 +1050,7 @@ function TicketNotificationEmailsSection() {
               <Button
                 type="submit"
                 disabled={sendTestEmailMutation.isPending}
-                className="bg-blue-600 hover:bg-blue-700 text-white gap-2"
+                className="w-full bg-blue-600 text-white gap-2 hover:bg-blue-700 sm:w-auto"
               >
                 {sendTestEmailMutation.isPending ? (
                   <>

@@ -764,6 +764,7 @@
 - [x] Reavaliar e corrigir a responsividade de todos os elementos da página Cotações para telas de celular
 - [x] Reavaliar e corrigir a responsividade de todos os elementos da página Memórias para telas de celular
 - [x] Reavaliar e corrigir a responsividade de todos os elementos da página Financeiro para telas de celular
+- [x] Reavaliar e corrigir a responsividade de todas as telas administrativas para telas de celular
 
 ## Preferências da Home
 

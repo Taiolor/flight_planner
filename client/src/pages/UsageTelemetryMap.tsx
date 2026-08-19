@@ -151,34 +151,35 @@ function UsageTelemetryMapContent() {
           <MetricCard icon={<Search />} label="Janela" value={`${hours}h`} />
         </section>
 
-        <section className="flex flex-wrap items-center gap-2" aria-label="Período analisado">
+        <section className="grid grid-cols-3 gap-2 sm:flex sm:flex-wrap sm:items-center" aria-label="Período analisado">
           {[24, 72, 168].map(option => (
             <Button
               key={option}
               size="sm"
+              className="w-full"
               variant={hours === option ? "default" : "outline"}
               onClick={() => setHours(option)}
             >
               Últimas {option === 24 ? "24h" : option === 72 ? "72h" : "7 dias"}
             </Button>
           ))}
-          <Badge variant="outline" className="border-slate-600 text-slate-300">
+          <Badge variant="outline" className="col-span-3 justify-center border-slate-600 text-slate-300 sm:col-auto">
             até 200 pontos aproximados
           </Badge>
         </section>
 
         <Card className="overflow-hidden border-slate-800 bg-slate-900 p-0">
           {mapQuery.isLoading ? (
-            <div className="flex h-[540px] items-center justify-center gap-3 text-slate-300">
+            <div className="flex h-[360px] items-center justify-center gap-3 text-slate-300 sm:h-[540px]">
               <Loader2 className="h-6 w-6 animate-spin" /> Carregando eventos consentidos...
             </div>
           ) : mapQuery.error ? (
-            <div className="flex h-[540px] items-center justify-center px-6 text-center text-rose-300">
+            <div className="flex h-[360px] items-center justify-center px-6 text-center text-rose-300 sm:h-[540px]">
               Não foi possível carregar os dados administrativos desta sessão.
             </div>
           ) : (
             <OpenStreetMap
-              className="h-[540px]"
+              className="h-[360px] sm:h-[540px]"
               initialCenter={{ lat: -14.235, lng: -51.9253 }}
               initialZoom={4}
               points={mapPoints}
