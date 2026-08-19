@@ -37,4 +37,4 @@
 - [x] Validar em teste a `deliveryKey` real usada no claim de alerta para o par mês e faixa de orçamento.
 - [x] Validar em teste os payloads de e-mail e push enviados ao cruzar uma nova faixa de orçamento.
 - [x] Validar a experiência em desktop e celular e revisar o arquivo de tarefas.
-- [ ] Salvar o checkpoint do painel administrativo Gemini validado.
+- [x] Salvar o checkpoint do painel administrativo Gemini validado.
