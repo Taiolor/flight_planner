@@ -571,7 +571,62 @@ export default function FinancialDashboard() {
                   subtitle="Semanas com passagens emitidas usando milhas"
                   icon={Calendar}
                 />
-                <div className="overflow-x-auto">
+                <div className="space-y-3 sm:hidden">
+                  {milesTableData.map(w => (
+                    <article
+                      key={w.weekNumber}
+                      className="rounded-xl border border-slate-100 bg-slate-50/60 p-3 dark:border-slate-800 dark:bg-slate-800/30"
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <p className="text-sm font-bold text-slate-800 dark:text-slate-100">
+                            Semana #{w.weekNumber}
+                          </p>
+                          <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
+                            {w.departureDate}
+                          </p>
+                        </div>
+                        {w.departureAirline && (
+                          <span
+                            className="shrink-0 rounded-full px-2 py-0.5 text-xs font-semibold text-white"
+                            style={{
+                              backgroundColor:
+                                AIRLINE_COLORS[w.departureAirline] ?? "#94A3B8",
+                            }}
+                          >
+                            {AIRLINE_LABELS[w.departureAirline] ?? w.departureAirline}
+                          </span>
+                        )}
+                      </div>
+                      <div className="mt-3 grid grid-cols-2 gap-2 text-sm">
+                        <div>
+                          <p className="text-xs uppercase tracking-wide text-slate-400">SMILES</p>
+                          <p className="mt-0.5 font-semibold text-orange-600 dark:text-orange-400">
+                            {w.smilesPoints ? formatMiles(w.smilesPoints) : "—"}
+                          </p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-xs uppercase tracking-wide text-slate-400">LATAM Pass</p>
+                          <p className="mt-0.5 font-semibold text-red-600 dark:text-red-400">
+                            {w.latamPassPoints ? formatMiles(w.latamPassPoints) : "—"}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="mt-3 border-t border-slate-200 pt-2 text-right dark:border-slate-700">
+                        <p className="text-xs uppercase tracking-wide text-slate-400">Total de milhas</p>
+                        <p className="font-bold text-slate-800 dark:text-slate-100">
+                          {w.totalMiles ? formatMiles(w.totalMiles) : "—"}
+                        </p>
+                      </div>
+                    </article>
+                  ))}
+                  {milesTableData.length === 0 && (
+                    <p className="py-8 text-center text-sm text-slate-400">
+                      Nenhuma viagem com milhas registrada
+                    </p>
+                  )}
+                </div>
+                <div className="hidden overflow-x-auto sm:block">
                   <table className="w-full text-sm">
                     <thead>
                       <tr className="border-b border-slate-100 dark:border-slate-800">
@@ -704,7 +759,61 @@ export default function FinancialDashboard() {
                   subtitle="Viagens, gastos e médias"
                   icon={TrendingUp}
                 />
-                <div className="overflow-x-auto">
+                <div className="space-y-3 sm:hidden">
+                  {airlineChartData.map(row => {
+                    const totalCash = yearSummary?.totalCashBRL ?? 1;
+                    const pct = totalCash > 0 ? (row.cashBRL / totalCash) * 100 : 0;
+                    return (
+                      <article
+                        key={row.airline}
+                        className="rounded-xl border border-slate-100 bg-slate-50/60 p-3 dark:border-slate-800 dark:bg-slate-800/30"
+                      >
+                        <div className="flex items-center justify-between gap-3">
+                          <div className="flex min-w-0 items-center gap-2">
+                            <span
+                              className="h-3 w-3 shrink-0 rounded-full"
+                              style={{ backgroundColor: AIRLINE_COLORS[row.airline] ?? "#94A3B8" }}
+                            />
+                            <p className="truncate font-bold text-slate-800 dark:text-slate-100">
+                              {row.name}
+                            </p>
+                          </div>
+                          <span className="shrink-0 text-sm font-semibold text-slate-600 dark:text-slate-300">
+                            {row.count} viagens
+                          </span>
+                        </div>
+                        <div className="mt-3 grid grid-cols-2 gap-2 text-sm">
+                          <div>
+                            <p className="text-xs uppercase tracking-wide text-slate-400">Total gasto</p>
+                            <p className="mt-0.5 font-bold text-slate-800 dark:text-slate-100">
+                              {formatBRL(row.cashBRL, !showValues)}
+                            </p>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-xs uppercase tracking-wide text-slate-400">Média/viagem</p>
+                            <p className="mt-0.5 font-semibold text-slate-600 dark:text-slate-300">
+                              {formatBRL(row.avgCash, !showValues)}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="mt-3 flex items-center justify-between gap-3 border-t border-slate-200 pt-2 text-sm dark:border-slate-700">
+                          <span className="text-orange-600 dark:text-orange-400">
+                            {row.miles > 0 ? formatMiles(row.miles) : "Sem milhas"}
+                          </span>
+                          <span className="font-semibold text-slate-600 dark:text-slate-300">
+                            {pct.toFixed(0)}% do total
+                          </span>
+                        </div>
+                      </article>
+                    );
+                  })}
+                  {airlineChartData.length === 0 && (
+                    <p className="py-8 text-center text-sm text-slate-400">
+                      Nenhuma companhia com dados financeiros
+                    </p>
+                  )}
+                </div>
+                <div className="hidden overflow-x-auto sm:block">
                   <table className="w-full text-sm">
                     <thead>
                       <tr className="border-b border-slate-100 dark:border-slate-800">
@@ -1264,7 +1373,52 @@ export default function FinancialDashboard() {
                     <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-3">
                       Detalhe da Projeção por Mês
                     </h3>
-                    <div className="overflow-x-auto -mx-3 sm:mx-0 px-3 sm:px-0">
+                    <div className="space-y-3 sm:hidden">
+                      {projections.byMonth.map(m => (
+                        <article
+                          key={m.month}
+                          className="rounded-xl border border-slate-100 bg-slate-50/60 p-3 dark:border-slate-800 dark:bg-slate-800/30"
+                        >
+                          <div className="flex items-center justify-between gap-3">
+                            <p className="font-bold text-slate-800 dark:text-slate-100">
+                              {MONTH_FULL_NAMES[m.month]}
+                            </p>
+                            <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs font-semibold text-slate-600 dark:bg-slate-700 dark:text-slate-300">
+                              Fator {m.seasonFactor.toFixed(2)}×
+                            </span>
+                          </div>
+                          <div className="mt-3 grid grid-cols-2 gap-2 text-sm">
+                            <div>
+                              <p className="text-xs uppercase tracking-wide text-slate-400">Viagens</p>
+                              <p className="mt-0.5 font-semibold text-slate-700 dark:text-slate-300">
+                                {m.projectedTrips}
+                              </p>
+                            </div>
+                            <div className="text-right">
+                              <p className="text-xs uppercase tracking-wide text-slate-400">Preço/viagem</p>
+                              <p className="mt-0.5 font-semibold text-slate-700 dark:text-slate-300">
+                                {formatBRL(m.avgPricePerTrip, !showValues)}
+                              </p>
+                            </div>
+                          </div>
+                          <div className="mt-3 grid grid-cols-2 gap-2 border-t border-slate-200 pt-2 text-sm dark:border-slate-700">
+                            <div>
+                              <p className="text-xs uppercase tracking-wide text-slate-400">Projetado</p>
+                              <p className="mt-0.5 font-bold text-purple-700 dark:text-purple-400">
+                                {formatBRL(m.projectedCashBRL, !showValues)}
+                              </p>
+                            </div>
+                            <div className="text-right">
+                              <p className="text-xs uppercase tracking-wide text-slate-400">Variação</p>
+                              <p className={`mt-0.5 font-semibold ${m.variationVsHistoric !== null && m.variationVsHistoric > 0 ? "text-red-600 dark:text-red-400" : "text-green-600 dark:text-green-400"}`}>
+                                {m.variationVsHistoric !== null ? formatPct(m.variationVsHistoric) : "—"}
+                              </p>
+                            </div>
+                          </div>
+                        </article>
+                      ))}
+                    </div>
+                    <div className="hidden overflow-x-auto sm:block">
                       <table className="w-full text-sm min-w-[560px]">
                         <thead>
                           <tr className="border-b border-slate-100 dark:border-slate-800">

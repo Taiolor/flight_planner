@@ -82,8 +82,8 @@ export default function FinancialChart(props: FinancialChartProps) {
       <ResponsiveContainer width="100%" height={220}>
         <BarChart data={data} margin={{ top: 5, right: 5, left: -15, bottom: 5 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-          <XAxis dataKey="month" tick={{ fontSize: 12 }} />
-          <YAxis tickFormatter={(value: number) => (hideValues ? "R$ ••" : `R$${(value / 1000).toFixed(0)}k`)} tick={{ fontSize: 11 }} />
+          <XAxis dataKey="month" interval="preserveStartEnd" minTickGap={10} tick={{ fontSize: 10 }} />
+          <YAxis width={42} tickFormatter={(value: number) => (hideValues ? "R$ ••" : `R$${(value / 1000).toFixed(0)}k`)} tick={{ fontSize: 10 }} />
           <Tooltip formatter={(value: number) => [formatBRL(value, hideValues), "Total"]} labelFormatter={(label: string) => `Mês: ${label}`} contentStyle={tooltipStyle} />
           <Bar dataKey="cashBRL" fill="#3B82F6" radius={[6, 6, 0, 0]} name="Gasto (R$)" />
         </BarChart>
@@ -102,12 +102,12 @@ export default function FinancialChart(props: FinancialChartProps) {
             </linearGradient>
           </defs>
           <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-          <XAxis dataKey="month" tick={{ fontSize: 12 }} />
-          <YAxis tickFormatter={(value: number) => (hideValues ? "R$ ••" : `R$${(value / 1000).toFixed(0)}k`)} tick={{ fontSize: 11 }} />
+          <XAxis dataKey="month" interval="preserveStartEnd" minTickGap={10} tick={{ fontSize: 10 }} />
+          <YAxis width={42} tickFormatter={(value: number) => (hideValues ? "R$ ••" : `R$${(value / 1000).toFixed(0)}k`)} tick={{ fontSize: 10 }} />
           <Tooltip formatter={(value: number, name: string) => [formatBRL(value, hideValues), name === "cashBRL" ? "Gasto" : "Média/viagem"]} contentStyle={tooltipStyle} />
           <Area type="monotone" dataKey="cashBRL" stroke="#3B82F6" strokeWidth={2} fill="url(#cashGrad)" name="cashBRL" />
           <Line type="monotone" dataKey="avgPrice" stroke="#F59E0B" strokeWidth={2} strokeDasharray="5 5" dot={false} name="avgPrice" />
-          <Legend formatter={value => (value === "cashBRL" ? "Total mensal" : "Média por viagem")} />
+          <Legend wrapperStyle={{ fontSize: 11 }} formatter={value => (value === "cashBRL" ? "Total mensal" : "Média por viagem")} />
         </AreaChart>
       </ResponsiveContainer>
     );
@@ -118,8 +118,8 @@ export default function FinancialChart(props: FinancialChartProps) {
       <ResponsiveContainer width="100%" height={220}>
         <BarChart data={data} margin={{ top: 5, right: 5, left: -15, bottom: 5 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-          <XAxis dataKey="month" tick={{ fontSize: 12 }} />
-          <YAxis tickFormatter={(value: number) => `${(value / 1000).toFixed(0)}k`} tick={{ fontSize: 11 }} />
+          <XAxis dataKey="month" interval="preserveStartEnd" minTickGap={10} tick={{ fontSize: 10 }} />
+          <YAxis width={38} tickFormatter={(value: number) => `${(value / 1000).toFixed(0)}k`} tick={{ fontSize: 10 }} />
           <Tooltip formatter={(value: number) => [new Intl.NumberFormat("pt-BR").format(value) + " pts", "Milhas"]} contentStyle={tooltipStyle} />
           <Bar dataKey="miles" fill="#F59E0B" radius={[6, 6, 0, 0]} name="Milhas (pts)" />
         </BarChart>
@@ -129,12 +129,13 @@ export default function FinancialChart(props: FinancialChartProps) {
 
   if (kind === "airlineDistribution") {
     return (
-      <ResponsiveContainer width="100%" height={240}>
+      <ResponsiveContainer width="100%" height={260}>
         <PieChart>
-          <Pie data={data} dataKey="cashBRL" nameKey="name" cx="50%" cy="50%" outerRadius={90} label={({ name, percent }: { name?: string; percent?: number }) => `${name ?? ""} ${((percent ?? 0) * 100).toFixed(0)}%`} labelLine={false}>
+          <Pie data={data} dataKey="cashBRL" nameKey="name" cx="50%" cy="45%" outerRadius={78} label={false}>
             {data.map(entry => <Cell key={entry.airline} fill={AIRLINE_COLORS[entry.airline] ?? "#94A3B8"} />)}
           </Pie>
           <Tooltip formatter={(value: number) => [formatBRL(value, hideValues), "Total"]} contentStyle={tooltipStyle} />
+          <Legend verticalAlign="bottom" wrapperStyle={{ fontSize: 11, lineHeight: "20px" }} />
         </PieChart>
       </ResponsiveContainer>
     );
@@ -143,10 +144,10 @@ export default function FinancialChart(props: FinancialChartProps) {
   if (kind === "airlineComparison") {
     return (
       <ResponsiveContainer width="100%" height={240}>
-        <BarChart data={data} layout="vertical" margin={{ top: 5, right: 20, left: 40, bottom: 5 }}>
+        <BarChart data={data} layout="vertical" margin={{ top: 5, right: 8, left: 38, bottom: 5 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" horizontal={false} />
-          <XAxis type="number" tickFormatter={(value: number) => (hideValues ? "R$ ••" : `R$${(value / 1000).toFixed(0)}k`)} tick={{ fontSize: 11 }} />
-          <YAxis type="category" dataKey="name" tick={{ fontSize: 12 }} />
+          <XAxis type="number" tickFormatter={(value: number) => (hideValues ? "R$ ••" : `R$${(value / 1000).toFixed(0)}k`)} tick={{ fontSize: 10 }} />
+          <YAxis type="category" dataKey="name" tick={{ fontSize: 10 }} width={38} />
           <Tooltip formatter={(value: number) => [formatBRL(value, hideValues), "Total"]} contentStyle={{ borderRadius: 12 }} />
           <Bar dataKey="cashBRL" radius={[0, 6, 6, 0]} name="Total (R$)">
             {data.map(entry => <Cell key={entry.airline} fill={AIRLINE_COLORS[entry.airline] ?? "#94A3B8"} />)}
@@ -162,10 +163,10 @@ export default function FinancialChart(props: FinancialChartProps) {
     <ResponsiveContainer width="100%" height={200}>
       <BarChart data={data} margin={{ top: 5, right: 5, left: -15, bottom: 5 }}>
         <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-        <XAxis dataKey="month" tick={{ fontSize: 12 }} />
-        <YAxis tickFormatter={(value: number) => (hideValues ? "R$ ••" : `R$${(value / 1000).toFixed(0)}k`)} tick={{ fontSize: 11 }} />
+        <XAxis dataKey="month" interval="preserveStartEnd" minTickGap={10} tick={{ fontSize: 10 }} />
+        <YAxis width={42} tickFormatter={(value: number) => (hideValues ? "R$ ••" : `R$${(value / 1000).toFixed(0)}k`)} tick={{ fontSize: 10 }} />
         <Tooltip formatter={(value: number, name: string) => [formatBRL(value, hideValues), name === "projetado" ? `Projetado ${selectedYear + 1}` : `Histórico ${selectedYear}`]} contentStyle={{ borderRadius: 12 }} />
-        <Legend formatter={value => (value === "projetado" ? `Projetado ${selectedYear + 1}` : `Histórico ${selectedYear}`)} />
+        <Legend wrapperStyle={{ fontSize: 11 }} formatter={value => (value === "projetado" ? `Projetado ${selectedYear + 1}` : `Histórico ${selectedYear}`)} />
         <Bar dataKey="historico" fill="#94A3B8" radius={[4, 4, 0, 0]} name="historico" />
         <Bar dataKey="projetado" fill="#A855F7" radius={[4, 4, 0, 0]} name="projetado" />
       </BarChart>

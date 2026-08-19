@@ -763,6 +763,7 @@
 - [x] Reavaliar e corrigir a responsividade de todos os elementos da página Calendário para telas de celular
 - [x] Reavaliar e corrigir a responsividade de todos os elementos da página Cotações para telas de celular
 - [x] Reavaliar e corrigir a responsividade de todos os elementos da página Memórias para telas de celular
+- [x] Reavaliar e corrigir a responsividade de todos os elementos da página Financeiro para telas de celular
 
 ## Preferências da Home
 
