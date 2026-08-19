@@ -81,6 +81,13 @@ import {
   FlyIaRateLimitError,
   flyIaRateLimiter,
 } from "./flyIa";
+import {
+  GeminiBudgetExceededError,
+  getGeminiBudgetDashboard,
+  getGeminiBudgetSnapshot,
+  recordGeminiUsage,
+  updateGeminiBudgetSettings,
+} from "./geminiBudget";
 
 interface NextAlert {
   year: number;
@@ -229,9 +236,16 @@ export const appRouter = router({
       .mutation(async ({ ctx, input }) => {
         try {
           flyIaRateLimiter.consume(ctx.flightSession.email.toLowerCase());
+          const budget = await getGeminiBudgetSnapshot();
+          if (budget.isAtLimit) {
+            throw new GeminiBudgetExceededError();
+          }
           const context = await buildFlyIaContext(input.year);
-          const response = await askFlyIa(context, input.messages);
-          return { response };
+          const answer = await askFlyIa(context, input.messages);
+          await recordGeminiUsage("gemini-2.5-flash", answer.usage).catch(error => {
+            console.error("[Gemini Budget] Falha ao registrar consumo:", error);
+          });
+          return { response: answer.text };
         } catch (error) {
           if (error instanceof FlyIaRateLimitError) {
             throw new TRPCError({
@@ -245,6 +259,12 @@ export const appRouter = router({
               message: error.message,
             });
           }
+          if (error instanceof GeminiBudgetExceededError) {
+            throw new TRPCError({
+              code: "PRECONDITION_FAILED",
+              message: error.message,
+            });
+          }
           throw new TRPCError({
             code: "INTERNAL_SERVER_ERROR",
             message: "Não foi possível preparar os dados para o Fly.IA.",
@@ -254,6 +274,47 @@ export const appRouter = router({
   }),
 
   // =====================
+  geminiBudget: router({
+    dashboard: flightAdminProcedure.query(() => getGeminiBudgetDashboard()),
+    updateSettings: flightAdminProcedure
+      .input(
+        z
+          .object({
+            monthlyBudgetCents: z.number().int().min(1).max(10_000_000),
+            inputCostCentsPerMillion: z.number().int().min(0).max(1_000_000),
+            outputCostCentsPerMillion: z.number().int().min(0).max(1_000_000),
+            warningThresholdPercent: z.number().int().min(1).max(100),
+            criticalThresholdPercent: z.number().int().min(1).max(100),
+            limitThresholdPercent: z.number().int().min(1).max(200),
+            emailAlertsEnabled: z.boolean(),
+            pushAlertsEnabled: z.boolean(),
+          })
+          .superRefine((value, context) => {
+            if (value.warningThresholdPercent >= value.criticalThresholdPercent) {
+              context.addIssue({
+                code: "custom",
+                path: ["criticalThresholdPercent"],
+                message: "O limite crítico deve ser maior que o aviso.",
+              });
+            }
+            if (value.criticalThresholdPercent >= value.limitThresholdPercent) {
+              context.addIssue({
+                code: "custom",
+                path: ["limitThresholdPercent"],
+                message: "O teto deve ser maior que o limite crítico.",
+              });
+            }
+          })
+      )
+      .mutation(({ input }) =>
+        updateGeminiBudgetSettings({
+          ...input,
+          emailAlertsEnabled: input.emailAlertsEnabled ? 1 : 0,
+          pushAlertsEnabled: input.pushAlertsEnabled ? 1 : 0,
+        })
+      ),
+  }),
+
   // Push Notifications
   // =====================
   push: router({

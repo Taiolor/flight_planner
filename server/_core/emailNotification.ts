@@ -367,3 +367,42 @@ export async function sendTestEmail(testEmail: string): Promise<boolean> {
     return false;
   }
 }
+
+export type GeminiBudgetAlertEmailInput = {
+  thresholdPercent: number;
+  yearMonth: string;
+  estimatedCostCents: number;
+  monthlyBudgetCents: number;
+  usagePercent: number;
+};
+
+export async function sendGeminiBudgetAlertEmail(
+  recipient: string,
+  input: GeminiBudgetAlertEmailInput
+): Promise<boolean> {
+  if (!recipient.trim()) return false;
+  const currency = new Intl.NumberFormat("pt-BR", {
+    style: "currency",
+    currency: "BRL",
+  });
+  const estimated = currency.format(input.estimatedCostCents / 100);
+  const budget = currency.format(input.monthlyBudgetCents / 100);
+  const htmlContent = `
+    <div style="font-family: Arial, sans-serif; color: #1f2937; max-width: 640px; margin: 0 auto;">
+      <h2 style="color: #1d4ed8;">Alerta de orçamento do Fly.IA</h2>
+      <p>O consumo estimado do Gemini atingiu <strong>${formatEmailValue(input.thresholdPercent)}%</strong> do orçamento configurado.</p>
+      <div style="background: #eff6ff; border-radius: 8px; padding: 16px; margin: 18px 0;">
+        <p style="margin: 6px 0;"><strong>Ciclo:</strong> ${formatEmailValue(input.yearMonth)}</p>
+        <p style="margin: 6px 0;"><strong>Estimativa:</strong> ${formatEmailValue(estimated)}</p>
+        <p style="margin: 6px 0;"><strong>Orçamento interno:</strong> ${formatEmailValue(budget)}</p>
+        <p style="margin: 6px 0;"><strong>Uso calculado:</strong> ${formatEmailValue(input.usagePercent)}%</p>
+      </div>
+      <p>Revise o painel administrativo do SmartFly e o saldo oficial no Google AI Studio. Esta é uma estimativa baseada nos tokens registrados pela aplicação.</p>
+    </div>
+  `;
+  return sendEmailViaResend(
+    [recipient],
+    `[Fly.IA] ${input.thresholdPercent}% do orçamento atingido`,
+    htmlContent
+  );
+}

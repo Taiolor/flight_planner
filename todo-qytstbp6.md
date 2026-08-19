@@ -25,3 +25,16 @@
 - [x] Adicionar testes tRPC de `flyIa.chat` para sessão ausente, limite excedido, indisponibilidade do provedor e resposta bem-sucedida.
 - [x] Validar a interface em desktop e celular e revisar o arquivo de tarefas.
 - [x] Salvar o checkpoint da versão validada do Fly.IA.
+- [x] Definir o modo de alerta de orçamento e os indicadores de consumo exibidos no painel administrativo.
+- [x] Implementar alertas únicos por faixa de orçamento, enviados por e-mail e push a cada novo cruzamento de limite.
+- [x] Criar a persistência de consumo estimado e das configurações de orçamento do Gemini por projeto e mês.
+- [x] Registrar consumo e estimativas de custo após cada resposta bem-sucedida do Fly.IA.
+- [x] Expor procedimentos administrativos protegidos para leitura de consumo e atualização do orçamento e dos limiares de alerta.
+- [x] Implementar a tela administrativa de consumo do Gemini com status de orçamento, evolução mensal e formulário de alertas.
+- [x] Criar testes de cálculo, autorização, persistência e alerta de orçamento do painel Gemini.
+- [x] Adicionar testes de `recordGeminiUsage` cobrindo persistência do evento, atualização mensal e cálculo do snapshot.
+- [x] Adicionar testes de alertas de orçamento cobrindo idempotência por `deliveryKey` e envio por e-mail e push.
+- [x] Validar em teste a `deliveryKey` real usada no claim de alerta para o par mês e faixa de orçamento.
+- [x] Validar em teste os payloads de e-mail e push enviados ao cruzar uma nova faixa de orçamento.
+- [x] Validar a experiência em desktop e celular e revisar o arquivo de tarefas.
+- [ ] Salvar o checkpoint do painel administrativo Gemini validado.

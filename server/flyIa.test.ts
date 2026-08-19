@@ -119,13 +119,17 @@ describe("Fly.IA", () => {
         ok: true,
         json: async () => ({
           candidates: [{ content: { parts: [{ text: "Resposta do Fly.IA" }] } }],
+          usageMetadata: { promptTokenCount: 120, candidatesTokenCount: 45, totalTokenCount: 165 },
         }),
       })
     );
 
     await expect(
       askFlyIa(context as never, [{ role: "user", content: "Olá" }])
-    ).resolves.toBe("Resposta do Fly.IA");
+    ).resolves.toEqual({
+      text: "Resposta do Fly.IA",
+      usage: { inputTokens: 120, outputTokens: 45, totalTokens: 165 },
+    });
 
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: false }));
     await expect(

@@ -2268,6 +2268,18 @@ export default function Home() {
                   </Button>
                 </Link>
               )}
+              {authCheckQuery.data?.isAdmin && (
+                <Link href="/admin/gemini">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="bg-white bg-opacity-10 border-white text-white hover:bg-white hover:text-cyan-500 btn-glow-cyan transition-all"
+                    title="Consumo e orçamento do Gemini"
+                  >
+                    <Sparkles className="w-4 h-4 mr-1" /> IA
+                  </Button>
+                </Link>
+              )}
               {isAuthenticated ? (
                 <div className="flex items-center gap-2">
                   <span className="text-xs text-green-300 flex items-center gap-1">

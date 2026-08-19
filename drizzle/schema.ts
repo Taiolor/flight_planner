@@ -489,6 +489,75 @@ export type ApiUsageTracker = typeof apiUsageTracker.$inferSelect;
 export type InsertApiUsageTracker = typeof apiUsageTracker.$inferInsert;
 
 /**
+ * Configuração única do orçamento interno do Gemini. Os valores de preço são
+ * estimativas em centavos de real por 1 milhão de tokens e podem ser revisados
+ * pelo administrador quando a tabela oficial do provedor mudar.
+ */
+export const geminiBudgetSettings = mysqlTable("gemini_budget_settings", {
+  id: int("id").primaryKey(),
+  monthlyBudgetCents: int("monthlyBudgetCents").notNull().default(10000),
+  inputCostCentsPerMillion: int("inputCostCentsPerMillion").notNull().default(165),
+  outputCostCentsPerMillion: int("outputCostCentsPerMillion").notNull().default(1375),
+  warningThresholdPercent: int("warningThresholdPercent").notNull().default(70),
+  criticalThresholdPercent: int("criticalThresholdPercent").notNull().default(90),
+  limitThresholdPercent: int("limitThresholdPercent").notNull().default(100),
+  emailAlertsEnabled: int("emailAlertsEnabled").notNull().default(1),
+  pushAlertsEnabled: int("pushAlertsEnabled").notNull().default(1),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type GeminiBudgetSettings = typeof geminiBudgetSettings.$inferSelect;
+export type InsertGeminiBudgetSettings = typeof geminiBudgetSettings.$inferInsert;
+
+/** Eventos mínimos de resposta bem-sucedida do Gemini, sem prompts ou conteúdo. */
+export const geminiUsageEvents = mysqlTable("gemini_usage_events", {
+  id: int("id").autoincrement().primaryKey(),
+  yearMonth: varchar("yearMonth", { length: 7 }).notNull(),
+  model: varchar("model", { length: 80 }).notNull(),
+  inputTokens: int("inputTokens").notNull().default(0),
+  outputTokens: int("outputTokens").notNull().default(0),
+  totalTokens: int("totalTokens").notNull().default(0),
+  estimatedCostCents: int("estimatedCostCents").notNull().default(0),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, table => [
+  index("idx_gemini_usage_events_month_created").on(table.yearMonth, table.createdAt),
+]);
+
+export type GeminiUsageEvent = typeof geminiUsageEvents.$inferSelect;
+
+/** Agregado mensal para leitura do painel sem recalcular todos os eventos. */
+export const geminiMonthlyUsage = mysqlTable("gemini_monthly_usage", {
+  id: int("id").autoincrement().primaryKey(),
+  yearMonth: varchar("yearMonth", { length: 7 }).notNull().unique(),
+  requestsCount: int("requestsCount").notNull().default(0),
+  inputTokens: int("inputTokens").notNull().default(0),
+  outputTokens: int("outputTokens").notNull().default(0),
+  totalTokens: int("totalTokens").notNull().default(0),
+  estimatedCostCents: int("estimatedCostCents").notNull().default(0),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type GeminiMonthlyUsage = typeof geminiMonthlyUsage.$inferSelect;
+
+/** Registro idempotente de cada faixa já notificada no ciclo mensal. */
+export const geminiBudgetAlerts = mysqlTable("gemini_budget_alerts", {
+  id: int("id").autoincrement().primaryKey(),
+  yearMonth: varchar("yearMonth", { length: 7 }).notNull(),
+  thresholdPercent: int("thresholdPercent").notNull(),
+  estimatedCostCents: int("estimatedCostCents").notNull(),
+  emailSent: int("emailSent").notNull().default(0),
+  pushSent: int("pushSent").notNull().default(0),
+  status: varchar("status", { length: 20 }).notNull().default("processing"),
+  deliveryKey: varchar("deliveryKey", { length: 32 }).notNull(),
+  notifiedAt: timestamp("notifiedAt").defaultNow().notNull(),
+}, table => [
+  uniqueIndex("uq_gemini_budget_alerts_delivery_key").on(table.deliveryKey),
+  index("idx_gemini_budget_alerts_month").on(table.yearMonth),
+]);
+
+export type GeminiBudgetAlert = typeof geminiBudgetAlerts.$inferSelect;
+
+/**
  * Tabela para armazenar a lista de e-mails que receberão alertas de
  * inclusão, alteração e exclusão de bilhetes emitidos.
  */

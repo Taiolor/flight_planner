@@ -13,13 +13,22 @@ const state = vi.hoisted(() => {
     }
   }
 
+  class GeminiBudgetExceededError extends Error {
+    constructor() {
+      super("O limite interno de orçamento do Fly.IA foi alcançado.");
+    }
+  }
+
   return {
     validateAuthSession: vi.fn(),
     buildFlyIaContext: vi.fn(),
     askFlyIa: vi.fn(),
     consume: vi.fn(),
+    getGeminiBudgetSnapshot: vi.fn(),
+    recordGeminiUsage: vi.fn(),
     FlyIaRateLimitError,
     FlyIaProviderError,
+    GeminiBudgetExceededError,
   };
 });
 
@@ -33,6 +42,14 @@ vi.mock("./flyIa", () => ({
   flyIaRateLimiter: { consume: state.consume },
   FlyIaRateLimitError: state.FlyIaRateLimitError,
   FlyIaProviderError: state.FlyIaProviderError,
+}));
+
+vi.mock("./geminiBudget", () => ({
+  GeminiBudgetExceededError: state.GeminiBudgetExceededError,
+  getGeminiBudgetDashboard: vi.fn(),
+  getGeminiBudgetSnapshot: state.getGeminiBudgetSnapshot,
+  recordGeminiUsage: state.recordGeminiUsage,
+  updateGeminiBudgetSettings: vi.fn(),
 }));
 
 import { appRouter } from "./routers";
@@ -61,6 +78,8 @@ afterEach(() => {
   state.buildFlyIaContext.mockReset();
   state.askFlyIa.mockReset();
   state.consume.mockReset();
+  state.getGeminiBudgetSnapshot.mockReset();
+  state.recordGeminiUsage.mockReset();
 });
 
 describe("flyIa.chat", () => {
@@ -88,6 +107,7 @@ describe("flyIa.chat", () => {
   it("mapeia indisponibilidade do Gemini para SERVICE_UNAVAILABLE", async () => {
     state.buildFlyIaContext.mockResolvedValue({ exercicio: 2026 });
     state.askFlyIa.mockRejectedValue(new state.FlyIaProviderError());
+    state.getGeminiBudgetSnapshot.mockResolvedValue({ isAtLimit: false });
     const caller = createCaller(true);
 
     await expect(caller.flyIa.chat(input)).rejects.toMatchObject({
@@ -95,10 +115,26 @@ describe("flyIa.chat", () => {
     });
   });
 
+  it("bloqueia novas perguntas quando o teto interno já foi atingido", async () => {
+    state.getGeminiBudgetSnapshot.mockResolvedValue({ isAtLimit: true });
+    const caller = createCaller(true);
+
+    await expect(caller.flyIa.chat(input)).rejects.toMatchObject({
+      code: "PRECONDITION_FAILED",
+    });
+    expect(state.buildFlyIaContext).not.toHaveBeenCalled();
+    expect(state.askFlyIa).not.toHaveBeenCalled();
+  });
+
   it("devolve a resposta do Gemini para uma sessão autorizada", async () => {
     const context = { exercicio: 2026, voosEmitidos: [] };
     state.buildFlyIaContext.mockResolvedValue(context);
-    state.askFlyIa.mockResolvedValue("Seu próximo voo está previsto para amanhã.");
+    state.getGeminiBudgetSnapshot.mockResolvedValue({ isAtLimit: false });
+    state.askFlyIa.mockResolvedValue({
+      text: "Seu próximo voo está previsto para amanhã.",
+      usage: { inputTokens: 100, outputTokens: 30, totalTokens: 130 },
+    });
+    state.recordGeminiUsage.mockResolvedValue(undefined);
     const caller = createCaller(true);
 
     await expect(caller.flyIa.chat(input)).resolves.toEqual({
@@ -106,5 +142,10 @@ describe("flyIa.chat", () => {
     });
     expect(state.buildFlyIaContext).toHaveBeenCalledWith(2026);
     expect(state.askFlyIa).toHaveBeenCalledWith(context, input.messages);
+    expect(state.recordGeminiUsage).toHaveBeenCalledWith("gemini-2.5-flash", {
+      inputTokens: 100,
+      outputTokens: 30,
+      totalTokens: 130,
+    });
   });
 });

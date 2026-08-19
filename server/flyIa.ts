@@ -13,6 +13,15 @@ export type FlyIaMessage = {
   content: string;
 };
 
+export type FlyIaAnswer = {
+  text: string;
+  usage: {
+    inputTokens: number;
+    outputTokens: number;
+    totalTokens: number;
+  };
+};
+
 type FlyIaRateLimitState = {
   count: number;
   startedAt: number;
@@ -227,6 +236,11 @@ export async function askFlyIa(
 
   const data = (await response.json()) as {
     candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }>;
+    usageMetadata?: {
+      promptTokenCount?: number;
+      candidatesTokenCount?: number;
+      totalTokenCount?: number;
+    };
   };
   const text = data.candidates?.[0]?.content?.parts
     ?.map(part => part.text ?? "")
@@ -237,5 +251,12 @@ export async function askFlyIa(
     throw new FlyIaProviderError();
   }
 
-  return text;
+  const inputTokens = Math.max(0, Math.round(Number(data.usageMetadata?.promptTokenCount) || 0));
+  const outputTokens = Math.max(0, Math.round(Number(data.usageMetadata?.candidatesTokenCount) || 0));
+  const totalTokens = Math.max(
+    inputTokens + outputTokens,
+    Math.round(Number(data.usageMetadata?.totalTokenCount) || 0)
+  );
+
+  return { text, usage: { inputTokens, outputTokens, totalTokens } } satisfies FlyIaAnswer;
 }
