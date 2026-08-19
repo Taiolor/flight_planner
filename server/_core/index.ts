@@ -16,6 +16,7 @@ import { ENV } from "./env";
 import { createProxyMiddleware } from "http-proxy-middleware";
 import { createTrpcLoginRateLimiter } from "./trpcLoginRateLimit";
 import { getContentSecurityPolicy } from "./contentSecurityPolicy";
+import { registerStorageProxy } from "./storageProxy";
 import { getSessionFromCookie } from "../flightAuthMiddleware";
 import { addFlightMemoryMedia, upsertFlightMemory } from "../memoriesDb";
 import { storagePut } from "../storage";
@@ -109,6 +110,9 @@ async function startServer() {
 
   // Rate limiting mais restrito para rotas de autenticação OAuth
   app.use("/api/oauth", authLimiter);
+
+  // Servir ativos estáticos privados publicados para esta aplicação.
+  registerStorageProxy(app);
 
   // OAuth callback under /api/oauth/callback
   registerOAuthRoutes(app);

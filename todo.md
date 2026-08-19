@@ -783,6 +783,10 @@
 - [x] Permitir escolher o prazo de adiamento dos alertas da Central de atenção
 - [x] Adicionar comparativo de emissões e pendências entre anos no progresso anual
 
+## Experiência de Memórias
+
+- [x] Criar um fundo dinâmico em carrossel com fotos reais em alta resolução das cidades das viagens
+
 ## Preferências da Home
 
 - [x] Persistir os estados aberto e fechado do Resumo Anual e de Filtros e Controles

@@ -2,6 +2,7 @@ import { GlobalYearSelector } from "@/components/GlobalYearSelector";
 import { LoginModal } from "@/components/auth/LoginModal";
 import { Button } from "@/components/ui/button";
 import { useYear } from "@/contexts/YearContext";
+import { CityBackgroundCarousel } from "@/components/CityBackgroundCarousel";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import {
@@ -159,8 +160,9 @@ export default function Memories() {
   const trips = overviewQuery.data?.trips ?? [];
 
   return (
-    <main className="min-h-screen overflow-x-hidden bg-[#081225] text-slate-950">
-      <header className="relative overflow-hidden border-b border-white/10 bg-[#0e1b39] text-white">
+    <main className="relative min-h-screen overflow-x-hidden bg-[#081225] text-slate-950">
+      <CityBackgroundCarousel />
+      <header className="relative z-10 overflow-hidden border-b border-white/10 bg-[#0e1b39]/45 text-white backdrop-blur-[2px]">
         <div className="pointer-events-none absolute inset-0 opacity-70 [background-image:radial-gradient(circle_at_15%_20%,rgba(244,114,182,.32),transparent_20%),radial-gradient(circle_at_85%_15%,rgba(96,165,250,.30),transparent_18%),radial-gradient(circle_at_60%_110%,rgba(250,204,21,.20),transparent_24%)]" />
         <div className="relative mx-auto max-w-7xl px-4 pb-14 pt-6 sm:px-8">
           <div className="flex flex-wrap items-center justify-between gap-4">
@@ -197,7 +199,7 @@ export default function Memories() {
         </div>
       </header>
 
-      <section className="relative -mt-8 mx-auto max-w-7xl px-4 pb-16 sm:px-8">
+      <section className="relative z-10 -mt-8 mx-auto max-w-7xl px-4 pb-16 sm:px-8">
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <MetricCard icon={<Milestone />} label="Total da jornada" value={formatKm(summary?.totalKm ?? 0)} tone="indigo" />
           <MetricCard icon={<Flag />} label="Já percorridos" value={formatKm(summary?.completedKm ?? 0)} tone="emerald" />
@@ -209,9 +211,9 @@ export default function Memories() {
           <div className="flex flex-wrap items-end justify-between gap-4">
             <div>
               <p className="text-sm font-bold uppercase tracking-[.18em] text-fuchsia-600">Linha do tempo</p>
-              <h2 className="mt-2 text-3xl font-black tracking-tight text-slate-950">Memórias de {selectedYear}</h2>
+              <h2 className="mt-2 text-3xl font-black tracking-tight text-white drop-shadow-sm">Memórias de {selectedYear}</h2>
             </div>
-            <p className="text-sm text-slate-500">As mídias são privadas e vinculadas à passagem.</p>
+            <p className="rounded-full bg-slate-950/45 px-3 py-1.5 text-sm text-slate-100 shadow-sm backdrop-blur-sm">As mídias são privadas e vinculadas à passagem.</p>
           </div>
 
           {overviewQuery.isLoading ? (
