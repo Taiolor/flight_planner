@@ -273,14 +273,14 @@ function MemoryTripCard({
   onDeleteMedia: (mediaId: number) => void;
 }) {
   return (
-    <article className="group relative overflow-hidden rounded-[2rem] border border-slate-200 bg-white p-6 shadow-lg shadow-slate-900/5 transition duration-200 hover:-translate-y-1 hover:shadow-xl">
+    <article className="group relative overflow-hidden rounded-[2rem] border border-slate-200 bg-white p-5 sm:p-6 shadow-lg shadow-slate-900/5 transition duration-200 hover:-translate-y-1 hover:shadow-xl">
       <div className="absolute right-0 top-0 h-24 w-24 rounded-bl-[5rem] bg-fuchsia-50" />
-      <div className="relative flex items-start justify-between gap-4">
-        <div>
+      <div className="relative flex items-start justify-between gap-3 sm:gap-4">
+        <div className="min-w-0 flex-1">
           <p className="text-xs font-bold uppercase tracking-[.18em] text-slate-400">Semana {trip.weekNumber}</p>
-          <h3 className="mt-2 text-xl font-black">{trip.departureDate} → {trip.returnDate}</h3>
+          <h3 className="mt-2 break-words text-lg font-black sm:text-xl">{trip.departureDate} → {trip.returnDate}</h3>
         </div>
-        <span className="rounded-full bg-slate-950 px-3 py-1 text-sm font-black text-white">{formatKm(trip.totalKm)}</span>
+        <span className="shrink-0 rounded-full bg-slate-950 px-2.5 py-1 text-xs font-black text-white sm:px-3 sm:text-sm">{formatKm(trip.totalKm)}</span>
       </div>
 
       <div className="relative mt-6 space-y-3">
@@ -297,7 +297,7 @@ function MemoryTripCard({
 
       <div className="relative mt-6 border-t border-slate-100 pt-5">
         {trip.memory?.media.length ? (
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+          <div className="grid grid-cols-1 gap-3 min-[360px]:grid-cols-2 sm:grid-cols-3">
             {trip.memory.media.map(media => (
               <div key={media.id} className="group/media relative aspect-square overflow-hidden rounded-2xl bg-slate-100">
                 {media.mediaType === "image" ? (
@@ -308,7 +308,7 @@ function MemoryTripCard({
                 <button
                   type="button"
                   onClick={() => onDeleteMedia(media.id)}
-                  className="absolute right-2 top-2 rounded-full bg-slate-950/75 px-2 py-1 text-xs font-bold text-white opacity-0 transition group-hover/media:opacity-100 focus:opacity-100"
+                  className="absolute right-2 top-2 rounded-full bg-slate-950/75 px-2 py-1 text-xs font-bold text-white opacity-100 transition sm:opacity-0 sm:group-hover/media:opacity-100 focus:opacity-100"
                   aria-label={`Remover ${media.fileName}`}
                 >
                   Remover
@@ -319,7 +319,7 @@ function MemoryTripCard({
         ) : (
           <p className="text-sm text-slate-500">Reserve este espaço para fotos e vídeos do momento.</p>
         )}
-        <label className="mt-4 inline-flex cursor-pointer items-center gap-2 rounded-xl bg-slate-950 px-3 py-2 text-sm font-bold text-white transition hover:bg-fuchsia-700">
+        <label className="mt-4 inline-flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-slate-950 px-3 py-2 text-sm font-bold text-white transition hover:bg-fuchsia-700 sm:w-auto">
           {isUploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <ImagePlus className="h-4 w-4" />}
           {isUploading ? "Enviando mídia..." : "Adicionar foto ou vídeo"}
           <Video className="h-4 w-4" />
