@@ -62,3 +62,12 @@
 - [x] Cobrir a seleção temporal e a responsividade com testes
 - [x] Registrar a validação: testes focais, tipos e build aprovados; suíte completa confirmou 498 testes locais, com uma falha externa 503 na integração Gemini
 - [x] Adicionar regressão responsiva dos cards anterior, atual e próxima semana em mobile e desktop
+- [x] Inspecionar a estrutura mensal e o estado expansível de Janeiro a Dezembro
+- [x] Confirmar que os meses são renderizados pela lista agrupada e já possuem expansão individual reutilizável
+- [x] Criar o frame Gestão de Passagens para agrupar todos os meses
+- [x] Adicionar controle global para recolher ou expandir todos os meses
+- [x] Cobrir funcionalidade, acessibilidade e responsividade do novo agrupamento
+- [x] Adicionar teste de integração do botão global com meses visíveis e estado aria-expanded
+- [x] Adicionar regressão renderizada da composição responsiva do cabeçalho de Gestão de Passagens
+- [x] Confirmar os arquivos do frame e da regressão de interação antes da validação focal
+- [x] Corrigir a compatibilidade JSX do frame Gestão de Passagens no ambiente de testes

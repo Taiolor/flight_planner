@@ -120,12 +120,14 @@ import { AnnualPlanningProgress } from "@/components/AnnualPlanningProgress";
 import { HomeHeaderActions } from "@/components/HomeHeaderActions";
 import { HomeDashboardControls } from "@/components/HomeDashboardControls";
 import { WeeklyPlanning, type WeeklyPlanningItem } from "@/components/WeeklyPlanning";
+import { PassageManagementFrame } from "@/components/PassageManagementFrame";
 import {
   persistWeeklyPlanningFavorites,
   readWeeklyPlanningFavorites,
   toggleWeeklyPlanningFavorite,
 } from "@/lib/weeklyPlanningPreferences";
 import { getWeeklyPlanningWindow } from "@/lib/weeklyPlanningWindow";
+import { areAllMonthsExpanded, getNextExpandedMonths } from "@/lib/monthExpansion";
 import {
   getAnnualGoalProgress,
   readAnnualEmissionGoal,
@@ -1597,6 +1599,14 @@ export default function Home() {
       return next;
     });
   };
+  const monthKeys = useMemo(
+    () => weeksByMonth.map(month => month.monthKey),
+    [weeksByMonth]
+  );
+  const allMonthsExpanded = areAllMonthsExpanded(monthKeys, expandedMonths);
+  const toggleAllMonths = () => {
+    setExpandedMonths(previous => getNextExpandedMonths(monthKeys, previous));
+  };
 
   // Semana vigente: encontrar a semana cujo intervalo de datas contém a data atual
   const currentWeekNumber = useMemo(() => {
@@ -2860,8 +2870,13 @@ export default function Home() {
           </div>
         )}
 
-        {/* Lista de Semanas agrupada por Mês */}
-        {!isLoading && weeksData.length > 0 && (
+        {/* Gestão de Passagens: lista de semanas agrupada por mês */}
+        {!isLoading && (
+          <PassageManagementFrame
+            allMonthsExpanded={allMonthsExpanded}
+            onToggleAll={toggleAllMonths}
+          >
+        {weeksData.length > 0 && (
           <div className="mb-3 flex animate-in fade-in duration-500 motion-reduce:animate-none justify-end">
             <Button
               variant="outline"
@@ -2883,7 +2898,6 @@ export default function Home() {
             </Button>
           </div>
         )}
-        {!isLoading && (
           <div className="animate-in fade-in duration-500 motion-reduce:animate-none space-y-3">
             {sortedWeeks.length === 0 ? (
               <Card className="p-6 sm:p-12 text-center border-0 shadow-md bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
@@ -6150,6 +6164,7 @@ export default function Home() {
               )
             )}
           </div>
+          </PassageManagementFrame>
         )}
 
         {/* Resumo */}
