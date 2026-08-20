@@ -22,6 +22,13 @@ describe("Memories mobile responsiveness", () => {
     expect(source).toContain("relative isolate min-h-screen");
   });
 
+  it("animates the yearly route card without forcing motion for reduced-motion users", () => {
+    expect(source).toContain("slide-in-from-right-4");
+    expect(source).toContain("hover:-translate-y-1");
+    expect(source).toContain("motion-reduce:animate-none");
+    expect(source).toContain("motion-reduce:hover:transform-none");
+  });
+
   it("opens the Fly.IA summary on demand and triggers first generation automatically", () => {
     expect(source).toContain("generateSummaryMutation");
     expect(source).toContain("requestedAutomatically.current");

@@ -204,15 +204,15 @@ export default function Memories() {
                 Acompanhe sua jornada entre aeroportos e transforme cada passagem emitida em uma memória para revisitar.
               </p>
             </div>
-            <div className="relative mx-auto w-full max-w-md rounded-[2rem] border border-white/15 bg-slate-950/25 p-6 shadow-2xl backdrop-blur-sm">
+            <div className="group relative mx-auto w-full max-w-md animate-in fade-in slide-in-from-right-4 duration-700 motion-reduce:animate-none rounded-[2rem] border border-white/15 bg-slate-950/25 p-6 shadow-2xl backdrop-blur-sm transition-[transform,background-color,border-color,box-shadow] duration-300 ease-out motion-reduce:transition-none hover:-translate-y-1 hover:scale-[1.015] hover:border-white/35 hover:bg-slate-950/40 hover:shadow-[0_24px_60px_rgba(8,18,37,.45)] motion-reduce:hover:transform-none">
               <div className="flex items-center justify-between text-xs font-bold uppercase tracking-widest text-slate-300">
                 <span>Rota do ano</span>
                 <Plane className="h-5 w-5 rotate-45 text-fuchsia-300" />
               </div>
               <div className="mt-7 flex items-center gap-3">
-                <div className="grid h-10 w-10 place-items-center rounded-2xl bg-white text-[#0e1b39] font-black">GRU</div>
-                <div className="h-px flex-1 border-t-2 border-dashed border-fuchsia-300/80" />
-                <div className="grid h-10 w-10 place-items-center rounded-2xl bg-fuchsia-400 text-slate-950 font-black">NVT</div>
+                <div className="grid h-10 w-10 place-items-center rounded-2xl bg-white font-black text-[#0e1b39] transition-transform duration-300 group-hover:scale-105 motion-reduce:transition-none motion-reduce:group-hover:transform-none">GRU</div>
+                <div className="h-px flex-1 border-t-2 border-dashed border-fuchsia-300/80 transition-colors duration-300 group-hover:border-cyan-200 motion-reduce:transition-none" />
+                <div className="grid h-10 w-10 place-items-center rounded-2xl bg-fuchsia-400 font-black text-slate-950 transition-transform duration-300 group-hover:scale-105 motion-reduce:transition-none motion-reduce:group-hover:transform-none">NVT</div>
               </div>
               <p className="mt-5 text-sm text-slate-200">Quilometragem estimada pela distância geodésica entre aeroportos.</p>
             </div>
