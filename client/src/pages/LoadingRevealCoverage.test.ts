@@ -9,6 +9,7 @@ describe("cobertura de revelação após carregamento", () => {
   it("aplica fade aos principais conteúdos que sucedem loading", () => {
     const files = [
       "client/src/pages/FinancialDashboard.tsx",
+      "client/src/pages/CalendarView.tsx",
       "client/src/pages/FlightQuotes.tsx",
       "client/src/pages/GeminiBudgetDashboard.tsx",
       "client/src/pages/UsageTelemetryMap.tsx",
@@ -17,6 +18,15 @@ describe("cobertura de revelação após carregamento", () => {
     for (const file of files) {
       expect(readSource(file)).toContain("ContentReveal");
     }
+  });
+
+  it("substitui os spinners de planejamento pelos skeletons dedicados", () => {
+    const calendar = readSource("client/src/pages/CalendarView.tsx");
+    const quotes = readSource("client/src/pages/FlightQuotes.tsx");
+
+    expect(calendar).toContain("CalendarLoadingSkeleton");
+    expect(quotes).toContain("FlightQuotesLoadingSkeleton");
+    expect(quotes).not.toContain("Carregando semanas de {year}...");
   });
 
   it("mantém reveal acessível na Home e em Memórias", () => {

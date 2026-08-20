@@ -5,6 +5,7 @@ import { Link } from "wouter";
 import { extractTime, toIsoDate } from "@/lib/utils";
 import { trpc } from "@/lib/trpc";
 import { ContentReveal } from "@/components/ContentReveal";
+import { CalendarLoadingSkeleton } from "@/components/CalendarLoadingSkeleton";
 import {
   ArrowLeft,
   Plane,
@@ -431,6 +432,11 @@ export default function CalendarView() {
     return grids;
   }, [year]);
 
+  const isCalendarLoading =
+    weeksQuery.isLoading ||
+    authCheckQuery.isLoading ||
+    (authCheckQuery.data?.authenticated === true && additionalFlightsQuery.isLoading);
+
   return (
     <div className="min-h-screen bg-slate-50">
       {/* Popup flutuante */}
@@ -508,6 +514,10 @@ export default function CalendarView() {
         </div>
       </header>
 
+      {isCalendarLoading ? (
+        <CalendarLoadingSkeleton />
+      ) : (
+        <ContentReveal>
       {/* Filtro */}
       <div className="px-4 py-4 bg-white/80 backdrop-blur-sm border-b border-purple-200/30 sticky top-16 z-9">
         <div className="max-w-7xl mx-auto flex flex-wrap items-center gap-3">
@@ -798,34 +808,30 @@ export default function CalendarView() {
           <div className="text-sm text-slate-500 font-medium">
             Resumo {year}
           </div>
-          {weeksQuery.isLoading ? (
-            <span className="text-xs text-slate-400">Carregando...</span>
-          ) : (
-            <ContentReveal className="flex flex-wrap items-center gap-6">
-              <div className="flex items-center gap-2">
-                <span className="w-3 h-3 rounded-full bg-emerald-500 inline-block" />
-                <span className="text-sm font-semibold text-slate-700">
-                  {futureIssuedCount} voos futuros emitidos
-                </span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="w-3 h-3 rounded-full bg-slate-500 inline-block" />
-                <span className="text-sm font-semibold text-slate-700">
-                  {pastIssuedCount} voos passados
-                </span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Circle className="w-3 h-3 text-slate-300" />
-                <span className="text-sm font-semibold text-slate-700">
-                  {unissuedCount} semanas sem bilhete
-                </span>
-              </div>
-            </ContentReveal>
-          )}
+          <div className="flex flex-wrap items-center gap-6">
+            <div className="flex items-center gap-2">
+              <span className="w-3 h-3 rounded-full bg-emerald-500 inline-block" />
+              <span className="text-sm font-semibold text-slate-700">
+                {futureIssuedCount} voos futuros emitidos
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="w-3 h-3 rounded-full bg-slate-500 inline-block" />
+              <span className="text-sm font-semibold text-slate-700">
+                {pastIssuedCount} voos passados
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Circle className="w-3 h-3 text-slate-300" />
+              <span className="text-sm font-semibold text-slate-700">
+                {unissuedCount} semanas sem bilhete
+              </span>
+            </div>
+          </div>
         </div>
 
         {/* Alerta de semanas sem passagens emitidas */}
-        {!weeksQuery.isLoading && unissuedCount > 0 && (
+        {unissuedCount > 0 && (
           <div className="mt-6 bg-amber-50 border-l-4 border-amber-400 rounded-lg p-4">
             <div className="flex items-start gap-3">
               <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
@@ -895,6 +901,8 @@ export default function CalendarView() {
           </div>
         )}
       </main>
+        </ContentReveal>
+      )}
     </div>
   );
 }

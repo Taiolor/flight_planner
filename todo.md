@@ -798,6 +798,7 @@
 - [x] Aplicar skeletons responsivos e acessíveis a Memórias e Rota do ano
 - [x] Adicionar fade-in entre skeletons e conteúdo real de Memórias
 - [x] Padronizar fade-in entre skeletons e conteúdo real em todas as telas com carregamento
+- [x] Substituir os spinners de Calendário e Cotações por skeletons completos e responsivos
 
 ## Processo reutilizável
 

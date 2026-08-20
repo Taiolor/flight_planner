@@ -12,6 +12,7 @@ import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { ContentReveal } from "@/components/ContentReveal";
+import { FlightQuotesLoadingSkeleton } from "@/components/FlightQuotesLoadingSkeleton";
 import {
   Tooltip,
   TooltipContent,
@@ -1058,6 +1059,10 @@ export default function FlightQuotes() {
         <GlobalYearSelector compact className="ml-auto" />
       </header>
 
+      {isLoadingWeeks ? (
+        <FlightQuotesLoadingSkeleton year={year} />
+      ) : (
+        <ContentReveal>
       {/* Header da página */}
       <div className="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 px-4 py-4 mb-6">
         <div className="max-w-4xl mx-auto">
@@ -1145,12 +1150,7 @@ export default function FlightQuotes() {
         </div>
 
         <div className="space-y-3">
-          {isLoadingWeeks ? (
-            <div className="flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white py-12 text-sm text-slate-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400">
-              <Loader2 className="h-4 w-4 animate-spin" />
-              Carregando semanas de {year}...
-            </div>
-          ) : quoteWeeks.length === 0 ? (
+          {quoteWeeks.length === 0 ? (
             <div className="rounded-xl border border-dashed border-blue-300 bg-blue-50 p-8 text-center dark:border-blue-800 dark:bg-blue-950/30">
               <Plane className="mx-auto mb-3 h-8 w-8 text-blue-600 dark:text-blue-400" />
               <h2 className="text-base font-semibold text-slate-800 dark:text-slate-100">
@@ -1168,7 +1168,7 @@ export default function FlightQuotes() {
               </Link>
             </div>
           ) : (
-            <ContentReveal className="space-y-3">
+            <div className="space-y-3">
               {quoteWeeks.map(week => (
                 <WeekCard
                   key={week.semana}
@@ -1184,10 +1184,12 @@ export default function FlightQuotes() {
                   todayInt={todayInt}
                 />
               ))}
-            </ContentReveal>
+            </div>
           )}
         </div>
       </div>
+        </ContentReveal>
+      )}
       <LoginModal open={showLoginModal} onOpenChange={setShowLoginModal} />
       <LoginRequiredMessageBox
         open={showLoginRequiredMessage}
