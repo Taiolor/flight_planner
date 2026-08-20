@@ -804,6 +804,7 @@
 - [x] Permitir copiar o orçamento de um exercício para o próximo com ajuste percentual
 - [x] Destacar envelopes financeiros que atingem 90% ou ultrapassam o limite
 - [x] Adicionar filtros de período e tipo de evento na página Locais
+- [x] Animar suavemente a expansão e o recolhimento dos meses em Gestão de Passagens
 
 ## Processo reutilizável
 

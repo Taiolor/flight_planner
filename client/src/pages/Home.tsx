@@ -2984,7 +2984,7 @@ export default function Home() {
                       {/* Cabeçalho do Mês */}
                       <button
                         onClick={() => toggleMonth(monthKey)}
-                        className={`w-full flex items-center justify-between px-3 sm:px-6 py-3 sm:py-4 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-inset rounded-t-xl ${
+                        className={`w-full flex items-center justify-between px-3 sm:px-6 py-3 sm:py-4 transition-colors duration-200 motion-reduce:transition-none focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-inset rounded-t-xl ${
                           isOpen
                             ? "bg-blue-600 text-white dark:bg-blue-700"
                             : "bg-white hover:bg-slate-50 text-slate-900 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-100"
@@ -2999,7 +2999,7 @@ export default function Home() {
                       >
                         <div className="flex items-center gap-3">
                           <ChevronDown
-                            className={`w-5 h-5 transition-transform ${
+                            className={`w-5 h-5 transition-transform duration-300 ease-out motion-reduce:transition-none ${
                               isOpen
                                 ? "rotate-180 text-white"
                                 : "text-slate-500 dark:text-slate-400"
@@ -3100,11 +3100,18 @@ export default function Home() {
                       </button>
 
                       {/* Semanas do Mês */}
-                      {isOpen && (
-                        <div
-                          id={`month-content-${monthKey}`}
-                          className="divide-y divide-slate-100 dark:divide-slate-700"
-                        >
+                      <div
+                        id={`month-content-${monthKey}`}
+                        aria-hidden={!isOpen}
+                        inert={!isOpen}
+                        className={`grid overflow-hidden transition-[grid-template-rows,opacity] duration-300 ease-out motion-reduce:transition-none ${
+                          isOpen
+                            ? "grid-rows-[1fr] opacity-100"
+                            : "grid-rows-[0fr] opacity-0 pointer-events-none"
+                        }`}
+                      >
+                        <div className="min-h-0 overflow-hidden">
+                          <div className="divide-y divide-slate-100 dark:divide-slate-700">
                           {monthWeeks.map(week => {
                             const lowestPrice = getLowestPrice(week.weekNumber);
                             const isCheap =
@@ -6156,8 +6163,9 @@ export default function Home() {
                               </Card>
                             );
                           })}
+                          </div>
                         </div>
-                      )}
+                      </div>
                     </div>
                   );
                 }

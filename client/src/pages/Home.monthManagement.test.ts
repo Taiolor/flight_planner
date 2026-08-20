@@ -14,4 +14,12 @@ describe("frame Gestão de Passagens da Home", () => {
     expect(source).toContain("PassageManagementFrame");
     expect(source).toContain("mb-8");
   });
+
+  it("anima a expansão mensal sem expor conteúdo recolhido ao teclado", () => {
+    expect(source).toContain("transition-[grid-template-rows,opacity]");
+    expect(source).toContain("grid-rows-[1fr] opacity-100");
+    expect(source).toContain("grid-rows-[0fr] opacity-0 pointer-events-none");
+    expect(source).toContain("inert={!isOpen}");
+    expect(source).toContain("motion-reduce:transition-none");
+  });
 });
