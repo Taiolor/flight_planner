@@ -131,4 +131,4 @@
 - [x] Criar testes de ativação, redefinição, indicador, acessibilidade e responsividade.
 - [x] Validar no widget que "Limpar sugestões" remove todas as preferências e restaura a ordem padrão.
 - [x] Validar os controles do cabeçalho em celular e desktop, incluindo rótulos acessíveis, indicador e quebra de linha fluida.
-- [ ] Salvar um checkpoint dos controles ampliados de sugestões.
+- [x] Salvar um checkpoint dos controles ampliados de sugestões.
