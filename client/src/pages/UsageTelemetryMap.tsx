@@ -4,6 +4,7 @@ import { OpenStreetMap, type OpenStreetMapPoint } from "@/components/OpenStreetM
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { ContentReveal } from "@/components/ContentReveal";
 import { StandardPageHeader } from "@/components/StandardPageHeader";
 import { queryCachePolicies } from "@/lib/queryCache";
 import { trpc } from "@/lib/trpc";
@@ -174,12 +175,14 @@ function UsageTelemetryMapContent() {
               Não foi possível carregar os dados administrativos desta sessão.
             </div>
           ) : (
-            <OpenStreetMap
-              className="h-[360px] sm:h-[540px]"
-              initialCenter={{ lat: -14.235, lng: -51.9253 }}
-              initialZoom={4}
-              points={mapPoints}
-            />
+            <ContentReveal>
+              <OpenStreetMap
+                className="h-[360px] sm:h-[540px]"
+                initialCenter={{ lat: -14.235, lng: -51.9253 }}
+                initialZoom={4}
+                points={mapPoints}
+              />
+            </ContentReveal>
           )}
         </Card>
 

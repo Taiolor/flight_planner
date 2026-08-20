@@ -797,6 +797,7 @@
 - [x] Reposicionar e tornar recolhível o painel de seleção de fotos para não cobrir o acesso Fly.IA
 - [x] Aplicar skeletons responsivos e acessíveis a Memórias e Rota do ano
 - [x] Adicionar fade-in entre skeletons e conteúdo real de Memórias
+- [x] Padronizar fade-in entre skeletons e conteúdo real em todas as telas com carregamento
 
 ## Processo reutilizável
 

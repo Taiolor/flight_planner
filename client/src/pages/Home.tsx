@@ -2204,7 +2204,7 @@ export default function Home() {
         {weeksQuery.isLoading ? (
           <SkeletonChart />
         ) : (
-          <div className="mb-4 sm:mb-8">
+          <div className="mb-4 animate-in fade-in duration-500 motion-reduce:animate-none sm:mb-8">
             <button
               onClick={() => {
                 setExpandSummary(!expandSummary);
@@ -2365,7 +2365,7 @@ export default function Home() {
         {weeksQuery.isLoading ? (
           <SkeletonFilters />
         ) : (
-          <div className="mb-4 sm:mb-8">
+          <div className="mb-4 animate-in fade-in duration-500 motion-reduce:animate-none sm:mb-8">
             <button
               onClick={() => {
                 setExpandFilters(!expandFilters);
@@ -2727,7 +2727,7 @@ export default function Home() {
 
         {/* Lista de Semanas agrupada por Mês */}
         {!isLoading && weeksData.length > 0 && (
-          <div className="flex justify-end mb-3">
+          <div className="mb-3 flex animate-in fade-in duration-500 motion-reduce:animate-none justify-end">
             <Button
               variant="outline"
               size="sm"
@@ -2749,7 +2749,7 @@ export default function Home() {
           </div>
         )}
         {!isLoading && (
-          <div className="space-y-3">
+          <div className="animate-in fade-in duration-500 motion-reduce:animate-none space-y-3">
             {sortedWeeks.length === 0 ? (
               <Card className="p-6 sm:p-12 text-center border-0 shadow-md bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
                 <div className="flex w-full max-w-full flex-col items-center">

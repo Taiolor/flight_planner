@@ -4,6 +4,7 @@ import { LoginRequiredScreen } from "@/components/auth/LoginRequiredMessageBox";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { ContentReveal } from "@/components/ContentReveal";
 import { Input } from "@/components/ui/input";
 import { StandardPageHeader } from "@/components/StandardPageHeader";
 import { queryCachePolicies } from "@/lib/queryCache";
@@ -194,7 +195,7 @@ function GeminiBudgetContent() {
         ) : isLoading || !snapshot ? (
           <PageLoading compact />
         ) : (
-          <>
+          <ContentReveal>
             <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
               <MetricCard icon={<WalletCards />} label="Custo estimado" value={formatBrl(snapshot.estimatedCostCents)} note={`Ciclo ${snapshot.yearMonth}`} />
               <MetricCard icon={<Bot />} label="Orçamento interno" value={formatBrl(snapshot.monthlyBudgetCents)} note="Configurável pelo administrador" />
@@ -274,7 +275,7 @@ function GeminiBudgetContent() {
                 ))}
               </div>
             </Card>
-          </>
+          </ContentReveal>
         )}
       </div>
     </main>

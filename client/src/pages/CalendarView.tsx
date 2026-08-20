@@ -4,6 +4,7 @@ import { brazilMatchByDate } from "@/lib/worldCup2026";
 import { Link } from "wouter";
 import { extractTime, toIsoDate } from "@/lib/utils";
 import { trpc } from "@/lib/trpc";
+import { ContentReveal } from "@/components/ContentReveal";
 import {
   ArrowLeft,
   Plane,
@@ -800,7 +801,7 @@ export default function CalendarView() {
           {weeksQuery.isLoading ? (
             <span className="text-xs text-slate-400">Carregando...</span>
           ) : (
-            <>
+            <ContentReveal className="flex flex-wrap items-center gap-6">
               <div className="flex items-center gap-2">
                 <span className="w-3 h-3 rounded-full bg-emerald-500 inline-block" />
                 <span className="text-sm font-semibold text-slate-700">
@@ -819,7 +820,7 @@ export default function CalendarView() {
                   {unissuedCount} semanas sem bilhete
                 </span>
               </div>
-            </>
+            </ContentReveal>
           )}
         </div>
 

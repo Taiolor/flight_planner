@@ -9,6 +9,7 @@ import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { ContentReveal } from "@/components/ContentReveal";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -451,7 +452,7 @@ function AdminNotificationsContent() {
   const nextAlert = pendingAlerts[0];
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <ContentReveal className="min-h-screen bg-gray-50">
       <StandardPageHeader
         icon={Bell}
         title={`Admin · Notificações · ${selectedYear}`}
@@ -1162,7 +1163,7 @@ function AdminNotificationsContent() {
       </div>
 
       {/* Seção: Notificações por E-mail de Bilhetes */}
-      <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+        <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
         <div className="bg-gradient-to-r from-purple-50 to-pink-50 border-b border-gray-200 px-5 py-4">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-lg bg-purple-600 flex items-center justify-center flex-shrink-0">
@@ -1178,9 +1179,9 @@ function AdminNotificationsContent() {
             </div>
           </div>
         </div>
-        <TicketNotificationEmailsSection onRecordAction={registerTimelineAction} />
-      </div>
-    </div>
+          <TicketNotificationEmailsSection onRecordAction={registerTimelineAction} />
+        </div>
+    </ContentReveal>
   );
 }
 

@@ -7,6 +7,7 @@ import { LoginRequiredScreen } from "@/components/auth/LoginRequiredMessageBox";
 import { useYear } from "@/contexts/YearContext";
 import { GlobalYearSelector } from "@/components/GlobalYearSelector";
 import { FinancialDashboardLoadingSkeleton } from "@/components/FinancialDashboardLoadingSkeleton";
+import { ContentReveal } from "@/components/ContentReveal";
 import { queryCachePolicies } from "@/lib/queryCache";
 import type { FinancialChartProps } from "@/components/FinancialCharts";
 import {
@@ -416,7 +417,7 @@ function FinancialDashboardContent() {
         {isLoading ? (
           <FinancialDashboardLoadingSkeleton />
         ) : (
-          <>
+          <ContentReveal>
           {/* ── KPIs ── */}
           <div className="grid grid-cols-1 xs:grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
             <KpiCard
@@ -1601,7 +1602,7 @@ function FinancialDashboardContent() {
             </div>
           )}
         </div>
-          </>
+          </ContentReveal>
         )}
       </div>
     </div>

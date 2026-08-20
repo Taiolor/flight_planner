@@ -11,6 +11,7 @@ import { useState, useMemo } from "react";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { ContentReveal } from "@/components/ContentReveal";
 import {
   Tooltip,
   TooltipContent,
@@ -1167,21 +1168,23 @@ export default function FlightQuotes() {
               </Link>
             </div>
           ) : (
-            quoteWeeks.map(week => (
-              <WeekCard
-                key={week.semana}
-                week={week}
-                quotes={quotesByWeek[week.semana] ?? EMPTY_ARRAY}
-                apiUsage={apiUsage}
-                onFetchApi={handleFetchApi}
-                onSaveManual={handleSaveManual}
-                onDelete={handleDelete}
-                onLoginRequired={() => setShowLoginRequiredMessage(true)}
-                isLoadingApi={loadingWeek === week.semana}
-                canManageQuotes={canManageQuotes}
-                todayInt={todayInt}
-              />
-            ))
+            <ContentReveal className="space-y-3">
+              {quoteWeeks.map(week => (
+                <WeekCard
+                  key={week.semana}
+                  week={week}
+                  quotes={quotesByWeek[week.semana] ?? EMPTY_ARRAY}
+                  apiUsage={apiUsage}
+                  onFetchApi={handleFetchApi}
+                  onSaveManual={handleSaveManual}
+                  onDelete={handleDelete}
+                  onLoginRequired={() => setShowLoginRequiredMessage(true)}
+                  isLoadingApi={loadingWeek === week.semana}
+                  canManageQuotes={canManageQuotes}
+                  todayInt={todayInt}
+                />
+              ))}
+            </ContentReveal>
           )}
         </div>
       </div>
