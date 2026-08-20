@@ -50,6 +50,7 @@ import { useYear } from "@/contexts/YearContext";
 import { queryCachePolicies } from "@/lib/queryCache";
 import { GlobalYearSelector } from "@/components/GlobalYearSelector";
 import { LoginModal } from "@/components/auth/LoginModal";
+import { LoginRequiredMessageBox } from "@/components/auth/LoginRequiredMessageBox";
 import { canLoadProtectedQuoteData } from "@/lib/quoteAccess";
 import { toIsoDate } from "@/lib/utils";
 
@@ -383,6 +384,7 @@ const WeekCard = ({
   onFetchApi,
   onSaveManual,
   onDelete,
+  onLoginRequired,
   isLoadingApi,
   canManageQuotes,
   todayInt,
@@ -414,6 +416,7 @@ const WeekCard = ({
     }
   ) => void;
   onDelete: (id: number) => void;
+  onLoginRequired: () => void;
   isLoadingApi: boolean;
   canManageQuotes: boolean;
   todayInt: number;
@@ -445,6 +448,10 @@ const WeekCard = ({
   }, [quotes]);
 
   const handleSaveManual = () => {
+    if (!canManageQuotes) {
+      onLoginRequired();
+      return;
+    }
     const price = parseFloat(manualPrice.replace(",", "."));
     if (isNaN(price) || price <= 0) {
       toast.error("Informe um preço válido (ex: 350.90)");
@@ -646,10 +653,14 @@ const WeekCard = ({
                   >
                     <Button
                       size="sm"
-                      onClick={() => onFetchApi(week.semana, depIso, retIso)}
-                      disabled={!canManageQuotes || isLoadingApi || apiLimitReached}
+                      onClick={() =>
+                        canManageQuotes
+                          ? onFetchApi(week.semana, depIso, retIso)
+                          : onLoginRequired()
+                      }
+                      disabled={isLoadingApi || apiLimitReached}
                       className={`flex items-center gap-1.5 text-xs ${
-                        !canManageQuotes || apiLimitReached
+                        apiLimitReached
                           ? "bg-slate-300 dark:bg-slate-600 cursor-not-allowed"
                           : "bg-emerald-600 hover:bg-emerald-700 text-white"
                       }`}
@@ -717,14 +728,13 @@ const WeekCard = ({
                   placeholder="Ex: 350.90"
                   value={manualPrice}
                   onChange={e => setManualPrice(e.target.value)}
-                  disabled={!canManageQuotes}
                   className="h-8 text-sm dark:bg-slate-700 dark:border-slate-600 dark:text-slate-100 dark:placeholder-slate-400 max-w-[160px]"
                   onKeyDown={e => e.key === "Enter" && handleSaveManual()}
                 />
                 <Button
                   size="sm"
                   onClick={handleSaveManual}
-                  disabled={!canManageQuotes || !manualPrice}
+                  disabled={!manualPrice}
                   className="h-8 text-xs bg-blue-600 hover:bg-blue-700 text-white"
                 >
                   <Link2 className="w-3.5 h-3.5 mr-1" />
@@ -862,6 +872,7 @@ export default function FlightQuotes() {
   const _isDark = theme === "dark";
   const [loadingWeek, setLoadingWeek] = useState<number | null>(null);
   const [showLoginModal, setShowLoginModal] = useState(false);
+  const [showLoginRequiredMessage, setShowLoginRequiredMessage] = useState(false);
   const utils = trpc.useUtils();
   const authCheckQuery = trpc.flightAuth.check.useQuery(undefined, {
     retry: false,
@@ -1105,20 +1116,6 @@ export default function FlightQuotes() {
               )}
             </div>
           </div>
-          {!authCheckQuery.isLoading && !isAuthenticated && (
-            <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-800 dark:border-blue-800 dark:bg-blue-950/40 dark:text-blue-100">
-              <span>
-                Faça login para buscar preços pela API e salvar suas cotações.
-              </span>
-              <Button
-                size="sm"
-                onClick={() => setShowLoginModal(true)}
-                className="bg-blue-600 text-white hover:bg-blue-700"
-              >
-                Entrar
-              </Button>
-            </div>
-          )}
         </div>
       </div>
 
@@ -1179,6 +1176,7 @@ export default function FlightQuotes() {
                 onFetchApi={handleFetchApi}
                 onSaveManual={handleSaveManual}
                 onDelete={handleDelete}
+                onLoginRequired={() => setShowLoginRequiredMessage(true)}
                 isLoadingApi={loadingWeek === week.semana}
                 canManageQuotes={canManageQuotes}
                 todayInt={todayInt}
@@ -1188,6 +1186,14 @@ export default function FlightQuotes() {
         </div>
       </div>
       <LoginModal open={showLoginModal} onOpenChange={setShowLoginModal} />
+      <LoginRequiredMessageBox
+        open={showLoginRequiredMessage}
+        onOpenChange={setShowLoginRequiredMessage}
+        onLogin={() => setShowLoginModal(true)}
+        title="Cotações protegidas"
+        description="Entre para buscar preços pela API e salvar suas cotações no exercício selecionado."
+        loginLabel="Entrar para cotar"
+      />
     </div>
   );
 }

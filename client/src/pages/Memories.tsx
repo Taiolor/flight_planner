@@ -1,5 +1,6 @@
 import { GlobalYearSelector } from "@/components/GlobalYearSelector";
 import { LoginModal } from "@/components/auth/LoginModal";
+import { LoginRequiredScreen } from "@/components/auth/LoginRequiredMessageBox";
 import { Button } from "@/components/ui/button";
 import { useYear } from "@/contexts/YearContext";
 import { CityBackgroundCarousel } from "@/components/CityBackgroundCarousel";
@@ -156,27 +157,20 @@ export default function Memories() {
 
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen bg-slate-950 px-5 py-16 text-white grid place-items-center">
-        <section className="w-full max-w-lg rounded-[2rem] border border-white/15 bg-white/8 p-8 text-center shadow-2xl backdrop-blur">
-          <div className="mx-auto mb-5 grid h-16 w-16 place-items-center rounded-3xl bg-gradient-to-br from-fuchsia-500 to-indigo-500 shadow-lg shadow-fuchsia-500/30">
-            <Compass className="h-8 w-8" />
-          </div>
-          <h1 className="text-3xl font-black tracking-tight">Memórias de voo</h1>
-          <p className="mt-3 text-sm leading-6 text-slate-300">
-            Entre para acompanhar seus quilômetros, revisitar trajetos e guardar
-            os momentos de cada passagem.
-          </p>
-          <div className="mt-7 flex flex-col justify-center gap-3 sm:flex-row">
-            <Button onClick={() => setLoginOpen(true)} className="bg-white text-slate-950 hover:bg-slate-100">
-              Entrar para ver memórias
+      <div className="min-h-screen bg-slate-950 text-white">
+        <LoginRequiredScreen
+          icon={Compass}
+          title="Memórias de voo"
+          description="Entre para acompanhar seus quilômetros, revisitar trajetos e guardar os momentos de cada passagem."
+          loginLabel="Entrar para ver memórias"
+          onLogin={() => setLoginOpen(true)}
+        >
+          <Link href="/">
+            <Button variant="ghost" className="text-slate-600 hover:text-slate-950 dark:text-slate-300 dark:hover:text-white">
+              <ArrowLeft className="mr-2 h-4 w-4" /> Voltar ao planejamento
             </Button>
-            <Link href="/">
-              <Button variant="outline" className="border-white/25 text-white hover:bg-white/10">
-                Voltar ao planejamento
-              </Button>
-            </Link>
-          </div>
-        </section>
+          </Link>
+        </LoginRequiredScreen>
         <LoginModal open={loginOpen} onOpenChange={setLoginOpen} />
       </div>
     );

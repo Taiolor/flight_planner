@@ -792,6 +792,14 @@
 - [x] Adicionar fotos reais de Guarulhos, Piracicaba e Novo Hamburgo ao carrossel de Memórias
 - [x] Permitir escolher e persistir uma foto favorita no carrossel de Memórias
 
+## Processo reutilizável
+
+- [x] Criar habilidade reutilizável para evolução visual e UX segura de aplicações web
+
+## Acesso e autenticação
+
+- [x] Padronizar os avisos de usuário não autenticado em uma message box centralizada e acessível
+
 ## Preferências da Home
 
 - [x] Persistir os estados aberto e fechado do Resumo Anual e de Filtros e Controles

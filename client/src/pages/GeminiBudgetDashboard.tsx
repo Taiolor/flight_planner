@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { LoginModal } from "@/components/auth/LoginModal";
+import { LoginRequiredScreen } from "@/components/auth/LoginRequiredMessageBox";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -79,7 +80,22 @@ export default function GeminiBudgetDashboard() {
     return <PageLoading />;
   }
 
-  if (!isAuthenticated || !isAdmin) {
+  if (!isAuthenticated) {
+    return (
+      <main className="min-h-screen bg-slate-950 text-white">
+        <StandardPageHeader icon={Bot} title="Gemini · Orçamento" backHref={GEMINI_BUDGET_BACK_ROUTE} />
+        <LoginRequiredScreen
+          icon={ShieldCheck}
+          title="Painel administrativo protegido"
+          description="Entre com a sessão interna para consultar métricas de consumo e modificar os limites do Fly.IA."
+          onLogin={() => setShowLoginModal(true)}
+        />
+        <LoginModal open={showLoginModal} onOpenChange={setShowLoginModal} />
+      </main>
+    );
+  }
+
+  if (!isAdmin) {
     return (
       <main className="min-h-screen bg-slate-950 text-white">
         <StandardPageHeader icon={Bot} title="Gemini · Orçamento" backHref={GEMINI_BUDGET_BACK_ROUTE} />
@@ -90,12 +106,8 @@ export default function GeminiBudgetDashboard() {
             <p className="mt-2 text-sm text-slate-300">
               Somente administradores podem consultar métricas de consumo e modificar os limites internos do Fly.IA.
             </p>
-            {!isAuthenticated && (
-              <Button className="mt-5" onClick={() => setShowLoginModal(true)}>Entrar</Button>
-            )}
           </Card>
         </div>
-        {!isAuthenticated && <LoginModal open={showLoginModal} onOpenChange={setShowLoginModal} />}
       </main>
     );
   }

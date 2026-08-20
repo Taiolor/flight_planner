@@ -50,6 +50,7 @@ import {
 } from "@/components/admin-notifications/utils";
 import { AlertRow } from "@/components/admin-notifications/AlertRow";
 import { LoginModal } from "@/components/auth/LoginModal";
+import { LoginRequiredScreen } from "@/components/auth/LoginRequiredMessageBox";
 import { GlobalYearSelector } from "@/components/GlobalYearSelector";
 import { StandardPageHeader } from "@/components/StandardPageHeader";
 import { useYear } from "@/contexts/YearContext";
@@ -260,31 +261,18 @@ export default function AdminNotifications() {
     return (
       <div className="min-h-screen bg-gray-50">
         <StandardPageHeader icon={Bell} title="Admin · Notificações" />
-        <div className="flex min-h-[calc(100vh-60px)] items-center justify-center p-6">
-          <div className="text-center space-y-4 max-w-sm">
-            <AlertCircle className="w-12 h-12 text-amber-500 mx-auto" />
-            <div className="space-y-1">
-              <p className="text-gray-800 font-semibold">Acesso restrito</p>
-              <p className="text-gray-500 text-sm">
-                Entre com sua conta para acompanhar alertas e notificações de voo.
-              </p>
-            </div>
-            <div className="flex items-center justify-center gap-2">
-              <Button onClick={() => setShowLoginModal(true)} className="gap-2">
-                <Bell className="w-4 h-4" /> Entrar
-              </Button>
-              <Link href="/">
-                <Button
-                  variant="outline"
-                  aria-label="Voltar para a página inicial"
-                  className="gap-2"
-                >
-                  <ArrowLeft className="w-4 h-4" /> Voltar
-                </Button>
-              </Link>
-            </div>
-          </div>
-        </div>
+        <LoginRequiredScreen
+          icon={Bell}
+          title="Acesso a notificações"
+          description="Entre com sua conta para acompanhar alertas e notificações de voo."
+          onLogin={() => setShowLoginModal(true)}
+        >
+          <Link href="/">
+            <Button variant="ghost" aria-label="Voltar para a página inicial" className="gap-2">
+              <ArrowLeft className="w-4 h-4" /> Voltar
+            </Button>
+          </Link>
+        </LoginRequiredScreen>
         <LoginModal open={showLoginModal} onOpenChange={setShowLoginModal} />
       </div>
     );

@@ -8,6 +8,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { LoginRequiredMessageBox } from "@/components/auth/LoginRequiredMessageBox";
 import { useYear } from "@/contexts/YearContext";
 import { trpc } from "@/lib/trpc";
 import { Bot, MessageCircle, ShieldCheck, Trash2, X } from "lucide-react";
@@ -29,6 +30,7 @@ type FlyIaClientMessage = {
 export default function FlyIA() {
   const { selectedYear } = useYear();
   const [open, setOpen] = useState(false);
+  const [showLoginRequiredMessage, setShowLoginRequiredMessage] = useState(false);
   const [messages, setMessages] = useState<FlyIaClientMessage[]>([]);
   const internalSessionQuery = trpc.flightAuth.check.useQuery(undefined, {
     retry: false,
@@ -65,14 +67,15 @@ export default function FlyIA() {
 
   const openFlyIa = () => {
     if (!isInternalSessionAuthenticated) {
-      toast.info("Entre para consultar o seu planejamento com o Fly.IA.");
+      setShowLoginRequiredMessage(true);
       return;
     }
     setOpen(true);
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <>
+      <Dialog open={open} onOpenChange={setOpen}>
       <Button
         type="button"
         onClick={openFlyIa}
@@ -144,6 +147,15 @@ export default function FlyIA() {
           Respostas baseadas nos dados do exercício selecionado.
         </div>
       </DialogContent>}
-    </Dialog>
+      </Dialog>
+      <LoginRequiredMessageBox
+        open={showLoginRequiredMessage}
+        onOpenChange={setShowLoginRequiredMessage}
+        onLogin={() => window.dispatchEvent(new Event("flight:require-login"))}
+        title="Planejamento protegido"
+        description="Entre para consultar o seu planejamento com o Fly.IA. Suas perguntas usam apenas os dados do exercício selecionado."
+        loginLabel="Entrar para usar o Fly.IA"
+      />
+    </>
   );
 }

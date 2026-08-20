@@ -1,4 +1,5 @@
 import { LoginModal } from "@/components/auth/LoginModal";
+import { LoginRequiredScreen } from "@/components/auth/LoginRequiredMessageBox";
 import { OpenStreetMap, type OpenStreetMapPoint } from "@/components/OpenStreetMap";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -59,18 +60,12 @@ export default function UsageTelemetryMap() {
     return (
       <div className="min-h-screen bg-slate-950 text-white">
         <StandardPageHeader icon={MapPinned} title="Locais · Telemetria" />
-        <div className="flex min-h-[calc(100vh-60px)] items-center px-4 py-16">
-          <Card className="mx-auto max-w-lg border-slate-700 bg-slate-900 p-8 text-center">
-            <ShieldCheck className="mx-auto h-10 w-10 text-blue-400" />
-            <h2 className="mt-4 text-xl font-bold">Telemetria protegida</h2>
-            <p className="mt-2 text-sm text-slate-300">
-              Entre com a sessão interna para consultar o mapa administrativo de eventos consentidos.
-            </p>
-            <Button className="mt-5" onClick={() => setShowLoginModal(true)}>
-              Entrar
-            </Button>
-          </Card>
-        </div>
+        <LoginRequiredScreen
+          icon={ShieldCheck}
+          title="Telemetria protegida"
+          description="Entre com a sessão interna para consultar o mapa administrativo de eventos consentidos."
+          onLogin={() => setShowLoginModal(true)}
+        />
         <LoginModal open={showLoginModal} onOpenChange={setShowLoginModal} />
       </div>
     );

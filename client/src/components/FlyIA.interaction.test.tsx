@@ -67,10 +67,10 @@ describe("Fly.IA interactions", () => {
     expect(trigger).toBeTruthy();
     act(() => trigger?.dispatchEvent(new MouseEvent("click", { bubbles: true })));
 
-    expect(state.toastInfo).toHaveBeenCalledWith(
+    expect(document.querySelector('[role="dialog"]')).toBeTruthy();
+    expect(document.body.textContent).toContain(
       "Entre para consultar o seu planejamento com o Fly.IA."
     );
-    expect(document.querySelector('[role="dialog"]')).toBeNull();
   });
 
   it("abre a janela de conversa para uma sessão autenticada", () => {
