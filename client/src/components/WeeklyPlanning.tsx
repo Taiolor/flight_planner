@@ -2,6 +2,7 @@ import { Badge } from "@/components/ui/badge";
 import { CalendarDays, ChevronRight, Plane, Star, Ticket } from "lucide-react";
 import React from "react";
 import { Link } from "wouter";
+import type { WeeklyWindowPosition } from "@/lib/weeklyPlanningWindow";
 
 export type WeeklyPlanningItem = {
   weekNumber: number;
@@ -11,6 +12,7 @@ export type WeeklyPlanningItem = {
   airline: string | null;
   lowestPrice: number | null;
   favorite: boolean;
+  temporalPosition: WeeklyWindowPosition;
   status: "issued" | "watch" | "pending";
 };
 
@@ -26,6 +28,12 @@ const statusCopy = {
   watch: { label: "Acompanhar preço", className: "border-amber-200 bg-amber-50 text-amber-700" },
   pending: { label: "Pendente", className: "border-slate-200 bg-slate-100 text-slate-600" },
 } as const;
+
+const temporalCopy: Record<WeeklyWindowPosition, string> = {
+  previous: "Semana anterior",
+  current: "Semana atual",
+  next: "Próxima semana",
+};
 
 function formatDateRange(departureDate: string, returnDate: string) {
   if (!departureDate && !returnDate) return "Datas a definir";
@@ -111,7 +119,8 @@ export function WeeklyPlanning({ year, items, hideValues, onToggleFavorite = () 
                 <Link href={`/calendar?week=${item.weekNumber}`} aria-label={`Abrir semana ${item.weekNumber} no Calendário`} className="block rounded-xl focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500">
                   <div className="flex items-start justify-between gap-3 pr-10">
                     <div>
-                      <span className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500 dark:text-slate-400">Semana {item.weekNumber}</span>
+                      <span className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500 dark:text-slate-400">{temporalCopy[item.temporalPosition]}</span>
+                      <span className="mt-1 block text-xs font-medium text-blue-600 dark:text-blue-300">Semana {item.weekNumber}</span>
                       <p className="mt-2 flex items-center gap-2 text-lg font-bold text-slate-900 dark:text-white"><Plane className="size-4 text-blue-600 dark:text-blue-300" aria-hidden="true" />{item.route}</p>
                     </div>
                     <Badge variant="outline" className={status.className}>{status.label}</Badge>

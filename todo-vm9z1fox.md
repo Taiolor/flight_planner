@@ -55,3 +55,10 @@
 - [x] Adicionar mini prévia mensal contextual aos cards semanais
 - [x] Permitir favoritar semanas com preferência persistente
 - [x] Cobrir persistência, navegação, acessibilidade e responsividade das novas interações
+- [x] Inspecionar o cálculo temporal atual dos cards do Planejamento por semanas
+- [x] Mostrar sempre semana anterior, atual e próxima semana no resumo semanal
+- [x] Criar uma janela operacional fixa com os rótulos anterior, atual e próxima
+- [x] Confirmar a integração do helper temporal e os rótulos anterior, atual e próxima nos cards semanais
+- [x] Cobrir a seleção temporal e a responsividade com testes
+- [x] Registrar a validação: testes focais, tipos e build aprovados; suíte completa confirmou 498 testes locais, com uma falha externa 503 na integração Gemini
+- [x] Adicionar regressão responsiva dos cards anterior, atual e próxima semana em mobile e desktop

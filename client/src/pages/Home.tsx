@@ -125,6 +125,7 @@ import {
   readWeeklyPlanningFavorites,
   toggleWeeklyPlanningFavorite,
 } from "@/lib/weeklyPlanningPreferences";
+import { getWeeklyPlanningWindow } from "@/lib/weeklyPlanningWindow";
 import {
   getAnnualGoalProgress,
   readAnnualEmissionGoal,
@@ -1108,22 +1109,7 @@ export default function Home() {
   );
 
   const weeklyPlanningItems: WeeklyPlanningItem[] = useMemo(() => {
-    return weeksData
-      .filter(week =>
-        !week.isDeleted &&
-        (week.isTicketIssued || week.isSelected || lowestPriceMap[week.weekNumber] !== undefined)
-      )
-      .sort((first, second) => {
-        const firstFavorite = favoriteWeeks.includes(first.weekNumber);
-        const secondFavorite = favoriteWeeks.includes(second.weekNumber);
-        return firstFavorite === secondFavorite
-          ? first.weekNumber - second.weekNumber
-          : firstFavorite
-            ? -1
-            : 1;
-      })
-      .slice(0, 3)
-      .map(week => {
+    return getWeeklyPlanningWindow(weeksData, selectedYear).map(({ item: week, position }) => {
         const lowestPrice = lowestPriceMap[week.weekNumber] ?? null;
         const departureAirport = week.departureAirport?.trim();
         const returnAirport = week.returnAirport?.trim();
@@ -1138,6 +1124,7 @@ export default function Home() {
           airline: week.departureAirline || week.returnAirline || null,
           lowestPrice,
           favorite: favoriteWeeks.includes(week.weekNumber),
+          temporalPosition: position,
           status: week.isTicketIssued
             ? "issued"
             : lowestPrice !== null
@@ -1145,7 +1132,7 @@ export default function Home() {
               : "pending",
         };
       });
-  }, [favoriteWeeks, lowestPriceMap, weeksData]);
+  }, [favoriteWeeks, lowestPriceMap, selectedYear, weeksData]);
 
   const handleToggleWeeklyFavorite = (weekNumber: number) => {
     setFavoriteWeeks(current => {
