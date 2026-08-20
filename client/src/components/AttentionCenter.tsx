@@ -140,6 +140,9 @@ export function AttentionCenter({
                           !hideValues &&
                           ` Menor valor: R$ ${item.price.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}.`}
                       </p>
+                      <p className="mt-1 text-[11px] font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-500">
+                        Urgência {Math.round(item.urgencyScore)}/100
+                      </p>
                     </div>
                   </div>
                   <div className="flex w-full shrink-0 gap-2 sm:w-auto">

@@ -7,8 +7,10 @@ vi.mock("./db", () => ({
 
 vi.mock("./financialDb", () => ({
   getFinancialDataByYear: vi.fn(),
+  getFinancialMonthlyBudgets: vi.fn(),
   getFinancialSummaryByMonth: vi.fn(),
   getFinancialYearSummary: vi.fn(),
+  upsertFinancialMonthlyBudget: vi.fn(),
 }));
 
 import { financialRouter } from "./routers/financial";
@@ -49,8 +51,12 @@ describe("financial router by planning year", () => {
       .mockResolvedValue([]);
     (financialDb.getFinancialSummaryByMonth as ReturnType<typeof vi.fn>)
       .mockResolvedValue([]);
+    (financialDb.getFinancialMonthlyBudgets as ReturnType<typeof vi.fn>)
+      .mockResolvedValue([]);
     (financialDb.getFinancialYearSummary as ReturnType<typeof vi.fn>)
       .mockResolvedValue(EMPTY_YEAR_SUMMARY);
+    (financialDb.upsertFinancialMonthlyBudget as ReturnType<typeof vi.fn>)
+      .mockResolvedValue({ month: 1, budgetCents: 150_000 });
   });
 
   it("encaminha o ano selecionado para dados semanais, mensais e anuais", async () => {
@@ -64,6 +70,32 @@ describe("financial router by planning year", () => {
     expect(financialDb.getFinancialDataByYear).toHaveBeenCalledWith(2027);
     expect(financialDb.getFinancialSummaryByMonth).toHaveBeenCalledWith(2028);
     expect(financialDb.getFinancialYearSummary).toHaveBeenCalledWith(2029);
+  });
+
+  it("isola o orçamento mensal pelo ano e valida mês e centavos", async () => {
+    const financialDb = await import("./financialDb");
+    const caller = financialRouter.createCaller(createAuthenticatedContext());
+
+    await caller.getMonthlyBudgets({ year: 2028 });
+    await caller.upsertMonthlyBudget({
+      year: 2028,
+      month: 3,
+      budgetCents: 275_050,
+    });
+
+    expect(financialDb.getFinancialMonthlyBudgets).toHaveBeenCalledWith(2028);
+    expect(financialDb.upsertFinancialMonthlyBudget).toHaveBeenCalledWith(
+      2028,
+      3,
+      275_050
+    );
+    await expect(
+      (caller.upsertMonthlyBudget as any)({
+        year: 2028,
+        month: 13,
+        budgetCents: 100,
+      })
+    ).rejects.toThrow();
   });
 
   it("calcula a projeção somente a partir do exercício base selecionado", async () => {

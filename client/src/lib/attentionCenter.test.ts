@@ -66,6 +66,33 @@ describe("Central de atenção inteligente", () => {
     );
   });
 
+  it("combina cancelamento, proximidade, ausência de bilhete e preço no escore de urgência", () => {
+    const items = buildAttentionItems(
+      [
+        { weekNumber: 34, departureDate: "20/08/2026", isTicketIssued: 0 },
+        { weekNumber: 35, departureDate: "10/09/2026", isTicketIssued: 0, departureCancelled: 1 },
+        { weekNumber: 36, departureDate: "21/08/2026", isTicketIssued: 0 },
+        { weekNumber: 37, departureDate: "30/09/2026", isTicketIssued: 0 },
+      ],
+      {
+        34: { azul: "500" },
+        35: { gol: "500" },
+        36: { latam: "700" },
+        37: { onhappy: "1100" },
+      },
+      now
+    );
+
+    expect(items[0]).toMatchObject({ kind: "cancellation", weekNumber: 35 });
+    expect(
+      items.find(item => item.weekNumber === 34 && item.kind === "deadline")
+        ?.urgencyScore
+    ).toBeGreaterThan(
+      items.find(item => item.weekNumber === 37 && item.kind === "price")
+        ?.urgencyScore ?? 0
+    );
+  });
+
   it("ignora semanas removidas e voos que já ficaram no passado", () => {
     const items = buildAttentionItems(
       [

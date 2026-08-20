@@ -799,6 +799,8 @@
 - [x] Adicionar fade-in entre skeletons e conteúdo real de Memórias
 - [x] Padronizar fade-in entre skeletons e conteúdo real em todas as telas com carregamento
 - [x] Substituir os spinners de Calendário e Cotações por skeletons completos e responsivos
+- [x] Ordenar a Central de atenção por escore combinado de urgência
+- [x] Adicionar visão mensal de orçamento, realizado e projetado no Financeiro
 
 ## Processo reutilizável
 

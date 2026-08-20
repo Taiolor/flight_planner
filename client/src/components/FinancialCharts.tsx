@@ -42,6 +42,13 @@ export type ProjectionFinancialChartPoint = {
   historico: number;
 };
 
+export type BudgetFinancialChartPoint = {
+  month: string;
+  budget: number;
+  realizado: number;
+  projetado: number;
+};
+
 export type FinancialChartProps =
   | {
       kind: "monthlyCash" | "cashTrend" | "monthlyMiles";
@@ -60,6 +67,12 @@ export type FinancialChartProps =
       data: ProjectionFinancialChartPoint[];
       hideValues: boolean;
       selectedYear: number;
+    }
+  | {
+      kind: "monthlyBudget";
+      data: BudgetFinancialChartPoint[];
+      hideValues: boolean;
+      selectedYear?: never;
     };
 
 function formatBRL(value: number, hidden: boolean) {
@@ -152,6 +165,42 @@ export default function FinancialChart(props: FinancialChartProps) {
           <Bar dataKey="cashBRL" radius={[0, 6, 6, 0]} name="Total (R$)">
             {data.map(entry => <Cell key={entry.airline} fill={AIRLINE_COLORS[entry.airline] ?? "#94A3B8"} />)}
           </Bar>
+        </BarChart>
+      </ResponsiveContainer>
+    );
+  }
+
+  if (kind === "monthlyBudget") {
+    return (
+      <ResponsiveContainer width="100%" height={230}>
+        <BarChart data={data} margin={{ top: 5, right: 5, left: -15, bottom: 5 }}>
+          <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+          <XAxis dataKey="month" interval="preserveStartEnd" minTickGap={10} tick={{ fontSize: 10 }} />
+          <YAxis width={42} tickFormatter={(value: number) => (hideValues ? "R$ ••" : `R$${(value / 1000).toFixed(0)}k`)} tick={{ fontSize: 10 }} />
+          <Tooltip
+            formatter={(value: number, name: string) => [
+              formatBRL(value, hideValues),
+              name === "budget"
+                ? "Orçamento"
+                : name === "realizado"
+                  ? "Realizado"
+                  : "Projetado",
+            ]}
+            contentStyle={tooltipStyle}
+          />
+          <Legend
+            wrapperStyle={{ fontSize: 11 }}
+            formatter={value =>
+              value === "budget"
+                ? "Orçamento"
+                : value === "realizado"
+                  ? "Realizado"
+                  : "Projetado"
+            }
+          />
+          <Bar dataKey="budget" fill="#94A3B8" radius={[4, 4, 0, 0]} name="budget" />
+          <Bar dataKey="realizado" fill="#22C55E" radius={[4, 4, 0, 0]} name="realizado" />
+          <Bar dataKey="projetado" fill="#8B5CF6" radius={[4, 4, 0, 0]} name="projetado" />
         </BarChart>
       </ResponsiveContainer>
     );

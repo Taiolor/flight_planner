@@ -17,6 +17,7 @@ export type AttentionItem = {
   actionLabel: string;
   price?: number;
   variationPercent?: number;
+  urgencyScore: number;
 };
 
 export type DismissedAttentionItems = Record<string, string>;
@@ -123,6 +124,27 @@ function lowestPrice(prices: Record<string, string> | undefined): number | null 
 
 const priority = { critical: 0, urgent: 1, warning: 2 } as const;
 
+function proximityScore(days: number | null): number {
+  if (days === null || days < 0) return 0;
+  if (days <= 2) return 30;
+  if (days <= 7) return 22;
+  if (days <= 15) return 14;
+  if (days <= 30) return 8;
+  return 3;
+}
+
+function cancellationScore(days: number | null): number {
+  return 55 + Math.min(25, proximityScore(days));
+}
+
+function deadlineScore(days: number): number {
+  return 25 + proximityScore(days);
+}
+
+function priceScore(days: number | null, variationPercent: number): number {
+  return 5 + Math.min(20, Math.max(0, variationPercent - 20) / 4) + proximityScore(days);
+}
+
 export function buildAttentionItems(
   weeks: AttentionWeek[],
   priceMap: Record<number, Record<string, string>>,
@@ -149,6 +171,7 @@ export function buildAttentionItems(
         title: `Ida cancelada · Semana ${week.weekNumber}`,
         description: `Revise ou remarque o trecho de ida programado para ${week.departureDate}.`,
         actionLabel: "Revisar semana",
+        urgencyScore: cancellationScore(departureInDays),
       });
     }
 
@@ -161,6 +184,7 @@ export function buildAttentionItems(
         title: `Volta cancelada · Semana ${week.weekNumber}`,
         description: `Revise ou remarque o trecho de volta desta viagem.`,
         actionLabel: "Revisar semana",
+        urgencyScore: cancellationScore(departureInDays),
       });
     }
 
@@ -184,6 +208,7 @@ export function buildAttentionItems(
         title: `Compra pendente · Semana ${week.weekNumber}`,
         description: `A ida acontece ${dayLabel}, em ${week.departureDate}.`,
         actionLabel: "Adicionar passagem",
+        urgencyScore: deadlineScore(departureInDays),
       });
     }
 
@@ -207,11 +232,14 @@ export function buildAttentionItems(
         actionLabel: "Ver cotações",
         price,
         variationPercent,
+        urgencyScore: priceScore(departureInDays, variationPercent),
       });
     }
   }
 
   return items.sort((a, b) => {
+    const scoreDiff = b.urgencyScore - a.urgencyScore;
+    if (scoreDiff !== 0) return scoreDiff;
     const priorityDiff = priority[a.severity] - priority[b.severity];
     if (priorityDiff !== 0) return priorityDiff;
     return a.weekNumber - b.weekNumber;

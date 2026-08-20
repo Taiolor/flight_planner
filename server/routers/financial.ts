@@ -9,7 +9,9 @@ import { z } from "zod";
 import {
   getFinancialDataByYear,
   getFinancialSummaryByMonth,
+  getFinancialMonthlyBudgets,
   getFinancialYearSummary,
+  upsertFinancialMonthlyBudget,
   type WeekFinancialData,
   type MonthSummary,
   type YearSummary,
@@ -66,6 +68,28 @@ export const financialRouter = router({
     .input(z.object({ year: planningYearSchema }))
     .query(async ({ input }) => {
       return getFinancialYearSummary(input.year);
+    }),
+
+  getMonthlyBudgets: flightProtectedProcedure
+    .input(z.object({ year: planningYearSchema }))
+    .query(async ({ input }) => {
+      return getFinancialMonthlyBudgets(input.year);
+    }),
+
+  upsertMonthlyBudget: flightProtectedProcedure
+    .input(
+      z.object({
+        year: planningYearSchema,
+        month: z.number().int().min(1).max(12),
+        budgetCents: z.number().int().min(0).max(100_000_000),
+      })
+    )
+    .mutation(async ({ input }) => {
+      return upsertFinancialMonthlyBudget(
+        input.year,
+        input.month,
+        input.budgetCents
+      );
     }),
 
   /**

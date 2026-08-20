@@ -5,7 +5,12 @@
  */
 import { and, eq, isNotNull } from "drizzle-orm";
 import { getDb } from "./db";
-import { additionalFlights, flightWeeks, flightPrices } from "../drizzle/schema";
+import {
+  additionalFlights,
+  financialMonthlyBudgets,
+  flightWeeks,
+  flightPrices,
+} from "../drizzle/schema";
 
 // ─── Tipos ────────────────────────────────────────────────────────────────────
 
@@ -60,6 +65,11 @@ export interface YearSummary {
   avgCashBRL: number;
   byAirline: Record<string, { cashBRL: number; miles: number; count: number }>;
   byMonth: MonthSummary[];
+}
+
+export interface FinancialMonthlyBudgetData {
+  month: number;
+  budgetCents: number;
 }
 
 // ─── Helpers internos ─────────────────────────────────────────────────────────
@@ -349,4 +359,39 @@ export async function getFinancialYearSummary(
     byAirline,
     byMonth,
   };
+}
+
+export async function getFinancialMonthlyBudgets(
+  year: number
+): Promise<FinancialMonthlyBudgetData[]> {
+  const db = await getDb();
+  if (!db) return [];
+
+  const budgets = await db
+    .select({
+      month: financialMonthlyBudgets.month,
+      budgetCents: financialMonthlyBudgets.budgetCents,
+    })
+    .from(financialMonthlyBudgets)
+    .where(eq(financialMonthlyBudgets.year, year));
+
+  return budgets.sort((a, b) => a.month - b.month);
+}
+
+export async function upsertFinancialMonthlyBudget(
+  year: number,
+  month: number,
+  budgetCents: number
+): Promise<FinancialMonthlyBudgetData> {
+  const db = await getDb();
+  if (!db) throw new Error("Banco de dados indisponível.");
+
+  await db
+    .insert(financialMonthlyBudgets)
+    .values({ year, month, budgetCents })
+    .onDuplicateKeyUpdate({
+      set: { budgetCents, updatedAt: new Date() },
+    });
+
+  return { month, budgetCents };
 }

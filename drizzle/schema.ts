@@ -533,6 +533,33 @@ export type FlightQuote = typeof flightQuotes.$inferSelect;
 export type InsertFlightQuote = typeof flightQuotes.$inferInsert;
 
 /**
+ * Envelope mensal de gastos do planejamento. Cada valor pertence exclusivamente
+ * a um exercício e é armazenado em centavos para preservar precisão monetária.
+ */
+export const financialMonthlyBudgets = mysqlTable(
+  "financial_monthly_budgets",
+  {
+    id: int("id").autoincrement().primaryKey(),
+    year: int("year").notNull(),
+    month: int("month").notNull(),
+    budgetCents: int("budgetCents").notNull().default(0),
+    createdAt: timestamp("createdAt").defaultNow().notNull(),
+    updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+  },
+  table => [
+    uniqueIndex("uq_financial_monthly_budgets_year_month").on(
+      table.year,
+      table.month
+    ),
+    index("idx_financial_monthly_budgets_year").on(table.year),
+  ]
+);
+
+export type FinancialMonthlyBudget = typeof financialMonthlyBudgets.$inferSelect;
+export type InsertFinancialMonthlyBudget =
+  typeof financialMonthlyBudgets.$inferInsert;
+
+/**
  * Tabela para rastrear uso mensal da API Sky Scrapper
  */
 export const apiUsageTracker = mysqlTable("api_usage_tracker", {

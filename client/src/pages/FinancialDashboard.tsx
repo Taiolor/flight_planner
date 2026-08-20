@@ -9,6 +9,10 @@ import { GlobalYearSelector } from "@/components/GlobalYearSelector";
 import { FinancialDashboardLoadingSkeleton } from "@/components/FinancialDashboardLoadingSkeleton";
 import { ContentReveal } from "@/components/ContentReveal";
 import { queryCachePolicies } from "@/lib/queryCache";
+import {
+  buildMonthlyBudgetEnvelopes,
+  getBudgetInsight,
+} from "@/lib/financialBudget";
 import type { FinancialChartProps } from "@/components/FinancialCharts";
 import {
   TrendingUp,
@@ -24,6 +28,7 @@ import {
   ChevronUp,
   AlertCircle,
   Info,
+  WalletCards,
 } from "lucide-react";
 
 const FinancialChart = lazy(() => import("@/components/FinancialCharts"));
@@ -111,6 +116,10 @@ function formatMiles(value: number): string {
 function formatPct(value: number): string {
   const sign = value >= 0 ? "+" : "";
   return `${sign}${value.toFixed(1)}%`;
+}
+
+function formatBudgetInput(cents: number): string {
+  return cents > 0 ? (cents / 100).toFixed(2) : "";
 }
 
 // ─── Componentes auxiliares ───────────────────────────────────────────────────
@@ -251,6 +260,8 @@ function FinancialDashboardContent() {
   const [inflationRate, setInflationRate] = useState(5);
   const [tripsPerMonth, setTripsPerMonth] = useState(4);
   const [showProjections, setShowProjections] = useState(true);
+  const [budgetDrafts, setBudgetDrafts] = useState<Record<string, string>>({});
+  const [budgetFeedback, setBudgetFeedback] = useState("");
   const [activeTab, setActiveTab] = useState<"cash" | "miles" | "comparison">(
     "cash"
   );
@@ -267,6 +278,27 @@ function FinancialDashboardContent() {
       { year: selectedYear },
       queryCachePolicies.financial
     );
+
+  const { data: monthlyBudgets = [], isLoading: loadingBudgets } =
+    trpc.financial.getMonthlyBudgets.useQuery(
+      { year: selectedYear },
+      queryCachePolicies.financial
+    );
+  const utils = trpc.useUtils();
+  const saveMonthlyBudget = trpc.financial.upsertMonthlyBudget.useMutation({
+    onSuccess: (_, variables) => {
+      setBudgetDrafts(current => {
+        const next = { ...current };
+        delete next[`${variables.year}-${variables.month}`];
+        return next;
+      });
+      setBudgetFeedback(`Orçamento de ${MONTH_FULL_NAMES[variables.month]} atualizado.`);
+      void utils.financial.getMonthlyBudgets.invalidate({ year: variables.year });
+    },
+    onError: () => {
+      setBudgetFeedback("Não foi possível salvar o orçamento. Tente novamente.");
+    },
+  });
 
   const { data: projections, isLoading: loadingProjections } =
     trpc.financial.getProjections.useQuery(
@@ -365,7 +397,50 @@ function FinancialDashboardContent() {
     }));
   }, [projections]);
 
-  const isLoading = loadingYear || loadingWeekly;
+  const monthlyBudgetEnvelopes = useMemo(
+    () => buildMonthlyBudgetEnvelopes(weeklyData ?? [], monthlyBudgets),
+    [monthlyBudgets, weeklyData]
+  );
+  const budgetInsight = useMemo(
+    () => getBudgetInsight(monthlyBudgetEnvelopes),
+    [monthlyBudgetEnvelopes]
+  );
+  const budgetChartData = useMemo(
+    () =>
+      monthlyBudgetEnvelopes.map(envelope => ({
+        month: MONTH_NAMES[envelope.month],
+        budget: envelope.budgetCents / 100,
+        realizado: envelope.realizedCents / 100,
+        projetado: envelope.projectedCents / 100,
+      })),
+    [monthlyBudgetEnvelopes]
+  );
+  const saveBudgetForMonth = (month: number, fallbackCents: number) => {
+    const key = `${selectedYear}-${month}`;
+    const rawValue = budgetDrafts[key] ?? formatBudgetInput(fallbackCents);
+    const normalized = rawValue.trim().replace(",", ".");
+    const amount = normalized === "" ? 0 : Number(normalized);
+    if (!Number.isFinite(amount) || amount < 0) {
+      setBudgetFeedback("Informe um orçamento válido, igual ou maior que zero.");
+      return;
+    }
+    saveMonthlyBudget.mutate({
+      year: selectedYear,
+      month,
+      budgetCents: Math.round(amount * 100),
+    });
+  };
+
+  const budgetNarrative =
+    budgetInsight.status === "unconfigured"
+      ? "Defina os envelopes mensais para acompanhar quanto pode ser comprometido em cada período."
+      : budgetInsight.status === "exceeded"
+        ? `A projeção ultrapassa o orçamento anual. ${budgetInsight.largestPressureMonth ? `${MONTH_FULL_NAMES[budgetInsight.largestPressureMonth]} concentra a maior pressão.` : ""}`
+        : budgetInsight.status === "watch"
+          ? "A projeção se aproxima do limite planejado; acompanhe os meses em amarelo antes de emitir novos bilhetes."
+          : "A projeção atual permanece dentro do orçamento configurado para o exercício.";
+
+  const isLoading = loadingYear || loadingWeekly || loadingBudgets;
 
   // ─── Render ────────────────────────────────────────────────────────────────
 
@@ -454,6 +529,142 @@ function FinancialDashboardContent() {
               color="purple"
             />
           </div>
+
+          <section
+            aria-labelledby="budget-envelope-title"
+            className="overflow-hidden rounded-2xl border border-violet-100 bg-white shadow-sm dark:border-violet-900/50 dark:bg-slate-900"
+          >
+            <div className="border-b border-violet-100 bg-gradient-to-r from-violet-50 via-white to-cyan-50 p-4 dark:border-violet-900/50 dark:from-violet-950/30 dark:via-slate-900 dark:to-cyan-950/20 sm:p-6">
+              <SectionHeader
+                title="Orçamento, realizado e projetado"
+                subtitle={`Envelope mensal de viagens para ${selectedYear}`}
+                icon={WalletCards}
+              />
+              <div
+                className={`rounded-xl border p-3 text-sm ${
+                  budgetInsight.status === "exceeded"
+                    ? "border-rose-200 bg-rose-50 text-rose-800 dark:border-rose-900/60 dark:bg-rose-950/30 dark:text-rose-200"
+                    : budgetInsight.status === "watch"
+                      ? "border-amber-200 bg-amber-50 text-amber-800 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-200"
+                      : "border-emerald-200 bg-emerald-50 text-emerald-800 dark:border-emerald-900/60 dark:bg-emerald-950/30 dark:text-emerald-200"
+                }`}
+              >
+                {budgetNarrative}
+              </div>
+              <div className="mt-4 grid grid-cols-1 gap-3 xs:grid-cols-3">
+                <div className="rounded-xl bg-white/80 p-3 dark:bg-slate-800/80">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Orçamento anual</p>
+                  <p className="mt-1 text-lg font-bold text-slate-800 dark:text-slate-100">
+                    {formatBRL(budgetInsight.totalBudgetCents / 100, !showValues)}
+                  </p>
+                </div>
+                <div className="rounded-xl bg-white/80 p-3 dark:bg-slate-800/80">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Realizado</p>
+                  <p className="mt-1 text-lg font-bold text-emerald-700 dark:text-emerald-400">
+                    {formatBRL(budgetInsight.totalRealizedCents / 100, !showValues)}
+                  </p>
+                </div>
+                <div className="rounded-xl bg-white/80 p-3 dark:bg-slate-800/80">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Projetado</p>
+                  <p className="mt-1 text-lg font-bold text-violet-700 dark:text-violet-400">
+                    {formatBRL(budgetInsight.totalProjectedCents / 100, !showValues)}
+                  </p>
+                </div>
+              </div>
+              <p className="mt-3 text-xs text-slate-500 dark:text-slate-400">
+                {budgetInsight.pendingWithoutQuoteCount > 0
+                  ? `${budgetInsight.pendingWithoutQuoteCount} semana(s) pendente(s) ainda não possuem cotação e não entram na projeção.`
+                  : "A projeção considera valores já emitidos e as melhores cotações registradas das semanas pendentes."}
+              </p>
+            </div>
+
+            <div className="space-y-5 p-4 sm:p-6">
+              <DeferredFinancialChart
+                kind="monthlyBudget"
+                data={budgetChartData}
+                hideValues={!showValues}
+              />
+
+              <div aria-live="polite" className="min-h-4 text-xs text-slate-500 dark:text-slate-400">
+                {budgetFeedback}
+              </div>
+
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
+                {monthlyBudgetEnvelopes.map(envelope => {
+                  const statusStyle =
+                    envelope.status === "exceeded"
+                      ? "border-rose-200 bg-rose-50/60 dark:border-rose-900/60 dark:bg-rose-950/20"
+                      : envelope.status === "watch"
+                        ? "border-amber-200 bg-amber-50/60 dark:border-amber-900/60 dark:bg-amber-950/20"
+                        : "border-slate-200 bg-slate-50/60 dark:border-slate-800 dark:bg-slate-800/30";
+                  const draftKey = `${selectedYear}-${envelope.month}`;
+                  const isSavingThisMonth =
+                    saveMonthlyBudget.isPending &&
+                    saveMonthlyBudget.variables?.month === envelope.month;
+
+                  return (
+                    <article key={envelope.month} className={`rounded-xl border p-3 ${statusStyle}`}>
+                      <div className="flex items-center justify-between gap-3">
+                        <h3 className="font-bold text-slate-800 dark:text-slate-100">
+                          {MONTH_FULL_NAMES[envelope.month]}
+                        </h3>
+                        <span className="rounded-full bg-white/80 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-slate-500 dark:bg-slate-900/70 dark:text-slate-400">
+                          {envelope.status === "unconfigured" ? "Definir" : envelope.status === "exceeded" ? "Acima" : envelope.status === "watch" ? "Atenção" : "Em linha"}
+                        </span>
+                      </div>
+                      <div className="mt-3 grid grid-cols-2 gap-2 text-xs">
+                        <div>
+                          <p className="uppercase tracking-wide text-slate-400">Realizado</p>
+                          <p className="mt-0.5 font-semibold text-emerald-700 dark:text-emerald-400">
+                            {formatBRL(envelope.realizedCents / 100, !showValues)}
+                          </p>
+                        </div>
+                        <div className="text-right">
+                          <p className="uppercase tracking-wide text-slate-400">Projetado</p>
+                          <p className="mt-0.5 font-semibold text-violet-700 dark:text-violet-400">
+                            {formatBRL(envelope.projectedCents / 100, !showValues)}
+                          </p>
+                        </div>
+                      </div>
+                      {showValues ? (
+                        <>
+                          <label className="mt-3 block text-xs font-semibold text-slate-600 dark:text-slate-300" htmlFor={`budget-${selectedYear}-${envelope.month}`}>
+                            Orçamento mensal (R$)
+                          </label>
+                          <div className="mt-1 flex gap-2">
+                            <input
+                              id={`budget-${selectedYear}-${envelope.month}`}
+                              type="number"
+                              min="0"
+                              step="0.01"
+                              inputMode="decimal"
+                              value={budgetDrafts[draftKey] ?? formatBudgetInput(envelope.budgetCents)}
+                              onChange={event => setBudgetDrafts(current => ({ ...current, [draftKey]: event.target.value }))}
+                              placeholder="0,00"
+                              className="min-w-0 flex-1 rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-sm text-slate-800 focus:border-violet-500 focus:outline-none focus:ring-2 focus:ring-violet-200 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+                            />
+                            <Button
+                              type="button"
+                              size="sm"
+                              disabled={isSavingThisMonth}
+                              onClick={() => saveBudgetForMonth(envelope.month, envelope.budgetCents)}
+                              className="shrink-0 bg-violet-600 text-xs text-white hover:bg-violet-700"
+                            >
+                              {isSavingThisMonth ? "Salvando" : "Salvar"}
+                            </Button>
+                          </div>
+                        </>
+                      ) : (
+                        <p className="mt-3 text-xs text-slate-500 dark:text-slate-400">
+                          Exiba os valores para configurar este orçamento.
+                        </p>
+                      )}
+                    </article>
+                  );
+                })}
+              </div>
+            </div>
+          </section>
 
         {/* ── Tabs de análise ── */}
         <div>
