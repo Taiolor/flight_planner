@@ -1,7 +1,7 @@
 import { useMemo, useState, useEffect, useRef } from "react";
 import BrazilWorldCupPanel from "@/components/BrazilWorldCupPanel";
 import { brazilMatchByDate } from "@/lib/worldCup2026";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import { extractTime, toIsoDate } from "@/lib/utils";
 import { trpc } from "@/lib/trpc";
 import { ContentReveal } from "@/components/ContentReveal";
@@ -220,9 +220,12 @@ import FlightPopup from "@/components/flights/FlightPopup";
 import { useYear } from "@/contexts/YearContext";
 import { GlobalYearSelector } from "@/components/GlobalYearSelector";
 import { queryCachePolicies } from "@/lib/queryCache";
+import { getCalendarWeekFromLocation } from "@/lib/calendarWeekNavigation";
 
 export default function CalendarView() {
   const { selectedYear: year } = useYear();
+  const [location] = useLocation();
+  const targetWeekNumber = useMemo(() => getCalendarWeekFromLocation(location), [location]);
   const weeksQuery = trpc.flights.getWeeks.useQuery(
     { year },
     queryCachePolicies.annualPlanning
@@ -412,6 +415,22 @@ export default function CalendarView() {
       unissuedCount,
     };
   }, [additionalFlightsQuery.data, weeksQuery.data, today, year]);
+
+  useEffect(() => {
+    if (!targetWeekNumber) return;
+    const targetMark = Object.values(markedDays).find(
+      mark => mark.week.weekNumber === targetWeekNumber
+    );
+    if (!targetMark) return;
+
+    setSelectedMark(targetMark);
+    const timeout = window.setTimeout(() => {
+      document
+        .querySelector(`[data-calendar-week="${targetWeekNumber}"]`)
+        ?.scrollIntoView({ behavior: "smooth", block: "center" });
+    }, 80);
+    return () => window.clearTimeout(timeout);
+  }, [markedDays, targetWeekNumber]);
 
   function buildMonthGrid(year: number, month: number): (number | null)[][] {
     const firstDay = new Date(year, month, 1).getDay();
@@ -750,6 +769,7 @@ export default function CalendarView() {
                           <div
                             key={di}
                             title={tooltipText}
+                            data-calendar-week={mark?.week.weekNumber}
                             onClick={() => mark && setSelectedMark(mark)}
                             className={`relative flex flex-col items-center justify-center rounded-md aspect-square text-[10px] font-medium select-none transition-all
                               ${cellBg || "hover:bg-slate-50"}

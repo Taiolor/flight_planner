@@ -50,3 +50,8 @@
 - [x] Implementar a seção Planejamento por semanas com cards de bilhetes reais
 - [x] Posicionar o Planejamento por semanas imediatamente após o Resumo Anual, conforme a hierarquia operacional definida
 - [x] Cobrir dados, navegação, acessibilidade e responsividade das duas implementações
+- [x] Inspecionar navegação do Calendário e dados disponíveis nos cards semanais
+- [x] Abrir a semana correspondente ao card diretamente no Calendário
+- [x] Adicionar mini prévia mensal contextual aos cards semanais
+- [x] Permitir favoritar semanas com preferência persistente
+- [x] Cobrir persistência, navegação, acessibilidade e responsividade das novas interações

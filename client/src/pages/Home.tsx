@@ -121,6 +121,11 @@ import { HomeHeaderActions } from "@/components/HomeHeaderActions";
 import { HomeDashboardControls } from "@/components/HomeDashboardControls";
 import { WeeklyPlanning, type WeeklyPlanningItem } from "@/components/WeeklyPlanning";
 import {
+  persistWeeklyPlanningFavorites,
+  readWeeklyPlanningFavorites,
+  toggleWeeklyPlanningFavorite,
+} from "@/lib/weeklyPlanningPreferences";
+import {
   getAnnualGoalProgress,
   readAnnualEmissionGoal,
   saveAnnualEmissionGoal,
@@ -1098,6 +1103,9 @@ export default function Home() {
     }
     return map;
   }, [priceMap]);
+  const [favoriteWeeks, setFavoriteWeeks] = useState(() =>
+    readWeeklyPlanningFavorites()
+  );
 
   const weeklyPlanningItems: WeeklyPlanningItem[] = useMemo(() => {
     return weeksData
@@ -1105,7 +1113,15 @@ export default function Home() {
         !week.isDeleted &&
         (week.isTicketIssued || week.isSelected || lowestPriceMap[week.weekNumber] !== undefined)
       )
-      .sort((first, second) => first.weekNumber - second.weekNumber)
+      .sort((first, second) => {
+        const firstFavorite = favoriteWeeks.includes(first.weekNumber);
+        const secondFavorite = favoriteWeeks.includes(second.weekNumber);
+        return firstFavorite === secondFavorite
+          ? first.weekNumber - second.weekNumber
+          : firstFavorite
+            ? -1
+            : 1;
+      })
       .slice(0, 3)
       .map(week => {
         const lowestPrice = lowestPriceMap[week.weekNumber] ?? null;
@@ -1121,6 +1137,7 @@ export default function Home() {
               : "Rota a definir",
           airline: week.departureAirline || week.returnAirline || null,
           lowestPrice,
+          favorite: favoriteWeeks.includes(week.weekNumber),
           status: week.isTicketIssued
             ? "issued"
             : lowestPrice !== null
@@ -1128,7 +1145,15 @@ export default function Home() {
               : "pending",
         };
       });
-  }, [lowestPriceMap, weeksData]);
+  }, [favoriteWeeks, lowestPriceMap, weeksData]);
+
+  const handleToggleWeeklyFavorite = (weekNumber: number) => {
+    setFavoriteWeeks(current => {
+      const next = toggleWeeklyPlanningFavorite(current, weekNumber);
+      persistWeeklyPlanningFavorites(next);
+      return next;
+    });
+  };
 
   const getLowestPrice = useCallback(
     (weekNumber: number): number | null => {
@@ -2451,6 +2476,7 @@ export default function Home() {
             year={selectedYear}
             items={weeklyPlanningItems}
             hideValues={hideValues}
+            onToggleFavorite={handleToggleWeeklyFavorite}
           />
         )}
 
