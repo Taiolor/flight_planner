@@ -172,6 +172,9 @@ const AnnualSpendChart = lazy(() =>
     default: module.AnnualSpendChart,
   }))
 );
+
+// Mantido para possível reativação futura; desativado por decisão de produto.
+const LAYOUT_CONTROLS_ENABLED = false;
 const PriceVariationCharts = lazy(() =>
   import("@/components/HomeCharts").then(module => ({
     default: module.PriceVariationCharts,
@@ -1328,7 +1331,7 @@ export default function Home({ mode = "home" }: HomeProps) {
       prioritySets: deleteHomePrioritySet(homeDashboardPreferences.prioritySets, setId),
     });
   };
-  useHomePanelToggleShortcut(toggleAllHomePanels);
+  useHomePanelToggleShortcut(toggleAllHomePanels, LAYOUT_CONTROLS_ENABLED);
   const handleSaveAnnualGoal = (goal: number) => {
     const savedGoal = saveAnnualEmissionGoal(
       selectedYear,
@@ -2327,7 +2330,7 @@ export default function Home({ mode = "home" }: HomeProps) {
       </header>
 
       <main className="container py-4 sm:py-8">
-        {!isManagementView && (
+        {!isManagementView && LAYOUT_CONTROLS_ENABLED && (
           <>
         <HomeDashboardControls
           theme={theme}

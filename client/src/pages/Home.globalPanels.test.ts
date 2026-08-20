@@ -20,7 +20,11 @@ describe("controle global de painéis da Home", () => {
   });
 
   it("integra o componente de organização com o estado atual dos painéis", () => {
-    expect(source).toContain("useHomePanelToggleShortcut(toggleAllHomePanels)");
+    expect(source).toContain(
+      "useHomePanelToggleShortcut(toggleAllHomePanels, LAYOUT_CONTROLS_ENABLED)"
+    );
+    expect(source).toContain("const LAYOUT_CONTROLS_ENABLED = false");
+    expect(source).toContain("!isManagementView && LAYOUT_CONTROLS_ENABLED && (");
     expect(source).toContain("<HomeDashboardControls");
     expect(source).toContain("allPanelsOpen={allHomePanelsAreOpen}");
     expect(source).toContain("onTogglePriority={togglePriorityPanel}");

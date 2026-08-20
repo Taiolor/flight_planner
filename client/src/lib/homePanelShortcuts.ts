@@ -15,8 +15,10 @@ export function isPanelToggleShortcut(event: {
   return event.altKey && event.shiftKey && event.key.toLowerCase() === "e";
 }
 
-export function useHomePanelToggleShortcut(onToggle: () => void) {
+export function useHomePanelToggleShortcut(onToggle: () => void, enabled = true) {
   useEffect(() => {
+    if (!enabled) return;
+
     const handlePanelShortcut = (event: KeyboardEvent) => {
       if (isPanelToggleShortcut(event)) {
         event.preventDefault();
@@ -26,6 +28,6 @@ export function useHomePanelToggleShortcut(onToggle: () => void) {
 
     window.addEventListener("keydown", handlePanelShortcut);
     return () => window.removeEventListener("keydown", handlePanelShortcut);
-  }, [onToggle]);
+  }, [enabled, onToggle]);
 }
 import { useEffect } from "react";

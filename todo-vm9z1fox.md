@@ -86,3 +86,7 @@
 - [x] Corrigir a compatibilidade JSX da página dedicada no ambiente de testes
 - [x] Alterar o rótulo do botão principal de Abrir calendário para Calendário
 - [x] Atualizar a regressão do cabeçalho para validar o rótulo Calendário
+- [x] Inspecionar os controles e estados da funcionalidade Layout dos quadros
+- [x] Ocultar completamente Layout dos quadros da Home sem remover a implementação
+- [x] Cobrir a ausência visual e a preservação reversível do recurso com testes
+- [x] Atualizar a regressão global de painéis para reconhecer o atalho desativado por flag
