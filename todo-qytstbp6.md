@@ -60,7 +60,7 @@
 - [x] Capturar a exceção real que causa o erro interno atual no procedimento do Fly.IA.
 - [x] Corrigir a falha e registrar um identificador de diagnóstico seguro no servidor e no chat.
 - [x] Adicionar teste de regressão para o novo caminho de erro e validar uma pergunta completa.
-- [ ] Salvar um checkpoint da correção do erro interno do Fly.IA.
+- [x] Salvar um checkpoint da correção do erro interno do Fly.IA.
 - [x] Restaurar a validação de tipos da tela Financeiro após a atualização concorrente de acesso protegido.
 - [x] Reproduzir uma pergunta pelo procedimento tRPC Fly.IA com os serviços reais e registrar a exceção original caso ocorra.
 - [x] Validar no fluxo real do chat que uma pergunta autenticada recebe resposta, ou coletar o novo código de diagnóstico para correção específica.
