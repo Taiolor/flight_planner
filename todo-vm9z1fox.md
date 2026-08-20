@@ -8,3 +8,6 @@
 - [x] Validar visualmente em desktop e mobile e registrar o resultado
 - [x] Registrar a auditoria visual: 320 px e 375 px reorganizam as ações em linhas sem sobreposição; 390 px mantém controles alcançáveis; 1280 px preserva a hierarquia compacta e sem overflow
 - [x] Criar regressão estrutural que preserve a quebra controlada dos grupos de ações em telas estreitas
+- [x] Inspecionar os seis erros de tipagem de autenticação em FinancialDashboard.tsx
+- [x] Confirmar a referência tipada de autenticação na tela financeira, já resolvida no estado compartilhado atual
+- [x] Executar teste focal, checagem de tipos e build de produção da correção financeira
