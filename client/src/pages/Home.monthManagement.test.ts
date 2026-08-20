@@ -24,4 +24,12 @@ describe("frame Gestão de Passagens da Home", () => {
     expect(source).toContain("inert={!isOpen}");
     expect(source).toContain("motion-reduce:transition-none");
   });
+
+  it("faz os cards semanais entrarem em sequência ao abrir o mês", () => {
+    expect(source).toContain("monthWeeks.map((week, weekIndex)");
+    expect(source).toContain("slide-in-from-bottom-2");
+    expect(source).toContain("Math.min(weekIndex, 7) * 45");
+    expect(source).toContain('animationFillMode: "both"');
+    expect(source).toContain("motion-reduce:animate-none");
+  });
 });

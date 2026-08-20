@@ -805,6 +805,7 @@
 - [x] Destacar envelopes financeiros que atingem 90% ou ultrapassam o limite
 - [x] Adicionar filtros de período e tipo de evento na página Locais
 - [x] Animar suavemente a expansão e o recolhimento dos meses em Gestão de Passagens
+- [x] Animar a entrada escalonada dos cards semanais ao abrir um mês
 
 ## Processo reutilizável
 

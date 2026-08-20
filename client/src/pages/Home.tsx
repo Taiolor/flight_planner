@@ -3140,7 +3140,7 @@ export default function Home({ mode = "home" }: HomeProps) {
                       >
                         <div className="min-h-0 overflow-hidden">
                           <div className="divide-y divide-slate-100 dark:divide-slate-700">
-                          {monthWeeks.map(week => {
+                          {monthWeeks.map((week, weekIndex) => {
                             const lowestPrice = getLowestPrice(week.weekNumber);
                             const isCheap =
                               showCheapestOnly &&
@@ -3171,6 +3171,10 @@ export default function Home({ mode = "home" }: HomeProps) {
                                 key={week.weekNumber}
                                 id={`week-card-${week.weekNumber}`}
                                 className={`p-3 sm:p-6 border-0 shadow-md transition-all hover:shadow-lg dark:bg-slate-800 dark:shadow-slate-900/40 rounded-lg relative ${
+                                  isOpen
+                                    ? "animate-in fade-in slide-in-from-bottom-2 duration-300 motion-reduce:animate-none"
+                                    : ""
+                                } ${
                                   week.isSelected
                                     ? "ring-2 ring-green-500 bg-green-50 dark:bg-green-900/30"
                                     : week.isTicketIssued
@@ -3181,6 +3185,14 @@ export default function Home({ mode = "home" }: HomeProps) {
                                     ? "ring-2 ring-purple-500 ring-offset-2 dark:ring-offset-slate-900"
                                     : ""
                                 }`}
+                                style={
+                                  isOpen
+                                    ? {
+                                        animationDelay: `${Math.min(weekIndex, 7) * 45}ms`,
+                                        animationFillMode: "both",
+                                      }
+                                    : undefined
+                                }
                               >
                                 {/* Cabeçalho da semana - sempre visível, clicável para expandir/recolher */}
                                 <div
