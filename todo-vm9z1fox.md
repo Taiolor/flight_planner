@@ -26,3 +26,11 @@
 - [x] Cobrir persistência, acessibilidade e responsividade do novo padrão em testes
 - [x] Adicionar regressão de integração para sincronização e persistência do controle global
 - [x] Adicionar regressão responsiva do botão global e dos painéis sincronizados
+- [x] Mapear os painéis da Home e o armazenamento de preferências para perfis, atalhos e prioridades
+- [x] Criar perfis de layout persistentes para os painéis da Home
+- [x] Adicionar atalho de teclado acessível para expandir ou recolher todos os painéis
+- [x] Permitir fixar painéis prioritários com preferência persistente
+- [x] Cobrir comportamento, persistência, acessibilidade e responsividade com testes
+- [x] Adicionar integração do atalho global e dos controles de perfil ou prioridade da Home
+- [x] Adicionar regressão responsiva específica da faixa de organização em mobile e desktop
+- [x] Adicionar regressão de classes responsivas para a faixa de perfis, atalho e prioridades

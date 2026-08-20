@@ -118,6 +118,7 @@ import { AdditionalFlightsPanel, type AdditionalFlightRecord } from "@/component
 import { AttentionCenter } from "@/components/AttentionCenter";
 import { AnnualPlanningProgress } from "@/components/AnnualPlanningProgress";
 import { HomeHeaderActions } from "@/components/HomeHeaderActions";
+import { HomeDashboardControls } from "@/components/HomeDashboardControls";
 import {
   getAnnualGoalProgress,
   readAnnualEmissionGoal,
@@ -141,6 +142,15 @@ import {
   areAllHomePanelsOpen,
   getNextHomeGlobalPanelState,
 } from "@/lib/homePanelVisibility";
+import {
+  applyPinnedPanels,
+  getHomeLayoutProfileState,
+  persistHomeDashboardPreferences,
+  readHomeDashboardPreferences,
+  type HomePanelId,
+  type HomeLayoutProfile,
+} from "@/lib/homeDashboardPreferences";
+import { useHomePanelToggleShortcut } from "@/lib/homePanelShortcuts";
 
 const AnnualSpendChart = lazy(() =>
   import("@/components/HomeCharts").then(module => ({
@@ -598,6 +608,9 @@ export default function Home() {
   );
   const [expandFilters, setExpandFilters] = useState<boolean>(
     () => readHomePanelPreferences().filters
+  );
+  const [homeDashboardPreferences, setHomeDashboardPreferences] = useState(() =>
+    readHomeDashboardPreferences()
   );
   useEffect(() => {
     persistHomePanelPreferences({
@@ -1110,6 +1123,26 @@ export default function Home() {
     () => getAnnualGoalProgress(annualProgress.issuedWeeks, annualEmissionGoal),
     [annualEmissionGoal, annualProgress.issuedWeeks]
   );
+  const persistDashboardPreferences = (
+    next: typeof homeDashboardPreferences
+  ) => {
+    setHomeDashboardPreferences(next);
+    persistHomeDashboardPreferences(next);
+  };
+  const markDashboardLayoutAsCustom = () => {
+    if (homeDashboardPreferences.profile === "custom") return;
+    persistDashboardPreferences({
+      ...homeDashboardPreferences,
+      profile: "custom",
+    });
+  };
+  const applyHomePanelState = (next: ReturnType<typeof getNextHomeGlobalPanelState>) => {
+    setExpandSummary(next.summary);
+    setExpandFilters(next.filters);
+    setExpandablePanels(next.expandablePanels);
+    persistHomePanelPreferences({ summary: next.summary, filters: next.filters });
+    persistHomeExpandablePanels(next.expandablePanels);
+  };
   const updateExpandablePanel = (
     panel: "annualProgress" | "attentionCenter" | "priceVariation"
   ) => {
@@ -1118,6 +1151,7 @@ export default function Home() {
       persistHomeExpandablePanels(next);
       return next;
     });
+    markDashboardLayoutAsCustom();
   };
   const allHomePanelsAreOpen = areAllHomePanelsOpen({
     summary: expandSummary,
@@ -1129,14 +1163,44 @@ export default function Home() {
       summary: expandSummary,
       filters: expandFilters,
       expandablePanels,
-    });
+    }, homeDashboardPreferences.pinnedPanels);
 
-    setExpandSummary(next.summary);
-    setExpandFilters(next.filters);
-    setExpandablePanels(next.expandablePanels);
-    persistHomePanelPreferences({ summary: next.summary, filters: next.filters });
-    persistHomeExpandablePanels(next.expandablePanels);
+    applyHomePanelState(next);
+    persistDashboardPreferences({
+      ...homeDashboardPreferences,
+      profile: allHomePanelsAreOpen ? "compact" : "complete",
+    });
   };
+  const applyHomeLayoutProfile = (profile: Exclude<HomeLayoutProfile, "custom">) => {
+    const next = applyPinnedPanels(
+      getHomeLayoutProfileState(profile),
+      homeDashboardPreferences.pinnedPanels
+    );
+    applyHomePanelState(next);
+    persistDashboardPreferences({ ...homeDashboardPreferences, profile });
+  };
+  const togglePriorityPanel = (panel: HomePanelId) => {
+    const isPinned = homeDashboardPreferences.pinnedPanels.includes(panel);
+    const pinnedPanels = isPinned
+      ? homeDashboardPreferences.pinnedPanels.filter(item => item !== panel)
+      : [...homeDashboardPreferences.pinnedPanels, panel];
+    const nextPreferences = {
+      ...homeDashboardPreferences,
+      profile: "custom" as const,
+      pinnedPanels,
+    };
+    persistDashboardPreferences(nextPreferences);
+
+    if (!isPinned) {
+      applyHomePanelState(
+        applyPinnedPanels(
+          { summary: expandSummary, filters: expandFilters, expandablePanels },
+          pinnedPanels
+        )
+      );
+    }
+  };
+  useHomePanelToggleShortcut(toggleAllHomePanels);
   const handleSaveAnnualGoal = (goal: number) => {
     const savedGoal = saveAnnualEmissionGoal(
       selectedYear,
@@ -2127,33 +2191,25 @@ export default function Home() {
       </header>
 
       <main className="container py-4 sm:py-8">
-        <div className="mb-4 flex justify-end sm:mb-6">
-          <button
-            type="button"
-            onClick={toggleAllHomePanels}
-            aria-pressed={allHomePanelsAreOpen}
-            aria-label={allHomePanelsAreOpen ? "Recolher todos os quadros" : "Expandir todos os quadros"}
-            className={`inline-flex min-h-10 items-center gap-2 rounded-xl border px-3 py-2 text-sm font-semibold transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 ${
-              theme === "dark"
-                ? "border-slate-700 bg-slate-800 text-slate-200 hover:bg-slate-700"
-                : "border-slate-200 bg-white text-slate-700 shadow-sm hover:bg-slate-50"
-            }`}
-          >
-            {allHomePanelsAreOpen ? (
-              <ChevronUp className="h-4 w-4" aria-hidden="true" />
-            ) : (
-              <ChevronDown className="h-4 w-4" aria-hidden="true" />
-            )}
-            {allHomePanelsAreOpen ? "Recolher todos" : "Expandir todos"}
-          </button>
-        </div>
+        <HomeDashboardControls
+          theme={theme}
+          profile={homeDashboardPreferences.profile}
+          pinnedPanels={homeDashboardPreferences.pinnedPanels}
+          allPanelsOpen={allHomePanelsAreOpen}
+          onProfileChange={applyHomeLayoutProfile}
+          onToggleAll={toggleAllHomePanels}
+          onTogglePriority={togglePriorityPanel}
+        />
         {/* Resumo Anual com Accordion */}
         {weeksQuery.isLoading ? (
           <SkeletonChart />
         ) : (
           <div className="mb-4 sm:mb-8">
             <button
-              onClick={() => setExpandSummary(!expandSummary)}
+              onClick={() => {
+                setExpandSummary(!expandSummary);
+                markDashboardLayoutAsCustom();
+              }}
               className="w-full flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 bg-gradient-to-r from-slate-900 via-blue-950 to-slate-900 text-white rounded-3xl hover:from-slate-800 hover:via-blue-900 hover:to-slate-800 transition-colors shadow-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
               aria-label="Expandir/Recolher Resumo Anual"
               aria-expanded={expandSummary}
@@ -2311,7 +2367,10 @@ export default function Home() {
         ) : (
           <div className="mb-4 sm:mb-8">
             <button
-              onClick={() => setExpandFilters(!expandFilters)}
+              onClick={() => {
+                setExpandFilters(!expandFilters);
+                markDashboardLayoutAsCustom();
+              }}
               className="w-full flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 bg-gradient-to-r from-slate-900 via-blue-950 to-slate-900 text-white rounded-3xl hover:from-slate-800 hover:via-blue-900 hover:to-slate-800 transition-colors shadow-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
               aria-label="Expandir/Recolher Filtros e Controles"
               aria-expanded={expandFilters}

@@ -19,10 +19,10 @@ describe("controle global de painéis da Home", () => {
     expect(source).toContain("persistHomeExpandablePanels(next.expandablePanels)");
   });
 
-  it("expõe um botão global acessível com rótulo que reflete o próximo estado", () => {
-    expect(source).toContain('aria-label={allHomePanelsAreOpen ? "Recolher todos os quadros" : "Expandir todos os quadros"}');
-    expect(source).toContain("{allHomePanelsAreOpen ? \"Recolher todos\" : \"Expandir todos\"}");
-    expect(source).toContain("inline-flex min-h-10");
-    expect(source).toContain("mb-4 flex justify-end sm:mb-6");
+  it("integra o componente de organização com o estado atual dos painéis", () => {
+    expect(source).toContain("useHomePanelToggleShortcut(toggleAllHomePanels)");
+    expect(source).toContain("<HomeDashboardControls");
+    expect(source).toContain("allPanelsOpen={allHomePanelsAreOpen}");
+    expect(source).toContain("onTogglePriority={togglePriorityPanel}");
   });
 });

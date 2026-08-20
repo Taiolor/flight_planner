@@ -1,10 +1,4 @@
-import type { HomeExpandablePanels } from "./homeExpandablePanels";
-
-export type HomeGlobalPanelState = {
-  summary: boolean;
-  filters: boolean;
-  expandablePanels: HomeExpandablePanels;
-};
+import type { HomeGlobalPanelState, HomePanelId } from "./homeDashboardPreferences";
 
 export function areAllHomePanelsOpen(state: HomeGlobalPanelState): boolean {
   return (
@@ -17,11 +11,12 @@ export function areAllHomePanelsOpen(state: HomeGlobalPanelState): boolean {
 }
 
 export function getNextHomeGlobalPanelState(
-  state: HomeGlobalPanelState
+  state: HomeGlobalPanelState,
+  pinnedPanels: HomePanelId[] = []
 ): HomeGlobalPanelState {
   const nextState = !areAllHomePanelsOpen(state);
 
-  return {
+  const next = {
     summary: nextState,
     filters: nextState,
     expandablePanels: {
@@ -30,4 +25,12 @@ export function getNextHomeGlobalPanelState(
       priceVariation: nextState,
     },
   };
+
+  for (const panel of pinnedPanels) {
+    if (panel === "summary") next.summary = true;
+    else if (panel === "filters") next.filters = true;
+    else next.expandablePanels[panel] = true;
+  }
+
+  return next;
 }
