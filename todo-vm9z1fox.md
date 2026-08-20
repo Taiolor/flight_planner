@@ -11,3 +11,8 @@
 - [x] Inspecionar os seis erros de tipagem de autenticação em FinancialDashboard.tsx
 - [x] Confirmar a referência tipada de autenticação na tela financeira, já resolvida no estado compartilhado atual
 - [x] Executar teste focal, checagem de tipos e build de produção da correção financeira
+- [x] Inspecionar o fluxo atual de carregamento do dashboard financeiro e os skeletons reutilizáveis
+- [x] Adicionar um skeleton visual alinhado aos KPIs, abas e conteúdo financeiro
+- [x] Corrigir a compatibilidade JSX do primitive Skeleton para validar o novo estado de carregamento
+- [x] Cobrir o estado de carregamento com teste e validar em desktop e mobile
+- [x] Adicionar regressão de integração que comprove o uso do skeleton pela rota financeira durante isLoading

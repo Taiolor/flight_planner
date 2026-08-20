@@ -14,4 +14,10 @@ describe("proteção de acesso do Financeiro", () => {
     expect(source).toContain('resource="financial"');
     expect(source).toContain("return <FinancialDashboardContent />");
   });
+
+  it("substitui o conteúdo financeiro pelo skeleton completo durante o carregamento", () => {
+    expect(source).toContain("FinancialDashboardLoadingSkeleton");
+    expect(source).toContain("{isLoading ? (");
+    expect(source).toContain("<FinancialDashboardLoadingSkeleton />");
+  });
 });

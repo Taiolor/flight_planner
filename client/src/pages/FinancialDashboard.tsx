@@ -6,6 +6,7 @@ import { LoginModal } from "@/components/auth/LoginModal";
 import { LoginRequiredScreen } from "@/components/auth/LoginRequiredMessageBox";
 import { useYear } from "@/contexts/YearContext";
 import { GlobalYearSelector } from "@/components/GlobalYearSelector";
+import { FinancialDashboardLoadingSkeleton } from "@/components/FinancialDashboardLoadingSkeleton";
 import { queryCachePolicies } from "@/lib/queryCache";
 import type { FinancialChartProps } from "@/components/FinancialCharts";
 import {
@@ -412,17 +413,11 @@ function FinancialDashboardContent() {
       </header>
 
       <div className="max-w-7xl mx-auto px-3 sm:px-4 py-4 sm:py-8 space-y-6 sm:space-y-10">
-        {/* ── KPIs ── */}
         {isLoading ? (
-          <div className="grid grid-cols-1 xs:grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
-            {[...Array(4)].map((_, i) => (
-              <div
-                key={i}
-                className="h-32 rounded-2xl bg-slate-200 dark:bg-slate-800 animate-pulse"
-              />
-            ))}
-          </div>
+          <FinancialDashboardLoadingSkeleton />
         ) : (
+          <>
+          {/* ── KPIs ── */}
           <div className="grid grid-cols-1 xs:grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
             <KpiCard
               title="Total Investido"
@@ -458,7 +453,6 @@ function FinancialDashboardContent() {
               color="purple"
             />
           </div>
-        )}
 
         {/* ── Tabs de análise ── */}
         <div>
@@ -1607,6 +1601,8 @@ function FinancialDashboardContent() {
             </div>
           )}
         </div>
+          </>
+        )}
       </div>
     </div>
   );
