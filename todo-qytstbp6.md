@@ -117,4 +117,4 @@
 - [x] Adicionar cenários renderizados de celular e desktop para validar quebra de linha e largura fluida dos chips.
 - [x] Confirmar em arquivo a categoria de distância e o fluxo de envio com foco preservado dos chips Fly.IA.
 - [x] Reexecutar testes focados de sugestões e chat após confirmar as mudanças de categoria e envio.
-- [ ] Salvar um checkpoint das sugestões de perguntas do Fly.IA.
+- [x] Salvar um checkpoint das sugestões de perguntas do Fly.IA.
