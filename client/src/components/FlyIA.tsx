@@ -83,7 +83,6 @@ export default function FlyIA() {
       toast.error(message);
     },
   });
-  const transcribeVoiceMutation = trpc.flyIa.transcribeVoice.useMutation();
 
   const clearRecordingTimer = useCallback(() => {
     if (recordingTimerRef.current !== null) {
@@ -136,17 +135,16 @@ export default function FlyIA() {
 
         setVoiceState("transcribing");
         try {
-          const upload = await fetch("/api/flyia/voice-upload", {
+          const transcriptionResponse = await fetch("/api/flyia/voice-transcribe", {
             method: "POST",
             credentials: "include",
             headers: { "Content-Type": audio.type || "audio/webm" },
             body: audio,
           });
-          const payload = await upload.json().catch(() => ({}));
-          if (!upload.ok || typeof payload.audioKey !== "string") {
-            throw new Error(payload.error || "Não foi possível preparar o áudio.");
+          const transcription = await transcriptionResponse.json().catch(() => ({}));
+          if (!transcriptionResponse.ok || typeof transcription.text !== "string") {
+            throw new Error(transcription.error || "Não foi possível transcrever o áudio agora.");
           }
-          const transcription = await transcribeVoiceMutation.mutateAsync({ audioKey: payload.audioKey });
           setVoiceTranscript(transcription.text);
         } catch (error) {
           const message = error instanceof Error ? error.message : "Não foi possível transcrever o áudio agora.";
@@ -168,7 +166,7 @@ export default function FlyIA() {
       setVoiceError(denied ? "Permita o uso do microfone para falar sua pergunta." : "Não foi possível acessar o microfone. Tente novamente.");
       setVoiceState("idle");
     }
-  }, [stopVoiceRecording, transcribeVoiceMutation]);
+  }, [stopVoiceRecording]);
 
   useEffect(() => () => {
     clearRecordingTimer();

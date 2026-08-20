@@ -9,7 +9,6 @@ const state = vi.hoisted(() => ({
   isPending: false,
   mutate: vi.fn(),
   toastError: vi.fn(),
-  voiceMutateAsync: vi.fn(),
   rerender: () => {},
   followUpPrompts: null as null | ((message: { role: "assistant"; content: string }) => string[]),
   onFollowUpPromptSelected: null as null | ((prompt: string) => void),
@@ -37,9 +36,6 @@ vi.mock("@/lib/trpc", () => ({
           state.options = options;
           return { mutate: state.mutate, isPending: state.isPending };
         },
-      },
-      transcribeVoice: {
-        useMutation: () => ({ mutateAsync: state.voiceMutateAsync, isPending: false }),
       },
     },
   },
@@ -129,7 +125,6 @@ afterEach(() => {
   state.isPending = false;
   state.mutate.mockReset();
   state.toastError.mockReset();
-  state.voiceMutateAsync.mockReset();
   state.followUpPrompts = null;
   state.onFollowUpPromptSelected = null;
   state.voiceInput = null;
@@ -320,7 +315,7 @@ describe("Fly.IA response flow", () => {
     const getUserMedia = vi.fn().mockResolvedValue({ getTracks: () => [{ stop: stopTrack }] });
     const upload = vi.fn().mockResolvedValue({
       ok: true,
-      json: async () => ({ audioKey: "flyia-voice/test/voice.webm" }),
+      json: async () => ({ text: "Qual é meu próximo voo?", language: "pt" }),
     });
 
     class FakeMediaRecorder {
@@ -342,7 +337,6 @@ describe("Fly.IA response flow", () => {
     Reflect.set(globalThis, "MediaRecorder", FakeMediaRecorder);
     Object.defineProperty(navigator, "mediaDevices", { configurable: true, value: { getUserMedia } });
     Reflect.set(globalThis, "fetch", upload);
-    state.voiceMutateAsync.mockResolvedValue({ text: "Qual é meu próximo voo?", language: "pt" });
 
     try {
       mount();
@@ -358,8 +352,7 @@ describe("Fly.IA response flow", () => {
         await new Promise(resolve => setTimeout(resolve, 0));
       });
 
-      expect(upload).toHaveBeenCalledWith("/api/flyia/voice-upload", expect.objectContaining({ method: "POST" }));
-      expect(state.voiceMutateAsync).toHaveBeenCalledWith({ audioKey: "flyia-voice/test/voice.webm" });
+      expect(upload).toHaveBeenCalledWith("/api/flyia/voice-transcribe", expect.objectContaining({ method: "POST" }));
       expect(document.querySelector('[data-testid="voice-transcript"]')?.textContent).toBe("Qual é meu próximo voo?");
       expect(stopTrack).toHaveBeenCalled();
     } finally {

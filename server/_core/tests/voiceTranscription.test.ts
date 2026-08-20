@@ -75,4 +75,31 @@ describe("voiceTranscription", () => {
       details: "An unexpected error occurred",
     });
   });
+
+  it("transcreve bytes em memória sem baixar um arquivo por URL", async () => {
+    vi.doMock("../env", () => ({
+      ENV: {
+        forgeApiUrl: "https://mock-forge-api.com",
+        forgeApiKey: "mock-key",
+      },
+    }));
+    const { transcribeAudioBuffer } = await import("../voiceTranscription");
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ text: "Pergunta transcrita", language: "pt", duration: 1, segments: [] }),
+    });
+    global.fetch = fetchMock;
+
+    await expect(transcribeAudioBuffer({
+      audio: Buffer.from("audio-em-memoria"),
+      mimeType: "audio/webm",
+      language: "pt",
+    })).resolves.toMatchObject({ text: "Pergunta transcrita", language: "pt" });
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    const [url, request] = fetchMock.mock.calls[0];
+    expect(String(url)).toBe("https://mock-forge-api.com/v1/audio/transcriptions");
+    expect(request.body).toBeInstanceOf(FormData);
+    expect(request.body.get("file")).toBeInstanceOf(Blob);
+  });
 });

@@ -9,8 +9,8 @@ A entrada por voz permite que uma pergunta seja ditada no computador ou no celul
 1. A pessoa seleciona o botão de microfone do campo de pergunta.
 2. O navegador solicita permissão de acesso ao microfone e grava áudio pelo `MediaRecorder`.
 3. A gravação é limitada a 60 segundos e a rota de envio aceita até 5 MB.
-4. O áudio é enviado à rota protegida `POST /api/flyia/voice-upload`, associado a um prefixo derivado do hash da sessão interna de voo.
-5. O procedimento protegido `flyIa.transcribeVoice` valida a propriedade da chave, obtém uma URL temporária de leitura e solicita a transcrição pelo serviço de voz configurado no servidor.
+4. O áudio é enviado à rota protegida `POST /api/flyia/voice-transcribe`, que valida sessão, formato e tamanho antes de encaminhá-lo ao Whisper.
+5. O servidor mantém os bytes somente na memória da requisição, chama o serviço Whisper configurado e sobrescreve o buffer recebido ao terminar.
 6. O texto transcrito preenche o campo do chat e segue, após confirmação manual, pelo mesmo fluxo de perguntas já existente.
 
 ## Formatos e experiência
@@ -21,10 +21,10 @@ Os estados de gravação e transcrição são anunciados no controle do microfon
 
 ## Privacidade e retenção
 
-O áudio não é salvo em tabelas de aplicação, e o modelo Gemini não recebe o arquivo de áudio: recebe apenas a pergunta textual quando a pessoa decide enviá-la. A chave temporária é restrita à sessão que realizou o envio.
+O áudio não é salvo em tabelas de aplicação nem no armazenamento de objetos, e o modelo Gemini não recebe o arquivo de áudio: recebe apenas a pergunta textual quando a pessoa decide enviá-la. O buffer do upload existe apenas durante a requisição protegida que o encaminha ao Whisper.
 
-> A exclusão física automática dos objetos `flyia-voice/` ainda depende de uma política de ciclo de vida do armazenamento ou de uma operação de remoção suportada pelo provedor. Essa configuração deve ser concluída antes de classificar a retenção como descarte garantido.
+> Esta integração mantém o mecanismo Whisper atual, mas não é streaming incremental: o navegador conclui a gravação, envia o bloco de áudio pela conexão segura e o servidor o encaminha ao Whisper sem persistência. Para legendas parciais enquanto a pessoa fala seria necessário um provedor de transcrição em tempo real, diferente do Whisper atual.
 
 ## Cobertura de regressão
 
-Os testes verificam a propriedade da chave de áudio, o sucesso e a falha segura da transcrição no servidor, os estados e a prévia editável do controle de voz e a simulação completa de captura, upload e preenchimento da pergunta no widget.
+Os testes verificam sessão, formato permitido, sucesso e falha segura da transcrição em memória, o descarte do buffer, os estados e a prévia editável do controle de voz e a simulação completa de captura, envio e preenchimento da pergunta no widget.

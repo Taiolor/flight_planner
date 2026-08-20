@@ -151,5 +151,11 @@
 - [x] Adicionar teste de navegador sem `MediaRecorder` ou `getUserMedia`, validando fallback para digitação.
 - [x] Confirmar no `AIChatBox` real que o campo editável permanece disponível após mensagem de navegador sem suporte a voz.
 - [x] Validar o controle de voz em celular e desktop, incluindo botão, estados e prévia editável.
-- [ ] Configurar e validar a exclusão automática de objetos `flyia-voice/` no armazenamento após a transcrição ou por ciclo de vida curto.
+- [x] Eliminar a necessidade de exclusão automática ao remover por completo o armazenamento de objetos `flyia-voice/`.
 - [x] Salvar um checkpoint da entrada por voz do Fly.IA.
+- [x] Avaliar transcrição de voz em fluxo, sem persistir áudio no armazenamento, mantendo a chave do provedor apenas no servidor.
+- [x] Definir e implementar a alternativa sem armazenamento, caso o provedor de transcrição suporte o formato e a privacidade necessários.
+- [x] Testar e documentar o fluxo de voz sem persistência de áudio.
+- [x] Manter Whisper como mecanismo de transcrição e confirmar o envio sem persistência temporária no armazenamento integrado.
+- [x] Ajustar a documentação e a retenção de áudio conforme a limitação efetiva do mecanismo Whisper.
+- [x] Salvar checkpoint da transcrição Whisper em memória, sem objetos temporários no armazenamento.
