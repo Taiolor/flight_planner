@@ -123,4 +123,4 @@
 - [x] Reordenar as sugestões contextuais pelo interesse demonstrado e manter diversidade mínima de temas.
 - [x] Criar testes de ordenação, limpeza ao encerrar conversa, acessibilidade e responsividade.
 - [x] Validar no widget que uma escolha reordena sugestões e que limpar a conversa remove as preferências da sessão.
-- [ ] Salvar um checkpoint da personalização de sugestões por sessão.
+- [x] Salvar um checkpoint da personalização de sugestões por sessão.
