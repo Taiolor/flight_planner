@@ -29,6 +29,13 @@ describe("Memories mobile responsiveness", () => {
     expect(source).toContain("motion-reduce:hover:transform-none");
   });
 
+  it("shows annual route mileage and exposes route details through an accessible control", () => {
+    expect(source).toContain("formatKm(summary?.totalKm ?? 0)");
+    expect(source).toContain('aria-controls="year-route-details"');
+    expect(source).toContain("routeDetailsOpen");
+    expect(source).toContain("group-hover:animate-pulse");
+  });
+
   it("opens the Fly.IA summary on demand and triggers first generation automatically", () => {
     expect(source).toContain("generateSummaryMutation");
     expect(source).toContain("requestedAutomatically.current");

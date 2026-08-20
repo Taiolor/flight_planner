@@ -793,6 +793,7 @@
 - [x] Permitir escolher e persistir uma foto favorita no carrossel de Memórias
 - [x] Corrigir a sobreposição entre gestão de fotos de fundo e Rota do ano
 - [x] Adicionar animação de entrada e hover interativo ao cartão Rota do ano
+- [x] Adicionar brilho interativo, expansão com detalhes e quilometragem anual ao cartão Rota do ano
 
 ## Processo reutilizável
 

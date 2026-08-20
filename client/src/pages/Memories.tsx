@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import {
   ArrowLeft,
   Camera,
+  ChevronDown,
   CircleDot,
   Compass,
   Flag,
@@ -104,6 +105,7 @@ export default function Memories() {
     },
   });
   const [uploadingWeek, setUploadingWeek] = useState<number | null>(null);
+  const [routeDetailsOpen, setRouteDetailsOpen] = useState(false);
 
   const handleMediaUpload = async (
     weekNumber: number,
@@ -211,10 +213,42 @@ export default function Memories() {
               </div>
               <div className="mt-7 flex items-center gap-3">
                 <div className="grid h-10 w-10 place-items-center rounded-2xl bg-white font-black text-[#0e1b39] transition-transform duration-300 group-hover:scale-105 motion-reduce:transition-none motion-reduce:group-hover:transform-none">GRU</div>
-                <div className="h-px flex-1 border-t-2 border-dashed border-fuchsia-300/80 transition-colors duration-300 group-hover:border-cyan-200 motion-reduce:transition-none" />
+                <div className="relative h-px flex-1 border-t-2 border-dashed border-fuchsia-300/80 transition-colors duration-300 group-hover:border-cyan-200 motion-reduce:transition-none">
+                  <span className="absolute left-1/2 top-1/2 h-2.5 w-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-cyan-100 opacity-0 shadow-[0_0_18px_5px_rgba(165,243,252,.85)] transition-opacity duration-300 group-hover:animate-pulse group-hover:opacity-100 motion-reduce:animate-none" />
+                </div>
                 <div className="grid h-10 w-10 place-items-center rounded-2xl bg-fuchsia-400 font-black text-slate-950 transition-transform duration-300 group-hover:scale-105 motion-reduce:transition-none motion-reduce:group-hover:transform-none">NVT</div>
               </div>
-              <p className="mt-5 text-sm text-slate-200">Quilometragem estimada pela distância geodésica entre aeroportos.</p>
+              <div className="mt-5 flex items-center justify-between gap-3">
+                <p className="text-sm text-slate-200">Quilometragem estimada pela distância geodésica entre aeroportos.</p>
+                <p className="shrink-0 text-right text-xs font-black text-cyan-100">
+                  {formatKm(summary?.totalKm ?? 0)}
+                  <span className="block text-[10px] font-semibold uppercase tracking-wider text-slate-300">no ano</span>
+                </p>
+              </div>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="mt-5 w-full justify-between rounded-xl border border-white/15 bg-white/5 px-3 text-xs font-bold text-white hover:bg-white/15 hover:text-white"
+                onClick={() => setRouteDetailsOpen(open => !open)}
+                aria-expanded={routeDetailsOpen}
+                aria-controls="year-route-details"
+              >
+                {routeDetailsOpen ? "Ocultar detalhes da rota" : "Ver detalhes da rota"}
+                <ChevronDown className={`h-4 w-4 transition-transform duration-300 motion-reduce:transition-none ${routeDetailsOpen ? "rotate-180" : ""}`} />
+              </Button>
+              <div
+                id="year-route-details"
+                className={`grid transition-[grid-template-rows,opacity] duration-300 ease-out motion-reduce:transition-none ${routeDetailsOpen ? "mt-4 grid-rows-[1fr] opacity-100" : "mt-0 grid-rows-[0fr] opacity-0"}`}
+              >
+                <div className="overflow-hidden">
+                  <div className="grid gap-2 border-t border-white/15 pt-4 text-xs text-slate-200 sm:grid-cols-3">
+                    <p><span className="block font-semibold text-cyan-100">Percorridos</span>{formatKm(summary?.completedKm ?? 0)}</p>
+                    <p><span className="block font-semibold text-fuchsia-100">Próximos</span>{formatKm(summary?.futureKm ?? 0)}</p>
+                    <p><span className="block font-semibold text-amber-100">Emitidas</span>{summary?.issuedTrips ?? 0} passagens</p>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
