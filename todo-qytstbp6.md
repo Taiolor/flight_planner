@@ -91,5 +91,5 @@
 - [x] Mapear o contexto factual atual, o histórico de mensagens e os dados textuais disponíveis ao Fly.IA.
 - [x] Comparar os ganhos e custos de RAG, memória resumida de conversa e consultas estruturadas para o SmartFly.
 - [x] Produzir uma recomendação de arquitetura incremental para memória do Fly.IA.
-- [ ] Salvar um checkpoint da avaliação arquitetural de memória do Fly.IA.
+- [x] Salvar um checkpoint da avaliação arquitetural de memória do Fly.IA.
 - [x] Confirmar em arquivo o mapeamento de contexto, a comparação de alternativas e a recomendação incremental de memória do Fly.IA.
