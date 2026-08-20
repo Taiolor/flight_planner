@@ -1,6 +1,9 @@
 import type { LucideIcon } from "lucide-react";
 import React, { type ReactNode } from "react";
+import { useEffect, useRef } from "react";
 import { LockKeyhole, PlaneTakeoff } from "lucide-react";
+import { trpc } from "@/lib/trpc";
+import type { ProtectedAccessResource } from "@shared/protectedAccess";
 import {
   Dialog,
   DialogContent,
@@ -18,6 +21,7 @@ type LoginRequiredMessageBoxProps = {
   title?: string;
   description: string;
   loginLabel?: string;
+  resource?: ProtectedAccessResource;
 };
 
 type LoginRequiredScreenProps = {
@@ -27,7 +31,32 @@ type LoginRequiredScreenProps = {
   onLogin: () => void;
   loginLabel?: string;
   children?: ReactNode;
+  resource?: ProtectedAccessResource;
 };
+
+type OptionalProtectedAccessMutation = {
+  mutate: (input: { resource: ProtectedAccessResource }) => void;
+};
+
+function ProtectedAccessAttempt({ resource, active }: { resource?: ProtectedAccessResource; active: boolean }) {
+  const recordProcedure = (trpc as unknown as {
+    protectedAccess?: { record?: { useMutation?: () => OptionalProtectedAccessMutation } };
+  }).protectedAccess?.record;
+  const mutation = recordProcedure?.useMutation?.();
+  const wasActive = useRef(false);
+
+  useEffect(() => {
+    if (!active) {
+      wasActive.current = false;
+      return;
+    }
+    if (!resource || wasActive.current) return;
+    wasActive.current = true;
+    mutation?.mutate({ resource });
+  }, [active, mutation, resource]);
+
+  return null;
+}
 
 function AccessMessageContent({
   icon: Icon = LockKeyhole,
@@ -39,7 +68,7 @@ function AccessMessageContent({
 }: Omit<LoginRequiredScreenProps, "children"> & { compact?: boolean }) {
   return (
     <div className={compact ? "py-2" : "p-7 sm:p-9"}>
-      <div className="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-gradient-to-br from-blue-600 via-indigo-600 to-fuchsia-600 text-white shadow-lg shadow-blue-500/30">
+      <div className="mx-auto grid h-14 w-14 animate-in zoom-in-90 fade-in duration-300 motion-reduce:animate-none place-items-center rounded-2xl bg-gradient-to-br from-blue-600 via-indigo-600 to-fuchsia-600 text-white shadow-lg shadow-blue-500/30">
         <Icon className="h-7 w-7" aria-hidden="true" />
       </div>
       <div className="mt-5 text-center">
@@ -69,6 +98,7 @@ export function LoginRequiredMessageBox({
   title,
   description,
   loginLabel,
+  resource,
 }: LoginRequiredMessageBoxProps) {
   const continueToLogin = () => {
     onOpenChange(false);
@@ -77,7 +107,8 @@ export function LoginRequiredMessageBox({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="w-[calc(100%-2rem)] max-w-md overflow-hidden rounded-3xl border-slate-200 bg-white p-0 shadow-2xl dark:border-slate-700 dark:bg-slate-950">
+      <ProtectedAccessAttempt resource={resource} active={open} />
+      <DialogContent className="w-[calc(100%-2rem)] max-w-md animate-in fade-in-0 zoom-in-95 duration-300 motion-reduce:animate-none overflow-hidden rounded-3xl border-slate-200 bg-white p-0 shadow-2xl dark:border-slate-700 dark:bg-slate-950">
         <DialogHeader className="sr-only">
           <DialogTitle>{title ?? "Entre para continuar"}</DialogTitle>
           <DialogDescription>{description}</DialogDescription>
@@ -111,9 +142,11 @@ export function LoginRequiredScreen({
   onLogin,
   loginLabel,
   children,
+  resource,
 }: LoginRequiredScreenProps) {
   return (
     <div className="flex min-h-[calc(100vh-60px)] items-center justify-center px-4 py-10 sm:px-6">
+      <ProtectedAccessAttempt resource={resource} active />
       <section
         role="status"
         aria-live="polite"

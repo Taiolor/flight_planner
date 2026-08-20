@@ -1,6 +1,9 @@
 import { lazy, Suspense, useMemo, useState } from "react";
 import { trpc } from "@/lib/trpc";
 import { Link } from "wouter";
+import { Button } from "@/components/ui/button";
+import { LoginModal } from "@/components/auth/LoginModal";
+import { LoginRequiredScreen } from "@/components/auth/LoginRequiredMessageBox";
 import { useYear } from "@/contexts/YearContext";
 import { GlobalYearSelector } from "@/components/GlobalYearSelector";
 import { queryCachePolicies } from "@/lib/queryCache";
@@ -201,9 +204,45 @@ function SectionHeader({
 // ─── Componente principal ─────────────────────────────────────────────────────
 
 export default function FinancialDashboard() {
-  // Verificar autenticação
   const authCheckQuery = trpc.flightAuth.check.useQuery();
   const isAuthenticated = authCheckQuery.data?.authenticated ?? false;
+
+  const [showLoginModal, setShowLoginModal] = useState(false);
+
+  if (authCheckQuery.isLoading) {
+    return (
+      <div className="grid min-h-screen place-items-center bg-slate-950 text-white">
+        <div className="h-9 w-9 animate-spin rounded-full border-4 border-emerald-400 border-t-transparent" />
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return (
+      <main className="min-h-screen bg-slate-950 text-white">
+        <LoginRequiredScreen
+          icon={DollarSign}
+          title="Financeiro protegido"
+          description="Entre com a sessão interna para consultar investimentos, milhas e projeções do seu planejamento."
+          loginLabel="Entrar para ver o Financeiro"
+          onLogin={() => setShowLoginModal(true)}
+          resource="financial"
+        >
+          <Link href="/">
+            <Button variant="ghost" className="text-slate-600 hover:text-slate-950 dark:text-slate-300 dark:hover:text-white">
+              <ArrowLeft className="mr-2 h-4 w-4" /> Voltar ao planejamento
+            </Button>
+          </Link>
+        </LoginRequiredScreen>
+        <LoginModal open={showLoginModal} onOpenChange={setShowLoginModal} />
+      </main>
+    );
+  }
+
+  return <FinancialDashboardContent />;
+}
+
+function FinancialDashboardContent() {
 
   const { selectedYear } = useYear();
   const [showValues, setShowValues] = useState(false);

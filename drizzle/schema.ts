@@ -467,6 +467,33 @@ export type InsertUsageTelemetryEvent =
   typeof usageTelemetryEvents.$inferInsert;
 
 /**
+ * Métricas agregadas de tentativas de recursos protegidos. Não há usuário,
+ * sessão, IP, localização ou qualquer identificador persistente nesta tabela.
+ */
+export const protectedAccessAttempts = mysqlTable("protected_access_attempts", {
+  id: int("id").autoincrement().primaryKey(),
+  resource: mysqlEnum("resource", [
+    "fly-ia",
+    "share-by-email",
+    "quotes",
+    "financial",
+    "memories",
+    "admin-notifications",
+    "admin-telemetry",
+    "gemini-budget",
+  ]).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, table => [
+  index("idx_protected_access_resource_created_at").on(
+    table.resource,
+    table.createdAt
+  ),
+]);
+
+export type InsertProtectedAccessAttempt =
+  typeof protectedAccessAttempts.$inferInsert;
+
+/**
  * Tabela para armazenar cotações de preços de passagens aéreas
  * (Colunas adicionadas: outboundAirline, returnAirline, outboundDeparture, outboundArrival, returnDeparture, returnArrival)
  * source: 'api' = obtido via Sky Scrapper API | 'manual' = inserido manualmente via Kayak

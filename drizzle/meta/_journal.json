@@ -267,6 +267,20 @@
       "when": 1787187273486,
       "tag": "0037_fair_vampiro",
       "breakpoints": true
+    },
+    {
+      "idx": 38,
+      "version": "5",
+      "when": 1787189141111,
+      "tag": "0038_watery_argent",
+      "breakpoints": true
+    },
+    {
+      "idx": 39,
+      "version": "5",
+      "when": 1787189282501,
+      "tag": "0039_glamorous_namor",
+      "breakpoints": true
     }
   ]
 }

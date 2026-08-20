@@ -89,6 +89,7 @@ export default function GeminiBudgetDashboard() {
           title="Painel administrativo protegido"
           description="Entre com a sessão interna para consultar métricas de consumo e modificar os limites do Fly.IA."
           onLogin={() => setShowLoginModal(true)}
+          resource="gemini-budget"
         />
         <LoginModal open={showLoginModal} onOpenChange={setShowLoginModal} />
       </main>

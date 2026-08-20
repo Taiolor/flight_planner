@@ -164,6 +164,7 @@ export default function Memories() {
           description="Entre para acompanhar seus quilômetros, revisitar trajetos e guardar os momentos de cada passagem."
           loginLabel="Entrar para ver memórias"
           onLogin={() => setLoginOpen(true)}
+          resource="memories"
         >
           <Link href="/">
             <Button variant="ghost" className="text-slate-600 hover:text-slate-950 dark:text-slate-300 dark:hover:text-white">

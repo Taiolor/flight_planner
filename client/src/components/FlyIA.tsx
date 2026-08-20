@@ -163,6 +163,7 @@ export default function FlyIA() {
         title="Planejamento protegido"
         description="Entre para consultar o seu planejamento com o Fly.IA. Suas perguntas usam apenas os dados do exercício selecionado."
         loginLabel="Entrar para usar o Fly.IA"
+        resource="fly-ia"
       />
     </>
   );

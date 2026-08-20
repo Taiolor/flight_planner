@@ -8,6 +8,8 @@ import {
 import { Mail, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { trpc } from "@/lib/trpc";
+import { LoginModal } from "@/components/auth/LoginModal";
+import { LoginRequiredMessageBox } from "@/components/auth/LoginRequiredMessageBox";
 
 interface ShareByEmailButtonProps {
   weekNumber: number;
@@ -56,6 +58,8 @@ export function ShareByEmailButton({
   returnTerminal,
 }: ShareByEmailButtonProps) {
   const [isLoading, setIsLoading] = useState(false);
+  const [showLoginRequiredMessage, setShowLoginRequiredMessage] = useState(false);
+  const [showLoginModal, setShowLoginModal] = useState(false);
   // Usar useMemo para evitar criar a mutation múltiplas vezes
   // A mutation será criada apenas uma vez por renderização
   const shareByEmailMutation =
@@ -109,10 +113,7 @@ export function ShareByEmailButton({
     } catch (error) {
       // Tratar erro de autenticação
       if (error instanceof Error && error.message.includes("Faça login")) {
-        toast.error("❌ Você precisa fazer login para compartilhar", {
-          description: "Faça login e tente novamente.",
-          duration: 5000,
-        });
+        setShowLoginRequiredMessage(true);
       } else {
         const errorMessage =
           error instanceof Error
@@ -148,23 +149,46 @@ export function ShareByEmailButton({
     </Button>
   );
 
+  const authMessage = (
+    <>
+      <LoginRequiredMessageBox
+        open={showLoginRequiredMessage}
+        onOpenChange={setShowLoginRequiredMessage}
+        onLogin={() => setShowLoginModal(true)}
+        title="Compartilhamento protegido"
+        description="Entre para compartilhar os dados de seus bilhetes com os destinatários cadastrados."
+        loginLabel="Entrar para compartilhar"
+        resource="share-by-email"
+      />
+      <LoginModal open={showLoginModal} onOpenChange={setShowLoginModal} />
+    </>
+  );
+
   if (!departureFlightNumber || !returnFlightNumber) {
     return (
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <span
-            tabIndex={0}
-            className="w-full block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-md"
-          >
-            {buttonContent}
-          </span>
-        </TooltipTrigger>
-        <TooltipContent>
-          <p>Preencha os dados de ida e volta antes de compartilhar</p>
-        </TooltipContent>
-      </Tooltip>
+      <>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <span
+              tabIndex={0}
+              className="w-full block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-md"
+            >
+              {buttonContent}
+            </span>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Preencha os dados de ida e volta antes de compartilhar</p>
+          </TooltipContent>
+        </Tooltip>
+        {authMessage}
+      </>
     );
   }
 
-  return buttonContent;
+  return (
+    <>
+      {buttonContent}
+      {authMessage}
+    </>
+  );
 }

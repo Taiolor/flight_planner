@@ -799,6 +799,10 @@
 ## Acesso e autenticação
 
 - [x] Padronizar os avisos de usuário não autenticado em uma message box centralizada e acessível
+- [x] Aplicar a message box centralizada ao compartilhamento de passagens por e-mail
+- [x] Adicionar animação sutil e respeitosa à message box de acesso
+- [x] Registrar tentativas de acesso a recursos protegidos sem coletar dados pessoais
+- [x] Proteger a página Financeiro com a message box centralizada e login interno
 
 ## Preferências da Home
 

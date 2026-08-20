@@ -2,6 +2,18 @@
 import React from "react";
 import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
+
+const recordAttempt = vi.hoisted(() => vi.fn());
+
+vi.mock("@/lib/trpc", () => ({
+  trpc: {
+    protectedAccess: {
+      record: {
+        useMutation: () => ({ mutate: recordAttempt }),
+      },
+    },
+  },
+}));
 import {
   LoginRequiredMessageBox,
   LoginRequiredScreen,

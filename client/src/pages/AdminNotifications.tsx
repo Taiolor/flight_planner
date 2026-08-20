@@ -266,6 +266,7 @@ export default function AdminNotifications() {
           title="Acesso a notificações"
           description="Entre com sua conta para acompanhar alertas e notificações de voo."
           onLogin={() => setShowLoginModal(true)}
+          resource="admin-notifications"
         >
           <Link href="/">
             <Button variant="ghost" aria-label="Voltar para a página inicial" className="gap-2">

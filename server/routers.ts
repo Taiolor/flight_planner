@@ -89,6 +89,11 @@ import {
   recordGeminiUsage,
   updateGeminiBudgetSettings,
 } from "./geminiBudget";
+import { PROTECTED_ACCESS_RESOURCES } from "../shared/protectedAccess";
+import {
+  getProtectedAccessAttemptSummary,
+  recordProtectedAccessAttempt,
+} from "./protectedAccessMetrics";
 
 interface NextAlert {
   year: number;
@@ -107,6 +112,14 @@ const planningYearSchema = z.number().int().min(2020).max(2100);
 
 export const appRouter = router({
   system: systemRouter,
+  protectedAccess: router({
+    record: publicProcedure
+      .input(z.object({ resource: z.enum(PROTECTED_ACCESS_RESOURCES) }))
+      .mutation(async ({ input }) => ({
+        recorded: await recordProtectedAccessAttempt(input.resource),
+      })),
+    summary: flightAdminProcedure.query(() => getProtectedAccessAttemptSummary()),
+  }),
   auth: router({
     me: publicProcedure.query(opts => opts.ctx.user),
     logout: publicProcedure.mutation(({ ctx }) => {

@@ -1193,6 +1193,7 @@ export default function FlightQuotes() {
         title="Cotações protegidas"
         description="Entre para buscar preços pela API e salvar suas cotações no exercício selecionado."
         loginLabel="Entrar para cotar"
+        resource="quotes"
       />
     </div>
   );

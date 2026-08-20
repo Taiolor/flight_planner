@@ -65,6 +65,7 @@ export default function UsageTelemetryMap() {
           title="Telemetria protegida"
           description="Entre com a sessão interna para consultar o mapa administrativo de eventos consentidos."
           onLogin={() => setShowLoginModal(true)}
+          resource="admin-telemetry"
         />
         <LoginModal open={showLoginModal} onOpenChange={setShowLoginModal} />
       </div>
