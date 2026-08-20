@@ -1,6 +1,15 @@
 export type FlyIaSuggestionTopic = "flight" | "finance" | "alert" | "city" | "distance" | "general";
 export type FlyIaSuggestionPreferences = Partial<Record<FlyIaSuggestionTopic, number>>;
 
+export const FLY_IA_SUGGESTION_TOPIC_LABELS: Record<FlyIaSuggestionTopic, string> = {
+  flight: "Voos",
+  finance: "Gastos",
+  alert: "Alertas",
+  city: "Cidades",
+  distance: "Distâncias",
+  general: "Planejamento",
+};
+
 const GENERAL_FOLLOW_UPS = [
   "Qual é meu próximo voo?",
   "Há algum voo cancelado?",
@@ -31,6 +40,21 @@ export function recordFlyIaSuggestionPreference(
     // Limite baixo evita que uma sequência de toques elimine a diversidade.
     [topic]: Math.min((preferences[topic] ?? 0) + 1, 3),
   };
+}
+
+export function getFlyIaDominantSuggestionTopic(preferences: FlyIaSuggestionPreferences) {
+  return (Object.entries(preferences) as Array<[FlyIaSuggestionTopic, number]>)
+    .filter(([, score]) => score > 0)
+    .sort(([, scoreA], [, scoreB]) => scoreB - scoreA)[0]?.[0] ?? null;
+}
+
+export function clearFlyIaSuggestionTopic(
+  preferences: FlyIaSuggestionPreferences,
+  topic: FlyIaSuggestionTopic
+): FlyIaSuggestionPreferences {
+  const next = { ...preferences };
+  delete next[topic];
+  return next;
 }
 
 export function prioritizeFlyIaSuggestions(

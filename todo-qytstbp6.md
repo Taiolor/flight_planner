@@ -124,3 +124,11 @@
 - [x] Criar testes de ordenação, limpeza ao encerrar conversa, acessibilidade e responsividade.
 - [x] Validar no widget que uma escolha reordena sugestões e que limpar a conversa remove as preferências da sessão.
 - [x] Salvar um checkpoint da personalização de sugestões por sessão.
+- [x] Definir os estados de preferência, ativação e tema prioritário dentro da sessão atual.
+- [x] Adicionar controle para ativar ou desativar sugestões personalizadas.
+- [x] Adicionar redefinição de um tema preferido e de todas as preferências da sessão.
+- [x] Exibir um indicador discreto quando a ordem das sugestões estiver adaptada à sessão.
+- [x] Criar testes de ativação, redefinição, indicador, acessibilidade e responsividade.
+- [x] Validar no widget que "Limpar sugestões" remove todas as preferências e restaura a ordem padrão.
+- [x] Validar os controles do cabeçalho em celular e desktop, incluindo rótulos acessíveis, indicador e quebra de linha fluida.
+- [ ] Salvar um checkpoint dos controles ampliados de sugestões.

@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
+  clearFlyIaSuggestionTopic,
+  getFlyIaDominantSuggestionTopic,
   getFlyIaFollowUpPrompts,
   recordFlyIaSuggestionPreference,
 } from "./flyIaSuggestions";
@@ -40,5 +42,16 @@ describe("getFlyIaFollowUpPrompts", () => {
       "Quais são os detalhes do próximo voo?",
       "Qual é a distância total planejada?",
     ]);
+  });
+
+  it("permite redefinir somente um tema e identificar o interesse dominante", () => {
+    const preferences = recordFlyIaSuggestionPreference(
+      recordFlyIaSuggestionPreference({}, "Há algum voo cancelado ou remarcado?"),
+      "Há algum voo cancelado ou remarcado?"
+    );
+    const withDistance = recordFlyIaSuggestionPreference(preferences, "Qual é a distância total planejada?");
+
+    expect(getFlyIaDominantSuggestionTopic(withDistance)).toBe("alert");
+    expect(clearFlyIaSuggestionTopic(withDistance, "alert")).toEqual({ distance: 1 });
   });
 });

@@ -12,12 +12,15 @@ import { LoginRequiredMessageBox } from "@/components/auth/LoginRequiredMessageB
 import { useYear } from "@/contexts/YearContext";
 import { trpc } from "@/lib/trpc";
 import {
+  clearFlyIaSuggestionTopic,
+  FLY_IA_SUGGESTION_TOPIC_LABELS,
+  getFlyIaDominantSuggestionTopic,
   getFlyIaFollowUpPrompts,
   recordFlyIaSuggestionPreference,
   type FlyIaSuggestionPreferences,
 } from "@/lib/flyIaSuggestions";
-import { Bot, MessageCircle, ShieldCheck, Trash2, X } from "lucide-react";
-import React, { useCallback, useEffect, useState } from "react";
+import { Bot, MessageCircle, RotateCcw, ShieldCheck, SlidersHorizontal, Sparkles, Trash2, X } from "lucide-react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 
 const SUGGESTED_PROMPTS = [
@@ -38,6 +41,7 @@ export default function FlyIA() {
   const [showLoginRequiredMessage, setShowLoginRequiredMessage] = useState(false);
   const [messages, setMessages] = useState<FlyIaClientMessage[]>([]);
   const [suggestionPreferences, setSuggestionPreferences] = useState<FlyIaSuggestionPreferences>({});
+  const [personalizedSuggestionsEnabled, setPersonalizedSuggestionsEnabled] = useState(true);
   const internalSessionQuery = trpc.flightAuth.check.useQuery(undefined, {
     retry: false,
     refetchOnWindowFocus: false,
@@ -79,6 +83,11 @@ export default function FlyIA() {
 
   const isInternalSessionAuthenticated =
     internalSessionQuery.data?.authenticated ?? false;
+  const dominantSuggestionTopic = useMemo(
+    () => getFlyIaDominantSuggestionTopic(suggestionPreferences),
+    [suggestionPreferences]
+  );
+  const suggestionsAreAdapted = personalizedSuggestionsEnabled && dominantSuggestionTopic !== null;
 
   const openFlyIa = () => {
     if (!isInternalSessionAuthenticated) {
@@ -117,6 +126,54 @@ export default function FlyIA() {
             <DialogDescription className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
               Assistente do planejamento de {selectedYear}
             </DialogDescription>
+            <div className="mt-1 flex flex-wrap items-center gap-1.5" data-testid="flyia-suggestion-controls">
+              {suggestionsAreAdapted && (
+                <span className="inline-flex items-center gap-1 text-[10px] font-medium text-blue-700 dark:text-blue-300" data-testid="flyia-adapted-suggestions-indicator">
+                  <Sparkles className="h-3 w-3" aria-hidden="true" />
+                  Sugestões adaptadas: {FLY_IA_SUGGESTION_TOPIC_LABELS[dominantSuggestionTopic]}
+                </span>
+              )}
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="h-6 px-1.5 text-[10px] text-slate-500 hover:text-slate-900 dark:hover:text-slate-100"
+                onClick={() => setPersonalizedSuggestionsEnabled(current => !current)}
+                aria-pressed={personalizedSuggestionsEnabled}
+                aria-label={personalizedSuggestionsEnabled ? "Desativar sugestões personalizadas" : "Ativar sugestões personalizadas"}
+                title={personalizedSuggestionsEnabled ? "Desativar sugestões personalizadas" : "Ativar sugestões personalizadas"}
+              >
+                <SlidersHorizontal className="mr-1 h-3 w-3" aria-hidden="true" />
+                {personalizedSuggestionsEnabled ? "Personalizar" : "Personalização pausada"}
+              </Button>
+              {dominantSuggestionTopic && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="h-6 px-1.5 text-[10px] text-slate-500 hover:text-slate-900 dark:hover:text-slate-100"
+                  onClick={() => setSuggestionPreferences(current => clearFlyIaSuggestionTopic(current, dominantSuggestionTopic))}
+                  aria-label={`Redefinir tema preferido: ${FLY_IA_SUGGESTION_TOPIC_LABELS[dominantSuggestionTopic]}`}
+                  title={`Redefinir tema: ${FLY_IA_SUGGESTION_TOPIC_LABELS[dominantSuggestionTopic]}`}
+                >
+                  <RotateCcw className="mr-1 h-3 w-3" aria-hidden="true" />
+                  Tema
+                </Button>
+              )}
+              {dominantSuggestionTopic && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="h-6 px-1.5 text-[10px] text-slate-500 hover:text-slate-900 dark:hover:text-slate-100"
+                  onClick={() => setSuggestionPreferences({})}
+                  aria-label="Redefinir todas as sugestões personalizadas"
+                  title="Redefinir todas as sugestões personalizadas"
+                >
+                  Limpar sugestões
+                </Button>
+              )}
+            </div>
           </div>
           {messages.length > 0 && (
             <Button
@@ -157,9 +214,18 @@ export default function FlyIA() {
             placeholder="Pergunte sobre voos, compras ou cidades..."
             emptyStateMessage="Olá, eu sou a Fly.IA. Como posso ajudar com seu planejamento?"
             suggestedPrompts={SUGGESTED_PROMPTS}
-            followUpPrompts={message => getFlyIaFollowUpPrompts(message.content, suggestionPreferences)}
+            followUpPrompts={message =>
+              getFlyIaFollowUpPrompts(
+                message.content,
+                personalizedSuggestionsEnabled ? suggestionPreferences : {}
+              )
+            }
             onFollowUpPromptSelected={prompt =>
-              setSuggestionPreferences(current => recordFlyIaSuggestionPreference(current, prompt))
+              setSuggestionPreferences(current =>
+                personalizedSuggestionsEnabled
+                  ? recordFlyIaSuggestionPreference(current, prompt)
+                  : current
+              )
             }
           />
         </div>

@@ -83,8 +83,9 @@ Reflect.set(globalThis, "IS_REACT_ACT_ENVIRONMENT", true);
 let root: Root | null = null;
 let host: HTMLDivElement | null = null;
 
-function mount() {
+function mount(width?: number) {
   host = document.createElement("div");
+  if (width) host.style.width = `${width}px`;
   document.body.appendChild(host);
   root = createRoot(host);
   state.rerender = () => root?.render(<FlyIA />);
@@ -206,5 +207,61 @@ describe("Fly.IA response flow", () => {
 
     expect(document.querySelector('[data-testid="primeira-sugestao"]')?.textContent)
       .toBe("Quais são os detalhes do próximo voo?");
+  });
+
+  it("permite pausar a adaptação, redefinir o tema e sinaliza sugestões adaptadas", () => {
+    mount();
+    sendQuestion();
+    act(() => state.options.onSuccess({ response: "Seu próximo voo sai às 22:05." }));
+    act(() => state.onFollowUpPromptSelected?.("Há algum voo cancelado ou remarcado?"));
+
+    expect(document.querySelector('[data-testid="flyia-adapted-suggestions-indicator"]')?.textContent)
+      .toContain("Alertas");
+
+    act(() => document.querySelector<HTMLButtonElement>('button[aria-label="Desativar sugestões personalizadas"]')?.click());
+    expect(document.querySelector('[data-testid="flyia-adapted-suggestions-indicator"]')).toBeNull();
+    expect(document.querySelector('[data-testid="primeira-sugestao"]')?.textContent)
+      .toBe("Quais são os detalhes do próximo voo?");
+
+    act(() => document.querySelector<HTMLButtonElement>('button[aria-label="Ativar sugestões personalizadas"]')?.click());
+    expect(document.querySelector('[data-testid="primeira-sugestao"]')?.textContent)
+      .toBe("Há algum voo cancelado ou remarcado?");
+
+    act(() => document.querySelector<HTMLButtonElement>('button[aria-label="Redefinir tema preferido: Alertas"]')?.click());
+    expect(document.querySelector('[data-testid="flyia-adapted-suggestions-indicator"]')).toBeNull();
+  });
+
+  it("limpa todas as preferências e restaura a ordem padrão das sugestões", () => {
+    mount();
+    sendQuestion();
+    act(() => state.options.onSuccess({ response: "Seu próximo voo sai às 22:05." }));
+    act(() => state.onFollowUpPromptSelected?.("Há algum voo cancelado ou remarcado?"));
+    act(() => state.onFollowUpPromptSelected?.("Qual é a distância total planejada?"));
+
+    expect(document.querySelector('[data-testid="flyia-adapted-suggestions-indicator"]')).not.toBeNull();
+    act(() => document.querySelector<HTMLButtonElement>('button[aria-label="Redefinir todas as sugestões personalizadas"]')?.click());
+
+    expect(document.querySelector('[data-testid="flyia-adapted-suggestions-indicator"]')).toBeNull();
+    expect(document.querySelector('[data-testid="primeira-sugestao"]')?.textContent)
+      .toBe("Quais são os detalhes do próximo voo?");
+  });
+
+  it.each([
+    { label: "celular", width: 320 },
+    { label: "desktop", width: 1280 },
+  ])("mantém controles acessíveis e fluidos em $label", ({ width }) => {
+    mount(width);
+    sendQuestion();
+    act(() => state.options.onSuccess({ response: "Seu próximo voo sai às 22:05." }));
+    act(() => state.onFollowUpPromptSelected?.("Há algum voo cancelado ou remarcado?"));
+
+    const controls = document.querySelector<HTMLElement>('[data-testid="flyia-suggestion-controls"]');
+    const toggle = document.querySelector<HTMLButtonElement>('button[aria-label="Desativar sugestões personalizadas"]');
+    expect(host?.style.width).toBe(`${width}px`);
+    expect(controls?.className).toContain("flex-wrap");
+    expect(toggle?.getAttribute("aria-pressed")).toBe("true");
+    expect(document.querySelector('[data-testid="flyia-adapted-suggestions-indicator"]')?.textContent)
+      .toContain("Alertas");
+    expect(document.querySelector<HTMLButtonElement>('button[aria-label="Redefinir tema preferido: Alertas"]')).not.toBeNull();
   });
 });
