@@ -88,3 +88,8 @@
 - [x] Registrar evidência dedicada de layout do skeleton Fly.IA em desktop e celular pela cobertura de viewport responsiva.
 - [x] Habilitar temporariamente uma prévia de desenvolvimento do skeleton Fly.IA, capturar desktop e celular e remover o código de prévia antes do checkpoint.
 - [x] Salvar um checkpoint da melhoria de carregamento do Fly.IA.
+- [x] Mapear o contexto factual atual, o histórico de mensagens e os dados textuais disponíveis ao Fly.IA.
+- [x] Comparar os ganhos e custos de RAG, memória resumida de conversa e consultas estruturadas para o SmartFly.
+- [x] Produzir uma recomendação de arquitetura incremental para memória do Fly.IA.
+- [ ] Salvar um checkpoint da avaliação arquitetural de memória do Fly.IA.
+- [x] Confirmar em arquivo o mapeamento de contexto, a comparação de alternativas e a recomendação incremental de memória do Fly.IA.
