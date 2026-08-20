@@ -29,6 +29,7 @@ import {
   ShieldCheck,
   Sparkles,
   Sun,
+  Ticket,
   TrendingUp,
 } from "lucide-react";
 import React, { type ReactNode } from "react";
@@ -123,6 +124,14 @@ export function HomeHeaderActions({
             <CalendarDays className="size-4" aria-hidden="true" />
             <span className="ml-1.5 whitespace-nowrap">Abrir calendário</span>
           </Link>
+          <Link
+            href="/gestao-passagens"
+            aria-label="Abrir Gestão de Passagens"
+            className={`${headerButtonClass} inline-flex items-center justify-center px-3`}
+          >
+            <Ticket className="size-4" aria-hidden="true" />
+            <span className="ml-1.5 hidden sm:inline">Gestão</span>
+          </Link>
           <Button
             size="sm"
             variant="outline"
@@ -154,6 +163,11 @@ export function HomeHeaderActions({
               <DropdownMenuItem asChild>
                 <Link href="/calendar">
                   <span className="flex items-center gap-2"><Sparkles className="size-4 text-cyan-300" />Calendário</span>
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link href="/gestao-passagens">
+                  <span className="flex items-center gap-2"><Ticket className="size-4 text-blue-300" />Gestão de Passagens</span>
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>

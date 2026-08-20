@@ -71,3 +71,16 @@
 - [x] Adicionar regressão renderizada da composição responsiva do cabeçalho de Gestão de Passagens
 - [x] Confirmar os arquivos do frame e da regressão de interação antes da validação focal
 - [x] Corrigir a compatibilidade JSX do frame Gestão de Passagens no ambiente de testes
+- [x] Mapear dados, estados e blocos de Planejamento anual e Gestão de Passagens atualmente na Home
+- [x] Definir rota dedicada reutilizando a lógica de dados existente e mantendo a Home focada em visão resumida
+- [x] Confirmar a rota /gestao-passagens e sua composição dedicada com o contexto anual existente
+- [x] Corrigir a compatibilidade de tipagem da rota principal após adicionar o modo da Home
+- [x] Criar a nova página dedicada de Gestão de Passagens
+- [x] Mover os controles mensais, filtros e resumos anuais para a página dedicada
+- [x] Adicionar acesso direto à Gestão de Passagens no cabeçalho
+- [x] Cobrir navegação, dados, acessibilidade e responsividade da nova página
+- [x] Adicionar integração renderizada que comprove os blocos anuais movidos na página dedicada
+- [x] Validar em runtime o acesso de cabeçalho e os controles principais da Gestão de Passagens
+- [x] Adicionar teste renderizado da rota dedicada com Resumo Anual, Filtros e Gestão de Passagens
+- [x] Validar em runtime o link de Gestão de Passagens no cabeçalho e a expansão global de meses
+- [x] Corrigir a compatibilidade JSX da página dedicada no ambiente de testes

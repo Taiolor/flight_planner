@@ -43,6 +43,9 @@ describe("HomeHeaderActions", () => {
     expect(
       screen.getByRole("link", { name: "Abrir calendário" }).getAttribute("href")
     ).toBe("/calendar");
+    expect(
+      screen.getByRole("link", { name: "Abrir Gestão de Passagens" }).getAttribute("href")
+    ).toBe("/gestao-passagens");
     expect(screen.getByRole("button", { name: "Abrir navegação" })).toBeTruthy();
     expect(
       screen.getByRole("button", { name: "Abrir preferências de aparência" })

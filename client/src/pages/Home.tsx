@@ -514,7 +514,14 @@ const CHART_MONTHS = [
   { num: "12", label: "Dez" },
 ];
 
-export default function Home() {
+export type HomeMode = "home" | "passage-management";
+
+type HomeProps = {
+  mode?: HomeMode;
+};
+
+export default function Home({ mode = "home" }: HomeProps) {
+  const isManagementView = mode === "passage-management";
   // Theme state
   const { theme, toggleTheme, colorPreset, setColorPreset } = useTheme();
 
@@ -2320,6 +2327,8 @@ export default function Home() {
       </header>
 
       <main className="container py-4 sm:py-8">
+        {!isManagementView && (
+          <>
         <HomeDashboardControls
           theme={theme}
           profile={homeDashboardPreferences.profile}
@@ -2505,7 +2514,26 @@ export default function Home() {
             onRestore={handleRestoreAttention}
           />
         )}
+          </>
+        )}
 
+        {isManagementView && (
+          <section className="mb-6 rounded-3xl border border-blue-100 bg-gradient-to-br from-blue-50 via-white to-indigo-50 p-5 shadow-sm dark:border-slate-800 dark:from-slate-900 dark:via-slate-950 dark:to-indigo-950/30 sm:mb-8 sm:p-7">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-blue-600 dark:text-blue-300">Área operacional dedicada</p>
+                <h2 className="mt-1 text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100 sm:text-3xl">Gestão de Passagens</h2>
+                <p className="mt-2 max-w-2xl text-sm text-slate-600 dark:text-slate-300">Planeje o exercício, filtre semanas, registre bilhetes e acompanhe todos os meses em um único fluxo.</p>
+              </div>
+              <Link href="/" className="inline-flex min-h-10 items-center justify-center rounded-xl border border-blue-200 bg-white px-3 py-2 text-sm font-semibold text-blue-700 shadow-sm transition-colors hover:bg-blue-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:border-blue-800 dark:bg-slate-900 dark:text-blue-300">
+                Voltar para a visão geral
+              </Link>
+            </div>
+          </section>
+        )}
+
+        {isManagementView && (
+          <>
         {/* Filtros com Accordion */}
         {weeksQuery.isLoading ? (
           <SkeletonFilters />
@@ -6226,7 +6254,11 @@ export default function Home() {
             </div>
           </Card>
         )}
+          </>
+        )}
 
+        {!isManagementView && (
+          <>
         {/* Gráfico de Variação de Preços */}
         <Card
           id="price-chart-section"
@@ -6413,7 +6445,11 @@ export default function Home() {
             </div>
           )}
         </Card>
+          </>
+        )}
 
+        {isManagementView && (
+          <>
         {/* Semanas Excluídas */}
         {deletedWeeks.length > 0 && (
           <Card className="mt-8 p-6 border border-red-100 shadow-sm bg-red-50/50 rounded-3xl">
@@ -6447,6 +6483,8 @@ export default function Home() {
               ))}
             </div>
           </Card>
+        )}
+          </>
         )}
       </main>
 

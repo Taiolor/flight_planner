@@ -20,6 +20,7 @@ const FinancialDashboard = lazy(() => import("./pages/FinancialDashboard"));
 const UsageTelemetryMap = lazy(() => import("./pages/UsageTelemetryMap"));
 const GeminiBudgetDashboard = lazy(() => import("./pages/GeminiBudgetDashboard"));
 const Memories = lazy(() => import("./pages/Memories"));
+const PassageManagementPage = lazy(() => import("./pages/PassageManagementPage"));
 
 // Fallback de carregamento para rotas com lazy loading
 function PageLoader() {
@@ -37,7 +38,14 @@ function Router() {
   // make sure to consider if you need authentication for certain routes
   return (
     <Switch>
-      <Route path={"/"} component={Home} />
+      <Route path={"/"}>
+        <Home />
+      </Route>
+      <Route path={"/gestao-passagens"}>
+        <Suspense fallback={<PageLoader />}>
+          <PassageManagementPage />
+        </Suspense>
+      </Route>
       <Route path={"/calendar"}>
         <Suspense fallback={<PageLoader />}>
           <CalendarView />

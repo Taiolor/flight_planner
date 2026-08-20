@@ -8,6 +8,8 @@ describe("frame Gestão de Passagens da Home", () => {
     expect(source).toContain("PassageManagementFrame");
     expect(source).toContain("toggleAllMonths");
     expect(source).toContain("allMonthsExpanded={allMonthsExpanded}");
+    expect(source).toContain("isManagementView &&");
+    expect(source).toContain("Gestão de Passagens");
   });
 
   it("mantém uma composição responsiva para cabeçalho, resumo e ação global", () => {
