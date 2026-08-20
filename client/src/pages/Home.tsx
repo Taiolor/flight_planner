@@ -1107,7 +1107,7 @@ export default function Home() {
     [annualEmissionGoal, annualProgress.issuedWeeks]
   );
   const updateExpandablePanel = (
-    panel: "annualProgress" | "attentionCenter"
+    panel: "annualProgress" | "attentionCenter" | "priceVariation"
   ) => {
     setExpandablePanels(previous => {
       const next = { ...previous, [panel]: !previous[panel] };
@@ -5977,38 +5977,63 @@ export default function Home() {
               : "border-slate-200/60 shadow-xl shadow-slate-200/40 bg-white"
           }`}
         >
-          <div className="flex items-center gap-3 mb-6">
-            <div
-              className={`p-2 rounded-lg transition-colors duration-300 ${
-                theme === "dark" ? "bg-blue-900/40" : "bg-blue-100"
+          <button
+            type="button"
+            onClick={() => updateExpandablePanel("priceVariation")}
+            aria-expanded={expandablePanels.priceVariation}
+            aria-controls="price-variation-content"
+            className="flex w-full items-start justify-between gap-3 rounded-2xl text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 sm:items-center sm:gap-4"
+          >
+            <span className="flex min-w-0 items-center gap-3">
+              <span
+                className={`shrink-0 p-2 rounded-lg transition-colors duration-300 ${
+                  theme === "dark" ? "bg-blue-900/40" : "bg-blue-100"
+                }`}
+              >
+                <TrendingUp
+                  className={`w-5 h-5 transition-colors duration-300 ${
+                    theme === "dark" ? "text-blue-400" : "text-blue-600"
+                  }`}
+                />
+              </span>
+              <span className="min-w-0">
+                <span
+                  role="heading"
+                  aria-level={2}
+                  className={`block text-xl font-bold transition-colors duration-300 ${
+                    theme === "dark" ? "text-slate-100" : "text-slate-900"
+                  }`}
+                >
+                  Variação de Preços por Mês
+                </span>
+                <span
+                  className={`block text-sm transition-colors duration-300 ${
+                    theme === "dark" ? "text-slate-400" : "text-slate-500"
+                  }`}
+                >
+                  Média dos preços registrados por todas as empresas e buscadores em cada mês
+                </span>
+              </span>
+            </span>
+            <span
+              className={`flex shrink-0 items-center gap-1.5 text-sm font-semibold ${
+                theme === "dark" ? "text-slate-300" : "text-slate-600"
               }`}
             >
-              <TrendingUp
-                className={`w-5 h-5 transition-colors duration-300 ${
-                  theme === "dark" ? "text-blue-400" : "text-blue-600"
-                }`}
-              />
-            </div>
-            <div>
-              <h2
-                className={`text-xl font-bold transition-colors duration-300 ${
-                  theme === "dark" ? "text-slate-100" : "text-slate-900"
-                }`}
-              >
-                Variação de Preços por Mês
-              </h2>
-              <p
-                className={`text-sm transition-colors duration-300 ${
-                  theme === "dark" ? "text-slate-400" : "text-slate-500"
-                }`}
-              >
-                Média dos preços registrados por todas as empresas e buscadores
-                em cada mês
-              </p>
-            </div>
-          </div>
+              <span className="hidden sm:inline">
+                {expandablePanels.priceVariation ? "Recolher" : "Expandir"}
+              </span>
+              {expandablePanels.priceVariation ? (
+                <ChevronUp className="w-5 h-5" aria-hidden="true" />
+              ) : (
+                <ChevronDown className="w-5 h-5" aria-hidden="true" />
+              )}
+            </span>
+          </button>
 
-          {/* Filtro de empresas do gráfico - sempre visível */}
+          {expandablePanels.priceVariation && (
+            <div id="price-variation-content" className="mt-6">
+          {/* Filtro de empresas do gráfico */}
           <div
             className={`mb-6 max-w-full overflow-hidden p-4 rounded-xl border transition-colors duration-300 ${
               theme === "dark"
@@ -6125,6 +6150,8 @@ export default function Home() {
                 </span>
               </button>
             )
+          )}
+            </div>
           )}
         </Card>
 

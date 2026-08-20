@@ -16,3 +16,7 @@
 - [x] Corrigir a compatibilidade JSX do primitive Skeleton para validar o novo estado de carregamento
 - [x] Cobrir o estado de carregamento com teste e validar em desktop e mobile
 - [x] Adicionar regressão de integração que comprove o uso do skeleton pela rota financeira durante isLoading
+- [x] Inspecionar o quadro Variação de Preços por Mês e o padrão atual de preferências persistentes
+- [x] Implementar o controle de recolher ou expandir com persistência da última escolha
+- [x] Cobrir acessibilidade, persistência e responsividade do quadro com testes
+- [x] Adicionar regressão responsiva do cabeçalho e conteúdo expansível do quadro de preços

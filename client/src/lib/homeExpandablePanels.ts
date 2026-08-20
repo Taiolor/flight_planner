@@ -4,11 +4,13 @@ export const HOME_EXPANDABLE_PANELS_STORAGE_KEY =
 export type HomeExpandablePanels = {
   annualProgress: boolean;
   attentionCenter: boolean;
+  priceVariation: boolean;
 };
 
 export const DEFAULT_HOME_EXPANDABLE_PANELS: HomeExpandablePanels = {
   annualProgress: true,
   attentionCenter: true,
+  priceVariation: true,
 };
 
 export function readHomeExpandablePanels(
@@ -29,6 +31,10 @@ export function readHomeExpandablePanels(
         typeof parsed.attentionCenter === "boolean"
           ? parsed.attentionCenter
           : DEFAULT_HOME_EXPANDABLE_PANELS.attentionCenter,
+      priceVariation:
+        typeof parsed.priceVariation === "boolean"
+          ? parsed.priceVariation
+          : DEFAULT_HOME_EXPANDABLE_PANELS.priceVariation,
     };
   } catch {
     return DEFAULT_HOME_EXPANDABLE_PANELS;
