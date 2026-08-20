@@ -73,7 +73,7 @@
 - [x] Cobrir a pergunta de seguimento “detalhes” para garantir a repetição factual completa do próximo voo.
 - [x] Validar a resposta no chat e documentar a correção.
 - [x] Ajustar o timeout do teste de integração da Gemini para acomodar a latência real da API.
-- [ ] Salvar um checkpoint da resposta completa e precisa do próximo voo.
+- [x] Salvar um checkpoint da resposta completa e precisa do próximo voo.
 - [x] Corrigir o registro de tarefas para refletir que perguntas sobre o próximo voo são respondidas deterministicamente no servidor, sem enviar esse caso ao Gemini.
 - [x] Ampliar os testes para validar rota completa, ida e volta associadas, companhia, número, terminal, status e data e hora literais.
 - [x] Adicionar validação integrada do widget Fly.IA para a pergunta inicial e o seguimento por detalhes do próximo voo.
