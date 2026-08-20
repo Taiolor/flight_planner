@@ -15,6 +15,7 @@ import {
   Bell,
   BellOff,
   BellRing,
+  CalendarDays,
   CircleUserRound,
   DollarSign,
   Eye,
@@ -115,13 +116,21 @@ export function HomeHeaderActions({
           <GlobalYearSelector
             className={`${headerButtonClass} min-w-[104px] bg-slate-950/20 text-white hover:bg-white/18`}
           />
+          <Link
+            href="/calendar"
+            className="inline-flex h-10 items-center rounded-xl bg-white px-3 font-semibold text-slate-900 shadow-sm transition-[transform,background-color] duration-150 hover:bg-slate-100 active:scale-[0.97] focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-slate-800"
+          >
+            <CalendarDays className="size-4" aria-hidden="true" />
+            <span className="ml-1.5 whitespace-nowrap">Abrir calendário</span>
+          </Link>
           <Button
             size="sm"
-            className="h-10 rounded-xl bg-white px-3 font-semibold text-slate-900 shadow-sm transition-[transform,background-color] duration-150 hover:bg-slate-100 active:scale-[0.97] focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-slate-800"
+            variant="outline"
+            className={`${headerButtonClass} h-10 px-3`}
             onClick={onShowChart}
           >
             <TrendingUp className="size-4" aria-hidden="true" />
-            <span className="ml-1.5 whitespace-nowrap">Ver gráfico</span>
+            <span className="ml-1.5 hidden sm:inline">Gráfico</span>
           </Button>
         </div>
 

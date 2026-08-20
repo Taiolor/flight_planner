@@ -36,10 +36,13 @@ describe("HomeHeaderActions", () => {
       />
     );
 
-    fireEvent.click(screen.getByRole("button", { name: "Ver gráfico" }));
+    fireEvent.click(screen.getByRole("button", { name: "Gráfico" }));
 
     expect(onShowChart).toHaveBeenCalledOnce();
     expect(screen.getByLabelText("Ações do planejamento")).toBeTruthy();
+    expect(
+      screen.getByRole("link", { name: "Abrir calendário" }).getAttribute("href")
+    ).toBe("/calendar");
     expect(screen.getByRole("button", { name: "Abrir navegação" })).toBeTruthy();
     expect(
       screen.getByRole("button", { name: "Abrir preferências de aparência" })

@@ -119,6 +119,7 @@ import { AttentionCenter } from "@/components/AttentionCenter";
 import { AnnualPlanningProgress } from "@/components/AnnualPlanningProgress";
 import { HomeHeaderActions } from "@/components/HomeHeaderActions";
 import { HomeDashboardControls } from "@/components/HomeDashboardControls";
+import { WeeklyPlanning, type WeeklyPlanningItem } from "@/components/WeeklyPlanning";
 import {
   getAnnualGoalProgress,
   readAnnualEmissionGoal,
@@ -1097,6 +1098,37 @@ export default function Home() {
     }
     return map;
   }, [priceMap]);
+
+  const weeklyPlanningItems: WeeklyPlanningItem[] = useMemo(() => {
+    return weeksData
+      .filter(week =>
+        !week.isDeleted &&
+        (week.isTicketIssued || week.isSelected || lowestPriceMap[week.weekNumber] !== undefined)
+      )
+      .sort((first, second) => first.weekNumber - second.weekNumber)
+      .slice(0, 3)
+      .map(week => {
+        const lowestPrice = lowestPriceMap[week.weekNumber] ?? null;
+        const departureAirport = week.departureAirport?.trim();
+        const returnAirport = week.returnAirport?.trim();
+        return {
+          weekNumber: week.weekNumber,
+          departureDate: week.departureDate,
+          returnDate: week.returnDate,
+          route:
+            departureAirport && returnAirport
+              ? `${departureAirport} → ${returnAirport}`
+              : "Rota a definir",
+          airline: week.departureAirline || week.returnAirline || null,
+          lowestPrice,
+          status: week.isTicketIssued
+            ? "issued"
+            : lowestPrice !== null
+              ? "watch"
+              : "pending",
+        };
+      });
+  }, [lowestPriceMap, weeksData]);
 
   const getLowestPrice = useCallback(
     (weekNumber: number): number | null => {
@@ -2412,6 +2444,14 @@ export default function Home() {
               </Card>
             )}
           </div>
+        )}
+
+        {!weeksQuery.isLoading && (
+          <WeeklyPlanning
+            year={selectedYear}
+            items={weeklyPlanningItems}
+            hideValues={hideValues}
+          />
         )}
 
         {!weeksQuery.isLoading && (

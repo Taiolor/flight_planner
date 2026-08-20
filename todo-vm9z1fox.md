@@ -42,3 +42,11 @@
 - [x] Adicionar restauração da ordem padrão dos painéis prioritários
 - [x] Permitir salvar, aplicar e excluir conjuntos de prioridades nomeados
 - [x] Cobrir persistência, interações, acessibilidade e responsividade com testes
+- [x] Definir recomendações de design minimalista, futurista e funcional para a Home
+- [x] Gerar imagem conceitual da Home para avaliação visual
+- [x] Incorporar o Calendário como referência funcional e atalho principal na imagem conceitual da Home
+- [x] Mapear dados e rotas existentes para os cards semanais e o atalho ao Calendário
+- [x] Promover o Calendário a ação operacional prioritária na Home
+- [x] Implementar a seção Planejamento por semanas com cards de bilhetes reais
+- [x] Posicionar o Planejamento por semanas imediatamente após o Resumo Anual, conforme a hierarquia operacional definida
+- [x] Cobrir dados, navegação, acessibilidade e responsividade das duas implementações
