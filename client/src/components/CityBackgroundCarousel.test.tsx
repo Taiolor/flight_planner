@@ -62,4 +62,17 @@ describe("CityBackgroundCarousel", () => {
       screen.getByRole("button", { name: "Remover Blumenau das favoritas" })
     ).toBeTruthy();
   });
+
+  it("mantém a gestão de fotos no canto inferior sem cobrir a rota anual", () => {
+    const { container } = render(<CityBackgroundCarousel />);
+
+    const controls = container.querySelector(
+      'aside[aria-label="Controle do carrossel de cidades"]'
+    );
+    expect(controls).toBeTruthy();
+    const className = controls?.className ?? "";
+    expect(className).toContain("fixed");
+    expect(className).toContain("bottom-4");
+    expect(className).not.toContain("top-20");
+  });
 });

@@ -183,7 +183,7 @@ export function CityBackgroundCarousel() {
 
       <aside
         aria-label="Controle do carrossel de cidades"
-        className="absolute right-4 top-20 z-20 w-[min(22rem,calc(100vw-2rem))] rounded-2xl border border-white/20 bg-slate-950/50 p-2.5 text-white shadow-xl backdrop-blur-md sm:right-8 sm:top-24"
+        className="fixed bottom-4 right-4 z-20 w-[min(22rem,calc(100vw-2rem))] rounded-2xl border border-white/20 bg-slate-950/65 p-2.5 text-white shadow-xl backdrop-blur-md sm:bottom-6 sm:right-8"
       >
         <div className="flex items-center justify-between gap-2">
           <div className="min-w-0 px-1">

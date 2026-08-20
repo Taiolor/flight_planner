@@ -791,6 +791,7 @@
 - [x] Corrigir o carregamento das imagens do carrossel de cidades em Memórias
 - [x] Adicionar fotos reais de Guarulhos, Piracicaba e Novo Hamburgo ao carrossel de Memórias
 - [x] Permitir escolher e persistir uma foto favorita no carrossel de Memórias
+- [x] Corrigir a sobreposição entre gestão de fotos de fundo e Rota do ano
 
 ## Processo reutilizável
 
