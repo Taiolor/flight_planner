@@ -34,3 +34,6 @@
 - [x] Adicionar integração do atalho global e dos controles de perfil ou prioridade da Home
 - [x] Adicionar regressão responsiva específica da faixa de organização em mobile e desktop
 - [x] Adicionar regressão de classes responsivas para a faixa de perfis, atalho e prioridades
+- [x] Inspecionar a estrutura atual de painéis prioritários e seu armazenamento persistente
+- [x] Implementar a reordenação livre e persistente dos painéis prioritários
+- [x] Cobrir reordenação, acessibilidade e responsividade com testes

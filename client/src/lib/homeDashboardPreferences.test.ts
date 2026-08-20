@@ -5,6 +5,7 @@ import {
   HOME_DASHBOARD_PREFERENCES_STORAGE_KEY,
   persistHomeDashboardPreferences,
   readHomeDashboardPreferences,
+  reorderPinnedPanels,
 } from "./homeDashboardPreferences";
 
 describe("preferências de layout da Home", () => {
@@ -47,6 +48,22 @@ describe("preferências de layout da Home", () => {
     expect(storage.setItem).toHaveBeenCalledWith(
       HOME_DASHBOARD_PREFERENCES_STORAGE_KEY,
       JSON.stringify(preferences)
+    );
+  });
+
+  it("reordena prioridades sem alterar os limites da lista", () => {
+    const pinnedPanels = ["summary", "filters", "priceVariation"] as const;
+
+    expect(reorderPinnedPanels([...pinnedPanels], "filters", "previous")).toEqual([
+      "filters",
+      "summary",
+      "priceVariation",
+    ]);
+    expect(reorderPinnedPanels([...pinnedPanels], "summary", "previous")).toEqual(
+      pinnedPanels
+    );
+    expect(reorderPinnedPanels([...pinnedPanels], "priceVariation", "next")).toEqual(
+      pinnedPanels
     );
   });
 });

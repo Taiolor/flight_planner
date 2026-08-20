@@ -147,7 +147,9 @@ import {
   getHomeLayoutProfileState,
   persistHomeDashboardPreferences,
   readHomeDashboardPreferences,
+  reorderPinnedPanels,
   type HomePanelId,
+  type HomePanelMoveDirection,
   type HomeLayoutProfile,
 } from "@/lib/homeDashboardPreferences";
 import { useHomePanelToggleShortcut } from "@/lib/homePanelShortcuts";
@@ -1200,6 +1202,23 @@ export default function Home() {
       );
     }
   };
+  const movePriorityPanel = (
+    panel: HomePanelId,
+    direction: HomePanelMoveDirection
+  ) => {
+    const pinnedPanels = reorderPinnedPanels(
+      homeDashboardPreferences.pinnedPanels,
+      panel,
+      direction
+    );
+
+    if (pinnedPanels === homeDashboardPreferences.pinnedPanels) return;
+    persistDashboardPreferences({
+      ...homeDashboardPreferences,
+      profile: "custom",
+      pinnedPanels,
+    });
+  };
   useHomePanelToggleShortcut(toggleAllHomePanels);
   const handleSaveAnnualGoal = (goal: number) => {
     const savedGoal = saveAnnualEmissionGoal(
@@ -2199,6 +2218,7 @@ export default function Home() {
           onProfileChange={applyHomeLayoutProfile}
           onToggleAll={toggleAllHomePanels}
           onTogglePriority={togglePriorityPanel}
+          onMovePriority={movePriorityPanel}
         />
         {/* Resumo Anual com Accordion */}
         {weeksQuery.isLoading ? (

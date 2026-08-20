@@ -1,5 +1,12 @@
 import React from "react";
-import { Bookmark, BookmarkCheck, ChevronDown, ChevronUp } from "lucide-react";
+import {
+  Bookmark,
+  BookmarkCheck,
+  ChevronDown,
+  ChevronLeft,
+  ChevronRight,
+  ChevronUp,
+} from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -10,6 +17,7 @@ import {
 import {
   HOME_PANEL_PRIORITY_OPTIONS,
   type HomeLayoutProfile,
+  type HomePanelMoveDirection,
   type HomePanelId,
 } from "@/lib/homeDashboardPreferences";
 
@@ -21,6 +29,7 @@ type HomeDashboardControlsProps = {
   onProfileChange: (profile: Exclude<HomeLayoutProfile, "custom">) => void;
   onToggleAll: () => void;
   onTogglePriority: (panel: HomePanelId) => void;
+  onMovePriority: (panel: HomePanelId, direction: HomePanelMoveDirection) => void;
 };
 
 export function HomeDashboardControls({
@@ -31,8 +40,15 @@ export function HomeDashboardControls({
   onProfileChange,
   onToggleAll,
   onTogglePriority,
+  onMovePriority,
 }: HomeDashboardControlsProps) {
   const isDark = theme === "dark";
+  const priorityOptions = [
+    ...pinnedPanels
+      .map(id => HOME_PANEL_PRIORITY_OPTIONS.find(option => option.id === id))
+      .filter((option): option is (typeof HOME_PANEL_PRIORITY_OPTIONS)[number] => Boolean(option)),
+    ...HOME_PANEL_PRIORITY_OPTIONS.filter(option => !pinnedPanels.includes(option.id)),
+  ];
 
   return (
     <section
@@ -89,29 +105,54 @@ export function HomeDashboardControls({
         </button>
       </div>
       <div className="mt-3 flex flex-col gap-2 border-t border-slate-200/70 pt-3 dark:border-slate-700 sm:flex-row sm:items-center">
-        <span className={`text-xs font-semibold uppercase tracking-wide ${isDark ? "text-slate-400" : "text-slate-500"}`}>
+          <span className={`text-xs font-semibold uppercase tracking-wide ${isDark ? "text-slate-400" : "text-slate-500"}`}>
           Prioritários
-        </span>
-        <div className="flex flex-wrap gap-2">
-          {HOME_PANEL_PRIORITY_OPTIONS.map(option => {
+          </span>
+          <div className="flex flex-wrap gap-2">
+          {priorityOptions.map((option, index) => {
             const isPinned = pinnedPanels.includes(option.id);
+            const isFirstPinned = isPinned && index === 0;
+            const isLastPinned = isPinned && index === pinnedPanels.length - 1;
             return (
-              <button
-                key={option.id}
-                type="button"
-                aria-pressed={isPinned}
-                onClick={() => onTogglePriority(option.id)}
-                className={`inline-flex min-h-9 items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-xs font-semibold transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 ${
-                  isPinned
-                    ? "border-blue-300 bg-blue-50 text-blue-700 dark:border-blue-700 dark:bg-blue-950/50 dark:text-blue-200"
-                    : isDark
-                      ? "border-slate-700 text-slate-300 hover:bg-slate-800"
-                      : "border-slate-200 text-slate-600 hover:bg-slate-50"
-                }`}
-              >
-                {isPinned ? <BookmarkCheck className="h-3.5 w-3.5" /> : <Bookmark className="h-3.5 w-3.5" />}
-                {option.label}
-              </button>
+              <div key={option.id} className="inline-flex items-center gap-1">
+                <button
+                  type="button"
+                  aria-pressed={isPinned}
+                  onClick={() => onTogglePriority(option.id)}
+                  className={`inline-flex min-h-9 items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-xs font-semibold transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 ${
+                    isPinned
+                      ? "border-blue-300 bg-blue-50 text-blue-700 dark:border-blue-700 dark:bg-blue-950/50 dark:text-blue-200"
+                      : isDark
+                        ? "border-slate-700 text-slate-300 hover:bg-slate-800"
+                        : "border-slate-200 text-slate-600 hover:bg-slate-50"
+                  }`}
+                >
+                  {isPinned ? <BookmarkCheck className="h-3.5 w-3.5" /> : <Bookmark className="h-3.5 w-3.5" />}
+                  {option.label}
+                </button>
+                {isPinned && (
+                  <span className="inline-flex overflow-hidden rounded-lg border border-slate-200 dark:border-slate-700">
+                    <button
+                      type="button"
+                      aria-label={`Mover ${option.label} para a esquerda`}
+                      disabled={isFirstPinned}
+                      onClick={() => onMovePriority(option.id, "previous")}
+                      className="flex h-9 w-8 items-center justify-center border-r border-slate-200 text-slate-500 transition-colors hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-35 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+                    >
+                      <ChevronLeft className="h-3.5 w-3.5" aria-hidden="true" />
+                    </button>
+                    <button
+                      type="button"
+                      aria-label={`Mover ${option.label} para a direita`}
+                      disabled={isLastPinned}
+                      onClick={() => onMovePriority(option.id, "next")}
+                      className="flex h-9 w-8 items-center justify-center text-slate-500 transition-colors hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-35 dark:text-slate-300 dark:hover:bg-slate-800"
+                    >
+                      <ChevronRight className="h-3.5 w-3.5" aria-hidden="true" />
+                    </button>
+                  </span>
+                )}
+              </div>
             );
           })}
         </div>

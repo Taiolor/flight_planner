@@ -11,6 +11,7 @@ export type HomePanelId =
   | "priceVariation";
 
 export type HomeLayoutProfile = "complete" | "focus" | "compact" | "custom";
+export type HomePanelMoveDirection = "previous" | "next";
 
 export type HomeGlobalPanelState = {
   summary: boolean;
@@ -78,6 +79,23 @@ export function persistHomeDashboardPreferences(
     HOME_DASHBOARD_PREFERENCES_STORAGE_KEY,
     JSON.stringify(preferences)
   );
+}
+
+export function reorderPinnedPanels(
+  pinnedPanels: HomePanelId[],
+  panel: HomePanelId,
+  direction: HomePanelMoveDirection
+): HomePanelId[] {
+  const index = pinnedPanels.indexOf(panel);
+  const targetIndex = direction === "previous" ? index - 1 : index + 1;
+
+  if (index < 0 || targetIndex < 0 || targetIndex >= pinnedPanels.length) {
+    return pinnedPanels;
+  }
+
+  const next = [...pinnedPanels];
+  [next[index], next[targetIndex]] = [next[targetIndex], next[index]];
+  return next;
 }
 
 export function getHomeLayoutProfileState(
