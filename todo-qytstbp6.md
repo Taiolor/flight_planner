@@ -50,4 +50,4 @@
 - [x] Adicionar teste renderizado para geração automática, carregamento, resumo salvo e atualização manual no Diário de Bordo.
 - [x] Validar no teste renderizado a mensagem de carregamento exibida enquanto o resumo automático está sendo gerado.
 - [x] Adicionar teste de persistência do resumo cobrindo inserção, atualização, leitura no overview e metadados de geração.
-- [ ] Salvar um checkpoint da versão validada de resumos Fly.IA.
+- [x] Salvar um checkpoint da versão validada de resumos Fly.IA.
