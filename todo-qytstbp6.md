@@ -106,4 +106,4 @@
 - [x] Adicionar teste com banco mockado do serviço de memória para isolar a mesma sessão entre exercícios distintos.
 - [x] Adicionar teste com banco mockado para expiração, limpeza e regravação por upsert da memória Fly.IA.
 - [x] Adicionar teste de `getFlyIaMemoryDashboard` com linhas simuladas do banco para validar a agregação completa dos indicadores.
-- [ ] Salvar um checkpoint da memória incremental do Fly.IA.
+- [x] Salvar um checkpoint da memória incremental do Fly.IA.
