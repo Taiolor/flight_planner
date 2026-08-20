@@ -12,6 +12,7 @@ const defaultLoadPdfModule: PdfModuleLoader = () => import("./FlightPdfExport");
 
 interface DeferredPdfExportButtonProps extends FlightPdfExportProps {
   loadPdfModule?: PdfModuleLoader;
+  className?: string;
 }
 
 export function hasIssuedPdfTickets(weeksData: FlightPdfExportProps["weeksData"]) {
@@ -32,6 +33,7 @@ export async function loadAndExportPdf(
 
 export function DeferredPdfExportButton({
   loadPdfModule = defaultLoadPdfModule,
+  className,
   ...pdfProps
 }: DeferredPdfExportButtonProps) {
   const [isGenerating, setIsGenerating] = useState(false);
@@ -67,7 +69,7 @@ export function DeferredPdfExportButton({
       aria-label={
         isGenerating ? "Gerando relatório em PDF" : "Exportar relatório em PDF"
       }
-      className="bg-white/10 border-white text-white hover:bg-white hover:text-blue-700 transition-all"
+      className={`h-10 w-full justify-start rounded-lg border-0 bg-transparent px-2 text-white shadow-none hover:bg-white/10 hover:text-white ${className ?? ""}`}
     >
       {isGenerating ? (
         <Loader2 className="w-4 h-4 animate-spin" />

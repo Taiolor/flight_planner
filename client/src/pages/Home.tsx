@@ -117,6 +117,7 @@ import { GlobalYearSelector } from "@/components/GlobalYearSelector";
 import { AdditionalFlightsPanel, type AdditionalFlightRecord } from "@/components/AdditionalFlightsPanel";
 import { AttentionCenter } from "@/components/AttentionCenter";
 import { AnnualPlanningProgress } from "@/components/AnnualPlanningProgress";
+import { HomeHeaderActions } from "@/components/HomeHeaderActions";
 import {
   getAnnualGoalProgress,
   readAnnualEmissionGoal,
@@ -2024,8 +2025,8 @@ export default function Home() {
           ></div>
         </div>
 
-        <div className="container relative z-10 py-4 sm:py-8">
-          <div className="flex items-center justify-between gap-2 flex-wrap">
+        <div className="container relative z-10 py-4 sm:py-6">
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
             <div className="flex items-center gap-2 sm:gap-3">
               <img
                 src="https://d2xsxph8kpxj0f.cloudfront.net/310419663028456038/HQ655wm9a6bck22hJAwYRc/smartfly-icon-512-fy4eDuGdVJBtxeYLKc2qAk.png"
@@ -2041,271 +2042,64 @@ export default function Home() {
                 </p>
               </div>
             </div>
-            <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
-              {/* Botão alternar tema */}
-              <Button
-                size="sm"
-                variant="outline"
-                title={theme === "dark" ? "Modo claro" : "Modo escuro"}
-                aria-label={theme === "dark" ? "Modo claro" : "Modo escuro"}
-                className="border-white/40 text-white hover:bg-white/20 backdrop-blur-sm bg-white/10 btn-glow-cyan transition-all"
-                onClick={toggleTheme}
-              >
-                {theme === "dark" ? (
-                  <Sun className="w-4 h-4" />
-                ) : (
-                  <Moon className="w-4 h-4" />
-                )}
-              </Button>
-
-              <GlobalYearSelector className="border-white/40 text-white hover:bg-white/20 backdrop-blur-sm bg-white/10 btn-glow-cyan transition-all" />
-
-              {/* Seletor de Presets de Cores */}
-              <Select
-                value={colorPreset}
-                onValueChange={value => setColorPreset(value as ColorPreset)}
-              >
-                <SelectTrigger
-                  aria-label="Preset de cores"
-                  className="w-auto border-white/40 text-white hover:bg-white/20 backdrop-blur-sm bg-white/10"
-                >
-                  <Sparkles className="w-4 h-4 mr-2" />
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {Object.entries(COLOR_PRESETS).map(([key, preset]) => (
-                    <SelectItem key={key} value={key}>
-                      {preset.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-
-              {/* Botão ocultar valores */}
-              <Button
-                size="sm"
-                variant="outline"
-                title={hideValues ? "Exibir valores" : "Ocultar valores"}
-                aria-label={hideValues ? "Exibir valores" : "Ocultar valores"}
-                className={`border-white/40 text-white hover:bg-white/20 backdrop-blur-sm ${
-                  hideValues ? "bg-white/30 border-white/80" : "bg-white/10"
-                }`}
-                onClick={toggleHideValues}
-              >
-                {hideValues ? (
-                  <EyeOff className="w-4 h-4" />
-                ) : (
-                  <Eye className="w-4 h-4" />
-                )}
-              </Button>
-
-              {/* Botão Configurar Avisos Push */}
-              {pushStatus !== "unsupported" && pushSubscribed && (
+            <HomeHeaderActions
+              selectedYear={selectedYear}
+              theme={theme}
+              colorPreset={colorPreset}
+              colorPresetOptions={COLOR_PRESETS}
+              hideValues={hideValues}
+              pushStatus={pushStatus}
+              pushSubscribed={pushSubscribed}
+              pushLoading={pushLoading}
+              isAuthenticated={isAuthenticated}
+              isAdmin={authCheckQuery.data?.isAdmin ?? false}
+              accountEmail={authCheckQuery.data?.email}
+              notificationSettings={
                 <NotificationSettingsPopup
                   isAuthenticated={isAuthenticated}
                   onLoginRequired={() => setShowLoginModal(true)}
+                  triggerClassName="h-10 w-10 rounded-xl border border-white/35 bg-slate-950/20 px-0 text-white shadow-sm backdrop-blur-md transition-[transform,background-color,border-color] duration-150 hover:border-white/70 hover:bg-white/18 active:scale-[0.97] focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-slate-800"
                 />
-              )}
-
-              {/* Botão Ativar Notificações Push */}
-              {pushStatus !== "unsupported" && (
-                <Button
-                  size="sm"
-                  variant="outline"
-                  title={
-                    pushStatus === "denied"
-                      ? "Notificações bloqueadas pelo navegador"
-                      : pushSubscribed
-                        ? "Notificações ativas — clique para desativar"
-                        : "Ativar notificações de voo"
+              }
+              pdfExport={
+                <DeferredPdfExportButton
+                  year={selectedYear}
+                  weeksData={weeksData}
+                  priceMap={priceMap}
+                  totalInvested={annualTotalIssued}
+                />
+              }
+              onShowChart={() => {
+                setIsPriceChartVisible(true);
+                requestAnimationFrame(() => {
+                  document
+                    .getElementById("price-chart-section")
+                    ?.scrollIntoView({ behavior: "smooth", block: "start" });
+                });
+              }}
+              onToggleTheme={() => toggleTheme?.()}
+              onColorPresetChange={value => setColorPreset(value as ColorPreset)}
+              onToggleValues={toggleHideValues}
+              onToggleNotifications={async () => {
+                if (!isAuthenticated) {
+                  setShowLoginModal(true);
+                  return;
+                }
+                if (pushSubscribed) {
+                  await pushUnsubscribe();
+                  toast.success("Notificações desativadas.");
+                } else {
+                  await pushSubscribe();
+                  if (pushStatus !== "denied") {
+                    toast.success(
+                      "Notificações ativadas! Você será avisado 24h antes de cada voo."
+                    );
                   }
-                  aria-label={
-                    pushStatus === "denied"
-                      ? "Notificações bloqueadas"
-                      : pushSubscribed
-                        ? "Desativar notificações"
-                        : "Ativar notificações"
-                  }
-                  disabled={pushLoading || pushStatus === "denied"}
-                  className={`border-white/40 text-white hover:bg-white/20 backdrop-blur-sm transition-all ${
-                    pushSubscribed
-                      ? "bg-green-500/30 border-green-300"
-                      : pushStatus === "denied"
-                        ? "bg-red-500/20 border-red-300 opacity-60"
-                        : "bg-white/10"
-                  }`}
-                  onClick={async () => {
-                    if (!isAuthenticated) {
-                      setShowLoginModal(true);
-                      return;
-                    }
-                    if (pushSubscribed) {
-                      await pushUnsubscribe();
-                      toast.success("Notificações desativadas.");
-                    } else {
-                      await pushSubscribe();
-                      if (pushStatus !== "denied") {
-                        toast.success(
-                          "Notificações ativadas! Você será avisado 24h antes de cada voo."
-                        );
-                      }
-                    }
-                  }}
-                >
-                  {pushLoading ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                  ) : pushStatus === "denied" ? (
-                    <BellOff className="w-4 h-4" />
-                  ) : pushSubscribed ? (
-                    <BellRing className="w-4 h-4" />
-                  ) : (
-                    <Bell className="w-4 h-4" />
-                  )}
-                  <span className="hidden sm:inline ml-1">
-                    {pushLoading
-                      ? "Aguarde..."
-                      : pushStatus === "denied"
-                        ? "Bloqueado"
-                        : pushSubscribed
-                          ? "Notif. Ativas"
-                          : "Notificações"}
-                  </span>
-                </Button>
-              )}
-
-              <DeferredPdfExportButton
-                year={selectedYear}
-                weeksData={weeksData}
-                priceMap={priceMap}
-                totalInvested={annualTotalIssued}
-              />
-
-              <Button
-                size="sm"
-                variant="outline"
-                className="bg-white bg-opacity-10 border-white text-white hover:bg-white hover:text-blue-700 btn-glow-cyan transition-all"
-                onClick={() => {
-                  setIsPriceChartVisible(true);
-                  requestAnimationFrame(() => {
-                    document
-                      .getElementById("price-chart-section")
-                      ?.scrollIntoView({ behavior: "smooth", block: "start" });
-                  });
-                }}
-              >
-                <TrendingUp className="w-4 h-4 mr-1" /> Ver Gráfico
-              </Button>
-              <Link href="/calendar">
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="bg-white bg-opacity-10 border-white text-white hover:bg-white hover:text-blue-700 btn-glow-cyan transition-all"
-                >
-                  <CalendarDays className="w-4 h-4 mr-1" /> Calendário
-                </Button>
-              </Link>
-              <Link href="/cotacoes">
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="bg-white bg-opacity-10 border-white text-white hover:bg-white hover:text-blue-700 btn-glow-cyan transition-all"
-                  title="Cotações de Passagens"
-                >
-                  <DollarSign className="w-4 h-4 mr-1" /> Cotações
-                </Button>
-              </Link>
-              <Link href="/novidades">
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="bg-white bg-opacity-10 border-white text-white hover:bg-white hover:text-blue-700 btn-glow-cyan transition-all"
-                  title="Histórico de Novidades"
-                >
-                  <Sparkles className="w-4 h-4 mr-1" /> Novidades
-                </Button>
-              </Link>
-              <Link href="/financeiro">
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="bg-white bg-opacity-10 border-white text-white hover:bg-white hover:text-green-400 btn-glow-cyan transition-all"
-                  title="Gestão Financeira"
-                >
-                  <BarChart2 className="w-4 h-4 mr-1" /> Financeiro
-                </Button>
-              </Link>
-              <Link href={`/memorias?ano=${selectedYear}`}>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="bg-white bg-opacity-10 border-white text-white hover:bg-white hover:text-fuchsia-600 btn-glow-cyan transition-all"
-                  title="Memórias de voo"
-                >
-                  <Sparkles className="w-4 h-4 mr-1" /> Memórias
-                </Button>
-              </Link>
-              {isAuthenticated && (
-                <Link href="/admin/notifications">
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="bg-white bg-opacity-10 border-white text-white hover:bg-white hover:text-blue-700 btn-glow-cyan transition-all"
-                    title="Painel de Notificações"
-                  >
-                    <ShieldCheck className="w-4 h-4 mr-1" /> Admin
-                  </Button>
-                </Link>
-              )}
-              {authCheckQuery.data?.isAdmin && (
-                <Link href="/admin/telemetria">
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="bg-white bg-opacity-10 border-white text-white hover:bg-white hover:text-blue-700 btn-glow-cyan transition-all"
-                    title="Mapa administrativo de locais consentidos"
-                  >
-                    <MapPinned className="w-4 h-4 mr-1" /> Locais
-                  </Button>
-                </Link>
-              )}
-              {authCheckQuery.data?.isAdmin && (
-                <Link href="/admin/gemini">
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="bg-white bg-opacity-10 border-white text-white hover:bg-white hover:text-cyan-500 btn-glow-cyan transition-all"
-                    title="Consumo e orçamento do Gemini"
-                  >
-                    <Sparkles className="w-4 h-4 mr-1" /> IA
-                  </Button>
-                </Link>
-              )}
-              {isAuthenticated ? (
-                <div className="flex items-center gap-2">
-                  <span className="text-xs text-green-300 flex items-center gap-1">
-                    <CheckCircle2 className="w-3 h-3" />{" "}
-                    {authCheckQuery.data?.email}
-                  </span>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="bg-white bg-opacity-10 border-white text-white hover:bg-white hover:text-blue-700 btn-glow-cyan transition-all"
-                    onClick={handleLogout}
-                  >
-                    <LogOut className="w-4 h-4 mr-1" /> Sair
-                  </Button>
-                </div>
-              ) : (
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="bg-white bg-opacity-10 border-white text-white hover:bg-white hover:text-blue-700 btn-glow-cyan transition-all"
-                  onClick={() => setShowLoginModal(true)}
-                >
-                  <LogIn className="w-4 h-4 mr-1" /> Entrar
-                </Button>
-              )}
-            </div>
+                }
+              }}
+              onSignIn={() => setShowLoginModal(true)}
+              onSignOut={handleLogout}
+            />
           </div>
         </div>
       </header>
