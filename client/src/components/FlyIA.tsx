@@ -11,6 +11,7 @@ import {
 import { LoginRequiredMessageBox } from "@/components/auth/LoginRequiredMessageBox";
 import { useYear } from "@/contexts/YearContext";
 import { trpc } from "@/lib/trpc";
+import { getFlyIaFollowUpPrompts } from "@/lib/flyIaSuggestions";
 import { Bot, MessageCircle, ShieldCheck, Trash2, X } from "lucide-react";
 import React, { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -147,6 +148,7 @@ export default function FlyIA() {
             placeholder="Pergunte sobre voos, compras ou cidades..."
             emptyStateMessage="Olá, eu sou a Fly.IA. Como posso ajudar com seu planejamento?"
             suggestedPrompts={SUGGESTED_PROMPTS}
+            followUpPrompts={message => getFlyIaFollowUpPrompts(message.content)}
           />
         </div>
 

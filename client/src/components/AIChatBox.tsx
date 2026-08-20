@@ -58,6 +58,11 @@ export type AIChatBoxProps = {
    * Click to send directly
    */
   suggestedPrompts?: string[];
+
+  /**
+   * Sugestões de continuidade exibidas após a última resposta do assistente.
+   */
+  followUpPrompts?: (message: Message) => string[];
 };
 
 function AssistantResponseSkeleton({ minHeight }: { minHeight: number }) {
@@ -143,6 +148,7 @@ export function AIChatBox({
   height = "600px",
   emptyStateMessage = "Start a conversation with AI",
   suggestedPrompts,
+  followUpPrompts,
 }: AIChatBoxProps) {
   const [input, setInput] = useState("");
   const scrollAreaRef = useRef<HTMLDivElement>(null);
@@ -182,10 +188,14 @@ export function AIChatBox({
 
     if (viewport) {
       requestAnimationFrame(() => {
-        viewport.scrollTo({
-          top: viewport.scrollHeight,
-          behavior: "smooth",
-        });
+        if (typeof viewport.scrollTo === "function") {
+          viewport.scrollTo({
+            top: viewport.scrollHeight,
+            behavior: "smooth",
+          });
+          return;
+        }
+        viewport.scrollTop = viewport.scrollHeight;
       });
     }
   };
@@ -210,6 +220,17 @@ export function AIChatBox({
       e.preventDefault();
       handleSubmit(e);
     }
+  };
+
+  const sendSuggestedPrompt = (prompt: string) => {
+    if (isLoading) return;
+    // Mantém o mesmo fluxo de envio manual: o texto é colocado no estado do
+    // campo antes de ser despachado e o chat preserva o foco para a sequência.
+    setInput(prompt);
+    onSendMessage(prompt);
+    setInput("");
+    scrollToBottom();
+    textareaRef.current?.focus();
   };
 
   return (
@@ -277,22 +298,44 @@ export function AIChatBox({
                       </div>
                     )}
 
-                    <div
-                      className={cn(
-                        "max-w-[80%] rounded-lg px-4 py-2.5",
-                        message.role === "user"
-                          ? "bg-primary text-primary-foreground"
-                          : "bg-muted text-foreground"
-                      )}
-                    >
-                      {message.role === "assistant" ? (
-                        <div className="prose prose-sm dark:prose-invert max-w-none">
-                          <Streamdown>{message.content}</Streamdown>
+                    <div className="min-w-0 max-w-[80%]">
+                      <div
+                        className={cn(
+                          "rounded-lg px-4 py-2.5",
+                          message.role === "user"
+                            ? "bg-primary text-primary-foreground"
+                            : "bg-muted text-foreground"
+                        )}
+                      >
+                        {message.role === "assistant" ? (
+                          <div className="prose prose-sm dark:prose-invert max-w-none">
+                            <Streamdown>{message.content}</Streamdown>
+                          </div>
+                        ) : (
+                          <p className="whitespace-pre-wrap text-sm">
+                            {message.content}
+                          </p>
+                        )}
+                      </div>
+                      {message.role === "assistant" && isLastMessage && !isLoading && followUpPrompts && (
+                        <div
+                          className="mt-2 flex w-full flex-wrap gap-1.5"
+                          aria-label="Sugestões de próximas perguntas"
+                          data-testid="follow-up-prompts"
+                        >
+                          {followUpPrompts(message).map(prompt => (
+                            <button
+                              key={prompt}
+                              type="button"
+                              onClick={() => sendSuggestedPrompt(prompt)}
+                              className="max-w-full rounded-full border border-primary/25 bg-primary/5 px-2.5 py-1 text-left text-xs font-medium text-primary transition-colors hover:bg-primary/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:opacity-50"
+                              disabled={isLoading}
+                              aria-label={`Perguntar: ${prompt}`}
+                            >
+                              {prompt}
+                            </button>
+                          ))}
                         </div>
-                      ) : (
-                        <p className="whitespace-pre-wrap text-sm">
-                          {message.content}
-                        </p>
                       )}
                     </div>
 

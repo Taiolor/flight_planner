@@ -107,3 +107,14 @@
 - [x] Adicionar teste com banco mockado para expiração, limpeza e regravação por upsert da memória Fly.IA.
 - [x] Adicionar teste de `getFlyIaMemoryDashboard` com linhas simuladas do banco para validar a agregação completa dos indicadores.
 - [x] Salvar um checkpoint da memória incremental do Fly.IA.
+- [x] Definir sugestões de próximas perguntas para respostas de voos, compras, cancelamentos, cidades, distâncias e contexto geral.
+- [x] Exibir sugestões contextuais interativas após mensagens bem-sucedidas do assistente no Fly.IA.
+- [x] Fazer cada sugestão preencher e enviar uma nova pergunta pelo fluxo atual do chat.
+- [x] Criar testes de categorias, interação, acessibilidade e responsividade das sugestões.
+- [x] Validar em teste renderizado que o chip de sugestão é acessível, envia a pergunta correta e se adapta à largura do chat.
+- [x] Adicionar categoria explícita de sugestões para respostas sobre distância e quilometragem.
+- [x] Despachar a sugestão pelo mesmo fluxo de envio do campo, com preenchimento de estado, foco preservado e envio direto em uma ação.
+- [x] Adicionar cenários renderizados de celular e desktop para validar quebra de linha e largura fluida dos chips.
+- [x] Confirmar em arquivo a categoria de distância e o fluxo de envio com foco preservado dos chips Fly.IA.
+- [x] Reexecutar testes focados de sugestões e chat após confirmar as mudanças de categoria e envio.
+- [ ] Salvar um checkpoint das sugestões de perguntas do Fly.IA.
