@@ -3,7 +3,7 @@
  * Helpers de banco de dados para a página de Gestão Financeira.
  * Agrega dados de flight_weeks e flight_prices para análises financeiras.
  */
-import { and, eq, isNotNull } from "drizzle-orm";
+import { and, eq, isNotNull, sql } from "drizzle-orm";
 import { getDb } from "./db";
 import {
   additionalFlights,
@@ -394,4 +394,48 @@ export async function upsertFinancialMonthlyBudget(
     });
 
   return { month, budgetCents };
+}
+
+export function adjustFinancialBudgetCents(
+  budgetCents: number,
+  adjustmentPercent: number
+): number {
+  return Math.max(0, Math.round(budgetCents * (1 + adjustmentPercent / 100)));
+}
+
+export async function copyFinancialMonthlyBudgets(
+  sourceYear: number,
+  targetYear: number,
+  adjustmentPercent: number
+): Promise<{ copiedCount: number; targetYear: number }> {
+  if (sourceYear === targetYear) {
+    throw new Error("O ano de origem deve ser diferente do ano de destino.");
+  }
+
+  const db = await getDb();
+  if (!db) throw new Error("Banco de dados indisponível.");
+
+  const sourceBudgets = await getFinancialMonthlyBudgets(sourceYear);
+  if (sourceBudgets.length === 0) return { copiedCount: 0, targetYear };
+
+  await db
+    .insert(financialMonthlyBudgets)
+    .values(
+      sourceBudgets.map(budget => ({
+        year: targetYear,
+        month: budget.month,
+        budgetCents: adjustFinancialBudgetCents(
+          budget.budgetCents,
+          adjustmentPercent
+        ),
+      }))
+    )
+    .onDuplicateKeyUpdate({
+      set: {
+        budgetCents: sql`values(${financialMonthlyBudgets.budgetCents})`,
+        updatedAt: new Date(),
+      },
+    });
+
+  return { copiedCount: sourceBudgets.length, targetYear };
 }

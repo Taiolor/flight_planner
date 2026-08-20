@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   buildMonthlyBudgetEnvelopes,
+  getBudgetAlerts,
   getBudgetInsight,
 } from "./financialBudget";
 
@@ -45,5 +46,24 @@ describe("envelopes financeiros mensais", () => {
       status: "healthy",
     });
     expect(envelopes[2].status).toBe("unconfigured");
+  });
+
+  it("retorna alertas somente a partir de 90% do envelope e acima do limite", () => {
+    const envelopes = buildMonthlyBudgetEnvelopes(
+      [
+        { month: 1, isTicketIssued: 1, paidPriceTotal: 900 },
+        { month: 2, isTicketIssued: 0, paidPriceTotal: 1200 },
+        { month: 3, isTicketIssued: 0, paidPriceTotal: 500 },
+      ],
+      [
+        { month: 1, budgetCents: 100_000 },
+        { month: 2, budgetCents: 100_000 },
+      ]
+    );
+
+    expect(getBudgetAlerts(envelopes)).toEqual([
+      { month: 2, status: "exceeded", utilizationPercent: 120 },
+      { month: 1, status: "watch", utilizationPercent: 90 },
+    ]);
   });
 });

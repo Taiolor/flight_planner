@@ -11,6 +11,7 @@ describe("envelope de orçamento financeiro", () => {
 
     expect(source).toContain("financial.getMonthlyBudgets.useQuery");
     expect(source).toContain("financial.upsertMonthlyBudget.useMutation");
+    expect(source).toContain("financial.copyMonthlyBudgets.useMutation");
     expect(source).toContain("buildMonthlyBudgetEnvelopes");
     expect(source).toContain('kind="monthlyBudget"');
   });
@@ -20,6 +21,16 @@ describe("envelope de orçamento financeiro", () => {
 
     expect(source).toContain("{showValues ? (");
     expect(source).toContain("Exiba os valores para configurar este orçamento.");
+    expect(source).toContain("Copiar envelopes para");
+    expect(source).toContain("Confirmar cópia");
+  });
+
+  it("destaca envelopes a partir do limiar de atenção de 90%", () => {
+    const source = readSource("client/src/pages/FinancialDashboard.tsx");
+
+    expect(source).toContain("getBudgetAlerts");
+    expect(source).toContain('role="alert"');
+    expect(source).toContain("envelope(s) em atenção");
   });
 
   it("oferece as três séries mensais no gráfico de envelope", () => {

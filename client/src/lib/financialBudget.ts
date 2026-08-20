@@ -28,6 +28,12 @@ export type BudgetInsight = {
   status: "unconfigured" | "healthy" | "watch" | "exceeded";
 };
 
+export type BudgetAlert = {
+  month: number;
+  status: "watch" | "exceeded";
+  utilizationPercent: number;
+};
+
 function toCents(value: number | null): number {
   if (value === null || !Number.isFinite(value) || value <= 0) return 0;
   return Math.round(value * 100);
@@ -119,4 +125,23 @@ export function getBudgetInsight(envelopes: MonthlyBudgetEnvelope[]): BudgetInsi
     largestPressureMonth,
     status,
   };
+}
+
+export function getBudgetAlerts(
+  envelopes: MonthlyBudgetEnvelope[]
+): BudgetAlert[] {
+  return envelopes
+    .filter(
+      (envelope): envelope is MonthlyBudgetEnvelope & {
+        status: "watch" | "exceeded";
+      } => envelope.status === "watch" || envelope.status === "exceeded"
+    )
+    .map(envelope => ({
+      month: envelope.month,
+      status: envelope.status,
+      utilizationPercent: Math.round(
+        (envelope.projectedCents / envelope.budgetCents) * 100
+      ),
+    }))
+    .sort((a, b) => b.utilizationPercent - a.utilizationPercent);
 }

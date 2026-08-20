@@ -6,6 +6,7 @@ vi.mock("./db", () => ({
 }));
 
 vi.mock("./financialDb", () => ({
+  copyFinancialMonthlyBudgets: vi.fn(),
   getFinancialDataByYear: vi.fn(),
   getFinancialMonthlyBudgets: vi.fn(),
   getFinancialSummaryByMonth: vi.fn(),
@@ -55,6 +56,8 @@ describe("financial router by planning year", () => {
       .mockResolvedValue([]);
     (financialDb.getFinancialYearSummary as ReturnType<typeof vi.fn>)
       .mockResolvedValue(EMPTY_YEAR_SUMMARY);
+    (financialDb.copyFinancialMonthlyBudgets as ReturnType<typeof vi.fn>)
+      .mockResolvedValue({ copiedCount: 12, targetYear: 2029 });
     (financialDb.upsertFinancialMonthlyBudget as ReturnType<typeof vi.fn>)
       .mockResolvedValue({ month: 1, budgetCents: 150_000 });
   });
@@ -96,6 +99,30 @@ describe("financial router by planning year", () => {
         budgetCents: 100,
       })
     ).rejects.toThrow();
+  });
+
+  it("copia o orçamento entre exercícios com ajuste percentual validado", async () => {
+    const financialDb = await import("./financialDb");
+    const caller = financialRouter.createCaller(createAuthenticatedContext());
+
+    await caller.copyMonthlyBudgets({
+      sourceYear: 2028,
+      targetYear: 2029,
+      adjustmentPercent: 5,
+    });
+
+    expect(financialDb.copyFinancialMonthlyBudgets).toHaveBeenCalledWith(
+      2028,
+      2029,
+      5
+    );
+    await expect(
+      (caller.copyMonthlyBudgets as any)({
+        sourceYear: 2028,
+        targetYear: 2028,
+        adjustmentPercent: 0,
+      })
+    ).rejects.toThrow("O ano de destino deve ser diferente do ano de origem.");
   });
 
   it("calcula a projeção somente a partir do exercício base selecionado", async () => {

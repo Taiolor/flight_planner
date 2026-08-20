@@ -1,5 +1,5 @@
 import crypto from "crypto";
-import { and, asc, desc, gte, lt, sql } from "drizzle-orm";
+import { and, asc, desc, gte, inArray, lt, sql } from "drizzle-orm";
 import {
   usageTelemetryEvents,
   type InsertUsageTelemetryEvent,
@@ -10,6 +10,15 @@ export type UsageTelemetryEventInput = Omit<
   InsertUsageTelemetryEvent,
   "id" | "sessionHash" | "createdAt"
 >;
+
+export const USAGE_TELEMETRY_EVENT_TYPES = [
+  "route",
+  "interaction",
+  "query",
+  "mutation",
+] as const;
+export type UsageTelemetryEventType =
+  (typeof USAGE_TELEMETRY_EVENT_TYPES)[number];
 
 function hashSession(sessionId: string): string {
   return crypto.createHash("sha256").update(sessionId).digest("hex");
@@ -28,11 +37,29 @@ export async function recordUsageTelemetryEvents(
   );
 }
 
-export async function getUsageTelemetryMapData(hours: number, limit: number) {
+function getTelemetryWindowConditions(
+  hours: number,
+  eventTypes?: UsageTelemetryEventType[]
+) {
+  const since = new Date(Date.now() - hours * 60 * 60 * 1000);
+  return {
+    since,
+    eventCondition:
+      eventTypes && eventTypes.length > 0
+        ? inArray(usageTelemetryEvents.eventType, eventTypes)
+        : undefined,
+  };
+}
+
+export async function getUsageTelemetryMapData(
+  hours: number,
+  limit: number,
+  eventTypes?: UsageTelemetryEventType[]
+) {
   const db = await getDb();
   if (!db) return [];
 
-  const since = new Date(Date.now() - hours * 60 * 60 * 1000);
+  const { since, eventCondition } = getTelemetryWindowConditions(hours, eventTypes);
   return db
     .select({
       id: usageTelemetryEvents.id,
@@ -47,6 +74,7 @@ export async function getUsageTelemetryMapData(hours: number, limit: number) {
     .where(
       and(
         gte(usageTelemetryEvents.createdAt, since),
+        eventCondition,
         sql`${usageTelemetryEvents.latitudeE2} is not null`,
         sql`${usageTelemetryEvents.longitudeE2} is not null`
       )
@@ -55,11 +83,14 @@ export async function getUsageTelemetryMapData(hours: number, limit: number) {
     .limit(limit);
 }
 
-export async function getUsageTelemetrySummary(hours: number) {
+export async function getUsageTelemetrySummary(
+  hours: number,
+  eventTypes?: UsageTelemetryEventType[]
+) {
   const db = await getDb();
   if (!db) return [];
 
-  const since = new Date(Date.now() - hours * 60 * 60 * 1000);
+  const { since, eventCondition } = getTelemetryWindowConditions(hours, eventTypes);
   return db
     .select({
       eventType: usageTelemetryEvents.eventType,
@@ -67,7 +98,7 @@ export async function getUsageTelemetrySummary(hours: number) {
       located: sql<number>`sum(case when ${usageTelemetryEvents.latitudeE2} is not null then 1 else 0 end)`,
     })
     .from(usageTelemetryEvents)
-    .where(gte(usageTelemetryEvents.createdAt, since))
+    .where(and(gte(usageTelemetryEvents.createdAt, since), eventCondition))
     .groupBy(usageTelemetryEvents.eventType);
 }
 

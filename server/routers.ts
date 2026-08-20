@@ -1760,13 +1760,29 @@ export const appRouter = router({
         z.object({
           hours: z.number().int().min(1).max(24 * 30).default(24),
           limit: z.number().int().min(10).max(500).default(200),
+          eventTypes: z
+            .array(z.enum(["route", "interaction", "query", "mutation"]))
+            .min(1)
+            .max(4)
+            .optional(),
         })
       )
-      .query(({ input }) => getUsageTelemetryMapData(input.hours, input.limit)),
+      .query(({ input }) =>
+        getUsageTelemetryMapData(input.hours, input.limit, input.eventTypes)
+      ),
 
     getSummary: flightAdminProcedure
-      .input(z.object({ hours: z.number().int().min(1).max(24 * 30).default(24) }))
-      .query(({ input }) => getUsageTelemetrySummary(input.hours)),
+      .input(
+        z.object({
+          hours: z.number().int().min(1).max(24 * 30).default(24),
+          eventTypes: z
+            .array(z.enum(["route", "interaction", "query", "mutation"]))
+            .min(1)
+            .max(4)
+            .optional(),
+        })
+      )
+      .query(({ input }) => getUsageTelemetrySummary(input.hours, input.eventTypes)),
 
     deleteCurrentSession: flightProtectedProcedure
       .input(

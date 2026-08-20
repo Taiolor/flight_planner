@@ -35,6 +35,8 @@ const EVENT_COLORS = {
   mutation: "#dc2626",
 } as const;
 
+type EventType = keyof typeof EVENT_LABELS;
+
 export const LOCATIONS_BACK_ROUTE = "/";
 
 function formatCount(value: number) {
@@ -78,12 +80,20 @@ export default function UsageTelemetryMap() {
 
 function UsageTelemetryMapContent() {
   const [hours, setHours] = useState(24);
+  const [eventTypes, setEventTypes] = useState<EventType[]>([]);
+  const telemetryFilters = useMemo(
+    () => ({
+      hours,
+      eventTypes: eventTypes.length > 0 ? eventTypes : undefined,
+    }),
+    [eventTypes, hours]
+  );
   const mapQuery = trpc.usageTelemetry.getMapData.useQuery(
-    { hours, limit: 200 },
+    { ...telemetryFilters, limit: 200 },
     { enabled: true, ...queryCachePolicies.admin }
   );
   const summaryQuery = trpc.usageTelemetry.getSummary.useQuery(
-    { hours },
+    telemetryFilters,
     { enabled: true, ...queryCachePolicies.admin }
   );
 
@@ -108,6 +118,13 @@ function UsageTelemetryMapContent() {
       })),
     [mapQuery.data]
   );
+  const toggleEventType = (eventType: EventType) => {
+    setEventTypes(current =>
+      current.includes(eventType)
+        ? current.filter(type => type !== eventType)
+        : [...current, eventType]
+    );
+  };
 
   return (
     <main className="min-h-screen bg-slate-950 text-white">
@@ -148,8 +165,8 @@ function UsageTelemetryMapContent() {
           <MetricCard icon={<Search />} label="Janela" value={`${hours}h`} />
         </section>
 
-        <section className="grid grid-cols-3 gap-2 sm:flex sm:flex-wrap sm:items-center" aria-label="Período analisado">
-          {[24, 72, 168].map(option => (
+        <section className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:items-center" aria-label="Filtros de telemetria">
+          {[24, 72, 168, 720].map(option => (
             <Button
               key={option}
               size="sm"
@@ -157,12 +174,37 @@ function UsageTelemetryMapContent() {
               variant={hours === option ? "default" : "outline"}
               onClick={() => setHours(option)}
             >
-              Últimas {option === 24 ? "24h" : option === 72 ? "72h" : "7 dias"}
+              Últimas {option === 24 ? "24h" : option === 72 ? "72h" : option === 168 ? "7 dias" : "30 dias"}
             </Button>
           ))}
-          <Badge variant="outline" className="col-span-3 justify-center border-slate-600 text-slate-300 sm:col-auto">
+          <Badge variant="outline" className="col-span-2 justify-center border-slate-600 text-slate-300 sm:col-auto">
             até 200 pontos aproximados
           </Badge>
+        </section>
+
+        <section className="flex flex-wrap items-center gap-2" aria-label="Tipos de evento">
+          <span className="w-full text-xs font-semibold uppercase tracking-wide text-slate-400 sm:w-auto">
+            Tipo
+          </span>
+          <Button
+            size="sm"
+            variant={eventTypes.length === 0 ? "default" : "outline"}
+            aria-pressed={eventTypes.length === 0}
+            onClick={() => setEventTypes([])}
+          >
+            Todos
+          </Button>
+          {(Object.keys(EVENT_LABELS) as EventType[]).map(eventType => (
+            <Button
+              key={eventType}
+              size="sm"
+              variant={eventTypes.includes(eventType) ? "default" : "outline"}
+              aria-pressed={eventTypes.includes(eventType)}
+              onClick={() => toggleEventType(eventType)}
+            >
+              {EVENT_LABELS[eventType]}
+            </Button>
+          ))}
         </section>
 
         <Card className="overflow-hidden border-slate-800 bg-slate-900 p-0">

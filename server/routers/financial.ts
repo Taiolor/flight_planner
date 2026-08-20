@@ -7,6 +7,7 @@ import { router } from "../_core/trpc";
 import { flightProtectedProcedure } from "../flightAuthMiddleware";
 import { z } from "zod";
 import {
+  copyFinancialMonthlyBudgets,
   getFinancialDataByYear,
   getFinancialSummaryByMonth,
   getFinancialMonthlyBudgets,
@@ -89,6 +90,27 @@ export const financialRouter = router({
         input.year,
         input.month,
         input.budgetCents
+      );
+    }),
+
+  copyMonthlyBudgets: flightProtectedProcedure
+    .input(
+      z
+        .object({
+          sourceYear: planningYearSchema,
+          targetYear: planningYearSchema,
+          adjustmentPercent: z.number().min(-50).max(100).default(0),
+        })
+        .refine(({ sourceYear, targetYear }) => sourceYear !== targetYear, {
+          message: "O ano de destino deve ser diferente do ano de origem.",
+          path: ["targetYear"],
+        })
+    )
+    .mutation(async ({ input }) => {
+      return copyFinancialMonthlyBudgets(
+        input.sourceYear,
+        input.targetYear,
+        input.adjustmentPercent
       );
     }),
 

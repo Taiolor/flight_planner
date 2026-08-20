@@ -801,6 +801,9 @@
 - [x] Substituir os spinners de Calendário e Cotações por skeletons completos e responsivos
 - [x] Ordenar a Central de atenção por escore combinado de urgência
 - [x] Adicionar visão mensal de orçamento, realizado e projetado no Financeiro
+- [x] Permitir copiar o orçamento de um exercício para o próximo com ajuste percentual
+- [x] Destacar envelopes financeiros que atingem 90% ou ultrapassam o limite
+- [x] Adicionar filtros de período e tipo de evento na página Locais
 
 ## Processo reutilizável
 

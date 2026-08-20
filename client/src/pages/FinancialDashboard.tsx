@@ -11,6 +11,7 @@ import { ContentReveal } from "@/components/ContentReveal";
 import { queryCachePolicies } from "@/lib/queryCache";
 import {
   buildMonthlyBudgetEnvelopes,
+  getBudgetAlerts,
   getBudgetInsight,
 } from "@/lib/financialBudget";
 import type { FinancialChartProps } from "@/components/FinancialCharts";
@@ -255,13 +256,15 @@ export default function FinancialDashboard() {
 
 function FinancialDashboardContent() {
 
-  const { selectedYear } = useYear();
+  const { selectedYear, availableYears } = useYear();
   const [showValues, setShowValues] = useState(false);
   const [inflationRate, setInflationRate] = useState(5);
   const [tripsPerMonth, setTripsPerMonth] = useState(4);
   const [showProjections, setShowProjections] = useState(true);
   const [budgetDrafts, setBudgetDrafts] = useState<Record<string, string>>({});
   const [budgetFeedback, setBudgetFeedback] = useState("");
+  const [copyAdjustmentPercent, setCopyAdjustmentPercent] = useState("0");
+  const [copyConfirmationOpen, setCopyConfirmationOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<"cash" | "miles" | "comparison">(
     "cash"
   );
@@ -297,6 +300,22 @@ function FinancialDashboardContent() {
     },
     onError: () => {
       setBudgetFeedback("Não foi possível salvar o orçamento. Tente novamente.");
+    },
+  });
+  const copyMonthlyBudgets = trpc.financial.copyMonthlyBudgets.useMutation({
+    onSuccess: result => {
+      setCopyConfirmationOpen(false);
+      setBudgetFeedback(
+        result.copiedCount > 0
+          ? `${result.copiedCount} envelope(s) copiado(s) para ${result.targetYear}.`
+          : `Não há envelopes configurados em ${selectedYear} para copiar.`
+      );
+      void utils.financial.getMonthlyBudgets.invalidate({
+        year: result.targetYear,
+      });
+    },
+    onError: () => {
+      setBudgetFeedback("Não foi possível copiar os envelopes. Tente novamente.");
     },
   });
 
@@ -405,6 +424,12 @@ function FinancialDashboardContent() {
     () => getBudgetInsight(monthlyBudgetEnvelopes),
     [monthlyBudgetEnvelopes]
   );
+  const budgetAlerts = useMemo(
+    () => getBudgetAlerts(monthlyBudgetEnvelopes),
+    [monthlyBudgetEnvelopes]
+  );
+  const nextPlanningYear =
+    availableYears[availableYears.indexOf(selectedYear) + 1] ?? null;
   const budgetChartData = useMemo(
     () =>
       monthlyBudgetEnvelopes.map(envelope => ({
@@ -428,6 +453,21 @@ function FinancialDashboardContent() {
       year: selectedYear,
       month,
       budgetCents: Math.round(amount * 100),
+    });
+  };
+  const copyBudgetsToNextYear = () => {
+    if (!nextPlanningYear) return;
+    const adjustmentPercent = Number(
+      copyAdjustmentPercent.trim().replace(",", ".")
+    );
+    if (!Number.isFinite(adjustmentPercent)) {
+      setBudgetFeedback("Informe um ajuste percentual válido.");
+      return;
+    }
+    copyMonthlyBudgets.mutate({
+      sourceYear: selectedYear,
+      targetYear: nextPlanningYear,
+      adjustmentPercent,
     });
   };
 
@@ -551,6 +591,24 @@ function FinancialDashboardContent() {
               >
                 {budgetNarrative}
               </div>
+              {budgetAlerts.length > 0 && (
+                <div
+                  role="alert"
+                  className="mt-3 flex gap-3 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-100"
+                >
+                  <AlertCircle className="mt-0.5 h-5 w-5 shrink-0" />
+                  <p>
+                    <strong>{budgetAlerts.length} envelope(s) em atenção.</strong>{" "}
+                    {budgetAlerts
+                      .slice(0, 2)
+                      .map(alert => `${MONTH_FULL_NAMES[alert.month]}: ${alert.utilizationPercent}%`)
+                      .join(" · ")}
+                    {budgetAlerts.length > 2
+                      ? " · Consulte os demais meses destacados abaixo."
+                      : ""}
+                  </p>
+                </div>
+              )}
               <div className="mt-4 grid grid-cols-1 gap-3 xs:grid-cols-3">
                 <div className="rounded-xl bg-white/80 p-3 dark:bg-slate-800/80">
                   <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Orçamento anual</p>
@@ -576,6 +634,69 @@ function FinancialDashboardContent() {
                   ? `${budgetInsight.pendingWithoutQuoteCount} semana(s) pendente(s) ainda não possuem cotação e não entram na projeção.`
                   : "A projeção considera valores já emitidos e as melhores cotações registradas das semanas pendentes."}
               </p>
+              {showValues && nextPlanningYear && (
+                <div className="mt-4 rounded-xl border border-violet-200 bg-white/80 p-3 dark:border-violet-900/60 dark:bg-slate-800/80">
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-semibold text-slate-800 dark:text-slate-100">
+                        Copiar envelopes para {nextPlanningYear}
+                      </p>
+                      <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
+                        Reaplica os envelopes configurados com um ajuste percentual opcional.
+                      </p>
+                    </div>
+                    <label className="text-xs font-semibold text-slate-600 dark:text-slate-300" htmlFor="budget-copy-adjustment">
+                      Ajuste (%)
+                      <input
+                        id="budget-copy-adjustment"
+                        type="number"
+                        min="-50"
+                        max="100"
+                        step="0.5"
+                        inputMode="decimal"
+                        value={copyAdjustmentPercent}
+                        onChange={event => setCopyAdjustmentPercent(event.target.value)}
+                        className="mt-1 block w-24 rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-sm text-slate-800 focus:border-violet-500 focus:outline-none focus:ring-2 focus:ring-violet-200 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+                      />
+                    </label>
+                    <div className="flex gap-2">
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant={copyConfirmationOpen ? "default" : "outline"}
+                        disabled={copyMonthlyBudgets.isPending}
+                        onClick={() =>
+                          copyConfirmationOpen
+                            ? copyBudgetsToNextYear()
+                            : setCopyConfirmationOpen(true)
+                        }
+                        className={copyConfirmationOpen ? "bg-violet-600 text-white hover:bg-violet-700" : "border-violet-300 text-violet-700 hover:bg-violet-50 dark:border-violet-800 dark:text-violet-300 dark:hover:bg-violet-950/40"}
+                      >
+                        {copyMonthlyBudgets.isPending
+                          ? "Copiando"
+                          : copyConfirmationOpen
+                            ? "Confirmar cópia"
+                            : "Copiar orçamento"}
+                      </Button>
+                      {copyConfirmationOpen && (
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => setCopyConfirmationOpen(false)}
+                        >
+                          Cancelar
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                  {copyConfirmationOpen && (
+                    <p className="mt-3 text-xs text-violet-800 dark:text-violet-200">
+                      Confirme para substituir os envelopes existentes em {nextPlanningYear} pelos valores ajustados de {selectedYear}.
+                    </p>
+                  )}
+                </div>
+              )}
             </div>
 
             <div className="space-y-5 p-4 sm:p-6">
