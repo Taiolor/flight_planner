@@ -23,6 +23,7 @@ const state = vi.hoisted(() => {
     validateAuthSession: vi.fn(),
     buildFlyIaContext: vi.fn(),
     askFlyIa: vi.fn(),
+    getDeterministicFlyIaAnswer: vi.fn(),
     consume: vi.fn(),
     getGeminiBudgetSnapshot: vi.fn(),
     recordGeminiUsage: vi.fn(),
@@ -39,6 +40,7 @@ vi.mock("./db", () => ({
 vi.mock("./flyIa", () => ({
   buildFlyIaContext: state.buildFlyIaContext,
   askFlyIa: state.askFlyIa,
+  getDeterministicFlyIaAnswer: state.getDeterministicFlyIaAnswer,
   FLY_IA_MODEL: "gemini-3.6-flash",
   flyIaRateLimiter: { consume: state.consume },
   createFlyIaRateLimiter: () => ({ consume: state.consume }),
@@ -79,6 +81,7 @@ afterEach(() => {
   state.validateAuthSession.mockReset();
   state.buildFlyIaContext.mockReset();
   state.askFlyIa.mockReset();
+  state.getDeterministicFlyIaAnswer.mockReset();
   state.consume.mockReset();
   state.getGeminiBudgetSnapshot.mockReset();
   state.recordGeminiUsage.mockReset();
@@ -141,6 +144,7 @@ describe("flyIa.chat", () => {
   it("devolve a resposta do Gemini para uma sessão autorizada", async () => {
     const context = { exercicio: 2026, voosEmitidos: [] };
     state.buildFlyIaContext.mockResolvedValue(context);
+    state.getDeterministicFlyIaAnswer.mockResolvedValue(null);
     state.getGeminiBudgetSnapshot.mockResolvedValue({ isAtLimit: false });
     state.askFlyIa.mockResolvedValue({
       text: "Seu próximo voo está previsto para amanhã.",
@@ -159,5 +163,18 @@ describe("flyIa.chat", () => {
       outputTokens: 30,
       totalTokens: 130,
     });
+  });
+
+  it("responde o próximo voo completo a partir dos dados persistidos sem chamar Gemini", async () => {
+    state.getDeterministicFlyIaAnswer.mockResolvedValue({
+      text: "**Próximo voo — ida**\n- **Data e hora:** 26/04/2026 às 22:05",
+    });
+    const caller = createCaller(true);
+
+    await expect(caller.flyIa.chat(input)).resolves.toEqual({
+      response: "**Próximo voo — ida**\n- **Data e hora:** 26/04/2026 às 22:05",
+    });
+    expect(state.getGeminiBudgetSnapshot).not.toHaveBeenCalled();
+    expect(state.askFlyIa).not.toHaveBeenCalled();
   });
 });

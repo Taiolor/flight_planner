@@ -66,3 +66,16 @@
 - [x] Validar no fluxo real do chat que uma pergunta autenticada recebe resposta, ou coletar o novo código de diagnóstico para correção específica.
 - [x] Adicionar teste integrado do caminho real reproduzido e da resposta exibida no widget Fly.IA.
 - [x] Adicionar teste integrado do widget Fly.IA que envia uma pergunta pelo caller tRPC autenticado real e renderiza a resposta retornada.
+- [x] Comparar os dados exibidos no card de descrição com o contexto factual atualmente enviado ao Fly.IA.
+- [x] Responder o próximo voo de forma determinística no servidor, preservando textos de data e hora do banco sem enviar este caso ao Gemini.
+- [x] Aplicar uma resposta determinística e completa para perguntas sobre o próximo voo, sem permitir que o modelo altere horários.
+- [x] Criar testes de regressão para data, hora, rota, companhia, número do voo, status e demais detalhes do card.
+- [x] Cobrir a pergunta de seguimento “detalhes” para garantir a repetição factual completa do próximo voo.
+- [x] Validar a resposta no chat e documentar a correção.
+- [x] Ajustar o timeout do teste de integração da Gemini para acomodar a latência real da API.
+- [ ] Salvar um checkpoint da resposta completa e precisa do próximo voo.
+- [x] Corrigir o registro de tarefas para refletir que perguntas sobre o próximo voo são respondidas deterministicamente no servidor, sem enviar esse caso ao Gemini.
+- [x] Ampliar os testes para validar rota completa, ida e volta associadas, companhia, número, terminal, status e data e hora literais.
+- [x] Adicionar validação integrada do widget Fly.IA para a pergunta inicial e o seguimento por detalhes do próximo voo.
+- [x] Estender o teste fim a fim autenticado do widget para cobrir a pergunta inicial, o seguimento por detalhes e a renderização completa das duas respostas.
+- [x] Validar no teste fim a fim que cada uma das duas respostas do assistente é renderizada separadamente e contém todos os campos do card.

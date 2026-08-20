@@ -20,7 +20,7 @@ describe("Gemini API configuration", () => {
           contents: [{ role: "user", parts: [{ text: "Responda apenas: ok" }] }],
           generationConfig: { temperature: 0, maxOutputTokens: 128, responseMimeType: "text/plain" },
         }),
-        signal: AbortSignal.timeout(20_000),
+        signal: AbortSignal.timeout(45_000),
       }
     );
 
@@ -32,7 +32,7 @@ describe("Gemini API configuration", () => {
     };
     expect(result.modelVersion).toContain(GEMINI_MODEL);
     expect(result.candidates?.[0]?.content?.parts?.[0]?.text?.trim()).toBeTruthy();
-  });
+  }, 60_000);
 
   it("conclui uma pergunta autenticada do Fly.IA pela mutation tRPC", async () => {
     expect(ENV.authEmail, "AUTH_EMAIL deve estar configurado para a reprodução autenticada").toBeTruthy();

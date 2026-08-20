@@ -1,7 +1,10 @@
 import { getAdditionalFlightsForYear } from "./additionalFlightsDb";
+import { getAllFlightWeeks } from "./db";
 import { getFinancialYearSummary } from "./financialDb";
 import { getMemoriesOverview } from "./memoriesOverview";
 import { getAirportName } from "../shared/airportAddresses";
+import { getSaoPauloDate } from "../shared/flightDistance";
+import type { FlightWeek } from "../drizzle/schema";
 import { ENV } from "./_core/env";
 
 export const FLY_IA_MODEL = "gemini-3.6-flash";
@@ -79,14 +82,124 @@ export function sanitizeFlyIaHistory(messages: FlyIaMessage[]) {
     .filter(message => message.content.length > 0);
 }
 
-function formatFlightDatetime(value: string) {
-  const parsed = new Date(value);
-  if (Number.isNaN(parsed.getTime())) return value;
-  return new Intl.DateTimeFormat("pt-BR", {
-    dateStyle: "short",
-    timeStyle: "short",
-    timeZone: "America/Sao_Paulo",
-  }).format(parsed);
+export function formatFlightDatetime(value: string) {
+  const persisted = value.trim();
+  const match = persisted.match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/);
+  if (match) {
+    const [, year, month, day, hour, minute] = match;
+    return `${day}/${month}/${year} às ${hour}:${minute}`;
+  }
+  return persisted;
+}
+
+type FlightLeg = {
+  direction: "ida" | "volta";
+  datetime: string;
+  airportFrom: string;
+  airportTo: string;
+  airline: string | null;
+  flightNumber: string | null;
+  terminal: string | null;
+  status: "Programado" | "Remarcado" | "Cancelado" | "Concluído";
+};
+
+function isNextFlightQuestion(messages: FlyIaMessage[]) {
+  const userMessages = messages.filter(message => message.role === "user");
+  const question = userMessages.at(-1)?.content ?? "";
+  const asksNextFlight = /pr[oó]xim[oa]\s+(voo|viagem)|qual\s+(é|e)\s+(o|a)\s+meu\s+pr[oó]xim/i.test(question);
+  const asksDetails = /detalhes?|hor[aá]rio|companhia|n[uú]mero\s+do\s+voo|rota/i.test(question);
+  const previouslyAskedNextFlight = userMessages.slice(0, -1).some(message =>
+    /pr[oó]xim[oa]\s+(voo|viagem)|qual\s+(é|e)\s+(o|a)\s+meu\s+pr[oó]xim/i.test(message.content)
+  );
+  return asksNextFlight || (asksDetails && previouslyAskedNextFlight);
+}
+
+function getLegStatus(
+  datetime: string,
+  cancelled: boolean,
+  rescheduled: boolean,
+  today: string
+): FlightLeg["status"] {
+  if (cancelled) return "Cancelado";
+  if (rescheduled) return "Remarcado";
+  return datetime.slice(0, 10) < today ? "Concluído" : "Programado";
+}
+
+function getWeekLegs(week: FlightWeek, today: string): FlightLeg[] {
+  const departureDatetime = week.departureFlightDatetime;
+  const returnDatetime = week.returnFlightDatetime;
+  const departure = departureDatetime
+    ? [{
+        direction: "ida" as const,
+        datetime: departureDatetime,
+        airportFrom: week.departureAirport || "GRU",
+        airportTo: week.returnAirport || "NVT",
+        airline: week.departureAirline,
+        flightNumber: week.departureFlightNumber,
+        terminal: week.departureTerminal,
+        status: getLegStatus(departureDatetime, Boolean(week.departureCancelled), Boolean(week.departureRescheduled), today),
+      }]
+    : [];
+  const returnLeg = week.ticketType !== "oneway" && returnDatetime
+    ? [{
+        direction: "volta" as const,
+        datetime: returnDatetime,
+        airportFrom: week.returnAirport || "NVT",
+        airportTo: week.departureAirport || "GRU",
+        airline: week.returnAirline,
+        flightNumber: week.returnFlightNumber,
+        terminal: week.returnTerminal,
+        status: getLegStatus(returnDatetime, Boolean(week.returnCancelled), Boolean(week.returnRescheduled), today),
+      }]
+    : [];
+  return [...departure, ...returnLeg];
+}
+
+function formatFlightCardLine(label: string, flight: FlightLeg) {
+  const airportFrom = `${flight.airportFrom} — ${getAirportName(flight.airportFrom)}`;
+  const airportTo = `${flight.airportTo} — ${getAirportName(flight.airportTo)}`;
+  return [
+    `**${label}**`,
+    `- **Rota:** ${airportFrom} → ${airportTo}`,
+    `- **Data e hora:** ${formatFlightDatetime(flight.datetime)}`,
+    `- **Companhia:** ${flight.airline || "não informada"}`,
+    `- **Voo:** ${flight.flightNumber || "não informado"}`,
+    `- **Terminal:** ${flight.terminal || "não informado"}`,
+    `- **Status:** ${flight.status}`,
+  ].join("\n");
+}
+
+export function buildNextFlightAnswerFromWeeks(
+  weeks: FlightWeek[],
+  messages: FlyIaMessage[],
+  today = getSaoPauloDate()
+) {
+  if (!isNextFlightQuestion(messages)) return null;
+  const candidates = weeks
+    .filter(week => Boolean(week.isTicketIssued) && !Boolean(week.isDeleted))
+    .flatMap(week => getWeekLegs(week, today).map(flight => ({ week, flight })))
+    .filter(({ flight }) => flight.status !== "Cancelado" && flight.datetime.slice(0, 10) >= today)
+    .sort((a, b) => a.flight.datetime.localeCompare(b.flight.datetime));
+  const next = candidates[0];
+  if (!next) {
+    return "Não há um próximo voo emitido e ativo registrado para este exercício.";
+  }
+
+  const relatedLegs = getWeekLegs(next.week, today).filter(leg => leg.direction !== next.flight.direction);
+  const relatedDetails = relatedLegs.length > 0
+    ? `\n\n${relatedLegs.map(leg => formatFlightCardLine(leg.direction === "ida" ? "Ida do mesmo bilhete" : "Volta do mesmo bilhete", leg)).join("\n\n")}`
+    : "";
+  return [
+    formatFlightCardLine(next.flight.direction === "ida" ? "Próximo voo — ida" : "Próximo voo — volta", next.flight),
+    relatedDetails,
+    "\nOs dados acima reproduzem literalmente a data e o horário cadastrados no planejamento, sem conversão de fuso horário.",
+  ].join("");
+}
+
+export async function getDeterministicFlyIaAnswer(year: number, messages: FlyIaMessage[]) {
+  const weeks = await getAllFlightWeeks(year);
+  const text = buildNextFlightAnswerFromWeeks(weeks, messages);
+  return text ? { text } : null;
 }
 
 /**

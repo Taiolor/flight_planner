@@ -26,6 +26,8 @@ O projeto precisa usar a chave `GEMINI_API_KEY` criada em um projeto Google AI S
 
 > **Tempo de resposta:** a reprodução autenticada da mutation `flyIa.chat` com o contexto real do planejamento ultrapassou o antigo limite de 20 segundos. O limite foi ampliado para 45 segundos; erros de rede, expiração ou falhas inesperadas são convertidos em indisponibilidade temporária com código de diagnóstico seguro, em vez de uma mensagem interna genérica.
 
+> **Próximo voo:** perguntas sobre o próximo voo — inclusive pedidos posteriores por detalhes — recebem uma resposta determinística, sem gerar texto pela IA. A resposta lê os campos persistidos do bilhete e apresenta rota, data e hora, companhia, número, terminal e status. Datas no formato `YYYY-MM-DDTHH:mm` são exibidas literalmente como `DD/MM/AAAA às HH:mm`, sem conversão de fuso horário.
+
 O Fly.IA não deve ser interpretado como fonte independente de dados. As respostas devem refletir exclusivamente o contexto do exercício selecionado; se um dado estiver ausente, a orientação do sistema é declarar a limitação em vez de inferir ou inventar uma resposta.
 
 ## Configuração identificada

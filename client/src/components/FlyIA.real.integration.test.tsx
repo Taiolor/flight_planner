@@ -44,10 +44,11 @@ vi.mock("@/lib/trpc", () => ({
 }));
 
 vi.mock("./AIChatBox", () => ({
-  AIChatBox: ({ messages, onSendMessage }: { messages: Array<{ content: string }>; onSendMessage: (content: string) => void }) => (
+  AIChatBox: ({ messages, onSendMessage }: { messages: Array<{ role: string; content: string }>; onSendMessage: (content: string) => void }) => (
     <div>
       <button type="button" onClick={() => onSendMessage("Qual é meu próximo voo?")}>Enviar pergunta real</button>
-      {messages.map((message, index) => <p key={index}>{message.content}</p>)}
+      <button type="button" onClick={() => onSendMessage("Quais são os detalhes?")}>Pedir detalhes reais</button>
+      {messages.map((message, index) => <p key={index} data-role={message.role}>{message.content}</p>)}
     </div>
   ),
 }));
@@ -61,6 +62,15 @@ Reflect.set(globalThis, "IS_REACT_ACT_ENVIRONMENT", true);
 let root: Root | null = null;
 let host: HTMLDivElement | null = null;
 
+function expectCompleteFlightCard(response: string) {
+  expect(response).toContain("Data e hora:");
+  expect(response).toContain("Rota:");
+  expect(response).toContain("Companhia:");
+  expect(response).toContain("Voo:");
+  expect(response).toContain("Terminal:");
+  expect(response).toContain("Status:");
+}
+
 afterEach(() => {
   act(() => root?.unmount());
   host?.remove();
@@ -72,7 +82,7 @@ afterEach(() => {
 });
 
 describe("Fly.IA real authenticated flow", () => {
-  it.runIf(Boolean(process.env.RUN_REAL_GEMINI_E2E))("envia uma pergunta autenticada e renderiza a resposta real da mutation", async () => {
+  it.runIf(Boolean(process.env.RUN_REAL_GEMINI_E2E))("renderiza detalhes completos do próximo voo e do seguimento por tRPC real", async () => {
     expect(ENV.authEmail).toBeTruthy();
     host = document.createElement("div");
     document.body.appendChild(host);
@@ -89,10 +99,22 @@ describe("Fly.IA real authenticated flow", () => {
         ?.click();
       await state.completion;
     });
+    const firstAssistantResponse = document.querySelectorAll<HTMLElement>('[data-role="assistant"]');
+    expect(firstAssistantResponse).toHaveLength(1);
+    expectCompleteFlightCard(firstAssistantResponse[0]?.textContent ?? "");
+    await act(async () => {
+      Array.from(document.querySelectorAll<HTMLButtonElement>("button"))
+        .find(button => button.textContent === "Pedir detalhes reais")
+        ?.click();
+      await state.completion;
+    });
 
     const text = document.body.textContent ?? "";
     expect(text).toContain("Qual é meu próximo voo?");
+    expect(text).toContain("Quais são os detalhes?");
     expect(text).not.toContain("Não consegui responder agora.");
-    expect(text.length).toBeGreaterThan("Qual é meu próximo voo?".length);
+    const assistantResponses = document.querySelectorAll<HTMLElement>('[data-role="assistant"]');
+    expect(assistantResponses).toHaveLength(2);
+    assistantResponses.forEach(response => expectCompleteFlightCard(response.textContent ?? ""));
   }, 60_000);
 });

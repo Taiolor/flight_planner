@@ -1,8 +1,10 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   askFlyIa,
+  buildNextFlightAnswerFromWeeks,
   buildFlyIaPayload,
   createFlyIaRateLimiter,
+  formatFlightDatetime,
   FlyIaProviderError,
   projectFlyIaContext,
   sanitizeFlyIaHistory,
@@ -110,6 +112,91 @@ describe("Fly.IA", () => {
     expect(serialized).not.toContain("SEGREDO-VOLTA");
     expect(serialized).not.toContain("departureLocator");
     expect(serialized).not.toContain("returnLocator");
+  });
+
+  it("preserva o horário literal persistido e detalha todos os campos do próximo voo", () => {
+    const weeks = [
+      {
+        year: 2026,
+        weekNumber: 17,
+        isTicketIssued: 1,
+        isDeleted: 0,
+        departureFlightDatetime: "2026-04-26T22:05",
+        returnFlightDatetime: "2026-05-01T19:10",
+        departureAirport: "GRU",
+        returnAirport: "NVT",
+        departureAirline: "GOL",
+        returnAirline: "GOL",
+        departureFlightNumber: "G31234",
+        returnFlightNumber: "G35678",
+        departureTerminal: "2",
+        returnTerminal: "1",
+        departureCancelled: 0,
+        returnCancelled: 0,
+        departureRescheduled: 0,
+        returnRescheduled: 0,
+        ticketType: "roundtrip",
+      },
+    ] as never;
+
+    const answer = buildNextFlightAnswerFromWeeks(
+      weeks,
+      [{ role: "user", content: "Qual é meu próximo voo?" }],
+      "2026-04-01"
+    );
+
+    expect(formatFlightDatetime("2026-04-26T22:05")).toBe("26/04/2026 às 22:05");
+    expect(answer).toContain("26/04/2026 às 22:05");
+    expect(answer).toContain("**Rota:** GRU — Aeroporto Internacional de São Paulo/Guarulhos → NVT — Aeroporto de Navegantes");
+    expect(answer).toContain("GOL");
+    expect(answer).toContain("G31234");
+    expect(answer).toContain("**Terminal:** 2");
+    expect(answer).toContain("**Status:** Programado");
+    expect(answer).toContain("**Volta do mesmo bilhete**");
+    expect(answer).toContain("**Rota:** NVT — Aeroporto de Navegantes → GRU — Aeroporto Internacional de São Paulo/Guarulhos");
+    expect(answer).toContain("01/05/2026 às 19:10");
+    expect(answer).toContain("G35678");
+    expect(answer).toContain("**Terminal:** 1");
+  });
+
+  it("repete os detalhes completos quando a pergunta seguinte pede detalhes do próximo voo", () => {
+    const weeks = [
+      {
+        year: 2026,
+        weekNumber: 17,
+        isTicketIssued: 1,
+        isDeleted: 0,
+        departureFlightDatetime: "2026-04-26T22:05",
+        returnFlightDatetime: null,
+        departureAirport: "GRU",
+        returnAirport: "NVT",
+        departureAirline: "GOL",
+        returnAirline: null,
+        departureFlightNumber: "G31234",
+        returnFlightNumber: null,
+        departureTerminal: "2",
+        returnTerminal: null,
+        departureCancelled: 0,
+        returnCancelled: 0,
+        departureRescheduled: 0,
+        returnRescheduled: 0,
+        ticketType: "oneway",
+      },
+    ] as never;
+
+    const answer = buildNextFlightAnswerFromWeeks(
+      weeks,
+      [
+        { role: "user", content: "Qual é meu próximo voo?" },
+        { role: "assistant", content: "Seu voo é em 26/04." },
+        { role: "user", content: "Quais são os detalhes?" },
+      ],
+      "2026-04-01"
+    );
+
+    expect(answer).toContain("26/04/2026 às 22:05");
+    expect(answer).toContain("G31234");
+    expect(answer).toContain("**Terminal:** 2");
   });
 
   it("retorna texto válido do Gemini e traduz falhas do provedor", async () => {

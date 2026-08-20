@@ -12,6 +12,16 @@ const state = vi.hoisted(() => ({
   rerender: () => {},
 }));
 
+const COMPLETE_NEXT_FLIGHT = [
+  "**Próximo voo — ida**",
+  "- **Rota:** GRU — Aeroporto Internacional de São Paulo/Guarulhos → NVT — Aeroporto de Navegantes",
+  "- **Data e hora:** 26/04/2026 às 22:05",
+  "- **Companhia:** GOL",
+  "- **Voo:** G31234",
+  "- **Terminal:** 2",
+  "- **Status:** Programado",
+].join("\n");
+
 vi.mock("@/lib/trpc", () => ({
   trpc: {
     flightAuth: {
@@ -40,6 +50,7 @@ vi.mock("./AIChatBox", () => ({
   }) => (
     <div>
       <button type="button" onClick={() => onSendMessage("Qual é meu próximo voo?")}>Enviar pergunta de teste</button>
+      <button type="button" onClick={() => onSendMessage("Quais são os detalhes?")}>Pedir detalhes</button>
       <span>{isLoading ? "Fly.IA carregando" : "Fly.IA pronta"}</span>
       {messages.map((message, index) => <p key={index}>{message.content}</p>)}
     </div>
@@ -127,5 +138,31 @@ describe("Fly.IA response flow", () => {
     expect(document.body.textContent).toContain("O Fly.IA está indisponível no momento.");
     expect(document.body.textContent).toContain("Fly.IA pronta");
     expect(state.toastError).toHaveBeenCalledWith("O Fly.IA está indisponível no momento.");
+  });
+
+  it("mantém os detalhes completos ao perguntar novamente pelo próximo voo", () => {
+    mount();
+
+    sendQuestion();
+    act(() => state.options.onSuccess({ response: COMPLETE_NEXT_FLIGHT }));
+    act(() => {
+      Array.from(document.body.querySelectorAll<HTMLButtonElement>("button"))
+        .find(button => button.textContent === "Pedir detalhes")
+        ?.click();
+    });
+
+    expect(state.mutate).toHaveBeenLastCalledWith({
+      year: 2026,
+      messages: [
+        { role: "user", content: "Qual é meu próximo voo?" },
+        { role: "assistant", content: COMPLETE_NEXT_FLIGHT },
+        { role: "user", content: "Quais são os detalhes?" },
+      ],
+    });
+
+    act(() => state.options.onSuccess({ response: COMPLETE_NEXT_FLIGHT }));
+    expect(document.body.textContent).toContain("26/04/2026 às 22:05");
+    expect(document.body.textContent).toContain("G31234");
+    expect(document.body.textContent).toContain("Terminal:** 2");
   });
 });

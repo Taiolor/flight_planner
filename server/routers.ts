@@ -81,6 +81,7 @@ import {
   FlyIaProviderError,
   FlyIaRateLimitError,
   flyIaRateLimiter,
+  getDeterministicFlyIaAnswer,
 } from "./flyIa";
 import {
   GeminiBudgetExceededError,
@@ -250,6 +251,10 @@ export const appRouter = router({
       .mutation(async ({ ctx, input }) => {
         try {
           flyIaRateLimiter.consume(ctx.flightSession.email.toLowerCase());
+          const deterministicAnswer = await getDeterministicFlyIaAnswer(input.year, input.messages);
+          if (deterministicAnswer) {
+            return { response: deterministicAnswer.text };
+          }
           const budget = await getGeminiBudgetSnapshot();
           if (budget.isAtLimit) {
             throw new GeminiBudgetExceededError();
