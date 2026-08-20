@@ -4,6 +4,11 @@ import { LoginRequiredScreen } from "@/components/auth/LoginRequiredMessageBox";
 import { Button } from "@/components/ui/button";
 import { useYear } from "@/contexts/YearContext";
 import { CityBackgroundCarousel } from "@/components/CityBackgroundCarousel";
+import {
+  MemoriesMetricsLoadingSkeleton,
+  MemoriesTimelineLoadingSkeleton,
+  YearRouteLoadingSkeleton,
+} from "@/components/MemoriesLoadingSkeleton";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import {
@@ -207,6 +212,7 @@ export default function Memories() {
               </p>
             </div>
             <div className="group relative mx-auto w-full max-w-md animate-in fade-in slide-in-from-right-4 duration-700 motion-reduce:animate-none rounded-[2rem] border border-white/15 bg-slate-950/25 p-6 shadow-2xl backdrop-blur-sm transition-[transform,background-color,border-color,box-shadow] duration-300 ease-out motion-reduce:transition-none hover:-translate-y-1 hover:scale-[1.015] hover:border-white/35 hover:bg-slate-950/40 hover:shadow-[0_24px_60px_rgba(8,18,37,.45)] motion-reduce:hover:transform-none">
+              {overviewQuery.isLoading ? <YearRouteLoadingSkeleton /> : <>
               <div className="flex items-center justify-between text-xs font-bold uppercase tracking-widest text-slate-300">
                 <span>Rota do ano</span>
                 <Plane className="h-5 w-5 rotate-45 text-fuchsia-300" />
@@ -249,6 +255,7 @@ export default function Memories() {
                   </div>
                 </div>
               </div>
+              </>}
             </div>
           </div>
         </div>
@@ -256,10 +263,12 @@ export default function Memories() {
 
       <section className="relative z-10 -mt-8 mx-auto max-w-7xl px-4 pb-16 sm:px-8">
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <MetricCard icon={<Milestone />} label="Total da jornada" value={formatKm(summary?.totalKm ?? 0)} tone="indigo" />
-          <MetricCard icon={<Flag />} label="Já percorridos" value={formatKm(summary?.completedKm ?? 0)} tone="emerald" />
-          <MetricCard icon={<Plane />} label="Próximos voos" value={formatKm(summary?.futureKm ?? 0)} tone="amber" />
-          <MetricCard icon={<Ticket />} label="Passagens emitidas" value={String(summary?.issuedTrips ?? 0)} tone="fuchsia" />
+          {overviewQuery.isLoading ? <MemoriesMetricsLoadingSkeleton /> : <>
+            <MetricCard icon={<Milestone />} label="Total da jornada" value={formatKm(summary?.totalKm ?? 0)} tone="indigo" />
+            <MetricCard icon={<Flag />} label="Já percorridos" value={formatKm(summary?.completedKm ?? 0)} tone="emerald" />
+            <MetricCard icon={<Plane />} label="Próximos voos" value={formatKm(summary?.futureKm ?? 0)} tone="amber" />
+            <MetricCard icon={<Ticket />} label="Passagens emitidas" value={String(summary?.issuedTrips ?? 0)} tone="fuchsia" />
+          </>}
         </div>
 
         <section className="mt-10">
@@ -272,9 +281,7 @@ export default function Memories() {
           </div>
 
           {overviewQuery.isLoading ? (
-            <div className="mt-6 grid gap-5 lg:grid-cols-2">
-              {[0, 1, 2, 3].map(item => <div key={item} className="h-64 animate-pulse rounded-3xl bg-slate-200" />)}
-            </div>
+            <MemoriesTimelineLoadingSkeleton />
           ) : trips.length === 0 ? (
             <div className="mt-6 rounded-3xl border border-dashed border-slate-300 bg-white p-10 text-center shadow-sm">
               <Compass className="mx-auto h-10 w-10 text-fuchsia-500" />
