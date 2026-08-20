@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { Loader2, Send, User, Sparkles } from "lucide-react";
 import React, { useState, useEffect, useRef } from "react";
@@ -58,6 +59,29 @@ export type AIChatBoxProps = {
    */
   suggestedPrompts?: string[];
 };
+
+function AssistantResponseSkeleton({ minHeight }: { minHeight: number }) {
+  return (
+    <div
+      className="flex items-start gap-3"
+      style={minHeight > 0 ? { minHeight: `${minHeight}px` } : undefined}
+      role="status"
+      aria-live="polite"
+      aria-label="Fly.IA está preparando a resposta"
+      data-testid="assistant-response-skeleton"
+    >
+      <div className="mt-1 flex size-8 shrink-0 items-center justify-center rounded-full bg-primary/10">
+        <Sparkles className="size-4 text-primary" aria-hidden="true" />
+      </div>
+      <div className="w-[min(80%,17rem)] space-y-2 rounded-lg bg-muted px-4 py-3">
+        <Skeleton className="h-3 w-[92%] motion-reduce:animate-none" />
+        <Skeleton className="h-3 w-[74%] motion-reduce:animate-none" />
+        <Skeleton className="h-3 w-[48%] motion-reduce:animate-none" />
+      </div>
+      <span className="sr-only">Fly.IA está preparando a resposta.</span>
+    </div>
+  );
+}
 
 /**
  * A ready-to-use AI chat box component that integrates with the LLM system.
@@ -281,23 +305,7 @@ export function AIChatBox({
                 );
               })}
 
-              {isLoading && (
-                <div
-                  className="flex items-start gap-3"
-                  style={
-                    minHeightForLastMessage > 0
-                      ? { minHeight: `${minHeightForLastMessage}px` }
-                      : undefined
-                  }
-                >
-                  <div className="size-8 shrink-0 mt-1 rounded-full bg-primary/10 flex items-center justify-center">
-                    <Sparkles className="size-4 text-primary" />
-                  </div>
-                  <div className="rounded-lg bg-muted px-4 py-2.5">
-                    <Loader2 className="size-4 animate-spin text-muted-foreground" />
-                  </div>
-                </div>
-              )}
+              {isLoading && <AssistantResponseSkeleton minHeight={minHeightForLastMessage} />}
             </div>
           </ScrollArea>
         )}

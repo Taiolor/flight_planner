@@ -79,3 +79,12 @@
 - [x] Adicionar validação integrada do widget Fly.IA para a pergunta inicial e o seguimento por detalhes do próximo voo.
 - [x] Estender o teste fim a fim autenticado do widget para cobrir a pergunta inicial, o seguimento por detalhes e a renderização completa das duas respostas.
 - [x] Validar no teste fim a fim que cada uma das duas respostas do assistente é renderizada separadamente e contém todos os campos do card.
+- [x] Avaliar o estado de espera atual do chat Fly.IA e o componente Skeleton compartilhado.
+- [x] Implementar um skeleton de resposta do assistente enquanto a mutation Fly.IA estiver pendente.
+- [x] Garantir anúncio acessível de carregamento e respeito à preferência de redução de movimento.
+- [x] Criar teste renderizado para o skeleton e validar em desktop e celular.
+- [x] Adicionar validação responsiva dedicada do skeleton Fly.IA para confirmar largura fluida em celular e limite de leitura em desktop.
+- [x] Executar validação responsiva do skeleton em viewports móvel e desktop com medidas de layout distintas.
+- [x] Registrar evidência dedicada de layout do skeleton Fly.IA em desktop e celular pela cobertura de viewport responsiva.
+- [x] Habilitar temporariamente uma prévia de desenvolvimento do skeleton Fly.IA, capturar desktop e celular e remover o código de prévia antes do checkpoint.
+- [ ] Salvar um checkpoint da melhoria de carregamento do Fly.IA.
