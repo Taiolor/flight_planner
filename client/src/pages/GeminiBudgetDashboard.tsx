@@ -13,6 +13,7 @@ import {
   BellRing,
   Bot,
   CircleAlert,
+  Clock3,
   Loader2,
   Mail,
   RefreshCw,
@@ -120,6 +121,7 @@ export default function GeminiBudgetDashboard() {
 function GeminiBudgetContent() {
   const utils = trpc.useUtils();
   const dashboardQuery = trpc.geminiBudget.dashboard.useQuery(undefined, queryCachePolicies.admin);
+  const memoryQuery = trpc.flyIaMemory.dashboard.useQuery(undefined, queryCachePolicies.admin);
   const updateSettings = trpc.geminiBudget.updateSettings.useMutation({
     onSuccess: async () => {
       await utils.geminiBudget.dashboard.invalidate();
@@ -169,10 +171,10 @@ function GeminiBudgetContent() {
           <Button
             variant="outline"
             className="border-white/40 bg-white/10 text-white hover:bg-white hover:text-cyan-700"
-            onClick={() => void dashboardQuery.refetch()}
-            disabled={dashboardQuery.isFetching}
+            onClick={() => void Promise.all([dashboardQuery.refetch(), memoryQuery.refetch()])}
+            disabled={dashboardQuery.isFetching || memoryQuery.isFetching}
           >
-            <RefreshCw className={`mr-2 h-4 w-4 ${dashboardQuery.isFetching ? "animate-spin" : ""}`} />
+            <RefreshCw className={`mr-2 h-4 w-4 ${dashboardQuery.isFetching || memoryQuery.isFetching ? "animate-spin" : ""}`} />
             Atualizar
           </Button>
         }
@@ -202,6 +204,30 @@ function GeminiBudgetContent() {
               <MetricCard icon={<Zap />} label="Uso do orçamento" value={`${snapshot.usagePercent.toLocaleString("pt-BR")}%`} note={snapshot.isAtLimit ? "Teto alcançado" : "Acompanhamento ativo"} />
               <MetricCard icon={<Send />} label="Consultas no mês" value={formatNumber(snapshot.requestsCount)} note={`${formatNumber(snapshot.totalTokens)} tokens totais`} />
             </section>
+
+            <Card className="border-violet-900/60 bg-violet-950/20 p-5">
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div>
+                  <h2 className="flex items-center gap-2 font-semibold"><Bot className="h-5 w-5 text-violet-300" />Memória de sessão · últimos 30 dias</h2>
+                  <p className="mt-1 text-sm text-slate-400">Somente métricas são registradas: perguntas e respostas brutas não aparecem neste painel.</p>
+                </div>
+                <Badge variant="outline" className="border-violet-500/60 text-violet-100">
+                  {memoryQuery.data?.retentionHours ?? 8}h de retenção
+                </Badge>
+              </div>
+              {memoryQuery.error ? (
+                <p className="mt-4 text-sm text-amber-200">A memória está ativa, mas os indicadores ainda não puderam ser carregados.</p>
+              ) : (
+                <section className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+                  <MetricCard icon={<Bot />} label="Sessões ativas" value={formatNumber(memoryQuery.data?.activeSessions ?? 0)} note="Com resumo temporário" />
+                  <MetricCard icon={<Send />} label="Conversas medidas" value={formatNumber(memoryQuery.data?.metrics.requests ?? 0)} note="Últimos 30 dias" />
+                  <MetricCard icon={<Zap />} label="Contexto poupado" value={`${formatNumber(memoryQuery.data?.metrics.averageSavedChars ?? 0)} car.`} note="Média por conversa" />
+                  <MetricCard icon={<Clock3 />} label="Latência média" value={`${formatNumber(memoryQuery.data?.metrics.averageLatencyMs ?? 0)} ms`} note="Respostas medidas" />
+                  <MetricCard icon={<Send />} label="Tokens médios" value={formatNumber(memoryQuery.data?.metrics.averageTokens ?? 0)} note="Entrada e saída" />
+                  <MetricCard icon={<CircleAlert />} label="Sem resposta" value={formatNumber(memoryQuery.data?.metrics.unanswered ?? 0)} note="Falhas do provedor" />
+                </section>
+              )}
+            </Card>
 
             <Card className="border-slate-800 bg-slate-900 p-5">
               <div className="flex flex-wrap items-start justify-between gap-3">

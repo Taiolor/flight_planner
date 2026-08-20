@@ -1,0 +1,1 @@
+ALTER TABLE `fly_ia_context_metrics` ADD `payloadHistoryChars` int DEFAULT 0 NOT NULL;

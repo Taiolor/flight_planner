@@ -27,6 +27,12 @@ const state = vi.hoisted(() => {
     consume: vi.fn(),
     getGeminiBudgetSnapshot: vi.fn(),
     recordGeminiUsage: vi.fn(),
+    createFlyIaSessionKey: vi.fn(() => "session-key"),
+    getFlyIaMemoryDashboard: vi.fn(),
+    getFlyIaSessionMemory: vi.fn(),
+    getFlyIaPromptStats: vi.fn(() => ({ contextChars: 150, historyChars: 80, payloadHistoryChars: 40, memoryChars: 32 })),
+    recordFlyIaContextMetric: vi.fn(),
+    saveFlyIaSessionMemory: vi.fn(),
     FlyIaRateLimitError,
     FlyIaProviderError,
     GeminiBudgetExceededError,
@@ -46,6 +52,15 @@ vi.mock("./flyIa", () => ({
   createFlyIaRateLimiter: () => ({ consume: state.consume }),
   FlyIaRateLimitError: state.FlyIaRateLimitError,
   FlyIaProviderError: state.FlyIaProviderError,
+  getFlyIaPromptStats: state.getFlyIaPromptStats,
+}));
+
+vi.mock("./flyIaMemory", () => ({
+  createFlyIaSessionKey: state.createFlyIaSessionKey,
+  getFlyIaMemoryDashboard: state.getFlyIaMemoryDashboard,
+  getFlyIaSessionMemory: state.getFlyIaSessionMemory,
+  recordFlyIaContextMetric: state.recordFlyIaContextMetric,
+  saveFlyIaSessionMemory: state.saveFlyIaSessionMemory,
 }));
 
 vi.mock("./geminiBudget", () => ({
@@ -85,6 +100,16 @@ afterEach(() => {
   state.consume.mockReset();
   state.getGeminiBudgetSnapshot.mockReset();
   state.recordGeminiUsage.mockReset();
+  state.createFlyIaSessionKey.mockClear();
+  state.getFlyIaMemoryDashboard.mockReset();
+  state.getFlyIaSessionMemory.mockReset();
+  state.getFlyIaSessionMemory.mockResolvedValue(null);
+  state.getFlyIaPromptStats.mockClear();
+  state.getFlyIaPromptStats.mockReturnValue({ contextChars: 150, historyChars: 80, payloadHistoryChars: 40, memoryChars: 0 });
+  state.recordFlyIaContextMetric.mockReset();
+  state.recordFlyIaContextMetric.mockResolvedValue(undefined);
+  state.saveFlyIaSessionMemory.mockReset();
+  state.saveFlyIaSessionMemory.mockResolvedValue(undefined);
 });
 
 describe("flyIa.chat", () => {
@@ -151,18 +176,33 @@ describe("flyIa.chat", () => {
       usage: { inputTokens: 100, outputTokens: 30, totalTokens: 130 },
     });
     state.recordGeminiUsage.mockResolvedValue(undefined);
+    state.getFlyIaSessionMemory.mockResolvedValue({ summary: "O usuário discutiu o voo de abril.", sourceResponsesCount: 2 });
+    state.getFlyIaPromptStats.mockReturnValue({ contextChars: 150, historyChars: 80, payloadHistoryChars: 40, memoryChars: 32 });
+    state.saveFlyIaSessionMemory.mockResolvedValue(undefined);
+    state.recordFlyIaContextMetric.mockResolvedValue(undefined);
     const caller = createCaller(true);
 
     await expect(caller.flyIa.chat(input)).resolves.toEqual({
       response: "Seu próximo voo está previsto para amanhã.",
     });
     expect(state.buildFlyIaContext).toHaveBeenCalledWith(2026);
-    expect(state.askFlyIa).toHaveBeenCalledWith(context, input.messages);
+    expect(state.askFlyIa).toHaveBeenCalledWith(context, input.messages, "O usuário discutiu o voo de abril.");
     expect(state.recordGeminiUsage).toHaveBeenCalledWith("gemini-3.6-flash", {
       inputTokens: 100,
       outputTokens: 30,
       totalTokens: 130,
     });
+    expect(state.saveFlyIaSessionMemory).toHaveBeenCalledWith(expect.objectContaining({
+      sessionKey: "session-key",
+      year: 2026,
+      existingSummary: "O usuário discutiu o voo de abril.",
+      sourceResponsesCount: 2,
+    }));
+    expect(state.recordFlyIaContextMetric).toHaveBeenCalledWith(expect.objectContaining({
+      outcome: "generated",
+      memoryChars: 32,
+      latencyMs: expect.any(Number),
+    }));
   });
 
   it("responde o próximo voo completo a partir dos dados persistidos sem chamar Gemini", async () => {
@@ -176,5 +216,22 @@ describe("flyIa.chat", () => {
     });
     expect(state.getGeminiBudgetSnapshot).not.toHaveBeenCalled();
     expect(state.askFlyIa).not.toHaveBeenCalled();
+  });
+});
+
+describe("flyIaMemory router", () => {
+  it("impede o painel para usuários sem papel administrativo", async () => {
+    state.validateAuthSession.mockResolvedValue({ email: "piloto@smartfly.test", role: "user" });
+    const caller = appRouter.createCaller({ user: null, req: { headers: { cookie: "flight_session=valid-session" } }, res: {} } as any);
+
+    await expect(caller.flyIaMemory.dashboard()).rejects.toMatchObject({ code: "FORBIDDEN" });
+  });
+
+  it("retorna indicadores somente para administradores", async () => {
+    state.validateAuthSession.mockResolvedValue({ email: "admin@smartfly.test", role: "admin" });
+    state.getFlyIaMemoryDashboard.mockResolvedValue({ activeSessions: 1, retentionHours: 8, metrics: { requests: 2 } });
+    const caller = appRouter.createCaller({ user: null, req: { headers: { cookie: "flight_session=admin-session" } }, res: {} } as any);
+
+    await expect(caller.flyIaMemory.dashboard()).resolves.toMatchObject({ activeSessions: 1 });
   });
 });

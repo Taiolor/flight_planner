@@ -93,3 +93,17 @@
 - [x] Produzir uma recomendação de arquitetura incremental para memória do Fly.IA.
 - [x] Salvar um checkpoint da avaliação arquitetural de memória do Fly.IA.
 - [x] Confirmar em arquivo o mapeamento de contexto, a comparação de alternativas e a recomendação incremental de memória do Fly.IA.
+- [x] Definir o escopo da memória por sessão e exercício, incluindo retenção, limpeza e campos permitidos.
+- [x] Criar tabelas para resumos de sessão e métricas de contexto, latência e tokens do Fly.IA.
+- [x] Integrar a leitura, atualização segura e expiração da memória resumida ao fluxo de conversa.
+- [x] Expor indicadores administrativos de memória, economia estimada de contexto e perguntas sem resposta.
+- [x] Criar testes de privacidade, isolamento por exercício, expiração, persistência e observabilidade.
+- [x] Documentar o gatilho futuro para introduzir RAG.
+- [x] Adicionar testes explícitos de isolamento da memória por exercício para a mesma sessão.
+- [x] Adicionar testes do serviço de memória cobrindo expiração, regravação e contrato de persistência.
+- [x] Adicionar testes de agregação dos indicadores administrativos de memória com dados de banco simulados.
+- [x] Confirmar em arquivo a documentação final de memória de sessão e o gatilho de RAG.
+- [x] Adicionar teste com banco mockado do serviço de memória para isolar a mesma sessão entre exercícios distintos.
+- [x] Adicionar teste com banco mockado para expiração, limpeza e regravação por upsert da memória Fly.IA.
+- [x] Adicionar teste de `getFlyIaMemoryDashboard` com linhas simuladas do banco para validar a agregação completa dos indicadores.
+- [ ] Salvar um checkpoint da memória incremental do Fly.IA.

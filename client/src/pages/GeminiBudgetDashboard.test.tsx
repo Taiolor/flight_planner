@@ -8,6 +8,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 const mocks = vi.hoisted(() => ({
   authCheck: vi.fn(),
   dashboard: vi.fn(),
+  memoryDashboard: vi.fn(),
   updateSettings: vi.fn(),
   invalidate: vi.fn(),
 }));
@@ -20,6 +21,7 @@ vi.mock("@/lib/trpc", () => ({
       dashboard: { useQuery: mocks.dashboard },
       updateSettings: { useMutation: mocks.updateSettings },
     },
+    flyIaMemory: { dashboard: { useQuery: mocks.memoryDashboard } },
   },
 }));
 
@@ -31,6 +33,7 @@ afterEach(() => {
   cleanup();
   mocks.authCheck.mockReset();
   mocks.dashboard.mockReset();
+  mocks.memoryDashboard.mockReset();
   mocks.updateSettings.mockReset();
   mocks.invalidate.mockReset();
 });
@@ -84,6 +87,16 @@ describe("GeminiBudgetDashboard", () => {
   it("exibe estimativas e configurações para administradores", () => {
     mocks.authCheck.mockReturnValue({ data: { authenticated: true, isAdmin: true }, isLoading: false });
     mocks.dashboard.mockReturnValue({ data: dashboardData, isLoading: false, isFetching: false, error: null, refetch: vi.fn() });
+    mocks.memoryDashboard.mockReturnValue({
+      data: {
+        activeSessions: 2,
+        retentionHours: 8,
+        metrics: { requests: 12, unanswered: 1, averageLatencyMs: 620, averageTokens: 340, averageContextChars: 1800, averageSavedChars: 950 },
+      },
+      isFetching: false,
+      error: null,
+      refetch: vi.fn(),
+    });
     mocks.updateSettings.mockReturnValue({ mutate: vi.fn(), isPending: false });
 
     render(<GeminiBudgetDashboard />);
@@ -91,6 +104,8 @@ describe("GeminiBudgetDashboard", () => {
     expect(screen.getByText("Custo estimado")).toBeTruthy();
     expect(screen.getAllByText(/R\$\s*1,55/).length).toBeGreaterThan(0);
     expect(screen.getByText("Configurar alertas")).toBeTruthy();
+    expect(screen.getByText(/Memória de sessão/)).toBeTruthy();
+    expect(screen.getByText("Contexto poupado")).toBeTruthy();
     expect(screen.getByText("Nenhum alerta de orçamento foi disparado ainda.")).toBeTruthy();
   });
 });

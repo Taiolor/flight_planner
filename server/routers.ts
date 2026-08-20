@@ -81,8 +81,16 @@ import {
   FlyIaProviderError,
   FlyIaRateLimitError,
   flyIaRateLimiter,
+  getFlyIaPromptStats,
   getDeterministicFlyIaAnswer,
 } from "./flyIa";
+import {
+  createFlyIaSessionKey,
+  getFlyIaMemoryDashboard,
+  getFlyIaSessionMemory,
+  recordFlyIaContextMetric,
+  saveFlyIaSessionMemory,
+} from "./flyIaMemory";
 import {
   GeminiBudgetExceededError,
   getGeminiBudgetDashboard,
@@ -249,21 +257,59 @@ export const appRouter = router({
         })
       )
       .mutation(async ({ ctx, input }) => {
+        const startedAt = Date.now();
+        const cookieHeader = ctx.req.headers?.cookie ?? "";
+        const sessionToken = parse(cookieHeader)[SESSION_COOKIE];
+        const sessionKey = createFlyIaSessionKey(ctx.flightSession.email, sessionToken);
+        let metric = {
+          contextChars: 0,
+          historyChars: input.messages.reduce((total, message) => total + message.content.length, 0),
+          payloadHistoryChars: input.messages.reduce((total, message) => total + message.content.length, 0),
+          memoryChars: 0,
+        };
+        const recordMetric = (
+          outcome: "generated" | "deterministic" | "provider_error" | "budget_blocked",
+          usage = { inputTokens: 0, outputTokens: 0, totalTokens: 0 }
+        ) => recordFlyIaContextMetric({
+          sessionKey,
+          year: input.year,
+          model: FLY_IA_MODEL,
+          outcome,
+          ...metric,
+          ...usage,
+          latencyMs: Date.now() - startedAt,
+        }).catch(error => console.error("[Fly.IA Memory] Falha ao registrar métrica:", error));
         try {
           flyIaRateLimiter.consume(ctx.flightSession.email.toLowerCase());
           const deterministicAnswer = await getDeterministicFlyIaAnswer(input.year, input.messages);
           if (deterministicAnswer) {
+            await recordMetric("deterministic");
             return { response: deterministicAnswer.text };
           }
           const budget = await getGeminiBudgetSnapshot();
           if (budget.isAtLimit) {
+            await recordMetric("budget_blocked");
             throw new GeminiBudgetExceededError();
           }
-          const context = await buildFlyIaContext(input.year);
-          const answer = await askFlyIa(context, input.messages);
+          const [context, sessionMemory] = await Promise.all([
+            buildFlyIaContext(input.year),
+            getFlyIaSessionMemory(sessionKey, input.year),
+          ]);
+          metric = getFlyIaPromptStats(context, input.messages, sessionMemory?.summary);
+          const answer = await askFlyIa(context, input.messages, sessionMemory?.summary);
           await recordGeminiUsage(FLY_IA_MODEL, answer.usage).catch(error => {
             console.error("[Gemini Budget] Falha ao registrar consumo:", error);
           });
+          await Promise.all([
+            saveFlyIaSessionMemory({
+              sessionKey,
+              year: input.year,
+              existingSummary: sessionMemory?.summary ?? null,
+              sourceResponsesCount: sessionMemory?.sourceResponsesCount ?? 0,
+              answer: answer.text,
+            }).catch(error => console.error("[Fly.IA Memory] Falha ao salvar memória:", error)),
+            recordMetric("generated", answer.usage),
+          ]);
           return { response: answer.text };
         } catch (error) {
           if (error instanceof FlyIaRateLimitError) {
@@ -273,6 +319,7 @@ export const appRouter = router({
             });
           }
           if (error instanceof FlyIaProviderError) {
+            await recordMetric("provider_error");
             throw new TRPCError({
               code: "SERVICE_UNAVAILABLE",
               message: error.message,
@@ -285,6 +332,7 @@ export const appRouter = router({
             });
           }
           const diagnosticId = crypto.randomUUID();
+          await recordMetric("provider_error");
           console.error(`[Fly.IA:${diagnosticId}] Falha inesperada no chat:`, error);
           throw new TRPCError({
             code: "SERVICE_UNAVAILABLE",
@@ -292,6 +340,11 @@ export const appRouter = router({
           });
         }
       }),
+  }),
+
+  // =====================
+  flyIaMemory: router({
+    dashboard: flightAdminProcedure.query(() => getFlyIaMemoryDashboard()),
   }),
 
   // =====================

@@ -6,6 +6,7 @@ import {
   createFlyIaRateLimiter,
   formatFlightDatetime,
   FlyIaProviderError,
+  getFlyIaPromptStats,
   projectFlyIaContext,
   sanitizeFlyIaHistory,
 } from "./flyIa";
@@ -58,6 +59,25 @@ describe("Fly.IA", () => {
     expect(systemText).toContain("Nunca revele, solicite ou infira localizadores");
     expect(systemText).not.toContain("departureLocator");
     expect(payload.contents[0]?.role).toBe("user");
+  });
+
+  it("usa memória resumida e envia somente o histórico recente para reduzir contexto", () => {
+    const messages = [
+      { role: "user" as const, content: "Primeira pergunta longa" },
+      { role: "assistant" as const, content: "Primeira resposta longa" },
+      { role: "user" as const, content: "Segunda pergunta" },
+      { role: "assistant" as const, content: "Segunda resposta" },
+      { role: "user" as const, content: "Pergunta atual" },
+    ];
+    const memory = "A conversa anterior confirmou uma viagem em abril.";
+    const payload = buildFlyIaPayload(context as never, messages, memory);
+    const stats = getFlyIaPromptStats(context as never, messages, memory);
+
+    expect(payload.contents).toHaveLength(2);
+    expect(payload.systemInstruction.parts[0]?.text).toContain("MEMÓRIA RESUMIDA DA CONVERSA");
+    expect(payload.systemInstruction.parts[0]?.text).toContain(memory);
+    expect(stats.historyChars).toBeGreaterThan(stats.payloadHistoryChars);
+    expect(stats.memoryChars).toBe(memory.length);
   });
 
   it("remove localizadores e identificadores sensíveis ao projetar o contexto", () => {

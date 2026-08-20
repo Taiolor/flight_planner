@@ -616,6 +616,54 @@ export const geminiBudgetAlerts = mysqlTable("gemini_budget_alerts", {
 export type GeminiBudgetAlert = typeof geminiBudgetAlerts.$inferSelect;
 
 /**
+ * Memória compacta e efêmera do Fly.IA, isolada pela sessão autenticada e pelo
+ * exercício selecionado. O conteúdo preserva apenas resumos de respostas do
+ * assistente, nunca prompts brutos ou credenciais.
+ */
+export const flyIaSessionMemories = mysqlTable("fly_ia_session_memories", {
+  id: int("id").autoincrement().primaryKey(),
+  sessionKey: varchar("sessionKey", { length: 64 }).notNull(),
+  year: int("year").notNull(),
+  summary: text("summary").notNull(),
+  sourceResponsesCount: int("sourceResponsesCount").notNull().default(0),
+  summaryChars: int("summaryChars").notNull().default(0),
+  expiresAt: timestamp("expiresAt").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+}, table => [
+  uniqueIndex("uq_fly_ia_session_memories_session_year").on(table.sessionKey, table.year),
+  index("idx_fly_ia_session_memories_expires").on(table.expiresAt),
+]);
+
+export type FlyIaSessionMemory = typeof flyIaSessionMemories.$inferSelect;
+
+/**
+ * Métricas sem conteúdo conversacional usadas para acompanhar o tamanho de
+ * contexto, o efeito da memória compacta e a latência do Fly.IA.
+ */
+export const flyIaContextMetrics = mysqlTable("fly_ia_context_metrics", {
+  id: int("id").autoincrement().primaryKey(),
+  sessionKey: varchar("sessionKey", { length: 64 }).notNull(),
+  year: int("year").notNull(),
+  model: varchar("model", { length: 80 }).notNull(),
+  outcome: mysqlEnum("outcome", ["generated", "deterministic", "provider_error", "budget_blocked"]).notNull(),
+  contextChars: int("contextChars").notNull().default(0),
+  historyChars: int("historyChars").notNull().default(0),
+  payloadHistoryChars: int("payloadHistoryChars").notNull().default(0),
+  memoryChars: int("memoryChars").notNull().default(0),
+  inputTokens: int("inputTokens").notNull().default(0),
+  outputTokens: int("outputTokens").notNull().default(0),
+  totalTokens: int("totalTokens").notNull().default(0),
+  latencyMs: int("latencyMs").notNull().default(0),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, table => [
+  index("idx_fly_ia_context_metrics_created").on(table.createdAt),
+  index("idx_fly_ia_context_metrics_session_year").on(table.sessionKey, table.year),
+]);
+
+export type FlyIaContextMetric = typeof flyIaContextMetrics.$inferSelect;
+
+/**
  * Tabela para armazenar a lista de e-mails que receberão alertas de
  * inclusão, alteração e exclusão de bilhetes emitidos.
  */

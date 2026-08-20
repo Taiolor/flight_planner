@@ -281,6 +281,20 @@
       "when": 1787189282501,
       "tag": "0039_glamorous_namor",
       "breakpoints": true
+    },
+    {
+      "idx": 40,
+      "version": "5",
+      "when": 1787236587694,
+      "tag": "0040_bored_rictor",
+      "breakpoints": true
+    },
+    {
+      "idx": 41,
+      "version": "5",
+      "when": 1787236712768,
+      "tag": "0041_awesome_tyrannus",
+      "breakpoints": true
     }
   ]
 }
