@@ -17,9 +17,10 @@ import {
   getFlyIaDominantSuggestionTopic,
   getFlyIaFollowUpPrompts,
   recordFlyIaSuggestionPreference,
+  type FlyIaSuggestionMode,
   type FlyIaSuggestionPreferences,
 } from "@/lib/flyIaSuggestions";
-import { Bot, MessageCircle, RotateCcw, ShieldCheck, SlidersHorizontal, Sparkles, Trash2, X } from "lucide-react";
+import { Bot, Compass, Info, MessageCircle, RotateCcw, ShieldCheck, SlidersHorizontal, Sparkles, Trash2, X } from "lucide-react";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 
@@ -42,6 +43,9 @@ export default function FlyIA() {
   const [messages, setMessages] = useState<FlyIaClientMessage[]>([]);
   const [suggestionPreferences, setSuggestionPreferences] = useState<FlyIaSuggestionPreferences>({});
   const [personalizedSuggestionsEnabled, setPersonalizedSuggestionsEnabled] = useState(true);
+  const [suggestionCount, setSuggestionCount] = useState<2 | 3>(3);
+  const [suggestionMode, setSuggestionMode] = useState<FlyIaSuggestionMode>("affinity");
+  const [showSuggestionHelp, setShowSuggestionHelp] = useState(false);
   const internalSessionQuery = trpc.flightAuth.check.useQuery(undefined, {
     retry: false,
     refetchOnWindowFocus: false,
@@ -69,6 +73,9 @@ export default function FlyIA() {
   useEffect(() => {
     setMessages([]);
     setSuggestionPreferences({});
+    setSuggestionCount(3);
+    setSuggestionMode("affinity");
+    setShowSuggestionHelp(false);
   }, [selectedYear]);
 
   const sendMessage = useCallback(
@@ -146,6 +153,45 @@ export default function FlyIA() {
                 <SlidersHorizontal className="mr-1 h-3 w-3" aria-hidden="true" />
                 {personalizedSuggestionsEnabled ? "Personalizar" : "Personalização pausada"}
               </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="h-6 px-1.5 text-[10px] text-slate-500 hover:text-slate-900 dark:hover:text-slate-100"
+                onClick={() => setSuggestionMode(current => current === "affinity" ? "explore" : "affinity")}
+                aria-pressed={suggestionMode === "explore"}
+                aria-label={suggestionMode === "explore" ? "Ativar modo afinidade" : "Ativar modo explorar"}
+                title={suggestionMode === "explore" ? "Voltar ao modo afinidade" : "Explorar temas variados"}
+              >
+                <Compass className="mr-1 h-3 w-3" aria-hidden="true" />
+                {suggestionMode === "explore" ? "Explorar" : "Afinidade"}
+              </Button>
+              <label className="inline-flex h-6 items-center gap-1 px-1 text-[10px] text-slate-500" htmlFor="flyia-suggestion-count">
+                Mostrar
+                <select
+                  id="flyia-suggestion-count"
+                  aria-label="Quantidade de sugestões"
+                  className="h-5 rounded border border-slate-200 bg-white px-1 text-[10px] text-slate-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
+                  value={suggestionCount}
+                  onChange={event => setSuggestionCount(Number(event.target.value) as 2 | 3)}
+                >
+                  <option value={2}>2</option>
+                  <option value={3}>3</option>
+                </select>
+              </label>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="h-6 w-6 text-slate-500 hover:text-slate-900 dark:hover:text-slate-100"
+                onClick={() => setShowSuggestionHelp(current => !current)}
+                aria-expanded={showSuggestionHelp}
+                aria-controls="flyia-suggestion-help"
+                aria-label="Como funcionam as sugestões"
+                title="Como funcionam as sugestões"
+              >
+                <Info className="h-3.5 w-3.5" aria-hidden="true" />
+              </Button>
               {dominantSuggestionTopic && (
                 <Button
                   type="button"
@@ -174,6 +220,11 @@ export default function FlyIA() {
                 </Button>
               )}
             </div>
+            {showSuggestionHelp && (
+              <p id="flyia-suggestion-help" className="mt-1 max-w-sm text-[10px] leading-relaxed text-slate-500 dark:text-slate-400">
+                A afinidade prioriza os temas que você escolhe nesta sessão. O modo explorar alterna temas para ampliar as opções. Nada é salvo após limpar a conversa ou trocar de exercício.
+              </p>
+            )}
           </div>
           {messages.length > 0 && (
             <Button
@@ -217,7 +268,9 @@ export default function FlyIA() {
             followUpPrompts={message =>
               getFlyIaFollowUpPrompts(
                 message.content,
-                personalizedSuggestionsEnabled ? suggestionPreferences : {}
+                personalizedSuggestionsEnabled ? suggestionPreferences : {},
+                suggestionMode,
+                suggestionCount
               )
             }
             onFollowUpPromptSelected={prompt =>

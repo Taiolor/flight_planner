@@ -246,6 +246,30 @@ describe("Fly.IA response flow", () => {
       .toBe("Quais são os detalhes do próximo voo?");
   });
 
+  it("explica a adaptação, limita a quantidade e alterna para o modo explorar", () => {
+    mount();
+
+    const help = document.querySelector<HTMLButtonElement>('button[aria-label="Como funcionam as sugestões"]');
+    act(() => help?.click());
+    expect(document.querySelector('#flyia-suggestion-help')?.textContent).toContain("modo explorar");
+    expect(help?.getAttribute("aria-expanded")).toBe("true");
+
+    const count = document.querySelector<HTMLSelectElement>('select[aria-label="Quantidade de sugestões"]');
+    act(() => {
+      if (!count) return;
+      count.value = "2";
+      count.dispatchEvent(new Event("change", { bubbles: true }));
+    });
+    expect(state.followUpPrompts?.({ role: "assistant", content: "O gasto em passagens é R$ 1.200." })).toHaveLength(2);
+
+    act(() => document.querySelector<HTMLButtonElement>('button[aria-label="Ativar modo explorar"]')?.click());
+    expect(document.querySelector<HTMLButtonElement>('button[aria-label="Ativar modo afinidade"]')?.getAttribute("aria-pressed")).toBe("true");
+    expect(state.followUpPrompts?.({ role: "assistant", content: "O gasto em passagens é R$ 1.200." })).toEqual([
+      "Quanto já foi gasto em passagens?",
+      "Qual é meu próximo voo?",
+    ]);
+  });
+
   it.each([
     { label: "celular", width: 320 },
     { label: "desktop", width: 1280 },
@@ -263,5 +287,7 @@ describe("Fly.IA response flow", () => {
     expect(document.querySelector('[data-testid="flyia-adapted-suggestions-indicator"]')?.textContent)
       .toContain("Alertas");
     expect(document.querySelector<HTMLButtonElement>('button[aria-label="Redefinir tema preferido: Alertas"]')).not.toBeNull();
+    expect(document.querySelector<HTMLSelectElement>('select[aria-label="Quantidade de sugestões"]')).not.toBeNull();
+    expect(document.querySelector<HTMLButtonElement>('button[aria-label="Como funcionam as sugestões"]')).not.toBeNull();
   });
 });

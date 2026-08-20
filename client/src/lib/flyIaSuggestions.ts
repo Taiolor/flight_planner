@@ -1,5 +1,6 @@
 export type FlyIaSuggestionTopic = "flight" | "finance" | "alert" | "city" | "distance" | "general";
 export type FlyIaSuggestionPreferences = Partial<Record<FlyIaSuggestionTopic, number>>;
+export type FlyIaSuggestionMode = "affinity" | "explore";
 
 export const FLY_IA_SUGGESTION_TOPIC_LABELS: Record<FlyIaSuggestionTopic, string> = {
   flight: "Voos",
@@ -14,6 +15,14 @@ const GENERAL_FOLLOW_UPS = [
   "Qual é meu próximo voo?",
   "Há algum voo cancelado?",
   "Quanto já foi gasto em passagens?",
+];
+
+const EXPLORE_FOLLOW_UPS = [
+  "Qual é meu próximo voo?",
+  "Há algum voo cancelado ou remarcado?",
+  "Quanto já foi gasto em passagens?",
+  "Quais cidades estão no planejamento?",
+  "Qual é a distância total planejada?",
 ];
 
 function normalize(value: string) {
@@ -71,9 +80,27 @@ export function prioritizeFlyIaSuggestions(
     .map(item => item.prompt);
 }
 
+function getDiverseFlyIaSuggestions(prompts: string[], limit: number) {
+  const uniquePrompts = [...new Set(prompts)];
+  const selectedTopics = new Set<FlyIaSuggestionTopic>();
+  const selected: string[] = [];
+
+  for (const prompt of uniquePrompts) {
+    const topic = getFlyIaSuggestionTopic(prompt);
+    if (selectedTopics.has(topic)) continue;
+    selected.push(prompt);
+    selectedTopics.add(topic);
+    if (selected.length === limit) return selected;
+  }
+
+  return [...selected, ...uniquePrompts.filter(prompt => !selected.includes(prompt))].slice(0, limit);
+}
+
 export function getFlyIaFollowUpPrompts(
   response: string,
-  preferences: FlyIaSuggestionPreferences = {}
+  preferences: FlyIaSuggestionPreferences = {},
+  mode: FlyIaSuggestionMode = "affinity",
+  limit = 3
 ) {
   const normalized = normalize(response);
   let prompts: string[];
@@ -112,5 +139,10 @@ export function getFlyIaFollowUpPrompts(
     prompts = GENERAL_FOLLOW_UPS;
   }
 
-  return prioritizeFlyIaSuggestions(prompts, preferences);
+  const safeLimit = Math.max(2, Math.min(limit, 3));
+  if (mode === "explore") {
+    return getDiverseFlyIaSuggestions([...prompts, ...EXPLORE_FOLLOW_UPS], safeLimit);
+  }
+
+  return prioritizeFlyIaSuggestions(prompts, preferences).slice(0, safeLimit);
 }

@@ -54,4 +54,13 @@ describe("getFlyIaFollowUpPrompts", () => {
     expect(getFlyIaDominantSuggestionTopic(withDistance)).toBe("alert");
     expect(clearFlyIaSuggestionTopic(withDistance, "alert")).toEqual({ distance: 1 });
   });
+
+  it("limita a quantidade configurada e explora temas distintos", () => {
+    expect(getFlyIaFollowUpPrompts("O gasto em passagens é R$ 1.200.", {}, "affinity", 2)).toHaveLength(2);
+    expect(getFlyIaFollowUpPrompts("O gasto em passagens é R$ 1.200.", {}, "explore", 3)).toEqual([
+      "Quanto já foi gasto em passagens?",
+      "Qual é meu próximo voo?",
+      "Há algum voo cancelado ou remarcado?",
+    ]);
+  });
 });

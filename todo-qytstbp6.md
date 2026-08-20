@@ -132,3 +132,9 @@
 - [x] Validar no widget que "Limpar sugestões" remove todas as preferências e restaura a ordem padrão.
 - [x] Validar os controles do cabeçalho em celular e desktop, incluindo rótulos acessíveis, indicador e quebra de linha fluida.
 - [x] Salvar um checkpoint dos controles ampliados de sugestões.
+- [x] Definir preferência efêmera de quantidade e modo explorar, com valores seguros e padrão da sessão.
+- [x] Adicionar uma explicação curta e acessível sobre a adaptação de sugestões.
+- [x] Permitir configurar a quantidade de sugestões exibidas no Fly.IA.
+- [x] Implementar modo explorar que prioriza variedade de temas em vez de afinidade.
+- [x] Criar testes de quantidade, diversidade, explicação, acessibilidade e responsividade.
+- [ ] Salvar um checkpoint da ampliação de sugestões do Fly.IA.
