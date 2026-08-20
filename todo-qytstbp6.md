@@ -87,4 +87,4 @@
 - [x] Executar validação responsiva do skeleton em viewports móvel e desktop com medidas de layout distintas.
 - [x] Registrar evidência dedicada de layout do skeleton Fly.IA em desktop e celular pela cobertura de viewport responsiva.
 - [x] Habilitar temporariamente uma prévia de desenvolvimento do skeleton Fly.IA, capturar desktop e celular e remover o código de prévia antes do checkpoint.
-- [ ] Salvar um checkpoint da melhoria de carregamento do Fly.IA.
+- [x] Salvar um checkpoint da melhoria de carregamento do Fly.IA.
