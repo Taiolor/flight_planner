@@ -39,6 +39,7 @@ vi.mock("./db", () => ({
 vi.mock("./flyIa", () => ({
   buildFlyIaContext: state.buildFlyIaContext,
   askFlyIa: state.askFlyIa,
+  FLY_IA_MODEL: "gemini-3.6-flash",
   flyIaRateLimiter: { consume: state.consume },
   createFlyIaRateLimiter: () => ({ consume: state.consume }),
   FlyIaRateLimitError: state.FlyIaRateLimitError,
@@ -143,7 +144,7 @@ describe("flyIa.chat", () => {
     });
     expect(state.buildFlyIaContext).toHaveBeenCalledWith(2026);
     expect(state.askFlyIa).toHaveBeenCalledWith(context, input.messages);
-    expect(state.recordGeminiUsage).toHaveBeenCalledWith("gemini-2.5-flash", {
+    expect(state.recordGeminiUsage).toHaveBeenCalledWith("gemini-3.6-flash", {
       inputTokens: 100,
       outputTokens: 30,
       totalTokens: 130,

@@ -51,3 +51,9 @@
 - [x] Validar no teste renderizado a mensagem de carregamento exibida enquanto o resumo automático está sendo gerado.
 - [x] Adicionar teste de persistência do resumo cobrindo inserção, atualização, leitura no overview e metadados de geração.
 - [x] Salvar um checkpoint da versão validada de resumos Fly.IA.
+- [x] Investigar logs de servidor, rede e navegador para localizar a ausência de resposta do Fly.IA após o consumo da Gemini.
+- [x] Corrigir a propagação da resposta ou de erro entre a Gemini, o procedimento tRPC e o chat flutuante.
+- [x] Adicionar teste de regressão e validar uma conversa completa do Fly.IA.
+- [x] Adicionar teste renderizado do chat cobrindo envio, carregamento e resposta bem-sucedida da mutation Fly.IA.
+- [x] Adicionar teste renderizado do erro do provedor confirmando feedback visível e encerramento do carregamento.
+- [ ] Salvar um checkpoint da correção do Fly.IA.

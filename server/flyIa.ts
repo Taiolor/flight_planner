@@ -4,7 +4,7 @@ import { getMemoriesOverview } from "./memoriesOverview";
 import { getAirportName } from "../shared/airportAddresses";
 import { ENV } from "./_core/env";
 
-export const FLY_IA_MODEL = "gemini-2.5-flash";
+export const FLY_IA_MODEL = "gemini-3.6-flash";
 export const FLY_IA_MAX_MESSAGES = 8;
 export const FLY_IA_MAX_MESSAGE_CHARS = 1_200;
 

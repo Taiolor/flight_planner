@@ -45,7 +45,7 @@ describe("upsertFlightMemorySummary", () => {
     year: 2026,
     weekNumber: 12,
     summary: "Resumo factual.",
-    model: "gemini-2.5-flash",
+    model: "gemini-3.6-flash",
     sourceFingerprint: "f".repeat(64),
   };
 
@@ -56,7 +56,7 @@ describe("upsertFlightMemorySummary", () => {
     await expect(upsertFlightMemorySummary(input)).resolves.toMatchObject({
       id: 2,
       summary: "Resumo factual.",
-      model: "gemini-2.5-flash",
+      model: "gemini-3.6-flash",
       sourceFingerprint: "f".repeat(64),
     });
     expect(state.inserted).toEqual([input]);
@@ -69,7 +69,7 @@ describe("upsertFlightMemorySummary", () => {
     await expect(upsertFlightMemorySummary({ ...input, summary: "Versão atualizada." })).resolves.toMatchObject({
       id: 9,
       summary: "Versão atualizada.",
-      model: "gemini-2.5-flash",
+      model: "gemini-3.6-flash",
     });
     expect(state.updates[0]).toMatchObject({
       summary: "Versão atualizada.",

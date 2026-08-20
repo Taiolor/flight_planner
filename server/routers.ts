@@ -77,6 +77,7 @@ import {
 import {
   askFlyIa,
   buildFlyIaContext,
+  FLY_IA_MODEL,
   FlyIaProviderError,
   FlyIaRateLimitError,
   flyIaRateLimiter,
@@ -242,7 +243,7 @@ export const appRouter = router({
           }
           const context = await buildFlyIaContext(input.year);
           const answer = await askFlyIa(context, input.messages);
-          await recordGeminiUsage("gemini-2.5-flash", answer.usage).catch(error => {
+          await recordGeminiUsage(FLY_IA_MODEL, answer.usage).catch(error => {
             console.error("[Gemini Budget] Falha ao registrar consumo:", error);
           });
           return { response: answer.text };

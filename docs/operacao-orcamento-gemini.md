@@ -8,7 +8,7 @@ O painel **Gemini · Orçamento**, disponível em `/admin/gemini`, acompanha o c
 
 ## O que é registrado
 
-Após cada resposta bem-sucedida do Gemini 2.5 Flash, o SmartFly salva somente: mês do ciclo, nome do modelo, tokens de entrada, tokens de saída, total de tokens e custo estimado. Prompts, respostas, localizadores, e-mails e dados pessoais **não** são persistidos no monitoramento.
+Após cada resposta bem-sucedida do Gemini 3.6 Flash, o SmartFly salva somente: mês do ciclo, nome do modelo, tokens de entrada, tokens de saída, total de tokens e custo estimado. Prompts, respostas, localizadores, e-mails e dados pessoais **não** são persistidos no monitoramento.
 
 As taxas são configuráveis no painel em **centavos de real por 1 milhão de tokens**. Os valores iniciais são uma referência de operação e devem ser revisados pelo administrador quando a precificação oficial ou a conversão usada pelo projeto mudar.
 

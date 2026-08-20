@@ -90,7 +90,7 @@ describe("Memories summary", () => {
 
     await act(async () => {
       await mocks.summaryOptions.onSuccess(
-        { summary: { id: 1, summary: "Uma viagem entre Guarulhos e Navegantes.", model: "gemini-2.5-flash", generatedAt: new Date() }, generated: true },
+        { summary: { id: 1, summary: "Uma viagem entre Guarulhos e Navegantes.", model: "gemini-3.6-flash", generatedAt: new Date() }, generated: true },
         { year: 2026, weekNumber: 12, force: false }
       );
       await mocks.summaryOptions.onSettled();

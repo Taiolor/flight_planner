@@ -43,7 +43,7 @@ describe("getMemoriesOverview summaries", () => {
     ]);
     mocks.memories.mockResolvedValue([]);
     mocks.summaries.mockResolvedValue([
-      { id: 3, year: 2026, weekNumber: 12, summary: "Resumo salvo.", model: "gemini-2.5-flash" },
+      { id: 3, year: 2026, weekNumber: 12, summary: "Resumo salvo.", model: "gemini-3.6-flash" },
     ]);
 
     const overview = await getMemoriesOverview(2026);

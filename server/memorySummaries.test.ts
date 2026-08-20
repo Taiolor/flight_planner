@@ -91,6 +91,6 @@ describe("memory summaries", () => {
       text: "Uma viagem entre Guarulhos e Navegantes.",
       usage: { inputTokens: 90, outputTokens: 20, totalTokens: 110 },
     });
-    expect(String(fetchMock.mock.calls[0][0])).toContain("gemini-2.5-flash");
+    expect(String(fetchMock.mock.calls[0][0])).toContain("gemini-3.6-flash");
   });
 });

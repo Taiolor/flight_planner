@@ -44,7 +44,15 @@ export default function FlyIA() {
       ]);
     },
     onError: error => {
-      toast.error(error.message || "Não foi possível consultar o Fly.IA.");
+      const message = error.message || "Não foi possível consultar o Fly.IA.";
+      setMessages(current => [
+        ...current,
+        {
+          role: "assistant",
+          content: `Não consegui responder agora. ${message}`,
+        },
+      ]);
+      toast.error(message);
     },
   });
 

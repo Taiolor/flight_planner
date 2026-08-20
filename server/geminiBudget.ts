@@ -41,8 +41,8 @@ export class GeminiBudgetExceededError extends Error {
 const DEFAULT_SETTINGS: GeminiBudgetSettings = {
   id: 1,
   monthlyBudgetCents: 10_000,
-  inputCostCentsPerMillion: 165,
-  outputCostCentsPerMillion: 1_375,
+  inputCostCentsPerMillion: 75,
+  outputCostCentsPerMillion: 375,
   warningThresholdPercent: 70,
   criticalThresholdPercent: 90,
   limitThresholdPercent: 100,

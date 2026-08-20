@@ -2,7 +2,7 @@
 
 ## Funcionamento
 
-No **Diário de Bordo**, cada cartão de viagem possui a seção **Resumo Fly.IA**. Ao abrir essa seção pela primeira vez em uma viagem que ainda não possui texto salvo, o SmartFly solicita um resumo ao Gemini 2.5 Flash e o persiste por exercício e semana. A ação **Atualizar resumo** permite gerar uma nova versão quando necessário.
+No **Diário de Bordo**, cada cartão de viagem possui a seção **Resumo Fly.IA**. Ao abrir essa seção pela primeira vez em uma viagem que ainda não possui texto salvo, o SmartFly solicita um resumo ao Gemini 3.6 Flash e o persiste por exercício e semana. A ação **Atualizar resumo** permite gerar uma nova versão quando necessário.
 
 O resumo já existente é reutilizado nas próximas visualizações. Assim, abrir novamente o mesmo voo não causa outra chamada à API, exceto quando o usuário escolhe atualizá-lo.
 

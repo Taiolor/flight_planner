@@ -118,7 +118,7 @@ afterEach(() => {
 describe("recordGeminiUsage", () => {
   it("persiste o evento e devolve o agregado mensal com custo estimado", async () => {
     const snapshot = await recordGeminiUsage(
-      "gemini-2.5-flash",
+      "gemini-3.6-flash",
       { inputTokens: 1_000_000, outputTokens: 1_000_000, totalTokens: 2_000_000 },
       "2026-08"
     );
@@ -126,7 +126,7 @@ describe("recordGeminiUsage", () => {
     expect(state.usageEvents).toEqual([
       expect.objectContaining({
         yearMonth: "2026-08",
-        model: "gemini-2.5-flash",
+        model: "gemini-3.6-flash",
         estimatedCostCents: 1_540,
       }),
     ]);
@@ -142,8 +142,8 @@ describe("recordGeminiUsage", () => {
   it("usa deliveryKey real e não reenvia alertas no mesmo mês e faixa", async () => {
     const usage = { inputTokens: 1_000_000, outputTokens: 1_000_000, totalTokens: 2_000_000 };
 
-    await recordGeminiUsage("gemini-2.5-flash", usage, "2026-08");
-    await recordGeminiUsage("gemini-2.5-flash", usage, "2026-08");
+    await recordGeminiUsage("gemini-3.6-flash", usage, "2026-08");
+    await recordGeminiUsage("gemini-3.6-flash", usage, "2026-08");
 
     expect(state.claimedDeliveryKeys).toEqual([
       "2026-08:70",

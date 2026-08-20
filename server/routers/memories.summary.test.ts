@@ -29,7 +29,7 @@ vi.mock("../geminiBudget", () => ({
   recordGeminiUsage: state.recordUsage,
 }));
 vi.mock("../flyIa", () => ({
-  FLY_IA_MODEL: "gemini-2.5-flash",
+  FLY_IA_MODEL: "gemini-3.6-flash",
   FlyIaProviderError: class FlyIaProviderError extends Error {},
   createFlyIaRateLimiter: () => ({ consume: state.consume }),
 }));
@@ -99,9 +99,9 @@ describe("memories.generateSummary", () => {
     expect(state.upsertSummary).toHaveBeenCalledWith(expect.objectContaining({
       year: 2026,
       weekNumber: 12,
-      model: "gemini-2.5-flash",
+      model: "gemini-3.6-flash",
     }));
-    expect(state.recordUsage).toHaveBeenCalledWith("gemini-2.5-flash", {
+    expect(state.recordUsage).toHaveBeenCalledWith("gemini-3.6-flash", {
       inputTokens: 10,
       outputTokens: 5,
       totalTokens: 15,
