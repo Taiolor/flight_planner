@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { getFlyIaFollowUpPrompts } from "./flyIaSuggestions";
+import {
+  getFlyIaFollowUpPrompts,
+  recordFlyIaSuggestionPreference,
+} from "./flyIaSuggestions";
 
 describe("getFlyIaFollowUpPrompts", () => {
   it("sugere detalhes operacionais após uma resposta sobre voo", () => {
@@ -27,6 +30,15 @@ describe("getFlyIaFollowUpPrompts", () => {
       "Qual é a distância total planejada?",
       "Quais cidades estão no planejamento?",
       "Qual é meu próximo voo?",
+    ]);
+  });
+
+  it("prioriza o tema escolhido na sessão sem retirar sugestões de outros temas", () => {
+    const preferences = recordFlyIaSuggestionPreference({}, "Há algum voo cancelado ou remarcado?");
+    expect(getFlyIaFollowUpPrompts("Seu próximo voo sai às 22:05.", preferences)).toEqual([
+      "Há algum voo cancelado ou remarcado?",
+      "Quais são os detalhes do próximo voo?",
+      "Qual é a distância total planejada?",
     ]);
   });
 });

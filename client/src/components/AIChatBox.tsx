@@ -63,6 +63,9 @@ export type AIChatBoxProps = {
    * Sugestões de continuidade exibidas após a última resposta do assistente.
    */
   followUpPrompts?: (message: Message) => string[];
+
+  /** Registra somente o tema de uma sugestão selecionada no controle do chat. */
+  onFollowUpPromptSelected?: (prompt: string) => void;
 };
 
 function AssistantResponseSkeleton({ minHeight }: { minHeight: number }) {
@@ -149,6 +152,7 @@ export function AIChatBox({
   emptyStateMessage = "Start a conversation with AI",
   suggestedPrompts,
   followUpPrompts,
+  onFollowUpPromptSelected,
 }: AIChatBoxProps) {
   const [input, setInput] = useState("");
   const scrollAreaRef = useRef<HTMLDivElement>(null);
@@ -227,6 +231,7 @@ export function AIChatBox({
     // Mantém o mesmo fluxo de envio manual: o texto é colocado no estado do
     // campo antes de ser despachado e o chat preserva o foco para a sequência.
     setInput(prompt);
+    onFollowUpPromptSelected?.(prompt);
     onSendMessage(prompt);
     setInput("");
     scrollToBottom();

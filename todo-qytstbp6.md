@@ -118,3 +118,9 @@
 - [x] Confirmar em arquivo a categoria de distância e o fluxo de envio com foco preservado dos chips Fly.IA.
 - [x] Reexecutar testes focados de sugestões e chat após confirmar as mudanças de categoria e envio.
 - [x] Salvar um checkpoint das sugestões de perguntas do Fly.IA.
+- [x] Definir categorias de preferência efêmera e uma regra transparente de priorização das sugestões.
+- [x] Registrar apenas a categoria da sugestão escolhida na sessão atual, sem persistência no banco ou conteúdo da conversa.
+- [x] Reordenar as sugestões contextuais pelo interesse demonstrado e manter diversidade mínima de temas.
+- [x] Criar testes de ordenação, limpeza ao encerrar conversa, acessibilidade e responsividade.
+- [x] Validar no widget que uma escolha reordena sugestões e que limpar a conversa remove as preferências da sessão.
+- [ ] Salvar um checkpoint da personalização de sugestões por sessão.

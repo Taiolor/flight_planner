@@ -20,6 +20,7 @@ afterEach(() => {
 describe("AIChatBox follow-up prompts", () => {
   it("exibe chips acessíveis após a resposta e envia a pergunta selecionada", () => {
     const onSendMessage = vi.fn();
+    const onFollowUpPromptSelected = vi.fn();
     host = document.createElement("div");
     host.style.width = "320px";
     document.body.appendChild(host);
@@ -30,6 +31,7 @@ describe("AIChatBox follow-up prompts", () => {
         <AIChatBox
           messages={[{ role: "assistant", content: "Seu próximo voo sai às 22:05." }]}
           onSendMessage={onSendMessage}
+          onFollowUpPromptSelected={onFollowUpPromptSelected}
           followUpPrompts={() => ["Quais são os detalhes do próximo voo?", "Há algum voo cancelado?"]}
           height="360px"
         />
@@ -43,6 +45,7 @@ describe("AIChatBox follow-up prompts", () => {
 
     act(() => chip?.click());
     expect(onSendMessage).toHaveBeenCalledWith("Quais são os detalhes do próximo voo?");
+    expect(onFollowUpPromptSelected).toHaveBeenCalledWith("Quais são os detalhes do próximo voo?");
     expect(document.activeElement?.tagName).toBe("TEXTAREA");
   });
 

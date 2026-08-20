@@ -10,6 +10,8 @@ const state = vi.hoisted(() => ({
   mutate: vi.fn(),
   toastError: vi.fn(),
   rerender: () => {},
+  followUpPrompts: null as null | ((message: { role: "assistant"; content: string }) => string[]),
+  onFollowUpPromptSelected: null as null | ((prompt: string) => void),
 }));
 
 const COMPLETE_NEXT_FLIGHT = [
@@ -42,19 +44,33 @@ vi.mock("./AIChatBox", () => ({
   AIChatBox: ({
     messages,
     onSendMessage,
+    followUpPrompts,
+    onFollowUpPromptSelected,
     isLoading,
   }: {
     messages: Array<{ role: string; content: string }>;
     onSendMessage: (content: string) => void;
+    followUpPrompts?: (message: { role: "assistant"; content: string }) => string[];
+    onFollowUpPromptSelected?: (prompt: string) => void;
     isLoading: boolean;
-  }) => (
-    <div>
-      <button type="button" onClick={() => onSendMessage("Qual é meu próximo voo?")}>Enviar pergunta de teste</button>
-      <button type="button" onClick={() => onSendMessage("Quais são os detalhes?")}>Pedir detalhes</button>
-      <span>{isLoading ? "Fly.IA carregando" : "Fly.IA pronta"}</span>
-      {messages.map((message, index) => <p key={index}>{message.content}</p>)}
-    </div>
-  ),
+  }) => {
+    state.followUpPrompts = followUpPrompts ?? null;
+    state.onFollowUpPromptSelected = onFollowUpPromptSelected ?? null;
+    const latestAssistant = [...messages].reverse().find(message => message.role === "assistant");
+    const prompts = latestAssistant && followUpPrompts
+      ? followUpPrompts({ role: "assistant", content: latestAssistant.content })
+      : [];
+    return (
+      <div>
+        <button type="button" onClick={() => onSendMessage("Qual é meu próximo voo?")}>Enviar pergunta de teste</button>
+        <button type="button" onClick={() => onSendMessage("Quais são os detalhes?")}>Pedir detalhes</button>
+        <button type="button" onClick={() => onFollowUpPromptSelected?.("Há algum voo cancelado ou remarcado?")}>Registrar interesse em alerta</button>
+        <span data-testid="primeira-sugestao">{prompts[0] ?? "Sem sugestão"}</span>
+        <span>{isLoading ? "Fly.IA carregando" : "Fly.IA pronta"}</span>
+        {messages.map((message, index) => <p key={index}>{message.content}</p>)}
+      </div>
+    );
+  },
 }));
 
 vi.mock("@/contexts/YearContext", () => ({ useYear: () => ({ selectedYear: 2026 }) }));
@@ -93,6 +109,8 @@ afterEach(() => {
   state.isPending = false;
   state.mutate.mockReset();
   state.toastError.mockReset();
+  state.followUpPrompts = null;
+  state.onFollowUpPromptSelected = null;
   document.body.replaceChildren();
 });
 
@@ -164,5 +182,29 @@ describe("Fly.IA response flow", () => {
     expect(document.body.textContent).toContain("26/04/2026 às 22:05");
     expect(document.body.textContent).toContain("G31234");
     expect(document.body.textContent).toContain("Terminal:** 2");
+  });
+
+  it("prioriza o tema escolhido durante a conversa e remove a preferência ao limpar", () => {
+    mount();
+    sendQuestion();
+    act(() => state.options.onSuccess({ response: "Seu próximo voo sai às 22:05." }));
+
+    expect(document.querySelector('[data-testid="primeira-sugestao"]')?.textContent)
+      .toBe("Quais são os detalhes do próximo voo?");
+
+    act(() => {
+      Array.from(document.body.querySelectorAll<HTMLButtonElement>("button"))
+        .find(button => button.textContent === "Registrar interesse em alerta")
+        ?.click();
+    });
+
+    expect(document.querySelector('[data-testid="primeira-sugestao"]')?.textContent)
+      .toBe("Há algum voo cancelado ou remarcado?");
+
+    act(() => document.querySelector<HTMLButtonElement>('button[aria-label="Limpar conversa"]')?.click());
+    act(() => state.options.onSuccess({ response: "Seu próximo voo sai às 22:05." }));
+
+    expect(document.querySelector('[data-testid="primeira-sugestao"]')?.textContent)
+      .toBe("Quais são os detalhes do próximo voo?");
   });
 });

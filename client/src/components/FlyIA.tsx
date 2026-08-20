@@ -11,7 +11,11 @@ import {
 import { LoginRequiredMessageBox } from "@/components/auth/LoginRequiredMessageBox";
 import { useYear } from "@/contexts/YearContext";
 import { trpc } from "@/lib/trpc";
-import { getFlyIaFollowUpPrompts } from "@/lib/flyIaSuggestions";
+import {
+  getFlyIaFollowUpPrompts,
+  recordFlyIaSuggestionPreference,
+  type FlyIaSuggestionPreferences,
+} from "@/lib/flyIaSuggestions";
 import { Bot, MessageCircle, ShieldCheck, Trash2, X } from "lucide-react";
 import React, { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -33,6 +37,7 @@ export default function FlyIA() {
   const [open, setOpen] = useState(false);
   const [showLoginRequiredMessage, setShowLoginRequiredMessage] = useState(false);
   const [messages, setMessages] = useState<FlyIaClientMessage[]>([]);
+  const [suggestionPreferences, setSuggestionPreferences] = useState<FlyIaSuggestionPreferences>({});
   const internalSessionQuery = trpc.flightAuth.check.useQuery(undefined, {
     retry: false,
     refetchOnWindowFocus: false,
@@ -59,6 +64,7 @@ export default function FlyIA() {
 
   useEffect(() => {
     setMessages([]);
+    setSuggestionPreferences({});
   }, [selectedYear]);
 
   const sendMessage = useCallback(
@@ -118,7 +124,10 @@ export default function FlyIA() {
               variant="ghost"
               size="icon"
               className="h-8 w-8 shrink-0 text-slate-500"
-              onClick={() => setMessages([])}
+              onClick={() => {
+                setMessages([]);
+                setSuggestionPreferences({});
+              }}
               aria-label="Limpar conversa"
               title="Limpar conversa"
             >
@@ -148,7 +157,10 @@ export default function FlyIA() {
             placeholder="Pergunte sobre voos, compras ou cidades..."
             emptyStateMessage="Olá, eu sou a Fly.IA. Como posso ajudar com seu planejamento?"
             suggestedPrompts={SUGGESTED_PROMPTS}
-            followUpPrompts={message => getFlyIaFollowUpPrompts(message.content)}
+            followUpPrompts={message => getFlyIaFollowUpPrompts(message.content, suggestionPreferences)}
+            onFollowUpPromptSelected={prompt =>
+              setSuggestionPreferences(current => recordFlyIaSuggestionPreference(current, prompt))
+            }
           />
         </div>
 
