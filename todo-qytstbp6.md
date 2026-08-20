@@ -137,4 +137,4 @@
 - [x] Permitir configurar a quantidade de sugestões exibidas no Fly.IA.
 - [x] Implementar modo explorar que prioriza variedade de temas em vez de afinidade.
 - [x] Criar testes de quantidade, diversidade, explicação, acessibilidade e responsividade.
-- [ ] Salvar um checkpoint da ampliação de sugestões do Fly.IA.
+- [x] Salvar um checkpoint da ampliação de sugestões do Fly.IA.
