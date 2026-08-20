@@ -91,6 +91,8 @@ import {
   recordFlyIaContextMetric,
   saveFlyIaSessionMemory,
 } from "./flyIaMemory";
+import { transcribeAudio } from "./_core/voiceTranscription";
+import { storageGet } from "./storage";
 import {
   GeminiBudgetExceededError,
   getGeminiBudgetDashboard,
@@ -241,6 +243,38 @@ export const appRouter = router({
   // Fly.IA — assistente de planejamento
   // =====================
   flyIa: router({
+    transcribeVoice: flightProtectedProcedure
+      .input(z.object({ audioKey: z.string().min(1).max(300) }))
+      .mutation(async ({ ctx, input }) => {
+        const sessionHash = crypto
+          .createHash("sha256")
+          .update(ctx.flightSession.email.toLowerCase())
+          .digest("hex")
+          .slice(0, 16);
+        const expectedPrefix = `flyia-voice/${sessionHash}/`;
+        if (!input.audioKey.startsWith(expectedPrefix)) {
+          throw new TRPCError({ code: "FORBIDDEN", message: "Áudio de voz inválido para esta sessão." });
+        }
+
+        const { url } = await storageGet(input.audioKey);
+        const result = await transcribeAudio({
+          audioUrl: url,
+          language: "pt",
+          prompt: "Transcreva em português do Brasil a pergunta curta do usuário sobre viagens. Retorne somente o texto falado.",
+        });
+        if ("error" in result) {
+          throw new TRPCError({
+            code: result.code === "FILE_TOO_LARGE" ? "PAYLOAD_TOO_LARGE" : "SERVICE_UNAVAILABLE",
+            message: "Não foi possível transcrever o áudio agora. Tente novamente.",
+          });
+        }
+
+        const text = result.text.trim().replace(/\s+/g, " ").slice(0, 1200);
+        if (!text) {
+          throw new TRPCError({ code: "BAD_REQUEST", message: "Não foi possível identificar uma pergunta no áudio." });
+        }
+        return { text, language: result.language };
+      }),
     chat: flightProtectedProcedure
       .input(
         z.object({

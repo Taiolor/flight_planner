@@ -33,6 +33,8 @@ const state = vi.hoisted(() => {
     getFlyIaPromptStats: vi.fn(() => ({ contextChars: 150, historyChars: 80, payloadHistoryChars: 40, memoryChars: 32 })),
     recordFlyIaContextMetric: vi.fn(),
     saveFlyIaSessionMemory: vi.fn(),
+    storageGet: vi.fn(),
+    transcribeAudio: vi.fn(),
     FlyIaRateLimitError,
     FlyIaProviderError,
     GeminiBudgetExceededError,
@@ -70,6 +72,9 @@ vi.mock("./geminiBudget", () => ({
   recordGeminiUsage: state.recordGeminiUsage,
   updateGeminiBudgetSettings: vi.fn(),
 }));
+
+vi.mock("./storage", () => ({ storageGet: state.storageGet }));
+vi.mock("./_core/voiceTranscription", () => ({ transcribeAudio: state.transcribeAudio }));
 
 import { appRouter } from "./routers";
 
@@ -110,6 +115,8 @@ afterEach(() => {
   state.recordFlyIaContextMetric.mockResolvedValue(undefined);
   state.saveFlyIaSessionMemory.mockReset();
   state.saveFlyIaSessionMemory.mockResolvedValue(undefined);
+  state.storageGet.mockReset();
+  state.transcribeAudio.mockReset();
 });
 
 describe("flyIa.chat", () => {
@@ -216,6 +223,43 @@ describe("flyIa.chat", () => {
     });
     expect(state.getGeminiBudgetSnapshot).not.toHaveBeenCalled();
     expect(state.askFlyIa).not.toHaveBeenCalled();
+  });
+});
+
+describe("flyIa.transcribeVoice", () => {
+  const voiceKey = "flyia-voice/3176fdd431193a50/voice.webm";
+
+  it("impede a transcrição de áudio que não pertence à sessão", async () => {
+    const caller = createCaller(true);
+
+    await expect(caller.flyIa.transcribeVoice({ audioKey: "flyia-voice/outra-sessao/voice.webm" }))
+      .rejects.toMatchObject({ code: "FORBIDDEN" });
+    expect(state.storageGet).not.toHaveBeenCalled();
+  });
+
+  it("transcreve uma pergunta em português a partir do áudio temporário da sessão", async () => {
+    const caller = createCaller(true);
+    state.storageGet.mockResolvedValue({ url: "https://storage.example.test/flyia-voice.ogg" });
+    state.transcribeAudio.mockResolvedValue({ text: "  Qual é meu próximo voo? \n", language: "pt", duration: 1, segments: [] });
+
+    await expect(caller.flyIa.transcribeVoice({ audioKey: voiceKey })).resolves.toEqual({
+      text: "Qual é meu próximo voo?",
+      language: "pt",
+    });
+    expect(state.storageGet).toHaveBeenCalledWith(voiceKey);
+    expect(state.transcribeAudio).toHaveBeenCalledWith(expect.objectContaining({
+      audioUrl: "https://storage.example.test/flyia-voice.ogg",
+      language: "pt",
+    }));
+  });
+
+  it("converte indisponibilidade da transcrição em erro seguro", async () => {
+    const caller = createCaller(true);
+    state.storageGet.mockResolvedValue({ url: "https://storage.example.test/flyia-voice.ogg" });
+    state.transcribeAudio.mockResolvedValue({ error: "Whisper indisponível", code: "SERVICE_ERROR" });
+
+    await expect(caller.flyIa.transcribeVoice({ audioKey: voiceKey }))
+      .rejects.toMatchObject({ code: "SERVICE_UNAVAILABLE", message: "Não foi possível transcrever o áudio agora. Tente novamente." });
   });
 });
 

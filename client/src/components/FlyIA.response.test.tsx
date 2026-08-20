@@ -9,9 +9,11 @@ const state = vi.hoisted(() => ({
   isPending: false,
   mutate: vi.fn(),
   toastError: vi.fn(),
+  voiceMutateAsync: vi.fn(),
   rerender: () => {},
   followUpPrompts: null as null | ((message: { role: "assistant"; content: string }) => string[]),
   onFollowUpPromptSelected: null as null | ((prompt: string) => void),
+  voiceInput: null as any,
 }));
 
 const COMPLETE_NEXT_FLIGHT = [
@@ -36,6 +38,9 @@ vi.mock("@/lib/trpc", () => ({
           return { mutate: state.mutate, isPending: state.isPending };
         },
       },
+      transcribeVoice: {
+        useMutation: () => ({ mutateAsync: state.voiceMutateAsync, isPending: false }),
+      },
     },
   },
 }));
@@ -47,15 +52,18 @@ vi.mock("./AIChatBox", () => ({
     followUpPrompts,
     onFollowUpPromptSelected,
     isLoading,
+    voiceInput,
   }: {
     messages: Array<{ role: string; content: string }>;
     onSendMessage: (content: string) => void;
     followUpPrompts?: (message: { role: "assistant"; content: string }) => string[];
     onFollowUpPromptSelected?: (prompt: string) => void;
     isLoading: boolean;
+    voiceInput?: any;
   }) => {
     state.followUpPrompts = followUpPrompts ?? null;
     state.onFollowUpPromptSelected = onFollowUpPromptSelected ?? null;
+    state.voiceInput = voiceInput ?? null;
     const latestAssistant = [...messages].reverse().find(message => message.role === "assistant");
     const prompts = latestAssistant && followUpPrompts
       ? followUpPrompts({ role: "assistant", content: latestAssistant.content })
@@ -65,6 +73,17 @@ vi.mock("./AIChatBox", () => ({
         <button type="button" onClick={() => onSendMessage("Qual é meu próximo voo?")}>Enviar pergunta de teste</button>
         <button type="button" onClick={() => onSendMessage("Quais são os detalhes?")}>Pedir detalhes</button>
         <button type="button" onClick={() => onFollowUpPromptSelected?.("Há algum voo cancelado ou remarcado?")}>Registrar interesse em alerta</button>
+        {voiceInput && (
+          <>
+            <button
+              type="button"
+              aria-label={voiceInput.state === "recording" ? "Parar gravação" : "Falar uma pergunta"}
+              onClick={voiceInput.state === "recording" ? voiceInput.onStopRecording : voiceInput.onStartRecording}
+            >Voz</button>
+            <span data-testid="voice-transcript">{voiceInput.transcript ?? ""}</span>
+            <span data-testid="voice-error">{voiceInput.error ?? ""}</span>
+          </>
+        )}
         <span data-testid="primeira-sugestao">{prompts[0] ?? "Sem sugestão"}</span>
         <span>{isLoading ? "Fly.IA carregando" : "Fly.IA pronta"}</span>
         {messages.map((message, index) => <p key={index}>{message.content}</p>)}
@@ -110,8 +129,10 @@ afterEach(() => {
   state.isPending = false;
   state.mutate.mockReset();
   state.toastError.mockReset();
+  state.voiceMutateAsync.mockReset();
   state.followUpPrompts = null;
   state.onFollowUpPromptSelected = null;
+  state.voiceInput = null;
   document.body.replaceChildren();
 });
 
@@ -289,5 +310,109 @@ describe("Fly.IA response flow", () => {
     expect(document.querySelector<HTMLButtonElement>('button[aria-label="Redefinir tema preferido: Alertas"]')).not.toBeNull();
     expect(document.querySelector<HTMLSelectElement>('select[aria-label="Quantidade de sugestões"]')).not.toBeNull();
     expect(document.querySelector<HTMLButtonElement>('button[aria-label="Como funcionam as sugestões"]')).not.toBeNull();
+  });
+
+  it("captura áudio, transcreve e preenche a pergunta editável", async () => {
+    const originalMediaRecorder = globalThis.MediaRecorder;
+    const originalMediaDevices = navigator.mediaDevices;
+    const originalFetch = globalThis.fetch;
+    const stopTrack = vi.fn();
+    const getUserMedia = vi.fn().mockResolvedValue({ getTracks: () => [{ stop: stopTrack }] });
+    const upload = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ audioKey: "flyia-voice/test/voice.webm" }),
+    });
+
+    class FakeMediaRecorder {
+      static isTypeSupported() { return true; }
+      state: RecordingState = "inactive";
+      mimeType = "audio/webm";
+      ondataavailable: ((event: BlobEvent) => void) | null = null;
+      onerror: ((event: Event) => void) | null = null;
+      onstop: ((event: Event) => void) | null = null;
+      constructor(_stream: MediaStream, _options?: MediaRecorderOptions) {}
+      start() { this.state = "recording"; }
+      stop() {
+        this.state = "inactive";
+        this.ondataavailable?.({ data: new Blob(["fala"], { type: "audio/webm" }) } as BlobEvent);
+        this.onstop?.(new Event("stop"));
+      }
+    }
+
+    Reflect.set(globalThis, "MediaRecorder", FakeMediaRecorder);
+    Object.defineProperty(navigator, "mediaDevices", { configurable: true, value: { getUserMedia } });
+    Reflect.set(globalThis, "fetch", upload);
+    state.voiceMutateAsync.mockResolvedValue({ text: "Qual é meu próximo voo?", language: "pt" });
+
+    try {
+      mount();
+      const start = document.querySelector<HTMLButtonElement>('button[aria-label="Falar uma pergunta"]');
+      await act(async () => { start?.click(); await Promise.resolve(); });
+      expect(getUserMedia).toHaveBeenCalledWith({ audio: true });
+      expect(document.querySelector<HTMLButtonElement>('button[aria-label="Parar gravação"]')).not.toBeNull();
+
+      const stop = document.querySelector<HTMLButtonElement>('button[aria-label="Parar gravação"]');
+      await act(async () => {
+        stop?.click();
+        await new Promise(resolve => setTimeout(resolve, 0));
+        await new Promise(resolve => setTimeout(resolve, 0));
+      });
+
+      expect(upload).toHaveBeenCalledWith("/api/flyia/voice-upload", expect.objectContaining({ method: "POST" }));
+      expect(state.voiceMutateAsync).toHaveBeenCalledWith({ audioKey: "flyia-voice/test/voice.webm" });
+      expect(document.querySelector('[data-testid="voice-transcript"]')?.textContent).toBe("Qual é meu próximo voo?");
+      expect(stopTrack).toHaveBeenCalled();
+    } finally {
+      Reflect.set(globalThis, "MediaRecorder", originalMediaRecorder);
+      Object.defineProperty(navigator, "mediaDevices", { configurable: true, value: originalMediaDevices });
+      Reflect.set(globalThis, "fetch", originalFetch);
+    }
+  });
+
+  it("explica em português quando a permissão de microfone é negada", async () => {
+    const originalMediaRecorder = globalThis.MediaRecorder;
+    const originalMediaDevices = navigator.mediaDevices;
+    class SupportedMediaRecorder {
+      static isTypeSupported() { return true; }
+    }
+    const getUserMedia = vi.fn().mockRejectedValue(new DOMException("bloqueado", "NotAllowedError"));
+
+    Reflect.set(globalThis, "MediaRecorder", SupportedMediaRecorder);
+    Object.defineProperty(navigator, "mediaDevices", { configurable: true, value: { getUserMedia } });
+
+    try {
+      mount();
+      const start = document.querySelector<HTMLButtonElement>('button[aria-label="Falar uma pergunta"]');
+      await act(async () => { start?.click(); await Promise.resolve(); });
+
+      expect(getUserMedia).toHaveBeenCalledWith({ audio: true });
+      expect(document.querySelector('[data-testid="voice-error"]')?.textContent)
+        .toBe("Permita o uso do microfone para falar sua pergunta.");
+      expect(document.querySelector<HTMLButtonElement>('button[aria-label="Falar uma pergunta"]')).not.toBeNull();
+    } finally {
+      Reflect.set(globalThis, "MediaRecorder", originalMediaRecorder);
+      Object.defineProperty(navigator, "mediaDevices", { configurable: true, value: originalMediaDevices });
+    }
+  });
+
+  it("mantém a digitação disponível quando o navegador não suporta captura de voz", async () => {
+    const originalMediaRecorder = globalThis.MediaRecorder;
+    const originalMediaDevices = navigator.mediaDevices;
+
+    Reflect.set(globalThis, "MediaRecorder", undefined);
+    Object.defineProperty(navigator, "mediaDevices", { configurable: true, value: undefined });
+
+    try {
+      mount();
+      const start = document.querySelector<HTMLButtonElement>('button[aria-label="Falar uma pergunta"]');
+      await act(async () => { start?.click(); });
+
+      expect(document.querySelector('[data-testid="voice-error"]')?.textContent)
+        .toBe("A gravação por microfone não é compatível com este navegador. Digite sua pergunta.");
+      expect(document.querySelector<HTMLButtonElement>('button[aria-label="Falar uma pergunta"]')).not.toBeNull();
+    } finally {
+      Reflect.set(globalThis, "MediaRecorder", originalMediaRecorder);
+      Object.defineProperty(navigator, "mediaDevices", { configurable: true, value: originalMediaDevices });
+    }
   });
 });

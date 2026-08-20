@@ -203,6 +203,48 @@ async function startServer() {
     }
   );
 
+  app.post(
+    "/api/flyia/voice-upload",
+    express.raw({ type: ["audio/webm", "audio/ogg", "audio/wav", "audio/mpeg", "audio/mp4", "audio/x-m4a"], limit: "5mb" }),
+    async (req, res) => {
+      try {
+        const session = await getSessionFromCookie(req);
+        if (!session) {
+          res.status(401).json({ error: "Faça login para usar a entrada por voz." });
+          return;
+        }
+
+        const rawMimeType = String(req.headers["content-type"] ?? "").toLowerCase();
+        const mimeType = rawMimeType.split(";", 1)[0];
+        const extensions: Record<string, string> = {
+          "audio/webm": "webm",
+          "audio/ogg": "ogg",
+          "audio/wav": "wav",
+          "audio/mpeg": "mp3",
+          "audio/mp4": "m4a",
+          "audio/x-m4a": "m4a",
+        };
+
+        if (!extensions[mimeType] || !Buffer.isBuffer(req.body) || req.body.length === 0) {
+          res.status(400).json({ error: "Formato de áudio não suportado." });
+          return;
+        }
+
+        const sessionHash = crypto
+          .createHash("sha256")
+          .update(session.email.toLowerCase())
+          .digest("hex")
+          .slice(0, 16);
+        const audioKey = `flyia-voice/${sessionHash}/${crypto.randomUUID()}.${extensions[mimeType]}`;
+        await storagePut(audioKey, req.body, mimeType);
+        res.status(201).json({ audioKey });
+      } catch (error) {
+        console.error("[Fly.IA Voice] Falha no upload temporário", error);
+        res.status(500).json({ error: "Não foi possível preparar o áudio para transcrição." });
+      }
+    }
+  );
+
   // development mode uses Vite, production mode uses static files
   if (process.env.NODE_ENV === "development") {
     await setupVite(app, server);

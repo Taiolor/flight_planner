@@ -21,7 +21,7 @@ import {
   type FlyIaSuggestionPreferences,
 } from "@/lib/flyIaSuggestions";
 import { Bot, Compass, Info, MessageCircle, RotateCcw, ShieldCheck, SlidersHorizontal, Sparkles, Trash2, X } from "lucide-react";
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 
 const SUGGESTED_PROMPTS = [
@@ -36,6 +36,15 @@ type FlyIaClientMessage = {
   content: string;
 };
 
+const MAX_VOICE_AUDIO_BYTES = 5 * 1024 * 1024;
+const MAX_VOICE_RECORDING_MS = 60_000;
+
+function chooseAudioMimeType() {
+  if (typeof MediaRecorder === "undefined") return undefined;
+  return ["audio/webm;codecs=opus", "audio/webm", "audio/ogg;codecs=opus", "audio/ogg"]
+    .find(mimeType => MediaRecorder.isTypeSupported(mimeType));
+}
+
 export default function FlyIA() {
   const { selectedYear } = useYear();
   const [open, setOpen] = useState(false);
@@ -46,6 +55,11 @@ export default function FlyIA() {
   const [suggestionCount, setSuggestionCount] = useState<2 | 3>(3);
   const [suggestionMode, setSuggestionMode] = useState<FlyIaSuggestionMode>("affinity");
   const [showSuggestionHelp, setShowSuggestionHelp] = useState(false);
+  const [voiceState, setVoiceState] = useState<"idle" | "recording" | "transcribing">("idle");
+  const [voiceTranscript, setVoiceTranscript] = useState<string | null>(null);
+  const [voiceError, setVoiceError] = useState<string | null>(null);
+  const recorderRef = useRef<MediaRecorder | null>(null);
+  const recordingTimerRef = useRef<number | null>(null);
   const internalSessionQuery = trpc.flightAuth.check.useQuery(undefined, {
     retry: false,
     refetchOnWindowFocus: false,
@@ -69,6 +83,98 @@ export default function FlyIA() {
       toast.error(message);
     },
   });
+  const transcribeVoiceMutation = trpc.flyIa.transcribeVoice.useMutation();
+
+  const clearRecordingTimer = useCallback(() => {
+    if (recordingTimerRef.current !== null) {
+      window.clearTimeout(recordingTimerRef.current);
+      recordingTimerRef.current = null;
+    }
+  }, []);
+
+  const stopVoiceRecording = useCallback(() => {
+    clearRecordingTimer();
+    const recorder = recorderRef.current;
+    if (recorder?.state === "recording") recorder.stop();
+  }, [clearRecordingTimer]);
+
+  const startVoiceRecording = useCallback(async () => {
+    setVoiceError(null);
+    setVoiceTranscript(null);
+    if (!navigator.mediaDevices?.getUserMedia || typeof MediaRecorder === "undefined") {
+      setVoiceError("A gravação por microfone não é compatível com este navegador. Digite sua pergunta.");
+      return;
+    }
+
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mimeType = chooseAudioMimeType();
+      const recorder = mimeType ? new MediaRecorder(stream, { mimeType }) : new MediaRecorder(stream);
+      const chunks: BlobPart[] = [];
+      recorder.ondataavailable = event => {
+        if (event.data.size > 0) chunks.push(event.data);
+      };
+      recorder.onerror = () => {
+        stream.getTracks().forEach(track => track.stop());
+        setVoiceState("idle");
+        setVoiceError("A gravação de voz foi interrompida. Tente novamente.");
+      };
+      recorder.onstop = async () => {
+        stream.getTracks().forEach(track => track.stop());
+        recorderRef.current = null;
+        const audio = new Blob(chunks, { type: recorder.mimeType || "audio/webm" });
+        if (audio.size === 0) {
+          setVoiceState("idle");
+          setVoiceError("Não foi possível capturar áudio. Tente novamente.");
+          return;
+        }
+        if (audio.size > MAX_VOICE_AUDIO_BYTES) {
+          setVoiceState("idle");
+          setVoiceError("O áudio excede o limite de 5 MB. Faça uma pergunta mais curta.");
+          return;
+        }
+
+        setVoiceState("transcribing");
+        try {
+          const upload = await fetch("/api/flyia/voice-upload", {
+            method: "POST",
+            credentials: "include",
+            headers: { "Content-Type": audio.type || "audio/webm" },
+            body: audio,
+          });
+          const payload = await upload.json().catch(() => ({}));
+          if (!upload.ok || typeof payload.audioKey !== "string") {
+            throw new Error(payload.error || "Não foi possível preparar o áudio.");
+          }
+          const transcription = await transcribeVoiceMutation.mutateAsync({ audioKey: payload.audioKey });
+          setVoiceTranscript(transcription.text);
+        } catch (error) {
+          const message = error instanceof Error ? error.message : "Não foi possível transcrever o áudio agora.";
+          setVoiceError(message);
+          toast.error(message);
+        } finally {
+          setVoiceState("idle");
+        }
+      };
+      recorderRef.current = recorder;
+      recorder.start();
+      setVoiceState("recording");
+      recordingTimerRef.current = window.setTimeout(() => {
+        setVoiceError("A gravação foi limitada a 60 segundos.");
+        stopVoiceRecording();
+      }, MAX_VOICE_RECORDING_MS);
+    } catch (error) {
+      const denied = error instanceof DOMException && error.name === "NotAllowedError";
+      setVoiceError(denied ? "Permita o uso do microfone para falar sua pergunta." : "Não foi possível acessar o microfone. Tente novamente.");
+      setVoiceState("idle");
+    }
+  }, [stopVoiceRecording, transcribeVoiceMutation]);
+
+  useEffect(() => () => {
+    clearRecordingTimer();
+    const recorder = recorderRef.current;
+    if (recorder?.state === "recording") recorder.stop();
+  }, [clearRecordingTimer]);
 
   useEffect(() => {
     setMessages([]);
@@ -76,6 +182,8 @@ export default function FlyIA() {
     setSuggestionCount(3);
     setSuggestionMode("affinity");
     setShowSuggestionHelp(false);
+    setVoiceTranscript(null);
+    setVoiceError(null);
   }, [selectedYear]);
 
   const sendMessage = useCallback(
@@ -280,6 +388,14 @@ export default function FlyIA() {
                   : current
               )
             }
+            voiceInput={{
+              state: voiceState,
+              transcript: voiceTranscript,
+              error: voiceError,
+              onStartRecording: startVoiceRecording,
+              onStopRecording: stopVoiceRecording,
+              onTranscriptConsumed: () => setVoiceTranscript(null),
+            }}
           />
         </div>
 

@@ -23,6 +23,9 @@ vi.mock("@/lib/trpc", () => ({
       chat: {
         useMutation: () => ({ mutate: state.chatMutate, isPending: false }),
       },
+      transcribeVoice: {
+        useMutation: () => ({ mutateAsync: vi.fn(), isPending: false }),
+      },
     },
   },
 }));

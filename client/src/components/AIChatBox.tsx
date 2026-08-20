@@ -3,7 +3,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
-import { Loader2, Send, User, Sparkles } from "lucide-react";
+import { Loader2, Mic, Send, Square, User, Sparkles } from "lucide-react";
 import React, { useState, useEffect, useRef } from "react";
 import { Streamdown } from "streamdown";
 
@@ -66,6 +66,16 @@ export type AIChatBoxProps = {
 
   /** Registra somente o tema de uma sugestão selecionada no controle do chat. */
   onFollowUpPromptSelected?: (prompt: string) => void;
+
+  /** Estado opcional de gravação e transcrição de voz. */
+  voiceInput?: {
+    state: "idle" | "recording" | "transcribing";
+    transcript?: string | null;
+    error?: string | null;
+    onStartRecording: () => void;
+    onStopRecording: () => void;
+    onTranscriptConsumed?: () => void;
+  };
 };
 
 function AssistantResponseSkeleton({ minHeight }: { minHeight: number }) {
@@ -153,12 +163,22 @@ export function AIChatBox({
   suggestedPrompts,
   followUpPrompts,
   onFollowUpPromptSelected,
+  voiceInput,
 }: AIChatBoxProps) {
   const [input, setInput] = useState("");
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const inputAreaRef = useRef<HTMLFormElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    const transcript = voiceInput?.transcript?.trim();
+    const onTranscriptConsumed = voiceInput?.onTranscriptConsumed;
+    if (!transcript) return;
+    setInput(current => current.trim() ? `${current.trim()} ${transcript}` : transcript);
+    onTranscriptConsumed?.();
+    requestAnimationFrame(() => textareaRef.current?.focus());
+  }, [voiceInput?.transcript, voiceInput?.onTranscriptConsumed]);
 
   // Filter out system messages
   const displayMessages = messages.filter(msg => msg.role !== "system");
@@ -365,15 +385,47 @@ export function AIChatBox({
         onSubmit={handleSubmit}
         className="flex gap-2 p-4 border-t bg-background/50 items-end"
       >
-        <Textarea
-          ref={textareaRef}
-          value={input}
-          onChange={e => setInput(e.target.value)}
-          onKeyDown={handleKeyDown}
-          placeholder={placeholder}
-          className="flex-1 max-h-32 resize-none min-h-9"
-          rows={1}
-        />
+        <div className="min-w-0 flex-1">
+          {voiceInput && voiceInput.state !== "idle" && (
+            <p className="mb-1 text-xs text-slate-500" role="status" aria-live="polite">
+              {voiceInput.state === "recording" ? "Ouvindo… toque novamente para finalizar." : "Transcrevendo sua pergunta…"}
+            </p>
+          )}
+          {voiceInput?.error && (
+            <p className="mb-1 text-xs text-red-600 dark:text-red-400" role="alert">
+              {voiceInput.error}
+            </p>
+          )}
+          <Textarea
+            ref={textareaRef}
+            value={input}
+            onChange={e => setInput(e.target.value)}
+            onKeyDown={handleKeyDown}
+            placeholder={voiceInput ? "Digite ou fale sua pergunta…" : placeholder}
+            className="max-h-32 min-h-9 resize-none"
+            rows={1}
+          />
+        </div>
+        {voiceInput && (
+          <Button
+            type="button"
+            variant={voiceInput.state === "recording" ? "destructive" : "outline"}
+            size="icon"
+            aria-label={voiceInput.state === "recording" ? "Parar gravação" : "Falar uma pergunta"}
+            title={voiceInput.state === "recording" ? "Parar gravação" : "Falar uma pergunta"}
+            disabled={isLoading || voiceInput.state === "transcribing"}
+            onClick={voiceInput.state === "recording" ? voiceInput.onStopRecording : voiceInput.onStartRecording}
+            className="h-[38px] w-[38px] shrink-0"
+          >
+            {voiceInput.state === "transcribing" ? (
+              <Loader2 className="size-4 animate-spin" />
+            ) : voiceInput.state === "recording" ? (
+              <Square className="size-3.5" fill="currentColor" />
+            ) : (
+              <Mic className="size-4" />
+            )}
+          </Button>
+        )}
         <Button
           type="submit"
           size="icon"

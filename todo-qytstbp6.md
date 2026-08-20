@@ -138,3 +138,18 @@
 - [x] Implementar modo explorar que prioriza variedade de temas em vez de afinidade.
 - [x] Criar testes de quantidade, diversidade, explicação, acessibilidade e responsividade.
 - [x] Salvar um checkpoint da ampliação de sugestões do Fly.IA.
+- [x] Definir captura de áudio temporária, formatos, limite de 5 MB e mensagens de permissão do microfone.
+- [x] Criar procedimento protegido para transcrever áudio em português com chave temporária restrita à sessão.
+- [x] Implementar controle de microfone, gravação, estado de transcrição e prévia editável do texto no Fly.IA.
+- [x] Fazer a transcrição confirmada preencher o campo e usar o mesmo fluxo de envio de perguntas do chat após revisão manual.
+- [x] Criar testes de transcrição, falhas do serviço, estados e prévia editável da entrada por voz.
+- [x] Cobrir no roteador a propriedade do áudio, a transcrição bem-sucedida e a falha segura do provedor de voz.
+- [x] Cobrir no componente o microfone, estados de gravação e transcrição e a prévia editável do texto.
+- [x] Simular no widget Fly.IA a captura de mídia, o upload temporário e o preenchimento da pergunta transcrita.
+- [x] Documentar o fluxo, formatos, privacidade, estados e retenção atual da entrada por voz.
+- [x] Adicionar teste de permissão negada do microfone, validando feedback em português e retorno ao estado ocioso.
+- [x] Adicionar teste de navegador sem `MediaRecorder` ou `getUserMedia`, validando fallback para digitação.
+- [x] Confirmar no `AIChatBox` real que o campo editável permanece disponível após mensagem de navegador sem suporte a voz.
+- [x] Validar o controle de voz em celular e desktop, incluindo botão, estados e prévia editável.
+- [ ] Configurar e validar a exclusão automática de objetos `flyia-voice/` no armazenamento após a transcrição ou por ciclo de vida curto.
+- [x] Salvar um checkpoint da entrada por voz do Fly.IA.
