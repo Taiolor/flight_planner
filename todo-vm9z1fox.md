@@ -90,3 +90,9 @@
 - [x] Ocultar completamente Layout dos quadros da Home sem remover a implementação
 - [x] Cobrir a ausência visual e a preservação reversível do recurso com testes
 - [x] Atualizar a regressão global de painéis para reconhecer o atalho desativado por flag
+- [x] Inspecionar a composição e as quebras atuais do cabeçalho mobile
+- [x] Definir duas linhas móveis: contexto e conta na primeira; preferências utilitárias na segunda
+- [x] Reorganizar os controles do cabeçalho para duas linhas no mobile
+- [x] Cobrir a nova composição móvel com teste e validação visual
+- [x] Adicionar regressão estrutural explícita dos dois grupos de linha do cabeçalho mobile
+- [x] Isolar as consultas da regressão mobile para evitar colisões entre instâncias renderizadas

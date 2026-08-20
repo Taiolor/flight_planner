@@ -112,22 +112,23 @@ export function HomeHeaderActions({
       className="flex w-full flex-col gap-2 lg:w-auto lg:items-end"
       aria-label="Ações do planejamento"
     >
-      <div className="flex w-full flex-wrap items-center justify-between gap-2 lg:w-auto lg:flex-nowrap lg:justify-end">
-        <div className="flex min-w-0 items-center gap-2">
+      <div className="flex w-full flex-nowrap items-center gap-1 sm:gap-2 lg:w-auto lg:justify-end">
+        <div className="flex min-w-0 flex-1 items-center gap-1 sm:flex-none sm:gap-2">
           <GlobalYearSelector
             className={`${headerButtonClass} min-w-[104px] bg-slate-950/20 text-white hover:bg-white/18`}
           />
           <Link
             href="/calendar"
-            className="inline-flex h-10 items-center rounded-xl bg-white px-3 font-semibold text-slate-900 shadow-sm transition-[transform,background-color] duration-150 hover:bg-slate-100 active:scale-[0.97] focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-slate-800"
+            aria-label="Calendário"
+            className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white px-0 font-semibold text-slate-900 shadow-sm transition-[transform,background-color] duration-150 hover:bg-slate-100 active:scale-[0.97] focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-slate-800 sm:w-auto sm:px-3"
           >
             <CalendarDays className="size-4" aria-hidden="true" />
-            <span className="ml-1.5 whitespace-nowrap">Calendário</span>
+            <span className="ml-1.5 hidden whitespace-nowrap sm:inline">Calendário</span>
           </Link>
           <Link
             href="/gestao-passagens"
             aria-label="Abrir Gestão de Passagens"
-            className={`${headerButtonClass} inline-flex items-center justify-center px-3`}
+            className={`${iconButtonClass} shrink-0 sm:w-auto sm:px-3`}
           >
             <Ticket className="size-4" aria-hidden="true" />
             <span className="ml-1.5 hidden sm:inline">Gestão</span>
@@ -135,7 +136,7 @@ export function HomeHeaderActions({
           <Button
             size="sm"
             variant="outline"
-            className={`${headerButtonClass} h-10 px-3`}
+            className={`${headerButtonClass} hidden h-10 px-3 sm:inline-flex`}
             onClick={onShowChart}
           >
             <TrendingUp className="size-4" aria-hidden="true" />
@@ -143,7 +144,7 @@ export function HomeHeaderActions({
           </Button>
         </div>
 
-        <div className="flex shrink-0 items-center gap-2">
+        <div className="flex shrink-0 items-center gap-1 sm:gap-2">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
@@ -245,17 +246,17 @@ export function HomeHeaderActions({
             <Button
               size="sm"
               variant="outline"
-              className={`${headerButtonClass} px-3`}
+              className={`${iconButtonClass} shrink-0 sm:w-auto sm:px-3`}
               onClick={onSignIn}
             >
               <LogIn className="size-4" aria-hidden="true" />
-              <span className="ml-1.5">Entrar</span>
+              <span className="ml-1.5 hidden sm:inline">Entrar</span>
             </Button>
           )}
         </div>
       </div>
 
-      <div className="flex w-full items-center gap-2 lg:w-auto lg:justify-end">
+      <div className="flex w-full flex-nowrap items-center gap-1 sm:gap-2 lg:w-auto lg:justify-end">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button
