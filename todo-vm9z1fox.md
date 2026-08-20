@@ -20,3 +20,9 @@
 - [x] Implementar o controle de recolher ou expandir com persistência da última escolha
 - [x] Cobrir acessibilidade, persistência e responsividade do quadro com testes
 - [x] Adicionar regressão responsiva do cabeçalho e conteúdo expansível do quadro de preços
+- [x] Mapear os gráficos e painéis restantes da Home para expansão ou recolhimento persistente
+- [x] Estender as preferências persistentes a todos os painéis e gráficos aplicáveis
+- [x] Criar o controle global para expandir ou recolher todos os quadros da Home
+- [x] Cobrir persistência, acessibilidade e responsividade do novo padrão em testes
+- [x] Adicionar regressão de integração para sincronização e persistência do controle global
+- [x] Adicionar regressão responsiva do botão global e dos painéis sincronizados

@@ -137,6 +137,10 @@ import {
   persistHomeExpandablePanels,
   readHomeExpandablePanels,
 } from "@/lib/homeExpandablePanels";
+import {
+  areAllHomePanelsOpen,
+  getNextHomeGlobalPanelState,
+} from "@/lib/homePanelVisibility";
 
 const AnnualSpendChart = lazy(() =>
   import("@/components/HomeCharts").then(module => ({
@@ -1114,6 +1118,24 @@ export default function Home() {
       persistHomeExpandablePanels(next);
       return next;
     });
+  };
+  const allHomePanelsAreOpen = areAllHomePanelsOpen({
+    summary: expandSummary,
+    filters: expandFilters,
+    expandablePanels,
+  });
+  const toggleAllHomePanels = () => {
+    const next = getNextHomeGlobalPanelState({
+      summary: expandSummary,
+      filters: expandFilters,
+      expandablePanels,
+    });
+
+    setExpandSummary(next.summary);
+    setExpandFilters(next.filters);
+    setExpandablePanels(next.expandablePanels);
+    persistHomePanelPreferences({ summary: next.summary, filters: next.filters });
+    persistHomeExpandablePanels(next.expandablePanels);
   };
   const handleSaveAnnualGoal = (goal: number) => {
     const savedGoal = saveAnnualEmissionGoal(
@@ -2105,6 +2127,26 @@ export default function Home() {
       </header>
 
       <main className="container py-4 sm:py-8">
+        <div className="mb-4 flex justify-end sm:mb-6">
+          <button
+            type="button"
+            onClick={toggleAllHomePanels}
+            aria-pressed={allHomePanelsAreOpen}
+            aria-label={allHomePanelsAreOpen ? "Recolher todos os quadros" : "Expandir todos os quadros"}
+            className={`inline-flex min-h-10 items-center gap-2 rounded-xl border px-3 py-2 text-sm font-semibold transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 ${
+              theme === "dark"
+                ? "border-slate-700 bg-slate-800 text-slate-200 hover:bg-slate-700"
+                : "border-slate-200 bg-white text-slate-700 shadow-sm hover:bg-slate-50"
+            }`}
+          >
+            {allHomePanelsAreOpen ? (
+              <ChevronUp className="h-4 w-4" aria-hidden="true" />
+            ) : (
+              <ChevronDown className="h-4 w-4" aria-hidden="true" />
+            )}
+            {allHomePanelsAreOpen ? "Recolher todos" : "Expandir todos"}
+          </button>
+        </div>
         {/* Resumo Anual com Accordion */}
         {weeksQuery.isLoading ? (
           <SkeletonChart />
