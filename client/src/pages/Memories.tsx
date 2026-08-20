@@ -20,7 +20,7 @@ import {
   Ticket,
   Video,
 } from "lucide-react";
-import { useState, type ChangeEvent, type ReactNode } from "react";
+import { useCallback, useEffect, useRef, useState, type ChangeEvent, type ReactNode } from "react";
 import { Link } from "wouter";
 
 const numberFormatter = new Intl.NumberFormat("pt-BR");
@@ -46,6 +46,14 @@ type MemoryTrip = {
   completedKm: number;
   futureKm: number;
   memory: { media: MemoryMedia[] } | null;
+  summary: MemorySummary | null;
+};
+
+type MemorySummary = {
+  id: number;
+  summary: string;
+  model: string;
+  generatedAt: Date | string;
 };
 
 type MemoryMedia = {
@@ -74,6 +82,24 @@ export default function Memories() {
   const deleteMediaMutation = trpc.memories.deleteMedia.useMutation({
     onSuccess: () => {
       void utils.memories.getOverview.invalidate({ year: selectedYear });
+    },
+  });
+  const [generatedSummaries, setGeneratedSummaries] = useState<Record<number, MemorySummary>>({});
+  const [generatingWeek, setGeneratingWeek] = useState<number | null>(null);
+  const generateSummaryMutation = trpc.memories.generateSummary.useMutation({
+    onMutate: input => {
+      setGeneratingWeek(input.weekNumber);
+    },
+    onSuccess: async (data, input) => {
+      setGeneratedSummaries(current => ({ ...current, [input.weekNumber]: data.summary }));
+      await utils.memories.getOverview.invalidate({ year: selectedYear });
+      if (data.generated) toast.success("Resumo Fly.IA pronto para revisitar esta viagem.");
+    },
+    onError: error => {
+      toast.error(error.message || "Não foi possível gerar o resumo da viagem.");
+    },
+    onSettled: () => {
+      setGeneratingWeek(null);
     },
   });
   const [uploadingWeek, setUploadingWeek] = useState<number | null>(null);
@@ -234,9 +260,17 @@ export default function Memories() {
               {trips.map(trip => (
                 <MemoryTripCard
                   key={trip.weekNumber}
-                  trip={trip}
+                  trip={{ ...trip, summary: generatedSummaries[trip.weekNumber] ?? trip.summary }}
                   isUploading={uploadingWeek === trip.weekNumber}
+                  isGeneratingSummary={generatingWeek === trip.weekNumber}
                   onUpload={event => handleMediaUpload(trip.weekNumber, event)}
+                  onGenerateSummary={force =>
+                    generateSummaryMutation.mutate({
+                      year: selectedYear,
+                      weekNumber: trip.weekNumber,
+                      force,
+                    })
+                  }
                   onDeleteMedia={mediaId =>
                     deleteMediaMutation.mutate({ year: selectedYear, mediaId })
                   }
@@ -266,16 +300,56 @@ function MetricCard({ icon, label, value, tone }: { icon: ReactNode; label: stri
 function MemoryTripCard({
   trip,
   isUploading,
+  isGeneratingSummary,
   onUpload,
+  onGenerateSummary,
   onDeleteMedia,
 }: {
   trip: MemoryTrip;
   isUploading: boolean;
+  isGeneratingSummary: boolean;
   onUpload: (event: ChangeEvent<HTMLInputElement>) => void;
+  onGenerateSummary: (force: boolean) => void;
   onDeleteMedia: (mediaId: number) => void;
 }) {
+  const [summaryOpen, setSummaryOpen] = useState(false);
+  const requestedAutomatically = useRef(false);
+  const cardRef = useRef<HTMLElement | null>(null);
+
+  useEffect(() => {
+    requestedAutomatically.current = false;
+  }, [trip.weekNumber, trip.year]);
+
+  const requestInitialSummary = useCallback(() => {
+    if (trip.summary || requestedAutomatically.current) return;
+    requestedAutomatically.current = true;
+    onGenerateSummary(false);
+  }, [onGenerateSummary, trip.summary]);
+
+  useEffect(() => {
+    if (trip.summary || requestedAutomatically.current) return;
+    const card = cardRef.current;
+    if (!card || typeof IntersectionObserver === "undefined") {
+      requestInitialSummary();
+      return;
+    }
+
+    const observer = new IntersectionObserver(entries => {
+      if (entries.some(entry => entry.isIntersecting)) {
+        requestInitialSummary();
+        observer.disconnect();
+      }
+    }, { threshold: 0.15 });
+    observer.observe(card);
+    return () => observer.disconnect();
+  }, [requestInitialSummary, trip.summary]);
+
+  useEffect(() => {
+    if (summaryOpen) requestInitialSummary();
+  }, [requestInitialSummary, summaryOpen]);
+
   return (
-    <article className="group relative overflow-hidden rounded-[2rem] border border-slate-200 bg-white p-5 sm:p-6 shadow-lg shadow-slate-900/5 transition duration-200 hover:-translate-y-1 hover:shadow-xl">
+    <article ref={cardRef} className="group relative overflow-hidden rounded-[2rem] border border-slate-200 bg-white p-5 sm:p-6 shadow-lg shadow-slate-900/5 transition duration-200 hover:-translate-y-1 hover:shadow-xl">
       <div className="absolute right-0 top-0 h-24 w-24 rounded-bl-[5rem] bg-fuchsia-50" />
       <div className="relative flex items-start justify-between gap-3 sm:gap-4">
         <div className="min-w-0 flex-1">
@@ -298,6 +372,43 @@ function MemoryTripCard({
       </div>
 
       <div className="relative mt-6 border-t border-slate-100 pt-5">
+        <div className="mb-5 rounded-2xl border border-fuchsia-100 bg-gradient-to-br from-fuchsia-50 to-indigo-50 p-4">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="flex items-center gap-2 text-sm font-black text-slate-800">
+              <span className="grid h-8 w-8 place-items-center rounded-xl bg-fuchsia-500 text-white"><Sparkles className="h-4 w-4" /></span>
+              Resumo Fly.IA
+            </div>
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              onClick={() => setSummaryOpen(current => !current)}
+              aria-expanded={summaryOpen}
+              className="border-fuchsia-200 bg-white/80 text-fuchsia-800 hover:bg-fuchsia-100"
+            >
+              {summaryOpen ? "Ocultar resumo" : trip.summary ? "Ver resumo" : "Abrir resumo"}
+            </Button>
+          </div>
+          {summaryOpen && (
+            <div className="mt-4 rounded-xl bg-white/80 p-3 text-sm leading-6 text-slate-700">
+              {isGeneratingSummary ? (
+                <p className="flex items-center gap-2 font-medium text-fuchsia-800"><Loader2 className="h-4 w-4 animate-spin" /> Fly.IA está preparando este resumo...</p>
+              ) : trip.summary ? (
+                <>
+                  <p>{trip.summary.summary}</p>
+                  <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-slate-100 pt-3 text-xs text-slate-500">
+                    <span>Gerado em {new Date(trip.summary.generatedAt).toLocaleDateString("pt-BR")}</span>
+                    <Button type="button" size="sm" variant="ghost" onClick={() => onGenerateSummary(true)} className="h-7 px-2 text-fuchsia-700 hover:bg-fuchsia-100 hover:text-fuchsia-800">
+                      Atualizar resumo
+                    </Button>
+                  </div>
+                </>
+              ) : (
+                <p className="text-slate-600">O resumo será criado automaticamente para esta viagem.</p>
+              )}
+            </div>
+          )}
+        </div>
         {trip.memory?.media.length ? (
           <div className="grid grid-cols-1 gap-3 min-[360px]:grid-cols-2 sm:grid-cols-3">
             {trip.memory.media.map(media => (

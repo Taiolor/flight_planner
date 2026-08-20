@@ -40,6 +40,7 @@ vi.mock("./flyIa", () => ({
   buildFlyIaContext: state.buildFlyIaContext,
   askFlyIa: state.askFlyIa,
   flyIaRateLimiter: { consume: state.consume },
+  createFlyIaRateLimiter: () => ({ consume: state.consume }),
   FlyIaRateLimitError: state.FlyIaRateLimitError,
   FlyIaProviderError: state.FlyIaProviderError,
 }));

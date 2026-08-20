@@ -1,5 +1,10 @@
 import { getAllFlightWeeks } from "./db";
-import { getMemoriesForYear, type MemoryWithMedia } from "./memoriesDb";
+import {
+  getFlightMemorySummariesForYear,
+  getMemoriesForYear,
+  type MemoryWithMedia,
+} from "./memoriesDb";
+import type { FlightMemorySummary } from "../drizzle/schema";
 import { getFlightDistanceKm, getSaoPauloDate } from "../shared/flightDistance";
 
 export type MemorySegmentStatus = "completed" | "future" | "cancelled";
@@ -25,14 +30,17 @@ export type MemoryTrip = {
   completedKm: number;
   futureKm: number;
   memory: MemoryWithMedia | null;
+  summary: FlightMemorySummary | null;
 };
 
 export async function getMemoriesOverview(year: number) {
-  const [weeks, memories] = await Promise.all([
+  const [weeks, memories, summaries] = await Promise.all([
     getAllFlightWeeks(year),
     getMemoriesForYear(year),
+    getFlightMemorySummariesForYear(year),
   ]);
   const memoryByWeek = new Map(memories.map(memory => [memory.weekNumber, memory]));
+  const summaryByWeek = new Map(summaries.map(summary => [summary.weekNumber, summary]));
   const today = getSaoPauloDate();
 
   const trips: MemoryTrip[] = weeks
@@ -106,6 +114,7 @@ export async function getMemoriesOverview(year: number) {
         completedKm,
         futureKm,
         memory: memoryByWeek.get(week.weekNumber) ?? null,
+        summary: summaryByWeek.get(week.weekNumber) ?? null,
       };
     });
 

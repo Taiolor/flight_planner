@@ -21,4 +21,11 @@ describe("Memories mobile responsiveness", () => {
     expect(source).toContain("Diário de Bordo");
     expect(source).toContain("relative isolate min-h-screen");
   });
+
+  it("opens the Fly.IA summary on demand and triggers first generation automatically", () => {
+    expect(source).toContain("generateSummaryMutation");
+    expect(source).toContain("requestedAutomatically.current");
+    expect(source).toContain("IntersectionObserver");
+    expect(source).toContain("Atualizar resumo");
+  });
 });

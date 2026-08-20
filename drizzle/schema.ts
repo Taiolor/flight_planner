@@ -189,6 +189,37 @@ export type FlightMemory = typeof flightMemories.$inferSelect;
 export type InsertFlightMemory = typeof flightMemories.$inferInsert;
 
 /**
+ * Resumo factual gerado pelo Gemini para uma passagem semanal. A tabela é
+ * separada da memória editorial para preservar as anotações do usuário.
+ */
+export const flightMemorySummaries = mysqlTable(
+  "flight_memory_summaries",
+  {
+    id: int("id").autoincrement().primaryKey(),
+    year: int("year").notNull(),
+    weekNumber: int("weekNumber").notNull(),
+    summary: text("summary").notNull(),
+    model: varchar("model", { length: 80 }).notNull(),
+    sourceFingerprint: varchar("sourceFingerprint", { length: 64 }).notNull(),
+    generatedAt: timestamp("generatedAt").defaultNow().notNull(),
+    updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+  },
+  table => [
+    uniqueIndex("uq_flight_memory_summaries_year_week").on(
+      table.year,
+      table.weekNumber
+    ),
+    index("idx_flight_memory_summaries_year_generated").on(
+      table.year,
+      table.generatedAt
+    ),
+  ]
+);
+
+export type FlightMemorySummary = typeof flightMemorySummaries.$inferSelect;
+export type InsertFlightMemorySummary = typeof flightMemorySummaries.$inferInsert;
+
+/**
  * Metadados de arquivos armazenados no S3. Os bytes não são mantidos no banco.
  */
 export const flightMemoryMedia = mysqlTable(

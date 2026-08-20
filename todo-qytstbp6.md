@@ -38,3 +38,16 @@
 - [x] Validar em teste os payloads de e-mail e push enviados ao cruzar uma nova faixa de orçamento.
 - [x] Validar a experiência em desktop e celular e revisar o arquivo de tarefas.
 - [x] Salvar o checkpoint do painel administrativo Gemini validado.
+- [x] Definir se os resumos de voos serão gerados sob demanda ou automaticamente e como serão atualizados.
+- [x] Gerar o primeiro resumo automaticamente ao abrir um voo sem resumo e exibir uma ação manual de atualização.
+- [x] Modelar a persistência do resumo, data de geração, versão do modelo e vínculo ao voo e ao exercício selecionado.
+- [x] Preparar um contexto factual mínimo de cada voo, excluindo localizadores e demais identificadores sensíveis.
+- [x] Implementar procedimentos protegidos para gerar, consultar e atualizar resumos de voo pelo Gemini.
+- [x] Integrar controles e apresentação dos resumos no Diário de Bordo em desktop e celular.
+- [x] Criar testes de autorização, contexto seguro, persistência e experiência de geração dos resumos.
+- [x] Validar a funcionalidade e documentar o uso responsável da IA.
+- [x] Disparar a geração automaticamente ao visualizar a viagem sem resumo, sem exigir abertura manual da seção Fly.IA.
+- [x] Adicionar teste renderizado para geração automática, carregamento, resumo salvo e atualização manual no Diário de Bordo.
+- [x] Validar no teste renderizado a mensagem de carregamento exibida enquanto o resumo automático está sendo gerado.
+- [x] Adicionar teste de persistência do resumo cobrindo inserção, atualização, leitura no overview e metadados de geração.
+- [ ] Salvar um checkpoint da versão validada de resumos Fly.IA.
