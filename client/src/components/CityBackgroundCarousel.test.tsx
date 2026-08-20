@@ -5,6 +5,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
   CITY_BACKDROPS,
   CityBackgroundCarousel,
+  CAROUSEL_PANEL_COLLAPSED_STORAGE_KEY,
   FAVORITE_BACKDROP_STORAGE_KEY,
 } from "./CityBackgroundCarousel";
 
@@ -72,7 +73,31 @@ describe("CityBackgroundCarousel", () => {
     expect(controls).toBeTruthy();
     const className = controls?.className ?? "";
     expect(className).toContain("fixed");
-    expect(className).toContain("bottom-4");
+    expect(className).toContain("bottom-20");
     expect(className).not.toContain("top-20");
+  });
+
+  it("recolhe o painel para a lateral direita e restaura a escolha no navegador", () => {
+    const { container } = render(<CityBackgroundCarousel />);
+    const controls = container.querySelector(
+      'aside[aria-label="Controle do carrossel de cidades"]'
+    );
+    const collapseButton = container.querySelector(
+      'button[aria-label="Recolher seletor de fotos para a lateral direita"]'
+    );
+
+    expect(controls?.className).toContain("bottom-20");
+    expect(collapseButton).toBeTruthy();
+    fireEvent.click(collapseButton!);
+
+    expect(controls?.className).toContain("w-11");
+    expect(
+      window.localStorage.getItem(CAROUSEL_PANEL_COLLAPSED_STORAGE_KEY)
+    ).toBe("true");
+    expect(
+      container.querySelector(
+        'button[aria-label="Expandir seletor de fotos para a esquerda"]'
+      )
+    ).toBeTruthy();
   });
 });

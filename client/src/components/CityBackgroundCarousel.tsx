@@ -105,6 +105,7 @@ const CITY_BACKDROPS = [
 
 const AUTO_ADVANCE_MS = 10_000;
 export const FAVORITE_BACKDROP_STORAGE_KEY = "smartfly:memories:favorite-backdrop";
+export const CAROUSEL_PANEL_COLLAPSED_STORAGE_KEY = "smartfly:memories:carousel-panel-collapsed";
 
 export function getFavoriteBackdropId() {
   if (typeof window === "undefined") return null;
@@ -123,6 +124,16 @@ export function setFavoriteBackdropId(backdropId: string | null) {
   }
 }
 
+export function getCarouselPanelCollapsed() {
+  if (typeof window === "undefined") return false;
+  return window.localStorage.getItem(CAROUSEL_PANEL_COLLAPSED_STORAGE_KEY) === "true";
+}
+
+export function setCarouselPanelCollapsed(collapsed: boolean) {
+  if (typeof window === "undefined") return;
+  window.localStorage.setItem(CAROUSEL_PANEL_COLLAPSED_STORAGE_KEY, String(collapsed));
+}
+
 export function CityBackgroundCarousel() {
   const [favoriteBackdropId, setFavoriteBackdropIdState] = useState(
     getFavoriteBackdropId
@@ -135,6 +146,7 @@ export function CityBackgroundCarousel() {
     return favoriteIndex >= 0 ? favoriteIndex : 0;
   });
   const [isPlaying, setIsPlaying] = useState(true);
+  const [isPanelCollapsed, setIsPanelCollapsed] = useState(getCarouselPanelCollapsed);
 
   useEffect(() => {
     const prefersReducedMotion = window.matchMedia(
@@ -162,6 +174,13 @@ export function CityBackgroundCarousel() {
     setFavoriteBackdropId(nextFavoriteId);
     setFavoriteBackdropIdState(nextFavoriteId);
   };
+  const togglePanel = () => {
+    setIsPanelCollapsed(collapsed => {
+      const nextCollapsed = !collapsed;
+      setCarouselPanelCollapsed(nextCollapsed);
+      return nextCollapsed;
+    });
+  };
 
   return (
     <>
@@ -183,9 +202,38 @@ export function CityBackgroundCarousel() {
 
       <aside
         aria-label="Controle do carrossel de cidades"
-        className="fixed bottom-4 right-4 z-20 w-[min(22rem,calc(100vw-2rem))] rounded-2xl border border-white/20 bg-slate-950/65 p-2.5 text-white shadow-xl backdrop-blur-md sm:bottom-6 sm:right-8"
+        className={`fixed bottom-20 right-4 z-20 overflow-hidden rounded-2xl border border-white/20 bg-slate-950/65 text-white shadow-xl backdrop-blur-md transition-[width,padding,border-radius,background-color] duration-300 ease-out motion-reduce:transition-none sm:bottom-24 sm:right-8 ${
+          isPanelCollapsed
+            ? "w-11 rounded-full p-1.5"
+            : "w-[min(22rem,calc(100vw-2rem))] p-2.5"
+        }`}
       >
-        <div className="flex items-center justify-between gap-2">
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          className={`absolute right-1.5 top-1.5 z-10 h-8 w-8 rounded-full text-white hover:bg-white/15 hover:text-white ${
+            isPanelCollapsed ? "static" : ""
+          }`}
+          onClick={togglePanel}
+          aria-label={
+            isPanelCollapsed
+              ? "Expandir seletor de fotos para a esquerda"
+              : "Recolher seletor de fotos para a lateral direita"
+          }
+          aria-expanded={!isPanelCollapsed}
+          title={isPanelCollapsed ? "Expandir seletor de fotos" : "Recolher seletor de fotos"}
+        >
+          {isPanelCollapsed ? <ChevronLeft className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+        </Button>
+        <div
+          className={`transition-[opacity,transform] duration-200 motion-reduce:transition-none ${
+            isPanelCollapsed
+              ? "pointer-events-none h-0 -translate-x-3 overflow-hidden opacity-0"
+              : "translate-x-0 opacity-100"
+          }`}
+        >
+        <div className="flex items-center justify-between gap-2 pr-8">
           <div className="min-w-0 px-1">
             <p className="truncate text-sm font-black">{activeBackdrop.city}</p>
             <p className="truncate text-[11px] text-slate-300">
@@ -286,6 +334,7 @@ export function CityBackgroundCarousel() {
               </p>
             )}
           </div>
+        </div>
         </div>
       </aside>
     </>

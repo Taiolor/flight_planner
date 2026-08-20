@@ -794,6 +794,7 @@
 - [x] Corrigir a sobreposição entre gestão de fotos de fundo e Rota do ano
 - [x] Adicionar animação de entrada e hover interativo ao cartão Rota do ano
 - [x] Adicionar brilho interativo, expansão com detalhes e quilometragem anual ao cartão Rota do ano
+- [x] Reposicionar e tornar recolhível o painel de seleção de fotos para não cobrir o acesso Fly.IA
 
 ## Processo reutilizável
 
