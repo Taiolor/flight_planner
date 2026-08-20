@@ -41,7 +41,7 @@ describe("HomeHeaderActions", () => {
     expect(onShowChart).toHaveBeenCalledOnce();
     expect(screen.getByLabelText("Ações do planejamento")).toBeTruthy();
     expect(
-      screen.getByRole("link", { name: "Abrir calendário" }).getAttribute("href")
+      screen.getByRole("link", { name: "Calendário" }).getAttribute("href")
     ).toBe("/calendar");
     expect(
       screen.getByRole("link", { name: "Abrir Gestão de Passagens" }).getAttribute("href")

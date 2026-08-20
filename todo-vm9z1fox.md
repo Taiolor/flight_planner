@@ -84,3 +84,5 @@
 - [x] Adicionar teste renderizado da rota dedicada com Resumo Anual, Filtros e Gestão de Passagens
 - [x] Validar em runtime o link de Gestão de Passagens no cabeçalho e a expansão global de meses
 - [x] Corrigir a compatibilidade JSX da página dedicada no ambiente de testes
+- [x] Alterar o rótulo do botão principal de Abrir calendário para Calendário
+- [x] Atualizar a regressão do cabeçalho para validar o rótulo Calendário

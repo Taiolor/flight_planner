@@ -122,7 +122,7 @@ export function HomeHeaderActions({
             className="inline-flex h-10 items-center rounded-xl bg-white px-3 font-semibold text-slate-900 shadow-sm transition-[transform,background-color] duration-150 hover:bg-slate-100 active:scale-[0.97] focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-slate-800"
           >
             <CalendarDays className="size-4" aria-hidden="true" />
-            <span className="ml-1.5 whitespace-nowrap">Abrir calendário</span>
+            <span className="ml-1.5 whitespace-nowrap">Calendário</span>
           </Link>
           <Link
             href="/gestao-passagens"
