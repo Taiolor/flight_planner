@@ -37,3 +37,8 @@
 - [x] Inspecionar a estrutura atual de painéis prioritários e seu armazenamento persistente
 - [x] Implementar a reordenação livre e persistente dos painéis prioritários
 - [x] Cobrir reordenação, acessibilidade e responsividade com testes
+- [x] Inspecionar preferências e controles atuais para arrastar e soltar, ordem padrão e conjuntos nomeados
+- [x] Implementar arrastar e soltar com alternativa por botões acessíveis
+- [x] Adicionar restauração da ordem padrão dos painéis prioritários
+- [x] Permitir salvar, aplicar e excluir conjuntos de prioridades nomeados
+- [x] Cobrir persistência, interações, acessibilidade e responsividade com testes

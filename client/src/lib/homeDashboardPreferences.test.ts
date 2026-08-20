@@ -1,11 +1,15 @@
 import { describe, expect, it, vi } from "vitest";
 import {
   applyPinnedPanels,
+  deleteHomePrioritySet,
   getHomeLayoutProfileState,
   HOME_DASHBOARD_PREFERENCES_STORAGE_KEY,
   persistHomeDashboardPreferences,
   readHomeDashboardPreferences,
   reorderPinnedPanels,
+  reorderPinnedPanelsByDrop,
+  restoreDefaultPinnedOrder,
+  upsertHomePrioritySet,
 } from "./homeDashboardPreferences";
 
 describe("preferências de layout da Home", () => {
@@ -22,6 +26,7 @@ describe("preferências de layout da Home", () => {
     expect(readHomeDashboardPreferences(storage)).toEqual({
       profile: "focus",
       pinnedPanels: ["summary", "priceVariation"],
+      prioritySets: [],
     });
   });
 
@@ -65,5 +70,32 @@ describe("preferências de layout da Home", () => {
     expect(reorderPinnedPanels([...pinnedPanels], "priceVariation", "next")).toEqual(
       pinnedPanels
     );
+  });
+
+  it("restaura a ordem padrão e permite reposicionar uma prioridade pelo destino", () => {
+    const pinnedPanels = ["priceVariation", "summary", "filters"] as const;
+
+    expect(restoreDefaultPinnedOrder([...pinnedPanels])).toEqual([
+      "summary",
+      "filters",
+      "priceVariation",
+    ]);
+    expect(
+      reorderPinnedPanelsByDrop([...pinnedPanels], "priceVariation", "summary")
+    ).toEqual(["summary", "priceVariation", "filters"]);
+  });
+
+  it("salva, atualiza e exclui conjuntos nomeados de prioridades", () => {
+    const saved = upsertHomePrioritySet([], "Viagens de trabalho", ["filters", "summary"]);
+    const updated = upsertHomePrioritySet(saved, "Viagens de trabalho", ["priceVariation"]);
+
+    expect(updated).toEqual([
+      {
+        id: "set-viagens-de-trabalho",
+        name: "Viagens de trabalho",
+        pinnedPanels: ["priceVariation"],
+      },
+    ]);
+    expect(deleteHomePrioritySet(updated, "set-viagens-de-trabalho")).toEqual([]);
   });
 });

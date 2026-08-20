@@ -6,7 +6,12 @@ import {
   ChevronLeft,
   ChevronRight,
   ChevronUp,
+  GripVertical,
+  RotateCcw,
+  Save,
+  Trash2,
 } from "lucide-react";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -19,6 +24,7 @@ import {
   type HomeLayoutProfile,
   type HomePanelMoveDirection,
   type HomePanelId,
+  type HomePrioritySet,
 } from "@/lib/homeDashboardPreferences";
 
 type HomeDashboardControlsProps = {
@@ -30,6 +36,12 @@ type HomeDashboardControlsProps = {
   onToggleAll: () => void;
   onTogglePriority: (panel: HomePanelId) => void;
   onMovePriority: (panel: HomePanelId, direction: HomePanelMoveDirection) => void;
+  onReorderPriorities?: (source: HomePanelId, target: HomePanelId) => void;
+  onRestoreDefaultOrder?: () => void;
+  prioritySets?: HomePrioritySet[];
+  onSavePrioritySet?: (name: string) => void;
+  onApplyPrioritySet?: (setId: string) => void;
+  onDeletePrioritySet?: (setId: string) => void;
 };
 
 export function HomeDashboardControls({
@@ -41,8 +53,16 @@ export function HomeDashboardControls({
   onToggleAll,
   onTogglePriority,
   onMovePriority,
+  onReorderPriorities = () => {},
+  onRestoreDefaultOrder = () => {},
+  prioritySets = [],
+  onSavePrioritySet = () => {},
+  onApplyPrioritySet = () => {},
+  onDeletePrioritySet = () => {},
 }: HomeDashboardControlsProps) {
   const isDark = theme === "dark";
+  const [draggingPriority, setDraggingPriority] = React.useState<HomePanelId | null>(null);
+  const [prioritySetName, setPrioritySetName] = React.useState("");
   const priorityOptions = [
     ...pinnedPanels
       .map(id => HOME_PANEL_PRIORITY_OPTIONS.find(option => option.id === id))
@@ -114,7 +134,23 @@ export function HomeDashboardControls({
             const isFirstPinned = isPinned && index === 0;
             const isLastPinned = isPinned && index === pinnedPanels.length - 1;
             return (
-              <div key={option.id} className="inline-flex items-center gap-1">
+              <div
+                key={option.id}
+                className={`inline-flex items-center gap-1 ${draggingPriority === option.id ? "opacity-50" : ""}`}
+                data-priority-panel={option.id}
+                draggable={isPinned}
+                onDragStart={() => isPinned && setDraggingPriority(option.id)}
+                onDragOver={event => {
+                  if (draggingPriority && isPinned) event.preventDefault();
+                }}
+                onDrop={() => {
+                  if (draggingPriority && isPinned && draggingPriority !== option.id) {
+                    onReorderPriorities(draggingPriority, option.id);
+                  }
+                  setDraggingPriority(null);
+                }}
+                onDragEnd={() => setDraggingPriority(null)}
+              >
                 <button
                   type="button"
                   aria-pressed={isPinned}
@@ -127,6 +163,7 @@ export function HomeDashboardControls({
                         : "border-slate-200 text-slate-600 hover:bg-slate-50"
                   }`}
                 >
+                  {isPinned && <GripVertical className="h-3.5 w-3.5 opacity-55" aria-hidden="true" />}
                   {isPinned ? <BookmarkCheck className="h-3.5 w-3.5" /> : <Bookmark className="h-3.5 w-3.5" />}
                   {option.label}
                 </button>
@@ -156,6 +193,73 @@ export function HomeDashboardControls({
             );
           })}
         </div>
+      </div>
+      <div className="mt-3 flex flex-col gap-3 border-t border-slate-200/70 pt-3 dark:border-slate-700">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+          <span className={`text-xs font-semibold uppercase tracking-wide ${isDark ? "text-slate-400" : "text-slate-500"}`}>
+            Conjuntos
+          </span>
+          <div className="flex flex-1 flex-col gap-2 sm:flex-row">
+            <Input
+              value={prioritySetName}
+              onChange={event => setPrioritySetName(event.target.value)}
+              maxLength={40}
+              aria-label="Nome do conjunto de prioridades"
+              placeholder="Nome do conjunto atual"
+              className="h-9 min-w-0 flex-1"
+            />
+            <button
+              type="button"
+              disabled={!prioritySetName.trim()}
+              onClick={() => {
+                onSavePrioritySet(prioritySetName);
+                setPrioritySetName("");
+              }}
+              className="inline-flex h-9 items-center justify-center gap-1.5 rounded-lg border border-blue-200 bg-blue-50 px-3 text-xs font-semibold text-blue-700 transition-colors hover:bg-blue-100 disabled:cursor-not-allowed disabled:opacity-45 dark:border-blue-800 dark:bg-blue-950/50 dark:text-blue-200"
+            >
+              <Save className="h-3.5 w-3.5" aria-hidden="true" /> Salvar conjunto
+            </button>
+            <button
+              type="button"
+              onClick={onRestoreDefaultOrder}
+              className={`inline-flex h-9 items-center justify-center gap-1.5 rounded-lg border px-3 text-xs font-semibold transition-colors ${
+                isDark ? "border-slate-700 text-slate-300 hover:bg-slate-800" : "border-slate-200 text-slate-600 hover:bg-slate-50"
+              }`}
+            >
+              <RotateCcw className="h-3.5 w-3.5" aria-hidden="true" /> Restaurar ordem
+            </button>
+          </div>
+        </div>
+        {prioritySets.length > 0 ? (
+          <div className="flex flex-wrap gap-2" aria-label="Conjuntos de prioridades salvos">
+            {prioritySets.map(set => (
+              <div key={set.id} className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white p-1 dark:border-slate-700 dark:bg-slate-800">
+                <span className={`max-w-40 truncate px-2 text-xs font-semibold ${isDark ? "text-slate-200" : "text-slate-700"}`}>
+                  {set.name}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => onApplyPrioritySet(set.id)}
+                  className="h-7 rounded-md bg-slate-100 px-2 text-xs font-semibold text-slate-700 hover:bg-slate-200 dark:bg-slate-700 dark:text-slate-100 dark:hover:bg-slate-600"
+                >
+                  Aplicar
+                </button>
+                <button
+                  type="button"
+                  aria-label={`Excluir conjunto ${set.name}`}
+                  onClick={() => onDeletePrioritySet(set.id)}
+                  className="flex h-7 w-7 items-center justify-center rounded-md text-slate-500 hover:bg-red-50 hover:text-red-600 dark:text-slate-300 dark:hover:bg-red-950/40 dark:hover:text-red-300"
+                >
+                  <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
+                </button>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className={`text-xs ${isDark ? "text-slate-400" : "text-slate-500"}`}>
+            Salve a seleção e a ordem atuais para reutilizá-las depois.
+          </p>
+        )}
       </div>
     </section>
   );

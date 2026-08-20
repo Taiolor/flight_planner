@@ -71,6 +71,51 @@ describe("HomeDashboardControls", () => {
     ).toHaveProperty("disabled", true);
   });
 
+  it("aceita arrastar prioridades e oferece restauração e conjuntos nomeados", () => {
+    const onReorderPriorities = vi.fn();
+    const onRestoreDefaultOrder = vi.fn();
+    const onSavePrioritySet = vi.fn();
+    const onApplyPrioritySet = vi.fn();
+    const onDeletePrioritySet = vi.fn();
+    const { container } = render(
+      <HomeDashboardControls
+        theme="light"
+        profile="custom"
+        pinnedPanels={["summary", "filters"]}
+        allPanelsOpen={false}
+        onProfileChange={vi.fn()}
+        onToggleAll={vi.fn()}
+        onTogglePriority={vi.fn()}
+        onMovePriority={vi.fn()}
+        onReorderPriorities={onReorderPriorities}
+        onRestoreDefaultOrder={onRestoreDefaultOrder}
+        onSavePrioritySet={onSavePrioritySet}
+        onApplyPrioritySet={onApplyPrioritySet}
+        onDeletePrioritySet={onDeletePrioritySet}
+        prioritySets={[{ id: "set-casa", name: "Casa", pinnedPanels: ["summary"] }]}
+      />
+    );
+
+    const getCurrentByRole = within(container).getByRole;
+    const summary = container.querySelector('[data-priority-panel="summary"]')!;
+    const filters = container.querySelector('[data-priority-panel="filters"]')!;
+    fireEvent.dragStart(summary);
+    fireEvent.drop(filters);
+    fireEvent.change(getCurrentByRole("textbox", { name: "Nome do conjunto de prioridades" }), {
+      target: { value: "Trabalho" },
+    });
+    fireEvent.click(getCurrentByRole("button", { name: "Salvar conjunto" }));
+    fireEvent.click(getCurrentByRole("button", { name: "Restaurar ordem" }));
+    fireEvent.click(getCurrentByRole("button", { name: "Aplicar" }));
+    fireEvent.click(getCurrentByRole("button", { name: "Excluir conjunto Casa" }));
+
+    expect(onReorderPriorities).toHaveBeenCalledWith("summary", "filters");
+    expect(onSavePrioritySet).toHaveBeenCalledWith("Trabalho");
+    expect(onRestoreDefaultOrder).toHaveBeenCalledOnce();
+    expect(onApplyPrioritySet).toHaveBeenCalledWith("set-casa");
+    expect(onDeletePrioritySet).toHaveBeenCalledWith("set-casa");
+  });
+
   it("mantém a faixa adaptável em telas móveis e desktop", () => {
     expect(source).toContain("flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between");
     expect(source).toContain("h-10 w-full sm:w-44");
@@ -78,5 +123,7 @@ describe("HomeDashboardControls", () => {
     expect(source).toContain("lg:inline");
     expect(source).toContain("flex flex-wrap gap-2");
     expect(source).toContain("flex h-9 w-8");
+    expect(source).toContain("draggable={isPinned}");
+    expect(source).toContain("flex flex-1 flex-col gap-2 sm:flex-row");
   });
 });

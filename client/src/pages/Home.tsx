@@ -144,10 +144,14 @@ import {
 } from "@/lib/homePanelVisibility";
 import {
   applyPinnedPanels,
+  deleteHomePrioritySet,
   getHomeLayoutProfileState,
   persistHomeDashboardPreferences,
   readHomeDashboardPreferences,
   reorderPinnedPanels,
+  reorderPinnedPanelsByDrop,
+  restoreDefaultPinnedOrder,
+  upsertHomePrioritySet,
   type HomePanelId,
   type HomePanelMoveDirection,
   type HomeLayoutProfile,
@@ -1219,6 +1223,58 @@ export default function Home() {
       pinnedPanels,
     });
   };
+  const reorderPriorityPanelByDrop = (
+    sourcePanel: HomePanelId,
+    targetPanel: HomePanelId
+  ) => {
+    const pinnedPanels = reorderPinnedPanelsByDrop(
+      homeDashboardPreferences.pinnedPanels,
+      sourcePanel,
+      targetPanel
+    );
+    if (pinnedPanels === homeDashboardPreferences.pinnedPanels) return;
+    persistDashboardPreferences({
+      ...homeDashboardPreferences,
+      profile: "custom",
+      pinnedPanels,
+    });
+  };
+  const restorePriorityDefaultOrder = () => {
+    persistDashboardPreferences({
+      ...homeDashboardPreferences,
+      profile: "custom",
+      pinnedPanels: restoreDefaultPinnedOrder(homeDashboardPreferences.pinnedPanels),
+    });
+  };
+  const savePrioritySet = (name: string) => {
+    const prioritySets = upsertHomePrioritySet(
+      homeDashboardPreferences.prioritySets,
+      name,
+      homeDashboardPreferences.pinnedPanels
+    );
+    persistDashboardPreferences({ ...homeDashboardPreferences, prioritySets });
+  };
+  const applyPrioritySet = (setId: string) => {
+    const prioritySet = homeDashboardPreferences.prioritySets.find(set => set.id === setId);
+    if (!prioritySet) return;
+    persistDashboardPreferences({
+      ...homeDashboardPreferences,
+      profile: "custom",
+      pinnedPanels: prioritySet.pinnedPanels,
+    });
+    applyHomePanelState(
+      applyPinnedPanels(
+        { summary: expandSummary, filters: expandFilters, expandablePanels },
+        prioritySet.pinnedPanels
+      )
+    );
+  };
+  const deletePrioritySet = (setId: string) => {
+    persistDashboardPreferences({
+      ...homeDashboardPreferences,
+      prioritySets: deleteHomePrioritySet(homeDashboardPreferences.prioritySets, setId),
+    });
+  };
   useHomePanelToggleShortcut(toggleAllHomePanels);
   const handleSaveAnnualGoal = (goal: number) => {
     const savedGoal = saveAnnualEmissionGoal(
@@ -2219,6 +2275,12 @@ export default function Home() {
           onToggleAll={toggleAllHomePanels}
           onTogglePriority={togglePriorityPanel}
           onMovePriority={movePriorityPanel}
+          onReorderPriorities={reorderPriorityPanelByDrop}
+          onRestoreDefaultOrder={restorePriorityDefaultOrder}
+          prioritySets={homeDashboardPreferences.prioritySets}
+          onSavePrioritySet={savePrioritySet}
+          onApplyPrioritySet={applyPrioritySet}
+          onDeletePrioritySet={deletePrioritySet}
         />
         {/* Resumo Anual com Accordion */}
         {weeksQuery.isLoading ? (
