@@ -796,6 +796,7 @@
 - [x] Adicionar brilho interativo, expansão com detalhes e quilometragem anual ao cartão Rota do ano
 - [x] Reposicionar e tornar recolhível o painel de seleção de fotos para não cobrir o acesso Fly.IA
 - [x] Aplicar skeletons responsivos e acessíveis a Memórias e Rota do ano
+- [x] Adicionar fade-in entre skeletons e conteúdo real de Memórias
 
 ## Processo reutilizável
 

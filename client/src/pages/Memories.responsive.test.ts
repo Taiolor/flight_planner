@@ -36,6 +36,13 @@ describe("Memories mobile responsiveness", () => {
     expect(source).toContain("group-hover:animate-pulse");
   });
 
+  it("fades in route, metrics and timeline content after skeleton loading", () => {
+    expect(source).toContain("YearRouteLoadingSkeleton /> : <div className=\"animate-in fade-in duration-500 motion-reduce:animate-none\"");
+    expect(source).toContain("MemoriesMetricsLoadingSkeleton /> : <>");
+    expect(source).toContain("MemoriesTimelineLoadingSkeleton");
+    expect(source).toContain("animate-in fade-in duration-500 delay-150 motion-reduce:animate-none");
+  });
+
   it("opens the Fly.IA summary on demand and triggers first generation automatically", () => {
     expect(source).toContain("generateSummaryMutation");
     expect(source).toContain("requestedAutomatically.current");

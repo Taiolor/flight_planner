@@ -212,7 +212,7 @@ export default function Memories() {
               </p>
             </div>
             <div className="group relative mx-auto w-full max-w-md animate-in fade-in slide-in-from-right-4 duration-700 motion-reduce:animate-none rounded-[2rem] border border-white/15 bg-slate-950/25 p-6 shadow-2xl backdrop-blur-sm transition-[transform,background-color,border-color,box-shadow] duration-300 ease-out motion-reduce:transition-none hover:-translate-y-1 hover:scale-[1.015] hover:border-white/35 hover:bg-slate-950/40 hover:shadow-[0_24px_60px_rgba(8,18,37,.45)] motion-reduce:hover:transform-none">
-              {overviewQuery.isLoading ? <YearRouteLoadingSkeleton /> : <>
+              {overviewQuery.isLoading ? <YearRouteLoadingSkeleton /> : <div className="animate-in fade-in duration-500 motion-reduce:animate-none">
               <div className="flex items-center justify-between text-xs font-bold uppercase tracking-widest text-slate-300">
                 <span>Rota do ano</span>
                 <Plane className="h-5 w-5 rotate-45 text-fuchsia-300" />
@@ -255,7 +255,7 @@ export default function Memories() {
                   </div>
                 </div>
               </div>
-              </>}
+              </div>}
             </div>
           </div>
         </div>
@@ -264,10 +264,10 @@ export default function Memories() {
       <section className="relative z-10 -mt-8 mx-auto max-w-7xl px-4 pb-16 sm:px-8">
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {overviewQuery.isLoading ? <MemoriesMetricsLoadingSkeleton /> : <>
-            <MetricCard icon={<Milestone />} label="Total da jornada" value={formatKm(summary?.totalKm ?? 0)} tone="indigo" />
-            <MetricCard icon={<Flag />} label="Já percorridos" value={formatKm(summary?.completedKm ?? 0)} tone="emerald" />
-            <MetricCard icon={<Plane />} label="Próximos voos" value={formatKm(summary?.futureKm ?? 0)} tone="amber" />
-            <MetricCard icon={<Ticket />} label="Passagens emitidas" value={String(summary?.issuedTrips ?? 0)} tone="fuchsia" />
+            <div className="animate-in fade-in duration-500 motion-reduce:animate-none"><MetricCard icon={<Milestone />} label="Total da jornada" value={formatKm(summary?.totalKm ?? 0)} tone="indigo" /></div>
+            <div className="animate-in fade-in duration-500 delay-75 motion-reduce:animate-none"><MetricCard icon={<Flag />} label="Já percorridos" value={formatKm(summary?.completedKm ?? 0)} tone="emerald" /></div>
+            <div className="animate-in fade-in duration-500 delay-100 motion-reduce:animate-none"><MetricCard icon={<Plane />} label="Próximos voos" value={formatKm(summary?.futureKm ?? 0)} tone="amber" /></div>
+            <div className="animate-in fade-in duration-500 delay-150 motion-reduce:animate-none"><MetricCard icon={<Ticket />} label="Passagens emitidas" value={String(summary?.issuedTrips ?? 0)} tone="fuchsia" /></div>
           </>}
         </div>
 
@@ -283,35 +283,39 @@ export default function Memories() {
           {overviewQuery.isLoading ? (
             <MemoriesTimelineLoadingSkeleton />
           ) : trips.length === 0 ? (
-            <div className="mt-6 rounded-3xl border border-dashed border-slate-300 bg-white p-10 text-center shadow-sm">
-              <Compass className="mx-auto h-10 w-10 text-fuchsia-500" />
-              <h3 className="mt-4 text-xl font-black">Sua próxima história começa com uma passagem</h3>
-              <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-slate-500">Quando uma ida ou volta for marcada como emitida, ela aparecerá aqui com a distância e um espaço para suas mídias.</p>
-              <Link href={`/?ano=${selectedYear}`}>
-                <Button className="mt-6">Ir ao planejamento</Button>
-              </Link>
+            <div className="animate-in fade-in duration-500 motion-reduce:animate-none">
+              <div className="mt-6 rounded-3xl border border-dashed border-slate-300 bg-white p-10 text-center shadow-sm">
+                <Compass className="mx-auto h-10 w-10 text-fuchsia-500" />
+                <h3 className="mt-4 text-xl font-black">Sua próxima história começa com uma passagem</h3>
+                <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-slate-500">Quando uma ida ou volta for marcada como emitida, ela aparecerá aqui com a distância e um espaço para suas mídias.</p>
+                <Link href={`/?ano=${selectedYear}`}>
+                  <Button className="mt-6">Ir ao planejamento</Button>
+                </Link>
+              </div>
             </div>
           ) : (
-            <div className="mt-6 grid gap-5 lg:grid-cols-2">
-              {trips.map(trip => (
-                <MemoryTripCard
-                  key={trip.weekNumber}
-                  trip={{ ...trip, summary: generatedSummaries[trip.weekNumber] ?? trip.summary }}
-                  isUploading={uploadingWeek === trip.weekNumber}
-                  isGeneratingSummary={generatingWeek === trip.weekNumber}
-                  onUpload={event => handleMediaUpload(trip.weekNumber, event)}
-                  onGenerateSummary={force =>
-                    generateSummaryMutation.mutate({
-                      year: selectedYear,
-                      weekNumber: trip.weekNumber,
-                      force,
-                    })
-                  }
-                  onDeleteMedia={mediaId =>
-                    deleteMediaMutation.mutate({ year: selectedYear, mediaId })
-                  }
-                />
-              ))}
+            <div className="animate-in fade-in duration-500 motion-reduce:animate-none">
+              <div className="mt-6 grid gap-5 lg:grid-cols-2">
+                {trips.map(trip => (
+                  <MemoryTripCard
+                    key={trip.weekNumber}
+                    trip={{ ...trip, summary: generatedSummaries[trip.weekNumber] ?? trip.summary }}
+                    isUploading={uploadingWeek === trip.weekNumber}
+                    isGeneratingSummary={generatingWeek === trip.weekNumber}
+                    onUpload={event => handleMediaUpload(trip.weekNumber, event)}
+                    onGenerateSummary={force =>
+                      generateSummaryMutation.mutate({
+                        year: selectedYear,
+                        weekNumber: trip.weekNumber,
+                        force,
+                      })
+                    }
+                    onDeleteMedia={mediaId =>
+                      deleteMediaMutation.mutate({ year: selectedYear, mediaId })
+                    }
+                  />
+                ))}
+              </div>
             </div>
           )}
         </section>
