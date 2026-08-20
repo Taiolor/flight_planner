@@ -24,6 +24,8 @@ O projeto precisa usar a chave `GEMINI_API_KEY` criada em um projeto Google AI S
 
 > **Migração de modelo:** o Gemini 2.5 Flash deixou de aceitar novas contas na API usada pelo projeto. O Fly.IA foi migrado para Gemini 3.6 Flash, cuja resposta é verificada em teste de integração antes de cada entrega. A estimativa padrão do painel considera US$ 0,75 por milhão de tokens de entrada e US$ 3,75 por milhão de tokens de saída, convertidos para centavos de dólar.[3]
 
+> **Tempo de resposta:** a reprodução autenticada da mutation `flyIa.chat` com o contexto real do planejamento ultrapassou o antigo limite de 20 segundos. O limite foi ampliado para 45 segundos; erros de rede, expiração ou falhas inesperadas são convertidos em indisponibilidade temporária com código de diagnóstico seguro, em vez de uma mensagem interna genérica.
+
 O Fly.IA não deve ser interpretado como fonte independente de dados. As respostas devem refletir exclusivamente o contexto do exercício selecionado; se um dado estiver ausente, a orientação do sistema é declarar a limitação em vez de inferir ou inventar uma resposta.
 
 ## Configuração identificada

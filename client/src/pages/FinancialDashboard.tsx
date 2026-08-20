@@ -257,13 +257,13 @@ function FinancialDashboardContent() {
   const { data: yearSummary, isLoading: loadingYear } =
     trpc.financial.getYearSummary.useQuery(
       { year: selectedYear },
-      { ...queryCachePolicies.financial, enabled: isAuthenticated }
+      queryCachePolicies.financial
     );
 
   const { data: weeklyData, isLoading: loadingWeekly } =
     trpc.financial.getWeeklyData.useQuery(
       { year: selectedYear },
-      { ...queryCachePolicies.financial, enabled: isAuthenticated }
+      queryCachePolicies.financial
     );
 
   const { data: projections, isLoading: loadingProjections } =
@@ -276,7 +276,7 @@ function FinancialDashboardContent() {
       },
       {
         ...queryCachePolicies.financial,
-        enabled: isAuthenticated && showProjections,
+        enabled: showProjections,
       }
     );
 
@@ -395,13 +395,8 @@ function FinancialDashboardContent() {
                 ? "Ocultar valores financeiros"
                 : "Mostrar valores financeiros"
             }
-            onClick={() => isAuthenticated && setShowValues(v => !v)}
-            disabled={!isAuthenticated}
-            title={
-              isAuthenticated
-                ? undefined
-                : "Faça login para visualizar valores financeiros"
-            }
+            onClick={() => setShowValues(v => !v)}
+            title={undefined}
             className="flex items-center gap-2 px-3 py-2 rounded-xl bg-white/10 hover:bg-white/20 disabled:cursor-not-allowed disabled:opacity-50 transition-colors text-sm font-medium"
           >
             {showValues ? (

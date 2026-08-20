@@ -117,6 +117,16 @@ describe("flyIa.chat", () => {
     });
   });
 
+  it("converte falhas inesperadas em indisponibilidade com código de diagnóstico", async () => {
+    state.getGeminiBudgetSnapshot.mockRejectedValue(new Error("database unavailable"));
+    const caller = createCaller(true);
+
+    await expect(caller.flyIa.chat(input)).rejects.toMatchObject({
+      code: "SERVICE_UNAVAILABLE",
+      message: expect.stringContaining("Código:"),
+    });
+  });
+
   it("bloqueia novas perguntas quando o teto interno já foi atingido", async () => {
     state.getGeminiBudgetSnapshot.mockResolvedValue({ isAtLimit: true });
     const caller = createCaller(true);

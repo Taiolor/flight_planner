@@ -220,17 +220,24 @@ export async function askFlyIa(
   }
 
   const payload = buildFlyIaPayload(context, messages);
-  const response = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/${FLY_IA_MODEL}:generateContent?key=${encodeURIComponent(ENV.geminiApiKey)}`,
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-      signal: AbortSignal.timeout(20_000),
-    }
-  );
+  let response: Response;
+  try {
+    response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/${FLY_IA_MODEL}:generateContent?key=${encodeURIComponent(ENV.geminiApiKey)}`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+        signal: AbortSignal.timeout(45_000),
+      }
+    );
+  } catch (error) {
+    console.error("[Fly.IA] Falha de rede ou timeout na Gemini:", error instanceof Error ? error.name : "unknown");
+    throw new FlyIaProviderError();
+  }
 
   if (!response.ok) {
+    console.error("[Fly.IA] Gemini respondeu com status:", response.status);
     throw new FlyIaProviderError();
   }
 

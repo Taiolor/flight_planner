@@ -279,9 +279,11 @@ export const appRouter = router({
               message: error.message,
             });
           }
+          const diagnosticId = crypto.randomUUID();
+          console.error(`[Fly.IA:${diagnosticId}] Falha inesperada no chat:`, error);
           throw new TRPCError({
-            code: "INTERNAL_SERVER_ERROR",
-            message: "Não foi possível preparar os dados para o Fly.IA.",
+            code: "SERVICE_UNAVAILABLE",
+            message: `O Fly.IA não conseguiu concluir esta resposta. Tente novamente em instantes. Código: ${diagnosticId}`,
           });
         }
       }),

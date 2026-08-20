@@ -1,4 +1,7 @@
 import { describe, expect, it } from "vitest";
+import { createAuthSession, deleteAuthSession } from "./db";
+import { ENV } from "./_core/env";
+import { appRouter } from "./routers";
 
 const GEMINI_MODEL = "gemini-3.6-flash";
 
@@ -30,4 +33,25 @@ describe("Gemini API configuration", () => {
     expect(result.modelVersion).toContain(GEMINI_MODEL);
     expect(result.candidates?.[0]?.content?.parts?.[0]?.text?.trim()).toBeTruthy();
   });
+
+  it("conclui uma pergunta autenticada do Fly.IA pela mutation tRPC", async () => {
+    expect(ENV.authEmail, "AUTH_EMAIL deve estar configurado para a reprodução autenticada").toBeTruthy();
+    const token = await createAuthSession(ENV.authEmail!);
+
+    try {
+      const caller = appRouter.createCaller({
+        user: null,
+        req: { headers: { cookie: `flight_session=${token}` } },
+        res: {},
+      } as never);
+      const result = await caller.flyIa.chat({
+        year: 2026,
+        messages: [{ role: "user", content: "Qual é meu próximo voo?" }],
+      });
+
+      expect(result.response.trim()).toBeTruthy();
+    } finally {
+      await deleteAuthSession(token);
+    }
+  }, 60_000);
 });

@@ -135,5 +135,10 @@ describe("Fly.IA", () => {
     await expect(
       askFlyIa(context as never, [{ role: "user", content: "Olá" }])
     ).rejects.toBeInstanceOf(FlyIaProviderError);
+
+    vi.stubGlobal("fetch", vi.fn().mockRejectedValue(new Error("network failure")));
+    await expect(
+      askFlyIa(context as never, [{ role: "user", content: "Olá" }])
+    ).rejects.toBeInstanceOf(FlyIaProviderError);
   });
 });

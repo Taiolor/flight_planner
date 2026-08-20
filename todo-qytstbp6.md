@@ -57,3 +57,12 @@
 - [x] Adicionar teste renderizado do chat cobrindo envio, carregamento e resposta bem-sucedida da mutation Fly.IA.
 - [x] Adicionar teste renderizado do erro do provedor confirmando feedback visível e encerramento do carregamento.
 - [x] Salvar um checkpoint da correção do Fly.IA.
+- [x] Capturar a exceção real que causa o erro interno atual no procedimento do Fly.IA.
+- [x] Corrigir a falha e registrar um identificador de diagnóstico seguro no servidor e no chat.
+- [x] Adicionar teste de regressão para o novo caminho de erro e validar uma pergunta completa.
+- [ ] Salvar um checkpoint da correção do erro interno do Fly.IA.
+- [x] Restaurar a validação de tipos da tela Financeiro após a atualização concorrente de acesso protegido.
+- [x] Reproduzir uma pergunta pelo procedimento tRPC Fly.IA com os serviços reais e registrar a exceção original caso ocorra.
+- [x] Validar no fluxo real do chat que uma pergunta autenticada recebe resposta, ou coletar o novo código de diagnóstico para correção específica.
+- [x] Adicionar teste integrado do caminho real reproduzido e da resposta exibida no widget Fly.IA.
+- [x] Adicionar teste integrado do widget Fly.IA que envia uma pergunta pelo caller tRPC autenticado real e renderiza a resposta retornada.
