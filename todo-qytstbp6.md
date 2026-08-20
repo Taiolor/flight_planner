@@ -56,4 +56,4 @@
 - [x] Adicionar teste de regressão e validar uma conversa completa do Fly.IA.
 - [x] Adicionar teste renderizado do chat cobrindo envio, carregamento e resposta bem-sucedida da mutation Fly.IA.
 - [x] Adicionar teste renderizado do erro do provedor confirmando feedback visível e encerramento do carregamento.
-- [ ] Salvar um checkpoint da correção do Fly.IA.
+- [x] Salvar um checkpoint da correção do Fly.IA.
