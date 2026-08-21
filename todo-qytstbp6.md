@@ -159,3 +159,8 @@
 - [x] Manter Whisper como mecanismo de transcrição e confirmar o envio sem persistência temporária no armazenamento integrado.
 - [x] Ajustar a documentação e a retenção de áudio conforme a limitação efetiva do mecanismo Whisper.
 - [x] Salvar checkpoint da transcrição Whisper em memória, sem objetos temporários no armazenamento.
+- [x] Diagnosticar por que resumos, calendário e três semanas de planejamento não carregam após a sincronização recente.
+- [x] Corrigir a falha de leitura ou apresentação sem alterar nem perder dados persistidos.
+- [x] Criar regressão para garantir que a flag de controles não oculte resumo, calendário e semanas disponíveis.
+- [x] Validar a restauração no navegador, na API e na suíte de testes antes do checkpoint.
+- [x] Salvar checkpoint da correção de visibilidade de dados da Home após sincronização.

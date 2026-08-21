@@ -24,7 +24,8 @@ describe("controle global de painéis da Home", () => {
       "useHomePanelToggleShortcut(toggleAllHomePanels, LAYOUT_CONTROLS_ENABLED)"
     );
     expect(source).toContain("const LAYOUT_CONTROLS_ENABLED = false");
-    expect(source).toContain("!isManagementView && LAYOUT_CONTROLS_ENABLED && (");
+    expect(source).toContain("{!isManagementView && (\n          <>");
+    expect(source).toContain("{LAYOUT_CONTROLS_ENABLED && (\n              <HomeDashboardControls");
     expect(source).toContain("<HomeDashboardControls");
     expect(source).toContain("allPanelsOpen={allHomePanelsAreOpen}");
     expect(source).toContain("onTogglePriority={togglePriorityPanel}");

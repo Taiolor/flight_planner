@@ -10,4 +10,10 @@ describe("desativação reversível de Layout dos quadros", () => {
     expect(source).toContain("<HomeDashboardControls");
     expect(source).toContain("useHomePanelToggleShortcut(toggleAllHomePanels, LAYOUT_CONTROLS_ENABLED)");
   });
+
+  it("mantém o conteúdo do planejamento fora da condição que oculta os controles", () => {
+    expect(source).toContain("{!isManagementView && (\n          <>");
+    expect(source).toContain("{LAYOUT_CONTROLS_ENABLED && (\n              <HomeDashboardControls");
+    expect(source).toContain("{/* Resumo Anual com Accordion */}");
+  });
 });

@@ -2330,24 +2330,26 @@ export default function Home({ mode = "home" }: HomeProps) {
       </header>
 
       <main className="container py-4 sm:py-8">
-        {!isManagementView && LAYOUT_CONTROLS_ENABLED && (
+        {!isManagementView && (
           <>
-        <HomeDashboardControls
-          theme={theme}
-          profile={homeDashboardPreferences.profile}
-          pinnedPanels={homeDashboardPreferences.pinnedPanels}
-          allPanelsOpen={allHomePanelsAreOpen}
-          onProfileChange={applyHomeLayoutProfile}
-          onToggleAll={toggleAllHomePanels}
-          onTogglePriority={togglePriorityPanel}
-          onMovePriority={movePriorityPanel}
-          onReorderPriorities={reorderPriorityPanelByDrop}
-          onRestoreDefaultOrder={restorePriorityDefaultOrder}
-          prioritySets={homeDashboardPreferences.prioritySets}
-          onSavePrioritySet={savePrioritySet}
-          onApplyPrioritySet={applyPrioritySet}
-          onDeletePrioritySet={deletePrioritySet}
-        />
+            {LAYOUT_CONTROLS_ENABLED && (
+              <HomeDashboardControls
+                theme={theme}
+                profile={homeDashboardPreferences.profile}
+                pinnedPanels={homeDashboardPreferences.pinnedPanels}
+                allPanelsOpen={allHomePanelsAreOpen}
+                onProfileChange={applyHomeLayoutProfile}
+                onToggleAll={toggleAllHomePanels}
+                onTogglePriority={togglePriorityPanel}
+                onMovePriority={movePriorityPanel}
+                onReorderPriorities={reorderPriorityPanelByDrop}
+                onRestoreDefaultOrder={restorePriorityDefaultOrder}
+                prioritySets={homeDashboardPreferences.prioritySets}
+                onSavePrioritySet={savePrioritySet}
+                onApplyPrioritySet={applyPrioritySet}
+                onDeletePrioritySet={deletePrioritySet}
+              />
+            )}
         {/* Resumo Anual com Accordion */}
         {weeksQuery.isLoading ? (
           <SkeletonChart />
