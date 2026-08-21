@@ -177,3 +177,25 @@
 - [x] Adicionar gráfico acessível e responsivo de tokens e áudio ao painel administrativo Gemini.
 - [x] Criar cobertura de API e interface, validar o estado protegido em celular e versionar o gráfico temporal.
 - [x] Salvar checkpoint do gráfico temporal de tokens e duração de áudio do Fly.IA.
+- [x] Definir perguntas operacionais elegíveis para fonte externa e a prioridade de fontes oficiais.
+- [x] Comparar busca com citações e integração de rota, considerando custo, cobertura e privacidade.
+- [x] Restringir a consulta externa a orientação geral e estimativa de rota, sem buscar dados do voo quando o contexto interno não responder.
+- [x] Exibir fonte, momento da consulta e ressalvas nas respostas externas de orientação e rota.
+- [x] Criar cobertura de falha de rota, citação de fonte e precedência dos dados internos; documentar e versionar.
+- [x] Confirmar que um provedor externo de status de voo não será utilizado nesta versão.
+- [x] Definir que somente a origem informada e o endereço público do aeroporto são enviados à estimativa de rota.
+- [x] Manter status, terminal e horário de voo exclusivamente na base SmartFly, sem integração de provedor externo de status.
+- [x] Criar testes de consulta de rota, falha segura, fonte e precedência dos dados de voo persistidos.
+- [x] Garantir que horários, status, terminais e demais detalhes de voo sejam respondidos exclusivamente com a base de dados do SmartFly.
+- [x] Restringir fontes externas a orientações gerais de chegada, check-in e embarque, sem consulta de status ou horário de voo.
+- [x] Criar regressões para impedir que conteúdo externo substitua ou contradiga dados de voo persistidos.
+- [x] Detectar perguntas sobre horário de embarque e selecionar o voo persistido aplicável.
+- [x] Informar literalmente a data e hora de partida cadastradas e calcular uma recomendação prévia de chegada e embarque.
+- [x] Distinguir visual e textualmente o fato persistido da recomendação oficial, incluindo fonte e ressalvas.
+- [x] Consultar externamente a rota e o trânsito somente quando a pessoa informar uma origem para chegar ao aeroporto.
+- [x] Cobrir voos nacionais de GRU, casos sem horário, perguntas de seguimento e estimativas de rota em testes de regressão.
+- [x] Salvar checkpoint da orientação de embarque e deslocamento do Fly.IA.
+- [x] Detectar perguntas sobre horário de embarque e selecionar o voo persistido aplicável.
+- [x] Informar literalmente a data e hora de partida cadastradas e calcular uma recomendação prévia de chegada e embarque.
+- [x] Distinguir visual e textualmente o fato persistido da recomendação oficial, incluindo a fonte e as ressalvas.
+- [x] Cobrir voos nacionais de GRU, casos sem horário e perguntas de seguimento em testes de regressão.

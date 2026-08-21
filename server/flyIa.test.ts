@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   askFlyIa,
+  buildBoardingGuidanceAnswerFromWeeks,
   buildNextFlightAnswerFromWeeks,
   buildFlyIaPayload,
   createFlyIaRateLimiter,
@@ -217,6 +218,42 @@ describe("Fly.IA", () => {
     expect(answer).toContain("26/04/2026 às 22:05");
     expect(answer).toContain("G31234");
     expect(answer).toContain("**Terminal:** 2");
+  });
+
+  it("preserva a partida registrada e calcula a chegada recomendada para embarque em GRU", () => {
+    const weeks = [{
+      year: 2026,
+      weekNumber: 17,
+      isTicketIssued: 1,
+      isDeleted: 0,
+      departureFlightDatetime: "2026-04-26T22:05",
+      returnFlightDatetime: null,
+      departureAirport: "GRU",
+      returnAirport: "NVT",
+      departureAirline: "LATAM",
+      returnAirline: null,
+      departureFlightNumber: "LA1234",
+      returnFlightNumber: null,
+      departureTerminal: "2",
+      returnTerminal: null,
+      departureCancelled: 0,
+      returnCancelled: 0,
+      departureRescheduled: 0,
+      returnRescheduled: 0,
+      ticketType: "oneway",
+    }] as never;
+
+    const answer = buildBoardingGuidanceAnswerFromWeeks(
+      weeks,
+      [{ role: "user", content: "Qual é o meu horário de embarque?" }],
+      "2026-04-01"
+    );
+
+    expect(answer).toContain("22:05");
+    expect(answer).toContain("19:05");
+    expect(answer).toContain("3 horas antes da partida");
+    expect(answer).toContain("não altera o horário cadastrado");
+    expect(answer).toContain("LATAM — antecedência de chegada ao aeroporto");
   });
 
   it("retorna texto válido do Gemini e traduz falhas do provedor", async () => {

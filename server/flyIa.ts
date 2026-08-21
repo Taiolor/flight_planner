@@ -122,7 +122,7 @@ export function formatFlightDatetime(value: string) {
   return persisted;
 }
 
-type FlightLeg = {
+export type FlightLeg = {
   direction: "ida" | "volta";
   datetime: string;
   airportFrom: string;
@@ -185,6 +185,63 @@ function getWeekLegs(week: FlightWeek, today: string): FlightLeg[] {
   return [...departure, ...returnLeg];
 }
 
+export type UpcomingIssuedFlight = { week: FlightWeek; flight: FlightLeg };
+
+export function findNextIssuedFlight(weeks: FlightWeek[], today = getSaoPauloDate()): UpcomingIssuedFlight | null {
+  return weeks
+    .filter(week => Boolean(week.isTicketIssued) && !Boolean(week.isDeleted))
+    .flatMap(week => getWeekLegs(week, today).map(flight => ({ week, flight })))
+    .filter(({ flight }) => flight.status !== "Cancelado" && flight.datetime.slice(0, 10) >= today)
+    .sort((a, b) => a.flight.datetime.localeCompare(b.flight.datetime))[0] ?? null;
+}
+
+function isBoardingGuidanceQuestion(messages: FlyIaMessage[]) {
+  const question = messages.filter(message => message.role === "user").at(-1)?.content ?? "";
+  return /hor[aá]rio.*embarque|embarque.*hor[aá]rio|que horas.*embarcar|quando.*embarcar|anteced[eê]ncia.*(?:aeroporto|embarque)|chegar.*(?:aeroporto|embarque)/i.test(question);
+}
+
+function subtractMinutesFromFlightDatetime(value: string, minutes: number) {
+  const match = value.trim().match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/);
+  if (!match) return null;
+  const [, year, month, day, hour, minute] = match;
+  const date = new Date(Number(year), Number(month) - 1, Number(day), Number(hour), Number(minute));
+  date.setMinutes(date.getMinutes() - minutes);
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}T${String(date.getHours()).padStart(2, "0")}:${String(date.getMinutes()).padStart(2, "0")}`;
+}
+
+export function buildBoardingGuidanceAnswerFromWeeks(
+  weeks: FlightWeek[],
+  messages: FlyIaMessage[],
+  today = getSaoPauloDate()
+) {
+  if (!isBoardingGuidanceQuestion(messages)) return null;
+  const next = findNextIssuedFlight(weeks, today);
+  if (!next) return "Não há um próximo voo emitido e ativo registrado para calcular uma recomendação de embarque.";
+
+  const { flight } = next;
+  const isLatam = /latam/i.test(flight.airline ?? "");
+  const isDomesticGruFlight = isLatam && flight.airportFrom === "GRU" && flight.airportTo === "NVT";
+  const arrivalLeadMinutes = isDomesticGruFlight ? 180 : isLatam ? 120 : null;
+  const recommendedArrival = arrivalLeadMinutes ? subtractMinutesFromFlightDatetime(flight.datetime, arrivalLeadMinutes) : null;
+
+  return [
+    "**Horário de partida cadastrado no SmartFly**",
+    `- **Data e hora:** ${formatFlightDatetime(flight.datetime)}`,
+    `- **Voo:** ${flight.flightNumber || "não informado"} · ${flight.airportFrom} → ${flight.airportTo}`,
+    "",
+    "**Recomendação prévia para embarque**",
+    recommendedArrival
+      ? `- **Chegada recomendada ao aeroporto:** ${formatFlightDatetime(recommendedArrival)}`
+      : "- **Chegada recomendada ao aeroporto:** confirme a antecedência indicada pela companhia aérea.",
+    arrivalLeadMinutes ? `- **Margem considerada:** ${arrivalLeadMinutes / 60} horas antes da partida.` : null,
+    isLatam
+      ? "- **Fonte da orientação:** [LATAM — antecedência de chegada ao aeroporto](https://www.latamairlines.com/br/pt/central-ajuda/perguntas/check-in/embarque/antecedencia-chegada-aeroporto)."
+      : "- **Fonte da orientação:** a antecedência varia por companhia e aeroporto; consulte o canal oficial da sua companhia.",
+    "",
+    "A recomendação não altera o horário cadastrado. A chamada e o fechamento do embarque devem ser confirmados no cartão de embarque ou no canal oficial da companhia.",
+  ].filter(Boolean).join("\n");
+}
+
 function formatFlightCardLine(label: string, flight: FlightLeg) {
   const airportFrom = `${flight.airportFrom} — ${getAirportName(flight.airportFrom)}`;
   const airportTo = `${flight.airportTo} — ${getAirportName(flight.airportTo)}`;
@@ -205,12 +262,7 @@ export function buildNextFlightAnswerFromWeeks(
   today = getSaoPauloDate()
 ) {
   if (!isNextFlightQuestion(messages)) return null;
-  const candidates = weeks
-    .filter(week => Boolean(week.isTicketIssued) && !Boolean(week.isDeleted))
-    .flatMap(week => getWeekLegs(week, today).map(flight => ({ week, flight })))
-    .filter(({ flight }) => flight.status !== "Cancelado" && flight.datetime.slice(0, 10) >= today)
-    .sort((a, b) => a.flight.datetime.localeCompare(b.flight.datetime));
-  const next = candidates[0];
+  const next = findNextIssuedFlight(weeks, today);
   if (!next) {
     return "Não há um próximo voo emitido e ativo registrado para este exercício.";
   }
@@ -228,7 +280,8 @@ export function buildNextFlightAnswerFromWeeks(
 
 export async function getDeterministicFlyIaAnswer(year: number, messages: FlyIaMessage[]) {
   const weeks = await getAllFlightWeeks(year);
-  const text = buildNextFlightAnswerFromWeeks(weeks, messages);
+  const text = buildNextFlightAnswerFromWeeks(weeks, messages)
+    ?? buildBoardingGuidanceAnswerFromWeeks(weeks, messages);
   return text ? { text } : null;
 }
 

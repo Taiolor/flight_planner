@@ -30,6 +30,7 @@ const state = vi.hoisted(() => {
     createFlyIaSessionKey: vi.fn(() => "session-key"),
     getFlyIaMemoryDashboard: vi.fn(),
     getFlyIaTelemetryTimeline: vi.fn(),
+    getFlyIaTravelGuidanceAnswer: vi.fn(),
     getFlyIaSessionMemory: vi.fn(),
     getFlyIaPromptStats: vi.fn(() => ({ contextChars: 150, historyChars: 80, payloadHistoryChars: 40, memoryChars: 32 })),
     recordFlyIaContextMetric: vi.fn(),
@@ -77,6 +78,10 @@ vi.mock("./flyIaVoiceTelemetry", () => ({
   getFlyIaTelemetryTimeline: state.getFlyIaTelemetryTimeline,
 }));
 
+vi.mock("./flyIaTravelGuidance", () => ({
+  getFlyIaTravelGuidanceAnswer: state.getFlyIaTravelGuidanceAnswer,
+}));
+
 
 import { appRouter } from "./routers";
 
@@ -110,6 +115,7 @@ afterEach(() => {
   state.createFlyIaSessionKey.mockClear();
   state.getFlyIaMemoryDashboard.mockReset();
   state.getFlyIaTelemetryTimeline.mockReset();
+  state.getFlyIaTravelGuidanceAnswer.mockReset();
   state.getFlyIaSessionMemory.mockReset();
   state.getFlyIaSessionMemory.mockResolvedValue(null);
   state.getFlyIaPromptStats.mockClear();
@@ -222,6 +228,22 @@ describe("flyIa.chat", () => {
     await expect(caller.flyIa.chat(input)).resolves.toEqual({
       response: "**Próximo voo — ida**\n- **Data e hora:** 26/04/2026 às 22:05",
     });
+    expect(state.getGeminiBudgetSnapshot).not.toHaveBeenCalled();
+    expect(state.askFlyIa).not.toHaveBeenCalled();
+  });
+
+  it("retorna a estimativa externa de rota antes de consultar Gemini", async () => {
+    const guidance = "**Estimativa de deslocamento até o aeroporto**\n- **Voo considerado (base SmartFly):** 26/10/2026 às 22:05";
+    state.getFlyIaTravelGuidanceAnswer.mockResolvedValue(guidance);
+    const caller = createCaller(true);
+    const travelInput = {
+      year: 2026,
+      messages: [{ role: "user" as const, content: "Quanto tempo eu demoro saindo da Paulista até o aeroporto?" }],
+    };
+
+    await expect(caller.flyIa.chat(travelInput)).resolves.toEqual({ response: guidance });
+    expect(state.getFlyIaTravelGuidanceAnswer).toHaveBeenCalledWith(2026, travelInput.messages);
+    expect(state.getDeterministicFlyIaAnswer).not.toHaveBeenCalled();
     expect(state.getGeminiBudgetSnapshot).not.toHaveBeenCalled();
     expect(state.askFlyIa).not.toHaveBeenCalled();
   });

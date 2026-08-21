@@ -99,6 +99,7 @@ import {
   updateGeminiBudgetSettings,
 } from "./geminiBudget";
 import { getFlyIaTelemetryTimeline, getFlyIaVoiceDashboard } from "./flyIaVoiceTelemetry";
+import { getFlyIaTravelGuidanceAnswer } from "./flyIaTravelGuidance";
 import { PROTECTED_ACCESS_RESOURCES } from "../shared/protectedAccess";
 import {
   getProtectedAccessAttemptSummary,
@@ -282,6 +283,11 @@ export const appRouter = router({
         }).catch(error => console.error("[Fly.IA Memory] Falha ao registrar métrica:", error));
         try {
           flyIaRateLimiter.consume(ctx.flightSession.email.toLowerCase());
+          const travelGuidance = await getFlyIaTravelGuidanceAnswer(input.year, input.messages);
+          if (travelGuidance) {
+            await recordMetric("deterministic");
+            return { response: travelGuidance };
+          }
           const deterministicAnswer = await getDeterministicFlyIaAnswer(input.year, input.messages);
           if (deterministicAnswer) {
             await recordMetric("deterministic");
