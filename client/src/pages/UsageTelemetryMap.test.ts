@@ -18,4 +18,13 @@ describe("UsageTelemetryMap navigation", () => {
     expect(source).toContain("animate-spin text-slate-300");
     expect(source).not.toContain("animate-spin text-blue-400");
   });
+
+  it("mantém os quatro filtros de período alinhados em uma única linha distribuída", () => {
+    const source = readFileSync("client/src/pages/UsageTelemetryMap.tsx", "utf8");
+
+    expect(source).toContain('className="grid grid-cols-4 gap-2" aria-label="Filtros de telemetria"');
+    expect(source).toContain("const PERIOD_FILTERS = [");
+    expect(source).toContain('aria-label={option.ariaLabel}');
+    expect(source).toContain('className="col-span-4 justify-center border-slate-600 text-slate-300"');
+  });
 });

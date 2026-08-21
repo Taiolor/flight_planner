@@ -24,7 +24,8 @@ describe("Admin mobile responsiveness", () => {
 
   it("keeps header actions and telemetry filters usable in narrow viewports", () => {
     expect(headerSource).toContain("flex w-full flex-wrap items-center gap-2 sm:ml-auto sm:w-auto");
-    expect(telemetrySource).toContain("grid grid-cols-2 gap-2 sm:flex");
+    expect(telemetrySource).toContain("grid grid-cols-4 gap-2");
+    expect(telemetrySource).toContain("w-full min-w-0 whitespace-nowrap px-1.5 text-[10px]");
     expect(telemetrySource).toContain("h-[360px] sm:h-[540px]");
   });
 });

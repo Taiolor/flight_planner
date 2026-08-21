@@ -145,3 +145,5 @@
 - [x] Substituir explicitamente os acentos azul-brilhante remanescentes em AdminNotifications e Home
 - [x] Adicionar regressões estruturais para AdminNotifications e blocos restantes da Home
 - [x] Reexecutar e registrar a auditoria final de acentos azuis dos módulos operacionais
+- [x] Organizar os filtros de período da Telemetria em uma única linha distribuída e acessível
+- [x] Aplicar #4B0082 ao fundo dos dias com voos cancelados no Calendário

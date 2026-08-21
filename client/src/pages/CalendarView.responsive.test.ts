@@ -20,6 +20,12 @@ describe("Calendar mobile responsiveness", () => {
     expect(calendarSource).toContain("bg-white/15 border border-white/35 text-white");
   });
 
+  it("destaca voos cancelados com roxo-escuro distinto", () => {
+    expect(calendarSource).toContain('cellBg = "bg-[#4B0082]";');
+    expect(calendarSource).not.toContain('cellBg = "bg-slate-700";');
+    expect(calendarSource).not.toContain('cellBg = "bg-slate-600";');
+  });
+
   it("keeps long World Cup opponent names visible instead of truncating them", () => {
     expect(cupSource).toContain("min-w-0 break-words text-right");
     expect(cupSource).not.toContain(

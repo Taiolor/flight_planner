@@ -692,10 +692,10 @@ export default function CalendarView() {
                             (mark.return && mark.returnRescheduled);
 
                           if (allCancelled) {
-                            cellBg = "bg-slate-700";
+                            cellBg = "bg-[#4B0082]";
                             textColor = "text-white";
                           } else if (anyCancelled) {
-                            cellBg = "bg-slate-600";
+                            cellBg = "bg-[#4B0082]";
                             textColor = "text-white";
                           } else if (allRescheduled) {
                             cellBg = "bg-red-500";

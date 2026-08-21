@@ -16,7 +16,8 @@ describe("filtros da página Locais", () => {
   });
 
   it("oferece a janela completa de retenção e seleção acessível de tipos", () => {
-    expect(source).toContain("[24, 72, 168, 720]");
+    expect(source).toContain("const PERIOD_FILTERS = [");
+    expect(source).toContain('{ hours: 720, label: "30 dias", ariaLabel: "Últimos 30 dias" }');
     expect(source).toContain("30 dias");
     expect(source).toContain('aria-label="Tipos de evento"');
     expect(source).toContain("aria-pressed={eventTypes.includes(eventType)}");

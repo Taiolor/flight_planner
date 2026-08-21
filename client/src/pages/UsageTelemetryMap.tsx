@@ -35,6 +35,13 @@ const EVENT_COLORS = {
   mutation: "#dc2626",
 } as const;
 
+const PERIOD_FILTERS = [
+  { hours: 24, label: "24h", ariaLabel: "Últimas 24 horas" },
+  { hours: 72, label: "72h", ariaLabel: "Últimas 72 horas" },
+  { hours: 168, label: "7 dias", ariaLabel: "Últimos 7 dias" },
+  { hours: 720, label: "30 dias", ariaLabel: "Últimos 30 dias" },
+] as const;
+
 type EventType = keyof typeof EVENT_LABELS;
 
 export const LOCATIONS_BACK_ROUTE = "/";
@@ -165,19 +172,20 @@ function UsageTelemetryMapContent() {
           <MetricCard icon={<Search />} label="Janela" value={`${hours}h`} />
         </section>
 
-        <section className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:items-center" aria-label="Filtros de telemetria">
-          {[24, 72, 168, 720].map(option => (
+        <section className="grid grid-cols-4 gap-2" aria-label="Filtros de telemetria">
+          {PERIOD_FILTERS.map(option => (
             <Button
-              key={option}
+              key={option.hours}
               size="sm"
-              className="w-full"
-              variant={hours === option ? "default" : "outline"}
-              onClick={() => setHours(option)}
+              className="w-full min-w-0 whitespace-nowrap px-1.5 text-[10px] sm:px-3 sm:text-sm"
+              variant={hours === option.hours ? "default" : "outline"}
+              aria-label={option.ariaLabel}
+              onClick={() => setHours(option.hours)}
             >
-              Últimas {option === 24 ? "24h" : option === 72 ? "72h" : option === 168 ? "7 dias" : "30 dias"}
+              {option.label}
             </Button>
           ))}
-          <Badge variant="outline" className="col-span-2 justify-center border-slate-600 text-slate-300 sm:col-auto">
+          <Badge variant="outline" className="col-span-4 justify-center border-slate-600 text-slate-300">
             até 200 pontos aproximados
           </Badge>
         </section>
