@@ -810,6 +810,7 @@
 - [x] Verificar a persistência do Terminal ao salvar bilhetes de ida, volta e somente ida
 - [x] Exibir o Terminal salvo na Gestão de Passagens e no detalhe de bilhetes do Calendário
 - [x] Corrigir a hidratação dos campos de Terminal após salvar na Gestão de Passagens
+- [x] Adicionar hover suave e tooltip explicativo ao logo Smart Fly
 
 ## Processo reutilizável
 

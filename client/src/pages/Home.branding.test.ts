@@ -16,6 +16,10 @@ describe("Smart Fly visual branding", () => {
     expect(source).toContain("Viagens");
     expect(source).toContain('href="/"');
     expect(source).toContain('aria-label="Voltar para a página inicial"');
+    expect(source).toContain("TooltipTrigger");
+    expect(source).toContain("Voltar para a página inicial");
+    expect(source).toContain("hover:-translate-y-0.5");
+    expect(source).toContain("motion-reduce:transition-none");
     expect(source).not.toContain("{departureAirport} → NVT • {selectedYear}");
     expect(manifest).toContain("Planejamento inteligente de viagens");
   });
