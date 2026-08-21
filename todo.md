@@ -817,6 +817,7 @@
 - [x] Exibir a data efetiva do bilhete no popup, compartilhamento e agenda do Calendário
 - [x] Atualizar o resumo de semanas sem passagens pelas datas efetivas emitidas
 - [x] Exibir nomes de companhias aéreas em caixa alta em toda a interface
+- [x] Adicionar logos pequenos e acessíveis aos badges de companhia dos bilhetes
 
 ## Processo reutilizável
 

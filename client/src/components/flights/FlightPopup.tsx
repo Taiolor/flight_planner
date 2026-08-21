@@ -21,6 +21,7 @@ import {
 import { WeekRow, DayMark } from "./types";
 import { extractTime, toIsoDate } from "@/lib/utils";
 import { getCalendarIssuedLegDates } from "@/lib/calendarIssuedLegDates";
+import { AirlineBadge } from "@/components/AirlineBadge";
 
 export default function FlightPopup({
   mark,
@@ -249,9 +250,7 @@ export default function FlightPopup({
                 <span className="text-[9px] font-semibold text-blue-400 uppercase tracking-wide block">
                   Companhia
                 </span>
-                <span className="text-slate-700 font-medium">
-                  {depAirlineName}
-                </span>
+                <AirlineBadge airline={w.departureAirline} fallback={depAirlineName} />
               </div>
               <div>
                 <span className="text-[9px] font-semibold text-blue-400 uppercase tracking-wide block">
@@ -337,9 +336,7 @@ export default function FlightPopup({
                   <span className="text-[9px] font-semibold text-orange-400 uppercase tracking-wide block">
                     Companhia
                   </span>
-                  <span className="text-slate-700 font-medium">
-                    {retAirlineName}
-                  </span>
+                  <AirlineBadge airline={w.returnAirline} fallback={retAirlineName} />
                 </div>
               <div>
                 <span className="text-[9px] font-semibold text-orange-400 uppercase tracking-wide block">
@@ -403,7 +400,7 @@ export default function FlightPopup({
                 {mark.additionalFlights.map(flight => (
                   <div key={`${flight.id}-${flight.direction}`} className="px-3 py-2 text-xs text-slate-700">
                     <div className="flex items-center justify-between gap-2">
-                      <span className="font-bold text-violet-800">{flight.direction === "departure" ? "Ida" : "Volta"} · {flight.airline || "Companhia"}</span>
+                      <span className="inline-flex min-w-0 items-center gap-1 font-bold text-violet-800"><span>{flight.direction === "departure" ? "Ida" : "Volta"} ·</span><AirlineBadge airline={flight.airline} fallback="COMPANHIA" className="border-violet-200 bg-white/70 py-0 text-violet-800" /></span>
                       {Boolean(flight.cancelled || flight.rescheduled) && <span className={`rounded-full px-1.5 py-0.5 text-[10px] font-bold ${flight.cancelled ? "bg-rose-100 text-rose-700" : "bg-amber-100 text-amber-700"}`}>{flight.cancelled ? "Cancelado" : "Remarcado"}</span>}
                     </div>
                     <div className="mt-0.5 text-[11px] text-slate-500">{flight.flightDatetime?.replace("T", " ") || "Data a confirmar"} · {flight.airport || "Aeroporto"} · {flight.flightNumber || "Voo a confirmar"}{flight.terminal ? ` · Terminal ${flight.terminal}` : ""}</div>

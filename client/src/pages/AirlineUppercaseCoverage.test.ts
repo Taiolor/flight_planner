@@ -14,8 +14,9 @@ describe("convenção de companhias aéreas em caixa alta", () => {
   it("aplica o normalizador nas telas que apresentam companhias", () => {
     expect(read("client/src/pages/FlightQuotes.tsx")).toContain("formatAirlineDisplayName(quote.outboundAirline)");
     expect(read("client/src/components/AdditionalFlightsPanel.tsx")).toContain("formatAirlineDisplayName(flight.departureAirline");
-    expect(read("client/src/components/WeeklyPlanning.tsx")).toContain("formatAirlineDisplayName(item.airline");
+    expect(read("client/src/components/WeeklyPlanning.tsx")).toContain("AirlineBadge airline={item.airline}");
     expect(read("client/src/pages/Memories.tsx")).toContain("formatAirlineDisplayName(segment.airline");
     expect(read("client/src/components/FinancialCharts.tsx")).toContain("formatAirlineDisplayName(entry.name)");
+    expect(read("client/src/components/flights/FlightPopup.tsx")).toContain("AirlineBadge airline={w.departureAirline}");
   });
 });
