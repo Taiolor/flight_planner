@@ -52,16 +52,21 @@ describe("flyIaTravelGuidance", () => {
     const answer = await getFlyIaTravelGuidanceAnswer(2026, [{ role: "user", content: "Quanto tempo eu demoro para chegar no aeroporto, saindo da Paulista, São Paulo?" }]);
 
     expect(state.makeRequest).toHaveBeenCalledWith("/maps/api/directions/json", expect.objectContaining({ origin: "Paulista, São Paulo", mode: "driving" }));
-    expect(answer).toContain("1 h 10 min");
-    expect(answer).toContain("26/10/2026 às 22:05");
-    expect(answer).toContain("Google Maps — rotas");
-    expect(answer).toContain("não altera a data, a hora ou o status cadastrados");
+    expect(answer?.response).toContain("1 h 10 min");
+    expect(answer?.response).toContain("26/10/2026 às 22:05");
+    expect(answer?.response).toContain("Google Maps — rotas");
+    expect(answer?.response).toContain("não altera a data, a hora ou o status cadastrados");
+    const routeUrl = new URL(answer?.routeUrl ?? "");
+    expect(routeUrl.origin).toBe("https://www.google.com");
+    expect(routeUrl.pathname).toBe("/maps/dir/");
+    expect(routeUrl.searchParams.get("origin")).toBe("Paulista, São Paulo");
+    expect(routeUrl.searchParams.get("travelmode")).toBe("driving");
   });
 
   it("devolve uma falha segura se a rota externa não responder", async () => {
     state.getAllFlightWeeks.mockResolvedValue(issuedGruFlight);
     state.makeRequest.mockRejectedValue(new Error("offline"));
 
-    await expect(getFlyIaTravelGuidanceAnswer(2026, [{ role: "user", content: "Quanto tempo eu demoro para chegar no aeroporto, saindo da Paulista?" }])).resolves.toContain("Não consegui consultar a estimativa de rota agora");
+    await expect(getFlyIaTravelGuidanceAnswer(2026, [{ role: "user", content: "Quanto tempo eu demoro para chegar no aeroporto, saindo da Paulista?" }])).resolves.toMatchObject({ response: expect.stringContaining("Não consegui consultar a estimativa de rota agora") });
   });
 });

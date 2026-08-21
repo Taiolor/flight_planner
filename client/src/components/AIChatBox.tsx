@@ -3,7 +3,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
-import { Loader2, Mic, Send, Square, User, Sparkles } from "lucide-react";
+import { ExternalLink, Loader2, MapPinned, Mic, Send, Square, User, Sparkles } from "lucide-react";
 import React, { useState, useEffect, useRef } from "react";
 import { Streamdown } from "streamdown";
 
@@ -13,6 +13,11 @@ import { Streamdown } from "streamdown";
 export type Message = {
   role: "system" | "user" | "assistant";
   content: string;
+  action?: {
+    label: string;
+    href: string;
+    ariaLabel: string;
+  };
 };
 
 export type AIChatBoxProps = {
@@ -99,6 +104,18 @@ function AssistantResponseSkeleton({ minHeight }: { minHeight: number }) {
       <span className="sr-only">Fly.IA está preparando a resposta.</span>
     </div>
   );
+}
+
+function isGoogleMapsDirectionsUrl(href: string) {
+  try {
+    const url = new URL(href);
+    return url.protocol === "https:"
+      && url.hostname === "www.google.com"
+      && url.pathname === "/maps/dir/"
+      && url.searchParams.get("api") === "1";
+  } catch {
+    return false;
+  }
 }
 
 /**
@@ -342,6 +359,21 @@ export function AIChatBox({
                           </p>
                         )}
                       </div>
+                      {message.role === "assistant" && message.action && isGoogleMapsDirectionsUrl(message.action.href) && (
+                        <Button asChild variant="outline" size="sm" className="mt-2 h-8 gap-1.5 border-primary/30 bg-background text-primary hover:bg-primary/5">
+                          <a
+                            href={message.action.href}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            aria-label={message.action.ariaLabel}
+                            data-testid="flyia-map-route-action"
+                          >
+                            <MapPinned className="size-3.5" aria-hidden="true" />
+                            {message.action.label}
+                            <ExternalLink className="size-3" aria-hidden="true" />
+                          </a>
+                        </Button>
+                      )}
                       {message.role === "assistant" && isLastMessage && !isLoading && followUpPrompts && (
                         <div
                           className="mt-2 flex w-full flex-wrap gap-1.5"

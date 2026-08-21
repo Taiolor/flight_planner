@@ -17,12 +17,26 @@ export function extractTravelOrigin(messages: FlyIaMessage[]) {
 
 type DirectionsResponse = DirectionsResult & { status?: string };
 
-export async function getFlyIaTravelGuidanceAnswer(year: number, messages: FlyIaMessage[]) {
+export type FlyIaTravelGuidance = {
+  response: string;
+  routeUrl?: string;
+};
+
+function createGoogleMapsDirectionsUrl(origin: string, destination: string) {
+  const url = new URL("https://www.google.com/maps/dir/");
+  url.searchParams.set("api", "1");
+  url.searchParams.set("origin", origin);
+  url.searchParams.set("destination", destination);
+  url.searchParams.set("travelmode", "driving");
+  return url.toString();
+}
+
+export async function getFlyIaTravelGuidanceAnswer(year: number, messages: FlyIaMessage[]): Promise<FlyIaTravelGuidance | null> {
   const origin = extractTravelOrigin(messages);
   if (!origin) return null;
 
   const next = findNextIssuedFlight(await getAllFlightWeeks(year));
-  if (!next) return "Não há um próximo voo emitido e ativo registrado para definir o aeroporto de destino da rota.";
+  if (!next) return { response: "Não há um próximo voo emitido e ativo registrado para definir o aeroporto de destino da rota." };
 
   const destination = getAirportAddress(next.flight.airportFrom);
   try {
@@ -40,7 +54,8 @@ export async function getFlyIaTravelGuidanceAnswer(year: number, messages: FlyIa
     const leg = directions.routes?.[0]?.legs?.[0];
     if (!leg) throw new Error("route unavailable");
     const duration = leg.duration_in_traffic?.text ?? leg.duration.text;
-    return [
+    return {
+      response: [
       "**Estimativa de deslocamento até o aeroporto**",
       `- **Saída informada:** ${origin}`,
       `- **Destino:** ${next.flight.airportFrom} — ${destination}`,
@@ -49,9 +64,11 @@ export async function getFlyIaTravelGuidanceAnswer(year: number, messages: FlyIa
       "- **Fonte da estimativa:** [Google Maps — rotas](https://maps.google.com/).",
       "",
       "A estimativa é consultada no Google Maps e pode variar com trânsito e condições da rota. Ela não altera a data, a hora ou o status cadastrados do seu voo no SmartFly.",
-    ].join("\n");
+      ].join("\n"),
+      routeUrl: createGoogleMapsDirectionsUrl(origin, destination),
+    };
   } catch (error) {
     console.error("[Fly.IA Route] Não foi possível consultar a estimativa de deslocamento", error instanceof Error ? error.name : "unknown");
-    return "Não consegui consultar a estimativa de rota agora. O horário do seu voo continua sendo o registrado na base do SmartFly.";
+    return { response: "Não consegui consultar a estimativa de rota agora. O horário do seu voo continua sendo o registrado na base do SmartFly." };
   }
 }

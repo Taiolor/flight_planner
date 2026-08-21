@@ -233,7 +233,10 @@ describe("flyIa.chat", () => {
   });
 
   it("retorna a estimativa externa de rota antes de consultar Gemini", async () => {
-    const guidance = "**Estimativa de deslocamento até o aeroporto**\n- **Voo considerado (base SmartFly):** 26/10/2026 às 22:05";
+    const guidance = {
+      response: "**Estimativa de deslocamento até o aeroporto**\n- **Voo considerado (base SmartFly):** 26/10/2026 às 22:05",
+      routeUrl: "https://www.google.com/maps/dir/?api=1&origin=Paulista&destination=GRU&travelmode=driving",
+    };
     state.getFlyIaTravelGuidanceAnswer.mockResolvedValue(guidance);
     const caller = createCaller(true);
     const travelInput = {
@@ -241,7 +244,7 @@ describe("flyIa.chat", () => {
       messages: [{ role: "user" as const, content: "Quanto tempo eu demoro saindo da Paulista até o aeroporto?" }],
     };
 
-    await expect(caller.flyIa.chat(travelInput)).resolves.toEqual({ response: guidance });
+    await expect(caller.flyIa.chat(travelInput)).resolves.toEqual(guidance);
     expect(state.getFlyIaTravelGuidanceAnswer).toHaveBeenCalledWith(2026, travelInput.messages);
     expect(state.getDeterministicFlyIaAnswer).not.toHaveBeenCalled();
     expect(state.getGeminiBudgetSnapshot).not.toHaveBeenCalled();

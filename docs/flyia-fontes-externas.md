@@ -35,6 +35,8 @@ Quando a pessoa perguntar pelo horário de embarque, o Fly.IA seleciona o próxi
 
 Quando a pergunta trouxer explicitamente uma origem — por exemplo, “Quanto tempo eu demoro saindo da Paulista até o aeroporto?” — o Fly.IA consulta rotas de carro com trânsito no Google Maps. A consulta envia somente a origem informada e o endereço público do aeroporto de partida, não persiste a origem e retorna a duração observada no momento. O resultado exibe a data e a hora do voo apenas como referência vinda da base SmartFly.
 
+Cada resposta de deslocamento bem-sucedida também oferece o botão **Ver rota no mapa**. A ação abre uma nova aba para a URL oficial de direções do Google Maps, com os parâmetros de origem, destino e modo carro. O link é validado no cliente para aceitar apenas direções HTTPS em `www.google.com`, abre com `noopener noreferrer` e não aparece em respostas de voo, orçamento ou qualquer outro tema.
+
 ## Decisão de fonte de dados
 
 > O SmartFly é a fonte única de dados do voo da pessoa usuária. Nenhum provedor externo de status será integrado ao Fly.IA nesta versão.

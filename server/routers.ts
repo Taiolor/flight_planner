@@ -286,7 +286,7 @@ export const appRouter = router({
           const travelGuidance = await getFlyIaTravelGuidanceAnswer(input.year, input.messages);
           if (travelGuidance) {
             await recordMetric("deterministic");
-            return { response: travelGuidance };
+            return travelGuidance;
           }
           const deterministicAnswer = await getDeterministicFlyIaAnswer(input.year, input.messages);
           if (deterministicAnswer) {

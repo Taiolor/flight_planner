@@ -69,7 +69,17 @@ export default function FlyIA() {
     onSuccess: result => {
       setMessages(current => [
         ...current,
-        { role: "assistant", content: result.response },
+        {
+          role: "assistant",
+          content: result.response,
+          action: result.routeUrl
+            ? {
+                label: "Ver rota no mapa",
+                href: result.routeUrl,
+                ariaLabel: "Abrir rota até o aeroporto no Google Maps",
+              }
+            : undefined,
+        },
       ]);
     },
     onError: error => {

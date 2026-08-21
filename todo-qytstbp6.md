@@ -199,3 +199,8 @@
 - [x] Informar literalmente a data e hora de partida cadastradas e calcular uma recomendação prévia de chegada e embarque.
 - [x] Distinguir visual e textualmente o fato persistido da recomendação oficial, incluindo a fonte e as ressalvas.
 - [x] Cobrir voos nacionais de GRU, casos sem horário e perguntas de seguimento em testes de regressão.
+- [x] Mapear o contrato de mensagem do Fly.IA para transportar um link de rota sem expor conteúdo sensível.
+- [x] Criar link de direções do Google Maps apenas para respostas de tempo de deslocamento com origem explícita.
+- [x] Exibir botão acessível “Ver rota no mapa” junto à resposta aplicável, abrindo em nova aba com proteção de referência.
+- [x] Cobrir link, ausência da ação em outras respostas, acessibilidade e responsividade; documentar e versionar.
+- [x] Salvar checkpoint do botão de rota no mapa do Fly.IA.
