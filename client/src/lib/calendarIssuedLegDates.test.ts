@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { getCalendarIssuedLegDates } from "./calendarIssuedLegDates";
+import {
+  getCalendarIssuedLegDates,
+  hasEffectiveIssuedTicketLeg,
+} from "./calendarIssuedLegDates";
 
 describe("getCalendarIssuedLegDates", () => {
   it("marca somente a data efetiva de ida da Semana 42", () => {
@@ -25,5 +28,27 @@ describe("getCalendarIssuedLegDates", () => {
       departureDate: "13/12/2026",
       returnDate: "17/12/2026",
     });
+  });
+
+  it("não classifica a Semana 42 como pendente quando a ida efetiva foi emitida", () => {
+    expect(
+      hasEffectiveIssuedTicketLeg({
+        departureDate: "13/12/2026",
+        returnDate: "17/12/2026",
+        departureFlightDatetime: "2026-12-17T19:30",
+        ticketType: "oneway",
+        isTicketIssued: 1,
+      })
+    ).toBe(true);
+  });
+
+  it("mantém semanas sem bilhete fora do resumo de trechos emitidos", () => {
+    expect(
+      hasEffectiveIssuedTicketLeg({
+        departureDate: "20/12/2026",
+        returnDate: "25/12/2026",
+        isTicketIssued: 0,
+      })
+    ).toBe(false);
   });
 });

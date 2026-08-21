@@ -6,6 +6,10 @@ export interface CalendarIssuedWeek {
   ticketType?: string | null;
 }
 
+export interface CalendarTicketWeek extends CalendarIssuedWeek {
+  isTicketIssued: number | boolean;
+}
+
 function getDateOnly(value?: string | null): string | null {
   const normalized = value?.trim();
   return normalized ? normalized.slice(0, 10) : null;
@@ -25,4 +29,16 @@ export function getCalendarIssuedLegDates(week: CalendarIssuedWeek) {
       ? null
       : getDateOnly(week.returnFlightDatetime) ?? week.returnDate,
   };
+}
+
+/**
+ * Uma semana só aparece no resumo de pendências quando não possui nenhum
+ * trecho emitido. A regra usa as datas efetivas resolvidas para manter o
+ * critério consistente com o Calendário, inclusive em bilhetes somente ida.
+ */
+export function hasEffectiveIssuedTicketLeg(week: CalendarTicketWeek): boolean {
+  if (!week.isTicketIssued) return false;
+
+  const { departureDate, returnDate } = getCalendarIssuedLegDates(week);
+  return Boolean(departureDate || returnDate);
 }

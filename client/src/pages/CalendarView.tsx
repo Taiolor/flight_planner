@@ -3,7 +3,10 @@ import BrazilWorldCupPanel from "@/components/BrazilWorldCupPanel";
 import { brazilMatchByDate } from "@/lib/worldCup2026";
 import { Link, useLocation } from "wouter";
 import { extractTime, toIsoDate } from "@/lib/utils";
-import { getCalendarIssuedLegDates } from "@/lib/calendarIssuedLegDates";
+import {
+  getCalendarIssuedLegDates,
+  hasEffectiveIssuedTicketLeg,
+} from "@/lib/calendarIssuedLegDates";
 import { trpc } from "@/lib/trpc";
 import { ContentReveal } from "@/components/ContentReveal";
 import { CalendarLoadingSkeleton } from "@/components/CalendarLoadingSkeleton";
@@ -297,7 +300,7 @@ export default function CalendarView() {
     const weekByNumber = new Map(weeks.map(week => [week.weekNumber, week]));
 
     for (const week of weeks) {
-      if (!week.isTicketIssued) {
+      if (!hasEffectiveIssuedTicketLeg(week)) {
         if (!week.isDeleted) {
           unissuedCount++;
         }
@@ -874,8 +877,8 @@ export default function CalendarView() {
                       const isDepartureSunday = depDate && depDate.getDay() === 0;
                       const isReturnThursdayOrFriday = retDate && (retDate.getDay() === 4 || retDate.getDay() === 5);
                       const hasCorrectPattern = isDepartureSunday && isReturnThursdayOrFriday;
-                      // Verificar se tem bilhete emitido
-                      const hasIssued = depDate && retDate && (markedDays[toKey(depDate)]?.departure || markedDays[toKey(retDate)]?.return);
+                      // Um trecho efetivamente emitido já retira a semana da lista de pendências.
+                      const hasIssued = hasEffectiveIssuedTicketLeg(week);
                       // Mostrar apenas semanas futuras sem bilhete e com padrão correto
                       return !hasIssued && depDate && depDate > today && hasCorrectPattern;
                     })
