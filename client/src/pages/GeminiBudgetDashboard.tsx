@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ContentReveal } from "@/components/ContentReveal";
+import { ChartContainer, ChartLegend, ChartLegendContent, ChartTooltip, ChartTooltipContent, type ChartConfig } from "@/components/ui/chart";
 import { Input } from "@/components/ui/input";
 import { StandardPageHeader } from "@/components/StandardPageHeader";
 import { queryCachePolicies } from "@/lib/queryCache";
@@ -23,6 +24,7 @@ import {
   Zap,
 } from "lucide-react";
 import { toast } from "sonner";
+import { CartesianGrid, Line, LineChart, XAxis, YAxis } from "recharts";
 
 export const GEMINI_BUDGET_BACK_ROUTE = "/";
 
@@ -48,6 +50,15 @@ function formatBrl(cents: number) {
 function formatNumber(value: number) {
   return new Intl.NumberFormat("pt-BR").format(value);
 }
+
+function formatAudioSeconds(milliseconds: number) {
+  return `${(milliseconds / 1000).toLocaleString("pt-BR", { maximumFractionDigits: 1 })} s`;
+}
+
+const timelineChartConfig = {
+  totalTokens: { label: "Tokens", color: "#22d3ee" },
+  audioDurationMs: { label: "Duração de áudio", color: "#a78bfa" },
+} satisfies ChartConfig;
 
 function buildForm(settings: {
   monthlyBudgetCents: number;
@@ -127,6 +138,7 @@ function GeminiBudgetContent() {
   const dashboardQuery = trpc.geminiBudget.dashboard.useQuery(undefined, queryCachePolicies.admin);
   const memoryQuery = trpc.flyIaMemory.dashboard.useQuery(undefined, queryCachePolicies.admin);
   const voiceQuery = trpc.flyIaVoice.dashboard.useQuery(undefined, queryCachePolicies.admin);
+  const timelineQuery = trpc.flyIaTelemetry.timeline.useQuery(undefined, queryCachePolicies.admin);
   const updateSettings = trpc.geminiBudget.updateSettings.useMutation({
     onSuccess: async () => {
       await utils.geminiBudget.dashboard.invalidate();
@@ -176,10 +188,10 @@ function GeminiBudgetContent() {
           <Button
             variant="outline"
             className="border-white/40 bg-white/10 text-white hover:bg-white hover:text-cyan-700"
-            onClick={() => void Promise.all([dashboardQuery.refetch(), memoryQuery.refetch(), voiceQuery.refetch()])}
-            disabled={dashboardQuery.isFetching || memoryQuery.isFetching || voiceQuery.isFetching}
+            onClick={() => void Promise.all([dashboardQuery.refetch(), memoryQuery.refetch(), voiceQuery.refetch(), timelineQuery.refetch()])}
+            disabled={dashboardQuery.isFetching || memoryQuery.isFetching || voiceQuery.isFetching || timelineQuery.isFetching}
           >
-            <RefreshCw className={`mr-2 h-4 w-4 ${dashboardQuery.isFetching || memoryQuery.isFetching || voiceQuery.isFetching ? "animate-spin" : ""}`} />
+            <RefreshCw className={`mr-2 h-4 w-4 ${dashboardQuery.isFetching || memoryQuery.isFetching || voiceQuery.isFetching || timelineQuery.isFetching ? "animate-spin" : ""}`} />
             Atualizar
           </Button>
         }
@@ -253,6 +265,42 @@ function GeminiBudgetContent() {
                   <MetricCard icon={<Clock3 />} label="Duração média" value={`${((voiceQuery.data?.averageDurationMs ?? 0) / 1000).toLocaleString("pt-BR", { maximumFractionDigits: 1 })} s`} note="Por tentativa" />
                   <MetricCard icon={<Zap />} label="Latência média" value={`${formatNumber(voiceQuery.data?.averageLatencyMs ?? 0)} ms`} note="Transcrição e resposta" />
                 </section>
+              )}
+            </Card>
+
+            <Card className="border-slate-800 bg-slate-900 p-5">
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div>
+                  <h2 className="flex items-center gap-2 font-semibold"><Zap className="h-5 w-5 text-cyan-300" />Atividade diária do Fly.IA</h2>
+                  <p className="mt-1 text-sm text-slate-400">Tokens Gemini e duração total de áudio por dia. As escalas são independentes para permitir a comparação de tendência.</p>
+                </div>
+                <Badge variant="outline" className="border-slate-600 text-slate-200">Últimos 14 dias</Badge>
+              </div>
+              {timelineQuery.error ? (
+                <p className="mt-4 text-sm text-amber-200">Os indicadores agregados estão ativos, mas a série temporal não pôde ser carregada agora.</p>
+              ) : timelineQuery.isLoading ? (
+                <div className="mt-4 h-[260px] animate-pulse rounded-lg bg-slate-950/60" aria-label="Carregando gráfico temporal" />
+              ) : (
+                <>
+                  <ChartContainer config={timelineChartConfig} className="mt-4 h-[260px] w-full" aria-label="Gráfico temporal de tokens e duração de áudio">
+                    <LineChart data={timelineQuery.data ?? []} margin={{ top: 12, right: 8, left: -10, bottom: 0 }}>
+                      <CartesianGrid vertical={false} strokeDasharray="3 3" />
+                      <XAxis dataKey="label" tickLine={false} axisLine={false} minTickGap={24} />
+                      <YAxis yAxisId="tokens" tickLine={false} axisLine={false} tickFormatter={value => formatNumber(Number(value))} width={54} />
+                      <YAxis yAxisId="audio" orientation="right" tickLine={false} axisLine={false} tickFormatter={value => formatAudioSeconds(Number(value))} width={48} />
+                      <ChartTooltip content={<ChartTooltipContent labelFormatter={label => `Dia ${label}`} formatter={(value, name) => (
+                        <div className="flex flex-1 justify-between gap-6"><span>{name === "audioDurationMs" ? "Duração de áudio" : "Tokens"}</span><span className="font-mono font-medium">{name === "audioDurationMs" ? formatAudioSeconds(Number(value)) : formatNumber(Number(value))}</span></div>
+                      )} />} />
+                      <ChartLegend content={<ChartLegendContent />} />
+                      <Line yAxisId="tokens" type="monotone" dataKey="totalTokens" stroke="var(--color-totalTokens)" strokeWidth={2.5} dot={false} activeDot={{ r: 4 }} />
+                      <Line yAxisId="audio" type="monotone" dataKey="audioDurationMs" stroke="var(--color-audioDurationMs)" strokeWidth={2.5} dot={false} activeDot={{ r: 4 }} />
+                    </LineChart>
+                  </ChartContainer>
+                  <p className="sr-only">A tabela abaixo descreve os valores diários do gráfico.</p>
+                  <div className="sr-only">
+                    {(timelineQuery.data ?? []).map(point => <span key={point.date}>{point.date}: {formatNumber(point.totalTokens)} tokens e {formatAudioSeconds(point.audioDurationMs)} de áudio. </span>)}
+                  </div>
+                </>
               )}
             </Card>
 

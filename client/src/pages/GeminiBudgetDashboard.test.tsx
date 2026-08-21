@@ -5,11 +5,20 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 (globalThis as typeof globalThis & { React: typeof React }).React = React;
 
+class ResizeObserverMock {
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+}
+
+vi.stubGlobal("ResizeObserver", ResizeObserverMock);
+
 const mocks = vi.hoisted(() => ({
   authCheck: vi.fn(),
   dashboard: vi.fn(),
   memoryDashboard: vi.fn(),
   voiceDashboard: vi.fn(),
+  timeline: vi.fn(),
   updateSettings: vi.fn(),
   invalidate: vi.fn(),
 }));
@@ -24,6 +33,7 @@ vi.mock("@/lib/trpc", () => ({
     },
     flyIaMemory: { dashboard: { useQuery: mocks.memoryDashboard } },
     flyIaVoice: { dashboard: { useQuery: mocks.voiceDashboard } },
+    flyIaTelemetry: { timeline: { useQuery: mocks.timeline } },
   },
 }));
 
@@ -37,6 +47,7 @@ afterEach(() => {
   mocks.dashboard.mockReset();
   mocks.memoryDashboard.mockReset();
   mocks.voiceDashboard.mockReset();
+  mocks.timeline.mockReset();
   mocks.updateSettings.mockReset();
   mocks.invalidate.mockReset();
 });
@@ -107,6 +118,13 @@ describe("GeminiBudgetDashboard", () => {
       error: null,
       refetch: vi.fn(),
     });
+    mocks.timeline.mockReturnValue({
+      data: [{ date: "2026-08-21", label: "21/08", totalTokens: 5200, audioDurationMs: 12500 }],
+      isLoading: false,
+      isFetching: false,
+      error: null,
+      refetch: vi.fn(),
+    });
     mocks.updateSettings.mockReturnValue({ mutate: vi.fn(), isPending: false });
 
     render(<GeminiBudgetDashboard />);
@@ -118,6 +136,7 @@ describe("GeminiBudgetDashboard", () => {
     expect(screen.getByText("Contexto poupado")).toBeTruthy();
     expect(screen.getByText(/Voz · últimos 30 dias/)).toBeTruthy();
     expect(screen.getByText("Áudio total")).toBeTruthy();
+    expect(screen.getByText("Atividade diária do Fly.IA")).toBeTruthy();
     expect(screen.getByText("Nenhum alerta de orçamento foi disparado ainda.")).toBeTruthy();
   });
 });

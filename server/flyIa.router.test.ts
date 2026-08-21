@@ -29,6 +29,7 @@ const state = vi.hoisted(() => {
     recordGeminiUsage: vi.fn(),
     createFlyIaSessionKey: vi.fn(() => "session-key"),
     getFlyIaMemoryDashboard: vi.fn(),
+    getFlyIaTelemetryTimeline: vi.fn(),
     getFlyIaSessionMemory: vi.fn(),
     getFlyIaPromptStats: vi.fn(() => ({ contextChars: 150, historyChars: 80, payloadHistoryChars: 40, memoryChars: 32 })),
     recordFlyIaContextMetric: vi.fn(),
@@ -71,6 +72,11 @@ vi.mock("./geminiBudget", () => ({
   updateGeminiBudgetSettings: vi.fn(),
 }));
 
+vi.mock("./flyIaVoiceTelemetry", () => ({
+  getFlyIaVoiceDashboard: vi.fn(),
+  getFlyIaTelemetryTimeline: state.getFlyIaTelemetryTimeline,
+}));
+
 
 import { appRouter } from "./routers";
 
@@ -103,6 +109,7 @@ afterEach(() => {
   state.recordGeminiUsage.mockReset();
   state.createFlyIaSessionKey.mockClear();
   state.getFlyIaMemoryDashboard.mockReset();
+  state.getFlyIaTelemetryTimeline.mockReset();
   state.getFlyIaSessionMemory.mockReset();
   state.getFlyIaSessionMemory.mockResolvedValue(null);
   state.getFlyIaPromptStats.mockClear();
@@ -235,5 +242,23 @@ describe("flyIaMemory router", () => {
     const caller = appRouter.createCaller({ user: null, req: { headers: { cookie: "flight_session=admin-session" } }, res: {} } as any);
 
     await expect(caller.flyIaMemory.dashboard()).resolves.toMatchObject({ activeSessions: 1 });
+  });
+});
+
+describe("flyIaTelemetry router", () => {
+  it("impede a série temporal para usuários sem papel administrativo", async () => {
+    state.validateAuthSession.mockResolvedValue({ email: "piloto@smartfly.test", role: "user" });
+    const caller = appRouter.createCaller({ user: null, req: { headers: { cookie: "flight_session=valid-session" } }, res: {} } as any);
+
+    await expect(caller.flyIaTelemetry.timeline()).rejects.toMatchObject({ code: "FORBIDDEN" });
+    expect(state.getFlyIaTelemetryTimeline).not.toHaveBeenCalled();
+  });
+
+  it("entrega somente a série agregada para administradores", async () => {
+    state.validateAuthSession.mockResolvedValue({ email: "admin@smartfly.test", role: "admin" });
+    state.getFlyIaTelemetryTimeline.mockResolvedValue([{ date: "2026-08-21", label: "21/08", totalTokens: 1200, audioDurationMs: 3000 }]);
+    const caller = appRouter.createCaller({ user: null, req: { headers: { cookie: "flight_session=admin-session" } }, res: {} } as any);
+
+    await expect(caller.flyIaTelemetry.timeline()).resolves.toEqual([{ date: "2026-08-21", label: "21/08", totalTokens: 1200, audioDurationMs: 3000 }]);
   });
 });

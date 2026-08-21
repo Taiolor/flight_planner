@@ -172,3 +172,8 @@
 - [x] Exibir no painel Gemini indicadores agregados de custo preciso e uso de áudio.
 - [x] Criar migração, cobertura de regressão, documentação e validação final da nova telemetria.
 - [x] Salvar checkpoint da precisão de custo e telemetria de áudio do Fly.IA.
+- [x] Mapear a granularidade temporal segura para tokens Gemini e duração de áudio.
+- [x] Expor uma série diária agregada de tokens e duração de áudio, sem conteúdo ou identificadores.
+- [x] Adicionar gráfico acessível e responsivo de tokens e áudio ao painel administrativo Gemini.
+- [x] Criar cobertura de API e interface, validar o estado protegido em celular e versionar o gráfico temporal.
+- [x] Salvar checkpoint do gráfico temporal de tokens e duração de áudio do Fly.IA.

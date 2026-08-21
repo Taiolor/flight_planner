@@ -56,3 +56,9 @@ Primeiro, corrigir a precisão da telemetria de custo e adicionar métricas de d
 O custo de Gemini passou a ser persistido em **microcentavos** por evento e por ciclo mensal. Dessa forma, uma chamada de baixo volume não é mais arredondada para zero antes de compor o total do mês. O painel continua exibindo reais com duas casas decimais, mas o percentual de orçamento, os alertas e o saldo estimado usam a soma precisa.
 
 A telemetria de voz registra somente duração, quantidade de bytes, resultado e latência da transcrição. Ela não registra áudio, texto transcrito, tipo de arquivo, endereço de e-mail, chave de sessão ou qualquer identificador de pessoa. A duração é limitada a 60 segundos e o painel administrativo apresenta apenas agregados dos últimos 30 dias.
+
+## Série temporal do painel
+
+O painel administrativo inclui uma série diária dos últimos 14 dias para comparar o total de tokens do Gemini e a duração agregada de áudio. As duas linhas usam escalas independentes, pois tokens e segundos possuem unidades diferentes. Dias sem atividade permanecem visíveis com valor zero, evitando que períodos silenciosos pareçam ausentes.
+
+> A consulta é protegida por papel administrativo e retorna somente data, rótulo curto, total de tokens e duração total de áudio. Ela não retorna prompts, respostas, transcrições, nomes, sessões ou arquivos de áudio.

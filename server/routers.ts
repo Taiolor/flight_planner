@@ -98,7 +98,7 @@ import {
   recordGeminiUsage,
   updateGeminiBudgetSettings,
 } from "./geminiBudget";
-import { getFlyIaVoiceDashboard } from "./flyIaVoiceTelemetry";
+import { getFlyIaTelemetryTimeline, getFlyIaVoiceDashboard } from "./flyIaVoiceTelemetry";
 import { PROTECTED_ACCESS_RESOURCES } from "../shared/protectedAccess";
 import {
   getProtectedAccessAttemptSummary,
@@ -350,6 +350,10 @@ export const appRouter = router({
 
   flyIaVoice: router({
     dashboard: flightAdminProcedure.query(() => getFlyIaVoiceDashboard()),
+  }),
+
+  flyIaTelemetry: router({
+    timeline: flightAdminProcedure.query(() => getFlyIaTelemetryTimeline()),
   }),
 
   // =====================
