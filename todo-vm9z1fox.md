@@ -96,3 +96,13 @@
 - [x] Cobrir a nova composição móvel com teste e validação visual
 - [x] Adicionar regressão estrutural explícita dos dois grupos de linha do cabeçalho mobile
 - [x] Isolar as consultas da regressão mobile para evitar colisões entre instâncias renderizadas
+- [x] Inspecionar ações móveis e recursos de acessibilidade disponíveis no cabeçalho
+- [x] Definir Calendário como ação fixa e concentrar os utilitários em um menu móvel único
+- [x] Adicionar uma ação prioritária fixa no mobile
+- [x] Agrupar as preferências utilitárias em um controle móvel compacto
+- [x] Implementar dicas acionadas por toque prolongado nos ícones móveis
+- [x] Ajustar as regressões de dica por toque e das linhas móveis após a nova estrutura de preferências
+- [x] Isolar o cenário de preferências compactas para evitar colisões entre renderizações de teste
+- [x] Encaminhar eventos e referência no componente de dica para permitir o acionamento do menu de preferências
+- [x] Alinhar o teste do menu de preferências ao evento de ponteiro usado pelo gatilho móvel
+- [x] Cobrir interação, acessibilidade e responsividade das três melhorias

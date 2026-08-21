@@ -62,6 +62,9 @@ describe("HomeHeaderActions", () => {
     expect(source).toContain("flex w-full flex-nowrap items-center gap-1 sm:gap-2");
     expect(source).toContain("hidden h-10 px-3 sm:inline-flex");
     expect(source).toContain("h-10 w-10 shrink-0");
+    expect(source).toContain('data-mobile-primary-action="calendar"');
+    expect(source).toContain("SlidersHorizontal");
+    expect(source).toContain("hidden w-full sm:flex");
     expect(source).toContain('aria-label="Ações do planejamento"');
   });
 
@@ -89,11 +92,51 @@ describe("HomeHeaderActions", () => {
       />
     );
 
-    const lines = container.querySelectorAll('[aria-label="Ações do planejamento"] > div');
+    const allGroups = Array.from(
+      container.querySelectorAll('[aria-label="Ações do planejamento"] > div')
+    );
+    const mobileLines = allGroups.filter(
+      line => !line.className.includes("hidden w-full sm:flex")
+    );
     const scope = within(container);
-    expect(lines).toHaveLength(2);
-    expect(Array.from(lines).every(line => line.className.includes("flex-nowrap"))).toBe(true);
+    expect(mobileLines).toHaveLength(2);
+    expect(mobileLines[0]?.className).toContain("flex-nowrap");
+    expect(mobileLines[1]?.className).toContain("sm:hidden");
     expect(scope.getByRole("link", { name: "Calendário" }).className).toContain("h-10 w-10");
     expect(scope.getByRole("button", { name: "Gráfico" }).className).toContain("hidden h-10");
+    expect(scope.getByRole("button", { name: "Abrir preferências" }).className).toContain("w-full");
+  });
+
+  it("agrupa os utilitários no menu móvel de preferências", () => {
+    const { container } = render(
+      <HomeHeaderActions
+        selectedYear={2026}
+        theme="light"
+        colorPreset="ocean"
+        colorPresetOptions={{ ocean: { name: "Azul" } }}
+        hideValues={false}
+        pushStatus="default"
+        pushSubscribed={false}
+        pushLoading={false}
+        isAuthenticated={false}
+        isAdmin={false}
+        pdfExport={<button type="button">Exportar PDF</button>}
+        onShowChart={vi.fn()}
+        onToggleTheme={vi.fn()}
+        onColorPresetChange={vi.fn()}
+        onToggleValues={vi.fn()}
+        onToggleNotifications={vi.fn()}
+        onSignIn={vi.fn()}
+        onSignOut={vi.fn()}
+      />
+    );
+
+    fireEvent.pointerDown(
+      within(container).getByRole("button", { name: "Abrir preferências" })
+    );
+
+    expect(screen.getByRole("menuitem", { name: "Usar modo escuro" })).toBeTruthy();
+    expect(screen.getByRole("menuitem", { name: "Ocultar valores" })).toBeTruthy();
+    expect(screen.getByRole("menuitem", { name: "Ativar notificações" })).toBeTruthy();
   });
 });

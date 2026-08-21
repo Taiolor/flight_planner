@@ -10,6 +10,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { GlobalYearSelector } from "@/components/GlobalYearSelector";
+import { MobileLongPressHint } from "@/components/MobileLongPressHint";
 import {
   BarChart2,
   Bell,
@@ -27,6 +28,7 @@ import {
   MoreHorizontal,
   Palette,
   ShieldCheck,
+  SlidersHorizontal,
   Sparkles,
   Sun,
   Ticket,
@@ -117,22 +119,27 @@ export function HomeHeaderActions({
           <GlobalYearSelector
             className={`${headerButtonClass} min-w-[104px] bg-slate-950/20 text-white hover:bg-white/18`}
           />
-          <Link
-            href="/calendar"
-            aria-label="Calendário"
-            className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white px-0 font-semibold text-slate-900 shadow-sm transition-[transform,background-color] duration-150 hover:bg-slate-100 active:scale-[0.97] focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-slate-800 sm:w-auto sm:px-3"
-          >
-            <CalendarDays className="size-4" aria-hidden="true" />
-            <span className="ml-1.5 hidden whitespace-nowrap sm:inline">Calendário</span>
-          </Link>
-          <Link
-            href="/gestao-passagens"
-            aria-label="Abrir Gestão de Passagens"
-            className={`${iconButtonClass} shrink-0 sm:w-auto sm:px-3`}
-          >
-            <Ticket className="size-4" aria-hidden="true" />
-            <span className="ml-1.5 hidden sm:inline">Gestão</span>
-          </Link>
+          <MobileLongPressHint label="Calendário">
+            <Link
+              href="/calendar"
+              aria-label="Calendário"
+              data-mobile-primary-action="calendar"
+              className="order-first inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white px-0 font-semibold text-slate-900 shadow-sm transition-[transform,background-color] duration-150 hover:bg-slate-100 active:scale-[0.97] focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-slate-800 sm:w-auto sm:px-3"
+            >
+              <CalendarDays className="size-4" aria-hidden="true" />
+              <span className="ml-1.5 hidden whitespace-nowrap sm:inline">Calendário</span>
+            </Link>
+          </MobileLongPressHint>
+          <MobileLongPressHint label="Gestão de Passagens">
+            <Link
+              href="/gestao-passagens"
+              aria-label="Abrir Gestão de Passagens"
+              className={`${iconButtonClass} shrink-0 sm:w-auto sm:px-3`}
+            >
+              <Ticket className="size-4" aria-hidden="true" />
+              <span className="ml-1.5 hidden sm:inline">Gestão</span>
+            </Link>
+          </MobileLongPressHint>
           <Button
             size="sm"
             variant="outline"
@@ -145,6 +152,7 @@ export function HomeHeaderActions({
         </div>
 
         <div className="flex shrink-0 items-center gap-1 sm:gap-2">
+          <MobileLongPressHint label="Mais opções">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
@@ -219,6 +227,7 @@ export function HomeHeaderActions({
               )}
             </DropdownMenuContent>
           </DropdownMenu>
+          </MobileLongPressHint>
 
           {isAuthenticated ? (
             <DropdownMenu>
@@ -243,20 +252,70 @@ export function HomeHeaderActions({
               </DropdownMenuContent>
             </DropdownMenu>
           ) : (
-            <Button
-              size="sm"
-              variant="outline"
-              className={`${iconButtonClass} shrink-0 sm:w-auto sm:px-3`}
-              onClick={onSignIn}
-            >
-              <LogIn className="size-4" aria-hidden="true" />
-              <span className="ml-1.5 hidden sm:inline">Entrar</span>
-            </Button>
+            <MobileLongPressHint label="Entrar">
+              <Button
+                size="sm"
+                variant="outline"
+                className={`${iconButtonClass} shrink-0 sm:w-auto sm:px-3`}
+                onClick={onSignIn}
+              >
+                <LogIn className="size-4" aria-hidden="true" />
+                <span className="ml-1.5 hidden sm:inline">Entrar</span>
+              </Button>
+            </MobileLongPressHint>
           )}
         </div>
       </div>
 
-      <div className="flex w-full flex-nowrap items-center gap-1 sm:gap-2 lg:w-auto lg:justify-end">
+      <div className="flex w-full sm:hidden">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <MobileLongPressHint label="Preferências">
+              <Button
+                size="sm"
+                variant="outline"
+                className={`${iconButtonClass} w-full justify-center`}
+                aria-label="Abrir preferências"
+              >
+                <SlidersHorizontal className="size-4" aria-hidden="true" />
+                <span className="ml-1.5 text-sm">Preferências</span>
+              </Button>
+            </MobileLongPressHint>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className={menuContentClass}>
+            <DropdownMenuItem onSelect={onToggleTheme}>
+              {theme === "dark" ? <Sun className="size-4" /> : <Moon className="size-4" />}
+              {theme === "dark" ? "Usar modo claro" : "Usar modo escuro"}
+            </DropdownMenuItem>
+            <DropdownMenuItem onSelect={onToggleValues}>
+              {hideValues ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+              {hideValues ? "Exibir valores" : "Ocultar valores"}
+            </DropdownMenuItem>
+            {notificationsAvailable && (
+              <DropdownMenuItem
+                disabled={pushLoading || notificationsBlocked}
+                onSelect={onToggleNotifications}
+              >
+                {pushSubscribed ? <BellRing className="size-4" /> : <Bell className="size-4" />}
+                {notificationLabel}
+              </DropdownMenuItem>
+            )}
+            <DropdownMenuSeparator className="bg-white/10" />
+            <DropdownMenuLabel className="px-2 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-slate-400">
+              Cor da interface
+            </DropdownMenuLabel>
+            <DropdownMenuRadioGroup value={colorPreset} onValueChange={onColorPresetChange}>
+              {Object.entries(colorPresetOptions).map(([key, preset]) => (
+                <DropdownMenuRadioItem key={key} value={key}>
+                  {preset.name}
+                </DropdownMenuRadioItem>
+              ))}
+            </DropdownMenuRadioGroup>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+
+      <div className="hidden w-full sm:flex sm:flex-nowrap sm:items-center sm:gap-2 lg:w-auto lg:justify-end">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button
