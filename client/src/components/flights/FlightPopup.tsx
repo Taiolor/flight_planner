@@ -31,6 +31,12 @@ export default function FlightPopup({
   const popupRef = useRef<HTMLDivElement>(null);
   const w = mark.week;
   const isOneway = (w.ticketType ?? "roundtrip") === "oneway";
+  const hasRescheduledFlight = Boolean(
+    w.departureRescheduled || w.returnRescheduled
+  );
+  const hasCancelledFlight = Boolean(
+    w.departureCancelled || w.returnCancelled
+  );
 
   const depTime = extractTime(w.departureFlightDatetime);
   const retTime = extractTime(w.returnFlightDatetime);
@@ -174,12 +180,12 @@ export default function FlightPopup({
                 Somente Ida
               </span>
             )}
-            {(w.departureRescheduled || w.returnRescheduled) && (
+            {hasRescheduledFlight && (
               <span className="text-[10px] bg-red-500 text-white px-2 py-0.5 rounded-full font-semibold flex items-center gap-1">
                 ⚠️ Remarcado
               </span>
             )}
-            {(w.departureCancelled || w.returnCancelled) && (
+            {hasCancelledFlight && (
               <span className="text-[10px] bg-slate-700 text-white px-2 py-0.5 rounded-full font-semibold flex items-center gap-1">
                 Cancelado
               </span>

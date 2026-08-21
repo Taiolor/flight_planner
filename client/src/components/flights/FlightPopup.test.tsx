@@ -44,4 +44,20 @@ describe("FlightPopup", () => {
     expect(view.getByText("2")).toBeTruthy();
     expect(view.queryByText("Volta")).toBeNull();
   });
+
+  it("não exibe zero ao lado da semana quando as flags de status estão desativadas", () => {
+    const mark = makeMark();
+    mark.week.departureRescheduled = 0;
+    mark.week.returnRescheduled = 0;
+    mark.week.departureCancelled = 0;
+    mark.week.returnCancelled = 0;
+
+    const view = render(<FlightPopup mark={mark} onClose={() => {}} />);
+    const header = view.getByText("Semana 26").parentElement;
+
+    expect(view.getByText("Semana 26")).toBeTruthy();
+    expect(header?.textContent).not.toContain("0");
+    expect(view.queryByText("⚠️ Remarcado")).toBeNull();
+    expect(view.queryByText("Cancelado")).toBeNull();
+  });
 });
