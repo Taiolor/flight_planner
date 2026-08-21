@@ -2441,7 +2441,7 @@ export default function Home({ mode = "home" }: HomeProps) {
                 setExpandSummary(!expandSummary);
                 markDashboardLayoutAsCustom();
               }}
-              className="w-full flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 bg-gradient-to-r from-slate-900 via-blue-950 to-slate-900 text-white rounded-3xl hover:from-slate-800 hover:via-blue-900 hover:to-slate-800 transition-colors shadow-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+              className="w-full flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 bg-gradient-to-r from-slate-900 via-[#071a36] to-slate-900 text-white rounded-3xl hover:from-slate-800 hover:via-[#0b2349] hover:to-slate-800 transition-colors shadow-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
               aria-label="Expandir/Recolher Resumo Anual"
               aria-expanded={expandSummary}
               aria-controls="summary-content"
@@ -2458,20 +2458,20 @@ export default function Home({ mode = "home" }: HomeProps) {
             {expandSummary && (
               <Card
                 id="summary-content"
-                className="p-4 sm:p-6 mb-4 sm:mb-8 gradient-modern-animated text-white rounded-b-3xl rounded-t-none relative overflow-hidden shadow-2xl"
+                className="p-4 sm:p-6 mb-4 sm:mb-8 bg-gradient-to-br from-[#071a36] via-[#102f61] to-[#17427e] text-white rounded-b-3xl rounded-t-none relative overflow-hidden shadow-2xl"
               >
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-4 sm:mb-6">
                   <div>
                     <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
                       Resumo Anual {selectedYear}
                     </h2>
-                    <p className="text-blue-200 text-xs sm:text-sm mt-1">
+                    <p className="text-slate-200 text-xs sm:text-sm mt-1">
                       Passagens emitidas — GRU / CGH → NVT
                     </p>
                   </div>
                   <div className="flex flex-wrap gap-3 sm:gap-6">
                     <div className="text-center">
-                      <p className="text-blue-100 text-[10px] sm:text-xs uppercase tracking-wider mb-1">
+                      <p className="text-slate-300 text-[10px] sm:text-xs uppercase tracking-wider mb-1">
                         Bilhetes Emitidos
                       </p>
                       <p className="text-3xl sm:text-4xl font-black text-cyan-300">
@@ -2479,7 +2479,7 @@ export default function Home({ mode = "home" }: HomeProps) {
                       </p>
                     </div>
                     <div className="text-center">
-                      <p className="text-blue-100 text-[10px] sm:text-xs uppercase tracking-wider mb-1">
+                      <p className="text-slate-300 text-[10px] sm:text-xs uppercase tracking-wider mb-1">
                         Total Investido
                       </p>
                       <p className="text-2xl sm:text-4xl font-black text-emerald-200">
@@ -2489,7 +2489,7 @@ export default function Home({ mode = "home" }: HomeProps) {
                       </p>
                     </div>
                     <div className="text-center">
-                      <p className="text-blue-100 text-[10px] sm:text-xs uppercase tracking-wider mb-1">
+                      <p className="text-slate-300 text-[10px] sm:text-xs uppercase tracking-wider mb-1">
                         Média por Viagem
                       </p>
                       <p className="text-2xl sm:text-4xl font-black text-amber-200">
@@ -2531,7 +2531,7 @@ export default function Home({ mode = "home" }: HomeProps) {
                   isAnnualChartVisible
                 ) ? (
                   <div>
-                    <p className="text-blue-100 text-xs uppercase tracking-wider mb-3">
+                    <p className="text-slate-300 text-xs uppercase tracking-wider mb-3">
                       Gasto por Mês (R$)
                     </p>
                     <Suspense fallback={<SkeletonChart />}>
@@ -2546,13 +2546,13 @@ export default function Home({ mode = "home" }: HomeProps) {
                   <button
                     type="button"
                     onClick={() => setIsAnnualChartVisible(true)}
-                    className="w-full flex items-center justify-center h-24 rounded-xl border border-blue-300 border-dashed text-blue-100 hover:bg-white/10 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
+                    className="w-full flex items-center justify-center h-24 rounded-xl border border-white/30 border-dashed text-slate-200 hover:bg-white/10 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
                   >
                     Carregar gráfico mensal
                   </button>
                 ) : (
-                  <div className="flex items-center justify-center h-24 rounded-xl border border-blue-500 border-dashed">
-                    <p className="text-blue-300 text-sm">
+                  <div className="flex items-center justify-center h-24 rounded-xl border border-white/40 border-dashed">
+                    <p className="text-slate-200 text-sm">
                       Marque bilhetes como emitidos e adicione preços para ver o
                       gráfico anual
                     </p>

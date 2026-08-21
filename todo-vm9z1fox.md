@@ -142,6 +142,6 @@
 - [x] Expandir as regressões da paleta azul-marinho para módulos operacionais críticos
 - [x] Substituir explicitamente os acentos azul-brilhante restantes em Admin, Telemetria, Changelog e Home
 - [x] Cobrir variantes azul e módulos restantes com regressões finais de paleta
-- [ ] Substituir explicitamente os acentos azul-brilhante remanescentes em AdminNotifications e Home
-- [ ] Adicionar regressões estruturais para AdminNotifications e blocos restantes da Home
-- [ ] Reexecutar e registrar a auditoria final de acentos azuis dos módulos operacionais
+- [x] Substituir explicitamente os acentos azul-brilhante remanescentes em AdminNotifications e Home
+- [x] Adicionar regressões estruturais para AdminNotifications e blocos restantes da Home
+- [x] Reexecutar e registrar a auditoria final de acentos azuis dos módulos operacionais

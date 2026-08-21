@@ -17,4 +17,11 @@ describe("Home mobile responsiveness", () => {
     expect(source).toContain("flex flex-col gap-2 sm:flex-row");
     expect(source).toContain("max-w-full whitespace-normal");
   });
+
+  it("usa azul-marinho e textos neutros no Resumo Anual", () => {
+    expect(source).toContain("via-[#071a36]");
+    expect(source).toContain("bg-gradient-to-br from-[#071a36] via-[#102f61] to-[#17427e]");
+    expect(source).toContain("text-slate-300 text-[10px] sm:text-xs uppercase");
+    expect(source).not.toContain("border border-blue-300 border-dashed text-blue-100");
+  });
 });

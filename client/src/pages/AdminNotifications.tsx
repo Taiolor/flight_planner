@@ -250,7 +250,7 @@ export default function AdminNotifications() {
         <StandardPageHeader icon={Bell} title="Admin · Notificações" />
         <div className="flex min-h-[calc(100vh-60px)] items-center justify-center">
           <div className="space-y-3 text-center">
-            <div className="mx-auto h-10 w-10 animate-spin rounded-full border-4 border-blue-600 border-t-transparent" />
+            <div className="mx-auto h-10 w-10 animate-spin rounded-full border-4 border-[#102f61] border-t-transparent" />
             <p className="text-sm text-gray-500">Carregando painel...</p>
           </div>
         </div>
@@ -417,7 +417,7 @@ function AdminNotificationsContent() {
         />
           <div className="flex min-h-[calc(100vh-60px)] items-center justify-center px-4">
             <div className="w-full max-w-sm space-y-4 rounded-2xl bg-white p-6 text-center shadow-sm">
-              <div className="mx-auto h-10 w-10 animate-spin rounded-full border-4 border-blue-600 border-t-transparent" />
+              <div className="mx-auto h-10 w-10 animate-spin rounded-full border-4 border-[#102f61] border-t-transparent" />
               <div className="space-y-2 animate-pulse">
                 <div className="mx-auto h-3 w-32 rounded bg-slate-200" />
                 <div className="mx-auto h-3 w-48 rounded bg-slate-100" />
@@ -466,7 +466,7 @@ function AdminNotificationsContent() {
               <Button
                 variant="outline"
                 size="sm"
-                className="gap-2 border-white/40 bg-white/10 text-white hover:bg-white hover:text-blue-700"
+                className="gap-2 border-white/40 bg-white/10 text-white hover:bg-white hover:text-[#0b2349]"
                 aria-label="Abrir mapa de telemetria de uso"
               >
                 <MapPinned className="w-4 h-4" />
@@ -499,7 +499,7 @@ function AdminNotificationsContent() {
               onClick={() => refetch()}
               disabled={isFetching}
               aria-label="Atualizar"
-              className="gap-2 border-white/40 bg-white/10 text-white hover:bg-white hover:text-blue-700"
+              className="gap-2 border-white/40 bg-white/10 text-white hover:bg-white hover:text-[#0b2349]"
             >
               <RefreshCw
                 className={`w-4 h-4 ${isFetching ? "animate-spin" : ""}`}
@@ -678,7 +678,7 @@ function AdminNotificationsContent() {
           <button
             type="button"
             onClick={() => toggleSection("alerts")}
-            className="w-full flex items-start justify-between p-4 bg-white hover:bg-gray-50 transition-colors border border-gray-200 rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+            className="w-full flex items-start justify-between p-4 bg-white hover:bg-gray-50 transition-colors border border-gray-200 rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-[#17427e]"
             aria-expanded={expandedSections.has("alerts")}
             aria-controls="section-alerts"
           >
@@ -688,7 +688,7 @@ function AdminNotificationsContent() {
               </h2>
               <div className="hidden gap-2 text-xs text-gray-400 sm:flex">
                 <span className="flex items-center gap-1">
-                  <span className="w-2 h-2 rounded-full bg-blue-400 inline-block" />{" "}
+                  <span className="w-2 h-2 rounded-full bg-[#17427e] inline-block" />{" "}
                   Pendente
                 </span>
                 <span className="flex items-center gap-1">
@@ -725,8 +725,8 @@ function AdminNotificationsContent() {
                   {/* Pendentes primeiro */}
                   {pendingAlerts.length > 0 && (
                     <>
-                      <div className="px-4 py-2 bg-blue-50">
-                        <p className="text-xs font-semibold text-blue-600 uppercase tracking-wide">
+                      <div className="px-4 py-2 bg-[#f4f7fb]">
+                        <p className="text-xs font-semibold text-[#102f61] uppercase tracking-wide">
                           Aguardando envio ({pendingAlerts.length})
                         </p>
                       </div>
@@ -774,7 +774,7 @@ function AdminNotificationsContent() {
           <button
             type="button"
             onClick={() => toggleSection("devices")}
-            className="w-full flex items-center justify-between p-4 bg-white hover:bg-gray-50 transition-colors border border-gray-200 rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+            className="w-full flex items-center justify-between p-4 bg-white hover:bg-gray-50 transition-colors border border-gray-200 rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-[#17427e]"
             aria-expanded={expandedSections.has("devices")}
             aria-controls="section-devices"
           >
@@ -832,7 +832,7 @@ function AdminNotificationsContent() {
             <button
               type="button"
               onClick={() => toggleSection("local-timeline")}
-              className="min-w-0 flex flex-1 items-center justify-between gap-3 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded-sm"
+              className="min-w-0 flex flex-1 items-center justify-between gap-3 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-[#17427e] rounded-sm"
               aria-expanded={expandedSections.has("local-timeline")}
               aria-controls="section-local-timeline"
             >
@@ -946,7 +946,7 @@ function AdminNotificationsContent() {
             <button
               type="button"
               onClick={() => toggleSection("history")}
-              className="min-w-0 flex flex-1 items-center justify-between gap-3 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded-sm"
+              className="min-w-0 flex flex-1 items-center justify-between gap-3 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-[#17427e] rounded-sm"
               aria-expanded={expandedSections.has("history")}
               aria-controls="section-history"
             >
@@ -1094,7 +1094,7 @@ function AdminNotificationsContent() {
                 sendTestMutation.isPending ||
                 (data?.totalSubscriptions ?? 0) === 0
               }
-              className="w-full gap-2 bg-blue-600 hover:bg-blue-700 sm:w-auto"
+              className="w-full gap-2 bg-[#102f61] hover:bg-[#0b2349] sm:w-auto"
             >
               {sendTestMutation.isPending ? (
                 <>
@@ -1466,7 +1466,7 @@ function TicketNotificationEmailsSection({
 
       {/* Formulário para enviar e-mail de teste */}
       {showTestForm && (
-        <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
+        <div className="bg-[#f4f7fb] rounded-lg p-4 border border-[#c8d6e9]">
           <h3 className="font-medium text-gray-800 mb-3 text-sm">
             Enviar E-mail de Teste
           </h3>
@@ -1482,13 +1482,13 @@ function TicketNotificationEmailsSection({
                 aria-label="E-mail para envio de teste"
                 value={testEmail}
                 onChange={e => setTestEmail(e.target.value)}
-                className="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-[#17427e]"
                 required
               />
               <Button
                 type="submit"
                 disabled={sendTestEmailMutation.isPending}
-                className="w-full bg-blue-600 text-white gap-2 hover:bg-blue-700 sm:w-auto"
+                className="w-full bg-[#102f61] text-white gap-2 hover:bg-[#0b2349] sm:w-auto"
               >
                 {sendTestEmailMutation.isPending ? (
                   <>
