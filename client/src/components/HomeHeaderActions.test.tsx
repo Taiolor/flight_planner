@@ -24,7 +24,7 @@ describe("HomeHeaderActions", () => {
         pushSubscribed={false}
         pushLoading={false}
         isAuthenticated={false}
-        isAdmin={false}
+        isAdmin
         pdfExport={<button type="button">Exportar PDF</button>}
         onShowChart={onShowChart}
         onToggleTheme={vi.fn()}
@@ -36,7 +36,9 @@ describe("HomeHeaderActions", () => {
       />
     );
 
-    fireEvent.click(screen.getByRole("button", { name: "Gráfico" }));
+    fireEvent.pointerDown(screen.getByRole("button", { name: "Abrir navegação" }));
+    expect(screen.getByRole("menuitem", { name: "Locais de Acesso" })).toBeTruthy();
+    fireEvent.click(screen.getByRole("menuitem", { name: "Gráfico" }));
 
     expect(onShowChart).toHaveBeenCalledOnce();
     expect(screen.getByLabelText("Ações do planejamento")).toBeTruthy();
@@ -60,7 +62,7 @@ describe("HomeHeaderActions", () => {
     );
 
     expect(source).toContain("flex w-full flex-nowrap items-center gap-1 sm:gap-2");
-    expect(source).toContain("hidden h-10 px-3 sm:inline-flex");
+    expect(source).toContain("<DropdownMenuItem onSelect={onShowChart}>");
     expect(source).toContain("h-10 w-10 shrink-0");
     expect(source).toContain("inline-flex h-10 w-10 shrink-0 items-center justify-center whitespace-nowrap");
     expect(source).toContain("sm:min-w-[6.75rem]");
@@ -105,7 +107,7 @@ describe("HomeHeaderActions", () => {
     expect(mobileLines[0]?.className).toContain("flex-nowrap");
     expect(mobileLines[1]?.className).toContain("sm:hidden");
     expect(scope.getByRole("link", { name: "Calendário" }).className).toContain("h-10 w-10");
-    expect(scope.getByRole("button", { name: "Gráfico" }).className).toContain("hidden h-10");
+    expect(scope.queryByRole("button", { name: "Gráfico" })).toBeNull();
     expect(scope.getByRole("button", { name: "Abrir preferências" }).className).toContain("w-full");
   });
 

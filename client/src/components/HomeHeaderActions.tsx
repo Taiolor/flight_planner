@@ -149,15 +149,6 @@ export function HomeHeaderActions({
               <span className="ml-1.5 hidden whitespace-nowrap sm:inline">{mobilePrimaryAction === "calendar" ? "Gestão" : "Calendário"}</span>
             </Link>
           </MobileLongPressHint>
-          <Button
-            size="sm"
-            variant="outline"
-            className={`${headerButtonClass} hidden h-10 px-3 sm:inline-flex`}
-            onClick={onShowChart}
-          >
-            <TrendingUp className="size-4" aria-hidden="true" />
-            <span className="ml-1.5 hidden sm:inline">Gráfico</span>
-          </Button>
         </div>
 
         <div className="flex shrink-0 items-center gap-1 sm:gap-2">
@@ -187,6 +178,9 @@ export function HomeHeaderActions({
                 <Link href="/gestao-passagens">
                   <span className="flex items-center gap-2"><Ticket className="size-4 text-blue-300" />Gestão de Passagens</span>
                 </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem onSelect={onShowChart}>
+                <TrendingUp className="size-4 text-sky-300" />Gráfico
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
                 <Link href="/cotacoes">
@@ -224,7 +218,7 @@ export function HomeHeaderActions({
                 <>
                   <DropdownMenuItem asChild>
                     <Link href="/admin/telemetria">
-                      <span className="flex items-center gap-2"><MapPinned className="size-4 text-blue-300" />Locais consentidos</span>
+                      <span className="flex items-center gap-2"><MapPinned className="size-4 text-blue-300" />Locais de Acesso</span>
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>

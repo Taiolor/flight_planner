@@ -59,5 +59,27 @@ describe("FlightPopup", () => {
     expect(header?.textContent).not.toContain("0");
     expect(view.queryByText("⚠️ Remarcado")).toBeNull();
     expect(view.queryByText("Cancelado")).toBeNull();
+    expect(view.queryByText("Status")).toBeNull();
+  });
+
+  it("não exibe zero no trecho adicional com flags numéricas desativadas", () => {
+    const mark = makeMark();
+    mark.additionalFlights = [
+      {
+        id: 1,
+        weekNumber: 26,
+        direction: "departure",
+        airline: "azul",
+        cancelled: 0,
+        rescheduled: 0,
+      },
+    ];
+
+    const view = render(<FlightPopup mark={mark} onClose={() => {}} />);
+    const additionalPanel = view.getByText("Trechos adicionais").parentElement?.parentElement;
+
+    expect(additionalPanel?.textContent).not.toContain("0");
+    expect(view.queryByText("Remarcado")).toBeNull();
+    expect(view.queryByText("Cancelado")).toBeNull();
   });
 });

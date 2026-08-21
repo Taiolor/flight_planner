@@ -37,6 +37,12 @@ export default function FlightPopup({
   const hasCancelledFlight = Boolean(
     w.departureCancelled || w.returnCancelled
   );
+  const hasDepartureStatus = Boolean(
+    w.departureRescheduled || w.departureCancelled
+  );
+  const hasReturnStatus = Boolean(
+    w.returnRescheduled || w.returnCancelled
+  );
 
   const depTime = extractTime(w.departureFlightDatetime);
   const retTime = extractTime(w.returnFlightDatetime);
@@ -254,7 +260,7 @@ export default function FlightPopup({
                   {w.departureTerminal || "—"}
                 </span>
               </div>
-              {(w.departureRescheduled || w.departureCancelled) && (
+              {hasDepartureStatus && (
                 <div>
                   <span className="text-[9px] font-semibold text-blue-400 uppercase tracking-wide block">
                     Status
@@ -342,7 +348,7 @@ export default function FlightPopup({
                   {w.returnTerminal || "—"}
                 </span>
               </div>
-              {(w.returnRescheduled || w.returnCancelled) && (
+              {hasReturnStatus && (
                 <div>
                   <span className="text-[9px] font-semibold text-orange-400 uppercase tracking-wide block">
                     Status
@@ -389,7 +395,7 @@ export default function FlightPopup({
                   <div key={`${flight.id}-${flight.direction}`} className="px-3 py-2 text-xs text-slate-700">
                     <div className="flex items-center justify-between gap-2">
                       <span className="font-bold text-violet-800">{flight.direction === "departure" ? "Ida" : "Volta"} · {flight.airline || "Companhia"}</span>
-                      {(flight.cancelled || flight.rescheduled) && <span className={`rounded-full px-1.5 py-0.5 text-[10px] font-bold ${flight.cancelled ? "bg-rose-100 text-rose-700" : "bg-amber-100 text-amber-700"}`}>{flight.cancelled ? "Cancelado" : "Remarcado"}</span>}
+                      {Boolean(flight.cancelled || flight.rescheduled) && <span className={`rounded-full px-1.5 py-0.5 text-[10px] font-bold ${flight.cancelled ? "bg-rose-100 text-rose-700" : "bg-amber-100 text-amber-700"}`}>{flight.cancelled ? "Cancelado" : "Remarcado"}</span>}
                     </div>
                     <div className="mt-0.5 text-[11px] text-slate-500">{flight.flightDatetime?.replace("T", " ") || "Data a confirmar"} · {flight.airport || "Aeroporto"} · {flight.flightNumber || "Voo a confirmar"}{flight.terminal ? ` · Terminal ${flight.terminal}` : ""}</div>
                     {flight.locator && <div className="mt-0.5 font-mono text-[11px] font-bold tracking-wider text-slate-600">{flight.locator}</div>}

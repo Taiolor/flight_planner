@@ -125,3 +125,6 @@
 - [x] Transformar a imagem do logo Smart Fly no cabeçalho em um link acessível para a Home
 - [x] Identificar a origem do número exibido ao lado da semana no detalhamento do Calendário
 - [x] Corrigir as flags numéricas no cabeçalho do detalhe de bilhete para remover o zero indevido
+- [x] Auditar outras renderizações que podem exibir flags numéricas desativadas
+- [x] Mover o atalho Gráfico do cabeçalho para o menu suspenso de navegação
+- [x] Renomear o atalho administrativo Locais consentidos para Locais de Acesso
