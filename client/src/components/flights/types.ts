@@ -13,6 +13,8 @@ export type WeekRow = {
   returnLocator?: string | null;
   departureFlightNumber?: string | null;
   returnFlightNumber?: string | null;
+  departureTerminal?: string | null;
+  returnTerminal?: string | null;
   ticketType?: string | null;
   isDeleted?: number | boolean;
   departureRescheduled?: number;
@@ -30,6 +32,7 @@ export type AdditionalCalendarFlight = {
   flightDatetime?: string | null;
   flightNumber?: string | null;
   locator?: string | null;
+  terminal?: string | null;
   rescheduled?: number | boolean | null;
   cancelled?: number | boolean | null;
 };

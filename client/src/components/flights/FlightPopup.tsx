@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import React, { useEffect, useRef } from "react";
 import {
   Plane,
   X,
@@ -83,6 +83,7 @@ export default function FlightPopup({
           `Companhia: ${depAirlineName}`,
           w.departureFlightNumber ? `Voo: ${w.departureFlightNumber}` : "",
           w.departureLocator ? `Localizador: ${w.departureLocator}` : "",
+          w.departureTerminal ? `Terminal: ${w.departureTerminal}` : "",
           `Rota: ${depAirport} → ${retAirport}`,
         ]
           .filter(Boolean)
@@ -104,6 +105,7 @@ export default function FlightPopup({
             `Companhia: ${retAirlineName}`,
             w.returnFlightNumber ? `Voo: ${w.returnFlightNumber}` : "",
             w.returnLocator ? `Localizador: ${w.returnLocator}` : "",
+            w.returnTerminal ? `Terminal: ${w.returnTerminal}` : "",
             `Rota: ${retAirport} → ${depAirport}`,
           ]
             .filter(Boolean)
@@ -238,6 +240,14 @@ export default function FlightPopup({
                   {w.departureFlightNumber || "—"}
                 </span>
               </div>
+              <div>
+                <span className="text-[9px] font-semibold text-blue-400 uppercase tracking-wide block">
+                  Terminal
+                </span>
+                <span className="text-slate-700 font-medium">
+                  {w.departureTerminal || "—"}
+                </span>
+              </div>
               {(w.departureRescheduled || w.departureCancelled) && (
                 <div>
                   <span className="text-[9px] font-semibold text-blue-400 uppercase tracking-wide block">
@@ -318,6 +328,14 @@ export default function FlightPopup({
                   {w.returnFlightNumber || "—"}
                 </span>
               </div>
+              <div>
+                <span className="text-[9px] font-semibold text-orange-400 uppercase tracking-wide block">
+                  Terminal
+                </span>
+                <span className="text-slate-700 font-medium">
+                  {w.returnTerminal || "—"}
+                </span>
+              </div>
               {(w.returnRescheduled || w.returnCancelled) && (
                 <div>
                   <span className="text-[9px] font-semibold text-orange-400 uppercase tracking-wide block">
@@ -367,7 +385,7 @@ export default function FlightPopup({
                       <span className="font-bold text-violet-800">{flight.direction === "departure" ? "Ida" : "Volta"} · {flight.airline || "Companhia"}</span>
                       {(flight.cancelled || flight.rescheduled) && <span className={`rounded-full px-1.5 py-0.5 text-[10px] font-bold ${flight.cancelled ? "bg-rose-100 text-rose-700" : "bg-amber-100 text-amber-700"}`}>{flight.cancelled ? "Cancelado" : "Remarcado"}</span>}
                     </div>
-                    <div className="mt-0.5 text-[11px] text-slate-500">{flight.flightDatetime?.replace("T", " ") || "Data a confirmar"} · {flight.airport || "Aeroporto"} · {flight.flightNumber || "Voo a confirmar"}</div>
+                    <div className="mt-0.5 text-[11px] text-slate-500">{flight.flightDatetime?.replace("T", " ") || "Data a confirmar"} · {flight.airport || "Aeroporto"} · {flight.flightNumber || "Voo a confirmar"}{flight.terminal ? ` · Terminal ${flight.terminal}` : ""}</div>
                     {flight.locator && <div className="mt-0.5 font-mono text-[11px] font-bold tracking-wider text-slate-600">{flight.locator}</div>}
                   </div>
                 ))}

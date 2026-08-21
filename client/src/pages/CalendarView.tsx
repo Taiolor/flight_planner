@@ -357,6 +357,7 @@ export default function CalendarView() {
         airport: string | null;
         flightNumber: string | null;
         locator: string | null;
+        terminal: string | null;
         rescheduled: number;
         cancelled: number;
       }> = [
@@ -367,6 +368,7 @@ export default function CalendarView() {
           airport: flight.departureAirport,
           flightNumber: flight.departureFlightNumber,
           locator: flight.departureLocator,
+          terminal: flight.departureTerminal,
           rescheduled: flight.departureRescheduled,
           cancelled: flight.departureCancelled,
         },
@@ -377,6 +379,7 @@ export default function CalendarView() {
           airport: flight.returnAirport,
           flightNumber: flight.returnFlightNumber,
           locator: flight.returnLocator,
+          terminal: flight.returnTerminal,
           rescheduled: flight.returnRescheduled,
           cancelled: flight.returnCancelled,
         },
@@ -398,6 +401,7 @@ export default function CalendarView() {
           flightDatetime: leg.datetime,
           flightNumber: leg.flightNumber,
           locator: leg.locator,
+          terminal: leg.terminal,
           rescheduled: leg.rescheduled,
           cancelled: leg.cancelled,
         };

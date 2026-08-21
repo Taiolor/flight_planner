@@ -32,4 +32,9 @@ describe("frame Gestão de Passagens da Home", () => {
     expect(source).toContain('animationFillMode: "both"');
     expect(source).toContain("motion-reduce:animate-none");
   });
+
+  it("exibe os terminais já salvos no resumo de cada bilhete emitido", () => {
+    expect(source).toContain("Terminal ida:");
+    expect(source).toContain("Terminal volta:");
+  });
 });

@@ -3309,6 +3309,24 @@ export default function Home({ mode = "home" }: HomeProps) {
                                             Bilhete Emitido
                                           </span>
                                         ) : null}
+                                        {week.isTicketIssued &&
+                                        (week.departureTerminal ||
+                                          ((week.ticketType ?? "roundtrip") !==
+                                            "oneway" &&
+                                            week.returnTerminal)) ? (
+                                          <span
+                                            className="text-xs bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200 px-2 py-1 rounded flex flex-wrap items-center gap-x-2 gap-y-0.5"
+                                            aria-label="Terminais do bilhete"
+                                          >
+                                            {week.departureTerminal ? (
+                                              <span>Terminal ida: {week.departureTerminal}</span>
+                                            ) : null}
+                                            {(week.ticketType ?? "roundtrip") !==
+                                              "oneway" && week.returnTerminal ? (
+                                              <span>Terminal volta: {week.returnTerminal}</span>
+                                            ) : null}
+                                          </span>
+                                        ) : null}
                                       </div>
                                       {/* Datas editáveis inline com dia da semana */}
                                       {(() => {
