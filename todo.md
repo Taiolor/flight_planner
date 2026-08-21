@@ -813,6 +813,8 @@
 - [x] Adicionar hover suave e tooltip explicativo ao logo Smart Fly
 - [x] Exibir confirmação visual acessível ao salvar dados de bilhete por semana
 - [x] Corrigir marcação indevida no Calendário para o bilhete somente ida da Semana 42
+- [x] Eliminar marcação residual de passagem emitida em 13/12/2026 no Calendário
+- [x] Exibir a data efetiva do bilhete no popup, compartilhamento e agenda do Calendário
 
 ## Processo reutilizável
 

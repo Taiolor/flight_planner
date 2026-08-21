@@ -20,6 +20,7 @@ import {
 } from "@/lib/calendarHelper";
 import { WeekRow, DayMark } from "./types";
 import { extractTime, toIsoDate } from "@/lib/utils";
+import { getCalendarIssuedLegDates } from "@/lib/calendarIssuedLegDates";
 
 export default function FlightPopup({
   mark,
@@ -46,8 +47,16 @@ export default function FlightPopup({
 
   const depTime = extractTime(w.departureFlightDatetime);
   const retTime = extractTime(w.returnFlightDatetime);
-  const depIsoDate = toIsoDate(w.departureDate);
-  const retIsoDate = toIsoDate(w.returnDate);
+  const { departureDate: effectiveDepartureDate, returnDate: effectiveReturnDate } =
+    getCalendarIssuedLegDates(w);
+  const depIsoDate = toIsoDate(effectiveDepartureDate);
+  const retIsoDate = effectiveReturnDate ? toIsoDate(effectiveReturnDate) : "";
+  const depDisplayDate = depIsoDate
+    ? depIsoDate.split("-").reverse().join("/")
+    : "—";
+  const retDisplayDate = retIsoDate
+    ? retIsoDate.split("-").reverse().join("/")
+    : "—";
 
   const depAirlineName =
     airlineNames[(w.departureAirline ?? "").toLowerCase()] ??
@@ -225,7 +234,7 @@ export default function FlightPopup({
                   Data
                 </span>
                 <span className="text-slate-700 font-medium">
-                  {w.departureDate || "—"}
+                  {depDisplayDate}
                 </span>
               </div>
               <div>
@@ -313,7 +322,7 @@ export default function FlightPopup({
                     Data
                   </span>
                   <span className="text-slate-700 font-medium">
-                    {w.returnDate || "—"}
+                    {retDisplayDate}
                   </span>
                 </div>
                 <div>

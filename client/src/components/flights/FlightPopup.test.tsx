@@ -45,6 +45,19 @@ describe("FlightPopup", () => {
     expect(view.queryByText("Volta")).toBeNull();
   });
 
+  it("exibe a data efetiva de um bilhete somente ida e não a data planejada", () => {
+    const mark = makeMark("oneway");
+    mark.week.weekNumber = 42;
+    mark.week.departureDate = "13/12/2026";
+    mark.week.returnDate = "17/12/2026";
+    mark.week.departureFlightDatetime = "2026-12-17T19:30";
+
+    const view = render(<FlightPopup mark={mark} onClose={() => {}} />);
+
+    expect(view.getByText("17/12/2026")).toBeTruthy();
+    expect(view.queryByText("13/12/2026")).toBeNull();
+  });
+
   it("não exibe zero ao lado da semana quando as flags de status estão desativadas", () => {
     const mark = makeMark();
     mark.week.departureRescheduled = 0;
