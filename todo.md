@@ -811,6 +811,7 @@
 - [x] Exibir o Terminal salvo na Gestão de Passagens e no detalhe de bilhetes do Calendário
 - [x] Corrigir a hidratação dos campos de Terminal após salvar na Gestão de Passagens
 - [x] Adicionar hover suave e tooltip explicativo ao logo Smart Fly
+- [x] Exibir confirmação visual acessível ao salvar dados de bilhete por semana
 
 ## Processo reutilizável
 

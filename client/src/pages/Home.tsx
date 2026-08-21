@@ -703,6 +703,30 @@ export default function Home({ mode = "home" }: HomeProps) {
   const [savingTicket, setSavingTicket] = useState<{
     [weekNumber: number]: boolean;
   }>({});
+  const [savedTicket, setSavedTicket] = useState<{
+    [weekNumber: number]: boolean;
+  }>({});
+  const ticketSaveFeedbackTimeouts = useRef<
+    Record<number, ReturnType<typeof setTimeout> | undefined>
+  >({});
+  const showTicketSaveSuccess = useCallback((weekNumber: number) => {
+    const previousTimeout = ticketSaveFeedbackTimeouts.current[weekNumber];
+    if (previousTimeout) clearTimeout(previousTimeout);
+
+    setSavedTicket(prev => ({ ...prev, [weekNumber]: true }));
+    ticketSaveFeedbackTimeouts.current[weekNumber] = setTimeout(() => {
+      setSavedTicket(prev => ({ ...prev, [weekNumber]: false }));
+      delete ticketSaveFeedbackTimeouts.current[weekNumber];
+    }, 4_500);
+  }, []);
+  useEffect(
+    () => () => {
+      Object.values(ticketSaveFeedbackTimeouts.current).forEach(timeout => {
+        if (timeout) clearTimeout(timeout);
+      });
+    },
+    []
+  );
   // Rastreia quais campos de número do voo foram preenchidos por sugestão automática
   // (e ainda não foram editados manualmente pelo usuário)
   const [suggestedDepartureFlightNumber, setSuggestedDepartureFlightNumber] =
@@ -5561,6 +5585,10 @@ export default function Home({ mode = "home" }: HomeProps) {
                                               ...prev,
                                               [week.weekNumber]: true,
                                             }));
+                                            setSavedTicket(prev => ({
+                                              ...prev,
+                                              [week.weekNumber]: false,
+                                            }));
                                             updateStatusMutation.mutate(
                                               {
                                                 year: selectedYear,
@@ -5640,6 +5668,9 @@ export default function Home({ mode = "home" }: HomeProps) {
                                                   toast.success(
                                                     "Dados do bilhete salvos com sucesso!"
                                                   );
+                                                  showTicketSaveSuccess(
+                                                    week.weekNumber
+                                                  );
                                                 },
                                                 onError: () =>
                                                   toast.error(
@@ -5660,11 +5691,28 @@ export default function Home({ mode = "home" }: HomeProps) {
                                               Salvando...
                                             </>
                                           ) : (
-                                            <>
-                                              &#10003; Salvar Dados do Bilhete
-                                            </>
+                                            savedTicket[week.weekNumber] ? (
+                                              <>
+                                                <CheckCircle2 className="w-4 h-4 text-emerald-300" />
+                                                Dados salvos
+                                              </>
+                                            ) : (
+                                              <>
+                                                &#10003; Salvar Dados do Bilhete
+                                              </>
+                                            )
                                           )}
                                         </button>
+                                        {savedTicket[week.weekNumber] && (
+                                          <div
+                                            role="status"
+                                            aria-live="polite"
+                                            className="flex items-center justify-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-semibold text-emerald-800 animate-in fade-in slide-in-from-top-1 duration-200 motion-reduce:animate-none dark:border-emerald-800/70 dark:bg-emerald-950/40 dark:text-emerald-200"
+                                          >
+                                            <CheckCircle2 className="h-4 w-4 shrink-0" />
+                                            Alterações da semana {week.weekNumber} registradas.
+                                          </div>
+                                        )}
 
                                         {/* Botões de Agenda — aparecem apenas quando há data salva */}
                                         {(week.departureFlightDatetime ||
