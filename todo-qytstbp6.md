@@ -164,3 +164,6 @@
 - [x] Criar regressão para garantir que a flag de controles não oculte resumo, calendário e semanas disponíveis.
 - [x] Validar a restauração no navegador, na API e na suíte de testes antes do checkpoint.
 - [x] Salvar checkpoint da correção de visibilidade de dados da Home após sincronização.
+- [x] Mapear o consumo atual de tokens, contexto e transcrição de áudio no Fly.IA.
+- [x] Comparar otimizações de tokens e áudio em tempo real, considerando custo, qualidade e privacidade.
+- [x] Apresentar recomendações priorizadas para reduzir custos operacionais do Fly.IA.
