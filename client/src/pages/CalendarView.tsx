@@ -3,6 +3,7 @@ import BrazilWorldCupPanel from "@/components/BrazilWorldCupPanel";
 import { brazilMatchByDate } from "@/lib/worldCup2026";
 import { Link, useLocation } from "wouter";
 import { extractTime, toIsoDate } from "@/lib/utils";
+import { getCalendarIssuedLegDates } from "@/lib/calendarIssuedLegDates";
 import { trpc } from "@/lib/trpc";
 import { ContentReveal } from "@/components/ContentReveal";
 import { CalendarLoadingSkeleton } from "@/components/CalendarLoadingSkeleton";
@@ -303,9 +304,9 @@ export default function CalendarView() {
         continue;
       }
 
-      const depDate = parseDate(week.departureDate);
-      const retDate = parseDate(week.returnDate);
-      const isOneway = (week.ticketType ?? "roundtrip") === "oneway";
+      const { departureDate, returnDate } = getCalendarIssuedLegDates(week);
+      const depDate = parseDate(departureDate);
+      const retDate = returnDate ? parseDate(returnDate) : null;
 
       if (depDate) {
         if (depDate.getFullYear() === year) {
@@ -333,11 +334,9 @@ export default function CalendarView() {
         const isPast = retDate < today;
         if (!map[key])
           map[key] = { departure: false, return: false, isPast, week };
-        if (!isOneway) {
-          map[key].return = true;
-          map[key].returnRescheduled = week.returnRescheduled === 1;
-          map[key].returnCancelled = week.returnCancelled === 1;
-        }
+        map[key].return = true;
+        map[key].returnRescheduled = week.returnRescheduled === 1;
+        map[key].returnCancelled = week.returnCancelled === 1;
         if (!map[key].departure) {
           map[key].isPast = isPast;
           map[key].week = week;
