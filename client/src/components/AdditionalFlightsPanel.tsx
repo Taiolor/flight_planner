@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { trpc } from "@/lib/trpc";
+import { formatAirlineDisplayName } from "@/lib/airlinePresentation";
 import { ChevronDown, ChevronUp, Copy, CopyPlus, Loader2, Minus, Pencil, Plane, Plus } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -67,8 +68,8 @@ const toDatetimeValue = (value: string | null) => value?.slice(0, 16) ?? "";
 
 const STANDARD_AIRLINES = [
   { id: "latam", label: "LATAM", logo: "https://d2xsxph8kpxj0f.cloudfront.net/310419663028456038/HQ655wm9a6bck22hJAwYRc/logo-latam_a13bb510.png" },
-  { id: "gol", label: "Gol", logo: "https://d2xsxph8kpxj0f.cloudfront.net/310419663028456038/HQ655wm9a6bck22hJAwYRc/logo-gol_c86ba55a.png" },
-  { id: "azul", label: "Azul", logo: "https://d2xsxph8kpxj0f.cloudfront.net/310419663028456038/HQ655wm9a6bck22hJAwYRc/logo-azul_e89c8b63.png" },
+  { id: "gol", label: "GOL", logo: "https://d2xsxph8kpxj0f.cloudfront.net/310419663028456038/HQ655wm9a6bck22hJAwYRc/logo-gol_c86ba55a.png" },
+  { id: "azul", label: "AZUL", logo: "https://d2xsxph8kpxj0f.cloudfront.net/310419663028456038/HQ655wm9a6bck22hJAwYRc/logo-azul_e89c8b63.png" },
 ] as const;
 
 const AIRPORT_OPTIONS = [
@@ -296,7 +297,7 @@ export function AdditionalFlightsPanel({
             <div className="mb-4 space-y-2">
               {flights.map((flight, index) => (
                 <div key={flight.id} className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2">
-                  <div className="flex min-w-0 items-center gap-2"><Plane className="h-4 w-4 text-violet-600" /><span className="font-bold text-slate-800">Passagem {index + 1}</span><span className={`rounded-full px-1.5 py-0.5 text-[10px] font-bold ${flight.ticketType === "oneway" ? "bg-amber-100 text-amber-800" : "bg-violet-100 text-violet-800"}`}>{flight.ticketType === "oneway" ? "Somente ida" : "Ida e volta"}</span><span className="truncate text-xs text-slate-500">{flight.departureAirport || "—"} → {flight.returnAirport || "—"} · {flight.departureAirline || "Companhia a confirmar"}</span>{formatCents(flight.paidPriceCents) && <span className="rounded bg-emerald-100 px-1.5 py-0.5 text-xs font-bold text-emerald-800">{formatCents(flight.paidPriceCents)}</span>}</div>
+                  <div className="flex min-w-0 items-center gap-2"><Plane className="h-4 w-4 text-violet-600" /><span className="font-bold text-slate-800">Passagem {index + 1}</span><span className={`rounded-full px-1.5 py-0.5 text-[10px] font-bold ${flight.ticketType === "oneway" ? "bg-amber-100 text-amber-800" : "bg-violet-100 text-violet-800"}`}>{flight.ticketType === "oneway" ? "Somente ida" : "Ida e volta"}</span><span className="truncate text-xs text-slate-500">{flight.departureAirport || "—"} → {flight.returnAirport || "—"} · {formatAirlineDisplayName(flight.departureAirline, "COMPANHIA A CONFIRMAR")}</span>{formatCents(flight.paidPriceCents) && <span className="rounded bg-emerald-100 px-1.5 py-0.5 text-xs font-bold text-emerald-800">{formatCents(flight.paidPriceCents)}</span>}</div>
                   <div className="flex gap-1"><Button type="button" size="icon" variant="ghost" onClick={() => beginEdit(flight)} aria-label="Editar passagem adicional" title="Editar passagem"><Pencil className="h-4 w-4" /></Button><Button type="button" size="icon" variant="ghost" disabled={deleteMutation.isPending} onClick={() => setFlightPendingDeletion(flight)} aria-label="Remover passagem adicional" title="Remover passagem"><Minus className="h-4 w-4 text-rose-600" /></Button></div>
                 </div>
               ))}

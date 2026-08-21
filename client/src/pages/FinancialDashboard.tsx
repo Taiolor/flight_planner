@@ -8,6 +8,7 @@ import { useYear } from "@/contexts/YearContext";
 import { GlobalYearSelector } from "@/components/GlobalYearSelector";
 import { FinancialDashboardLoadingSkeleton } from "@/components/FinancialDashboardLoadingSkeleton";
 import { ContentReveal } from "@/components/ContentReveal";
+import { formatAirlineDisplayName } from "@/lib/airlinePresentation";
 import { queryCachePolicies } from "@/lib/queryCache";
 import {
   buildMonthlyBudgetEnvelopes,
@@ -93,9 +94,9 @@ const AIRLINE_COLORS: Record<string, string> = {
 const AIRLINE_LABELS: Record<string, string> = {
   latam: "LATAM",
   gol: "GOL",
-  azul: "Azul",
-  onhappy: "OnHappy",
-  desconhecida: "Outra",
+  azul: "AZUL",
+  onhappy: "ONHAPPY",
+  desconhecida: "OUTRA",
 };
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -112,6 +113,11 @@ function formatBRL(value: number, hidden = false): string {
 
 function formatMiles(value: number): string {
   return new Intl.NumberFormat("pt-BR").format(value) + " pts";
+}
+
+function displayAirline(airline: string | null | undefined): string {
+  const key = airline?.trim().toLowerCase() ?? "";
+  return formatAirlineDisplayName(AIRLINE_LABELS[key] ?? airline);
 }
 
 function formatPct(value: number): string {
@@ -354,7 +360,7 @@ function FinancialDashboardContent() {
     if (!yearSummary?.byAirline) return [];
     return Object.entries(yearSummary.byAirline)
       .map(([airline, data]) => ({
-        name: AIRLINE_LABELS[airline] ?? airline,
+        name: displayAirline(airline),
         airline,
         cashBRL: data.cashBRL,
         miles: data.miles,
@@ -955,7 +961,7 @@ function FinancialDashboardContent() {
                                 AIRLINE_COLORS[w.departureAirline] ?? "#94A3B8",
                             }}
                           >
-                            {AIRLINE_LABELS[w.departureAirline] ?? w.departureAirline}
+                            {displayAirline(w.departureAirline)}
                           </span>
                         )}
                       </div>
@@ -1032,8 +1038,7 @@ function FinancialDashboardContent() {
                                   "#94A3B8",
                               }}
                             >
-                              {AIRLINE_LABELS[w.departureAirline ?? ""] ??
-                                w.departureAirline}
+                              {displayAirline(w.departureAirline)}
                             </span>
                           </td>
                           <td className="py-2.5 px-3 text-right text-orange-600 dark:text-orange-400 font-medium">
@@ -1324,8 +1329,7 @@ function FinancialDashboardContent() {
                             AIRLINE_COLORS[w.departureAirline] ?? "#94A3B8",
                         }}
                       >
-                        {AIRLINE_LABELS[w.departureAirline] ??
-                          w.departureAirline}
+                        {displayAirline(w.departureAirline)}
                       </span>
                     )}
                   </div>
@@ -1348,7 +1352,7 @@ function FinancialDashboardContent() {
                                 AIRLINE_COLORS[w.returnAirline] ?? "#94A3B8",
                             }}
                           >
-                            {AIRLINE_LABELS[w.returnAirline] ?? w.returnAirline}
+                            {displayAirline(w.returnAirline)}
                           </span>
                         )}
                       </>
@@ -1484,8 +1488,7 @@ function FinancialDashboardContent() {
                               AIRLINE_COLORS[w.departureAirline] ?? "#94A3B8",
                           }}
                         >
-                          {AIRLINE_LABELS[w.departureAirline] ??
-                            w.departureAirline}
+                          {displayAirline(w.departureAirline)}
                         </span>
                       ) : (
                         <span className="text-slate-400 text-xs">—</span>
@@ -1500,7 +1503,7 @@ function FinancialDashboardContent() {
                               AIRLINE_COLORS[w.returnAirline] ?? "#94A3B8",
                           }}
                         >
-                          {AIRLINE_LABELS[w.returnAirline] ?? w.returnAirline}
+                          {displayAirline(w.returnAirline)}
                         </span>
                       ) : (
                         <span className="text-slate-400 text-xs">—</span>

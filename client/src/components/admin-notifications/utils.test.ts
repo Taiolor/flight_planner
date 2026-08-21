@@ -4,14 +4,14 @@ import { formatAirline, formatDatetimeBRT } from "./utils";
 describe("formatAirline utility", () => {
   it("returns correct name for known codes (uppercase)", () => {
     expect(formatAirline("LA")).toBe("LATAM");
-    expect(formatAirline("G3")).toBe("Gol");
-    expect(formatAirline("AD")).toBe("Azul");
+    expect(formatAirline("G3")).toBe("GOL");
+    expect(formatAirline("AD")).toBe("AZUL");
   });
 
   it("returns correct name for known codes (lowercase)", () => {
     expect(formatAirline("la")).toBe("LATAM");
-    expect(formatAirline("g3")).toBe("Gol");
-    expect(formatAirline("ad")).toBe("Azul");
+    expect(formatAirline("g3")).toBe("GOL");
+    expect(formatAirline("ad")).toBe("AZUL");
   });
 
   it("returns the original code for unknown codes", () => {

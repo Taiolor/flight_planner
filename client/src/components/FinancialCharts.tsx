@@ -14,6 +14,7 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
+import { formatAirlineDisplayName } from "@/lib/airlinePresentation";
 
 const AIRLINE_COLORS: Record<string, string> = {
   latam: "#E31837",
@@ -141,11 +142,15 @@ export default function FinancialChart(props: FinancialChartProps) {
   }
 
   if (kind === "airlineDistribution") {
+    const airlineData = data.map(entry => ({
+      ...entry,
+      name: formatAirlineDisplayName(entry.name),
+    }));
     return (
       <ResponsiveContainer width="100%" height={260}>
         <PieChart>
-          <Pie data={data} dataKey="cashBRL" nameKey="name" cx="50%" cy="45%" outerRadius={78} label={false}>
-            {data.map(entry => <Cell key={entry.airline} fill={AIRLINE_COLORS[entry.airline] ?? "#94A3B8"} />)}
+          <Pie data={airlineData} dataKey="cashBRL" nameKey="name" cx="50%" cy="45%" outerRadius={78} label={false}>
+            {airlineData.map(entry => <Cell key={entry.airline} fill={AIRLINE_COLORS[entry.airline] ?? "#94A3B8"} />)}
           </Pie>
           <Tooltip formatter={(value: number) => [formatBRL(value, hideValues), "Total"]} contentStyle={tooltipStyle} />
           <Legend verticalAlign="bottom" wrapperStyle={{ fontSize: 11, lineHeight: "20px" }} />
@@ -155,15 +160,19 @@ export default function FinancialChart(props: FinancialChartProps) {
   }
 
   if (kind === "airlineComparison") {
+    const airlineData = data.map(entry => ({
+      ...entry,
+      name: formatAirlineDisplayName(entry.name),
+    }));
     return (
       <ResponsiveContainer width="100%" height={240}>
-        <BarChart data={data} layout="vertical" margin={{ top: 5, right: 8, left: 38, bottom: 5 }}>
+        <BarChart data={airlineData} layout="vertical" margin={{ top: 5, right: 8, left: 38, bottom: 5 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" horizontal={false} />
           <XAxis type="number" tickFormatter={(value: number) => (hideValues ? "R$ ••" : `R$${(value / 1000).toFixed(0)}k`)} tick={{ fontSize: 10 }} />
           <YAxis type="category" dataKey="name" tick={{ fontSize: 10 }} width={38} />
           <Tooltip formatter={(value: number) => [formatBRL(value, hideValues), "Total"]} contentStyle={{ borderRadius: 12 }} />
           <Bar dataKey="cashBRL" radius={[0, 6, 6, 0]} name="Total (R$)">
-            {data.map(entry => <Cell key={entry.airline} fill={AIRLINE_COLORS[entry.airline] ?? "#94A3B8"} />)}
+            {airlineData.map(entry => <Cell key={entry.airline} fill={AIRLINE_COLORS[entry.airline] ?? "#94A3B8"} />)}
           </Bar>
         </BarChart>
       </ResponsiveContainer>

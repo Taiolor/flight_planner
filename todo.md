@@ -816,6 +816,7 @@
 - [x] Eliminar marcação residual de passagem emitida em 13/12/2026 no Calendário
 - [x] Exibir a data efetiva do bilhete no popup, compartilhamento e agenda do Calendário
 - [x] Atualizar o resumo de semanas sem passagens pelas datas efetivas emitidas
+- [x] Exibir nomes de companhias aéreas em caixa alta em toda a interface
 
 ## Processo reutilizável
 

@@ -3,18 +3,18 @@ export const AIRLINE_NAMES: Record<string, string> = {
   la: "LATAM",
   latam: "LATAM",
   LATAM: "LATAM",
-  G3: "Gol",
-  g3: "Gol",
-  gol: "Gol",
-  GOL: "Gol",
-  AD: "Azul",
-  ad: "Azul",
-  azul: "Azul",
-  AZUL: "Azul",
+  G3: "GOL",
+  g3: "GOL",
+  gol: "GOL",
+  GOL: "GOL",
+  AD: "AZUL",
+  ad: "AZUL",
+  azul: "AZUL",
+  AZUL: "AZUL",
 };
 
 export function formatAirline(code: string): string {
-  return AIRLINE_NAMES[code] ?? code;
+  return (AIRLINE_NAMES[code] ?? code).toUpperCase();
 }
 
 export function formatRelativeTime(isoString: string): string {
