@@ -23,11 +23,11 @@ export interface Airline {
 }
 
 export const airlines: Airline[] = [
-  { id: "kayak", name: "Kayak", color: "bg-red-500", icon: "🔍" },
+  { id: "kayak", name: "KAYAK", color: "bg-red-500", icon: "🔍" },
   { id: "latam", name: "LATAM", color: "bg-rose-800", icon: "✈️" },
-  { id: "gol", name: "Gol", color: "bg-yellow-500", icon: "✈️" },
-  { id: "azul", name: "Azul", color: "bg-teal-800", icon: "✈️" },
-  { id: "onhappy", name: "Onhappy", color: "bg-green-600", icon: "😊" },
+  { id: "gol", name: "GOL", color: "bg-yellow-500", icon: "✈️" },
+  { id: "azul", name: "AZUL", color: "bg-teal-800", icon: "✈️" },
+  { id: "onhappy", name: "ONHAPPY", color: "bg-green-600", icon: "😊" },
 ];
 
 // Mapa de cores para ícones SVG das companhias

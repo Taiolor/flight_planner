@@ -200,9 +200,9 @@ export const airportAddresses: Record<string, string> = {
 
 /** Mapa de companhias para nomes completos */
 export const airlineNames: Record<string, string> = {
-  latam: "LATAM Airlines",
-  gol: "Gol Linhas Aéreas",
-  azul: "Azul Linhas Aéreas",
+  latam: "LATAM AIRLINES",
+  gol: "GOL LINHAS AÉREAS",
+  azul: "AZUL LINHAS AÉREAS",
 };
 
 /**

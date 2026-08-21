@@ -10,6 +10,7 @@ import {
   YearRouteLoadingSkeleton,
 } from "@/components/MemoriesLoadingSkeleton";
 import { trpc } from "@/lib/trpc";
+import { formatAirlineDisplayName } from "@/lib/airlinePresentation";
 import { toast } from "sonner";
 import {
   ArrowLeft,
@@ -405,7 +406,7 @@ function MemoryTripCard({
             <div className={`grid h-9 w-9 place-items-center rounded-xl ${segment.status === "completed" ? "bg-emerald-100 text-emerald-700" : segment.status === "future" ? "bg-indigo-100 text-indigo-700" : "bg-slate-200 text-slate-500"}`}>
               {segment.status === "completed" ? <CircleDot className="h-4 w-4" /> : <Plane className="h-4 w-4" />}
             </div>
-            <div className="min-w-0 flex-1"><p className="font-black text-slate-800">{segment.origin} <span className="text-fuchsia-500">→</span> {segment.destination}</p><p className="truncate text-xs text-slate-500">{segment.airline || "Companhia a confirmar"} {segment.flightNumber ? `• ${segment.flightNumber}` : ""}</p></div>
+            <div className="min-w-0 flex-1"><p className="font-black text-slate-800">{segment.origin} <span className="text-fuchsia-500">→</span> {segment.destination}</p><p className="truncate text-xs text-slate-500">{formatAirlineDisplayName(segment.airline, "COMPANHIA A CONFIRMAR")} {segment.flightNumber ? `• ${segment.flightNumber}` : ""}</p></div>
             <span className="text-sm font-black text-slate-700">{segment.distanceKm ? formatKm(segment.distanceKm) : "—"}</span>
           </div>
         ))}

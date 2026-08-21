@@ -2,6 +2,7 @@ import { Badge } from "@/components/ui/badge";
 import { CalendarDays, ChevronRight, Plane, Star, Ticket } from "lucide-react";
 import React from "react";
 import { Link } from "wouter";
+import { formatAirlineDisplayName } from "@/lib/airlinePresentation";
 import type { WeeklyWindowPosition } from "@/lib/weeklyPlanningWindow";
 
 export type WeeklyPlanningItem = {
@@ -128,7 +129,7 @@ export function WeeklyPlanning({ year, items, hideValues, onToggleFavorite = () 
                   <p className="mt-3 text-sm font-medium text-slate-600 dark:text-slate-300">{formatDateRange(item.departureDate, item.returnDate)}</p>
                   <div className="mt-4 flex items-end justify-between gap-3 border-t border-slate-100 pt-3 text-sm dark:border-slate-800">
                     <div className="min-w-0">
-                      <span className="block truncate text-slate-500 dark:text-slate-400">{item.airline || "Companhia a definir"}</span>
+                      <span className="block truncate text-slate-500 dark:text-slate-400">{formatAirlineDisplayName(item.airline, "COMPANHIA A DEFINIR")}</span>
                       <span className="mt-1 flex items-center gap-1 font-semibold text-slate-800 dark:text-slate-100">
                         <Ticket className="size-3.5 text-blue-600 dark:text-blue-300" aria-hidden="true" />
                         {hideValues ? "••••" : item.lowestPrice !== null ? `R$ ${item.lowestPrice.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}` : "Sem cotação"}

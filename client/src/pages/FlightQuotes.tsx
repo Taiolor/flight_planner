@@ -13,6 +13,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { ContentReveal } from "@/components/ContentReveal";
 import { FlightQuotesLoadingSkeleton } from "@/components/FlightQuotesLoadingSkeleton";
+import { formatAirlineDisplayName } from "@/lib/airlinePresentation";
 import {
   Tooltip,
   TooltipContent,
@@ -213,7 +214,7 @@ const QuoteRow = ({
           {/* Exibir companhia legada se não houver dados detalhados */}
           {!hasFlightDetails && quote.airline && (
             <span className="text-xs text-slate-500 dark:text-slate-400 truncate">
-              {quote.airline}
+              {formatAirlineDisplayName(quote.airline)}
             </span>
           )}
         </div>
@@ -295,7 +296,7 @@ const QuoteRow = ({
                     : "text-slate-700 dark:text-slate-200"
                 }`}
               >
-                {quote.outboundAirline}
+                {formatAirlineDisplayName(quote.outboundAirline)}
               </p>
             )}
             {quote.outboundDeparture && (
@@ -344,7 +345,7 @@ const QuoteRow = ({
                     : "text-slate-700 dark:text-slate-200"
                 }`}
               >
-                {quote.returnAirline}
+                {formatAirlineDisplayName(quote.returnAirline)}
               </p>
             )}
             {quote.returnDeparture && (
@@ -775,7 +776,7 @@ const WeekCard = ({
                       id={`outbound-airline-${week.semana}`}
                       placeholder="Ex: LATAM"
                       value={outboundAirline}
-                      onChange={e => setOutboundAirline(e.target.value)}
+                      onChange={e => setOutboundAirline(e.target.value.toUpperCase())}
                       className="h-8 text-xs dark:bg-slate-800"
                     />
                   </div>
@@ -790,7 +791,7 @@ const WeekCard = ({
                       id={`return-airline-${week.semana}`}
                       placeholder="Ex: GOL"
                       value={returnAirline}
-                      onChange={e => setReturnAirline(e.target.value)}
+                      onChange={e => setReturnAirline(e.target.value.toUpperCase())}
                       className="h-8 text-xs dark:bg-slate-800"
                     />
                   </div>
@@ -910,7 +911,7 @@ export default function FlightQuotes() {
   const fetchFromApi = trpc.quotes.fetchFromApi.useMutation({
     onSuccess: data => {
       toast.success(
-        `Preço encontrado: ${data.lowestPriceFormatted}${data.airline ? ` (${data.airline})` : ""}`,
+        `Preço encontrado: ${data.lowestPriceFormatted}${data.airline ? ` (${formatAirlineDisplayName(data.airline)})` : ""}`,
         {
           description: `Requisições usadas: ${data.requestsUsed}/${data.requestsLimit}`,
         }

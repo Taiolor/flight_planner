@@ -29,7 +29,7 @@ describe("buildWhatsAppShareUrl", () => {
 
     expect(decodedText).toContain("🛫 *IDA — GRU → NVT*");
     expect(decodedText).toContain("15/05/2024 às 10:00");
-    expect(decodedText).toContain("LATAM Airlines • Voo LA3045");
+    expect(decodedText).toContain("LATAM AIRLINES • Voo LA3045");
     expect(decodedText).toContain("🔑 Localizador: *ABC123*");
     expect(decodedText).toContain(
       "🔍 Rastrear: https://www.google.com/search?q=LA+flight+3045+from+GRU+to+NVT,+2024-05-15"
@@ -37,7 +37,7 @@ describe("buildWhatsAppShareUrl", () => {
 
     expect(decodedText).toContain("🛬 *VOLTA — NVT → GRU*");
     expect(decodedText).toContain("20/05/2024 às 15:00");
-    expect(decodedText).toContain("Gol Linhas Aéreas • Voo G31234");
+    expect(decodedText).toContain("GOL LINHAS AÉREAS • Voo G31234");
     expect(decodedText).toContain("🔑 Localizador: *XYZ987*");
     expect(decodedText).toContain(
       "🔍 Rastrear: https://www.google.com/search?q=G3+flight+1234+from+NVT+to+GRU,+2024-05-20"
@@ -93,7 +93,7 @@ describe("buildWhatsAppShareUrl", () => {
     );
     expect(decodedText).toContain("🛫 *IDA — GRU → NVT*");
     expect(decodedText).toContain("15/05/2024 às 10:00");
-    expect(decodedText).toContain("LATAM Airlines • Voo LA3045");
+    expect(decodedText).toContain("LATAM AIRLINES • Voo LA3045");
     expect(decodedText).toContain("🔑 Localizador: *ABC123*");
 
     expect(decodedText).toContain("🛬 *VOLTA — NVT → GRU*");
