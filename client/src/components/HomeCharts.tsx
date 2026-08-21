@@ -98,9 +98,9 @@ export function PriceVariationCharts({
   };
   const airlineBars = [
     ["kayak", "Kayak", "#ef4444"],
-    ["latam", "LATAM", "#2563eb"],
+    ["latam", "LATAM", "#9f1239"],
     ["gol", "Gol", "#eab308"],
-    ["azul", "Azul", "#38bdf8"],
+    ["azul", "Azul", "#0f766e"],
     ["onhappy", "Onhappy", "#16a34a"],
   ] as const;
 

@@ -533,7 +533,7 @@ type HomeProps = {
 export default function Home({ mode = "home" }: HomeProps) {
   const isManagementView = mode === "passage-management";
   // Theme state
-  const { theme, toggleTheme, colorPreset, setColorPreset } = useTheme();
+  const { theme, toggleTheme, colorPreset, setColorPreset, navyIntensity, setNavyIntensity } = useTheme();
 
   // ⚡ Bolt Optimization: Hoje ms calculado uma vez por renderização e compartilhado
   // entre as semanas mapeadas. (Não colocar no escopo global devido a problemas de data stale em SPAs)
@@ -2347,6 +2347,7 @@ export default function Home({ mode = "home" }: HomeProps) {
               theme={theme}
               colorPreset={colorPreset}
               colorPresetOptions={COLOR_PRESETS}
+              navyIntensity={navyIntensity}
               hideValues={hideValues}
               pushStatus={pushStatus}
               pushSubscribed={pushSubscribed}
@@ -2379,6 +2380,7 @@ export default function Home({ mode = "home" }: HomeProps) {
               }}
               onToggleTheme={() => toggleTheme?.()}
               onColorPresetChange={value => setColorPreset(value as ColorPreset)}
+              onNavyIntensityChange={setNavyIntensity}
               onToggleValues={toggleHideValues}
               onToggleNotifications={async () => {
                 if (!isAuthenticated) {

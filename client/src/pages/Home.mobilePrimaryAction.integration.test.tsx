@@ -20,6 +20,8 @@ const themeState = {
   toggleTheme: vi.fn(),
   colorPreset: "ocean",
   setColorPreset: vi.fn(),
+  navyIntensity: "standard" as const,
+  setNavyIntensity: vi.fn(),
 };
 const pullToRefreshState = { pullDistance: 0, isRefreshing: false, isPulling: false };
 const pushNotificationState = {

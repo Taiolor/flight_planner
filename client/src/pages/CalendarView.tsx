@@ -473,7 +473,7 @@ export default function CalendarView() {
       )}
 
       {/* Cabeçalho */}
-      <header className="bg-gradient-to-r from-blue-600 via-purple-600 to-cyan-500 text-white px-3 sm:px-4 py-2 sm:py-3 flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3 shadow-lg sticky top-0 z-10">
+      <header className="bg-gradient-to-r from-[#071a36] via-[#102f61] to-[#17427e] text-white px-3 sm:px-4 py-2 sm:py-3 flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3 shadow-lg sticky top-0 z-10">
         <div className="flex items-center gap-2 w-full sm:w-auto">
           <Link href="/">
             <button
@@ -600,14 +600,14 @@ export default function CalendarView() {
             return (
               <div
                 key={monthIdx}
-                className="bg-white rounded-2xl shadow-lg border border-purple-200/30 overflow-hidden hover:shadow-xl transition-shadow"
+                className="bg-white rounded-2xl shadow-lg border border-[#c8d6e9] overflow-hidden hover:shadow-xl transition-shadow"
               >
-                <div className="bg-gradient-to-r from-purple-600 to-cyan-500 px-3 py-2 flex items-center justify-between">
+                <div className="bg-gradient-to-r from-[#0b2349] to-[#17427e] px-3 py-2 flex items-center justify-between">
                   <span className="text-white font-bold text-sm">
                     {monthName}
                   </span>
                   {issuedCount > 0 && (
-                    <span className="flex shrink-0 items-center gap-0.5 bg-cyan-400/20 border border-cyan-300/40 text-cyan-100 text-[9px] font-semibold px-1 py-0.5 rounded-full">
+                    <span className="flex shrink-0 items-center gap-0.5 bg-white/15 border border-white/35 text-white text-[9px] font-semibold px-1 py-0.5 rounded-full">
                       <Plane className="w-2 h-2" />
                       {issuedCount} {issuedCount === 1 ? "voo" : "voos"}
                     </span>

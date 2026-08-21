@@ -487,7 +487,7 @@ function FinancialDashboardContent() {
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
       {/* Header */}
-      <header className="bg-gradient-to-r from-blue-600 via-purple-600 to-cyan-500 text-white px-4 py-3 flex items-center gap-3 flex-wrap shadow-lg sticky top-0 z-10">
+      <header className="bg-gradient-to-r from-[#071a36] via-[#102f61] to-[#17427e] text-white px-4 py-3 flex items-center gap-3 flex-wrap shadow-lg sticky top-0 z-10">
         <Link href="/">
           <button
             aria-label="Voltar para a página inicial"

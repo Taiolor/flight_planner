@@ -549,14 +549,14 @@ function AdminNotificationsContent() {
 
         {/* Próximo alerta */}
         {nextAlert && (
-          <Card className="p-4 sm:p-5 bg-blue-50 border-blue-200">
+          <Card className="p-4 sm:p-5 bg-[#f4f7fb] border-[#c8d6e9]">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center flex-shrink-0">
+                <div className="w-10 h-10 rounded-full bg-[#102f61] flex items-center justify-center flex-shrink-0">
                   <Bell className="w-5 h-5 text-white" />
                 </div>
                 <div>
-                  <p className="text-xs text-blue-600 font-medium uppercase tracking-wide mb-0.5">
+                  <p className="text-xs text-[#102f61] font-medium uppercase tracking-wide mb-0.5">
                     Próximo Alerta
                   </p>
                   <p className="font-semibold text-gray-800">
@@ -575,7 +575,7 @@ function AdminNotificationsContent() {
               </div>
               <div className="flex flex-row items-end justify-between gap-3 sm:flex-col sm:items-end">
                 <div className="text-right">
-                  <p className="text-lg font-bold text-blue-700">
+                  <p className="text-lg font-bold text-[#0b2349]">
                     {formatRelativeTime(nextAlert.alertDatetime)}
                   </p>
                   <p className="text-xs text-gray-500">

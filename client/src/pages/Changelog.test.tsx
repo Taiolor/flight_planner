@@ -1,7 +1,10 @@
+import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { releases } from "./Changelog";
 
 describe("Novidades de agosto de 2026", () => {
+  const source = readFileSync("client/src/pages/Changelog.tsx", "utf8");
+
   it("publica a release v1.8.0 com a evolução recente de Viagens", () => {
     const release = releases.find(item => item.version === "v1.8.0");
 
@@ -37,5 +40,9 @@ describe("Novidades de agosto de 2026", () => {
         "Qualidade, Performance e Segurança",
       ])
     );
+  });
+
+  it("mantém o cabeçalho no gradiente azul-marinho compartilhado", () => {
+    expect(source).toContain("from-[#071a36] via-[#102f61] to-[#17427e]");
   });
 });

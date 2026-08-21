@@ -13,6 +13,7 @@ import { GlobalYearSelector } from "@/components/GlobalYearSelector";
 import { MobileLongPressHint } from "@/components/MobileLongPressHint";
 import { triggerHaptic } from "@/lib/haptics";
 import { getMobilePrimaryActionMeta, type MobilePrimaryAction } from "@/lib/mobileExperience";
+import type { NavyIntensity } from "@/contexts/ThemeContext";
 import {
   BarChart2,
   Bell,
@@ -48,6 +49,7 @@ type HomeHeaderActionsProps = {
   theme: string;
   colorPreset: string;
   colorPresetOptions: Record<string, ColorPresetOption>;
+  navyIntensity?: NavyIntensity;
   hideValues: boolean;
   pushStatus: string;
   pushSubscribed: boolean;
@@ -60,6 +62,7 @@ type HomeHeaderActionsProps = {
   onShowChart: () => void;
   onToggleTheme: () => void;
   onColorPresetChange: (value: string) => void;
+  onNavyIntensityChange?: (intensity: NavyIntensity) => void;
   onToggleValues: () => void;
   onToggleNotifications: () => void;
   onSignIn: () => void;
@@ -86,6 +89,7 @@ export function HomeHeaderActions({
   theme,
   colorPreset,
   colorPresetOptions,
+  navyIntensity = "standard",
   hideValues,
   pushStatus,
   pushSubscribed,
@@ -98,6 +102,7 @@ export function HomeHeaderActions({
   onShowChart,
   onToggleTheme,
   onColorPresetChange,
+  onNavyIntensityChange = () => {},
   onToggleValues,
   onToggleNotifications,
   onSignIn,
@@ -325,6 +330,14 @@ export function HomeHeaderActions({
                 </DropdownMenuRadioItem>
               ))}
             </DropdownMenuRadioGroup>
+            <DropdownMenuSeparator className="bg-white/10" />
+            <DropdownMenuLabel className="px-2 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-slate-400">
+              Intensidade azul-marinho
+            </DropdownMenuLabel>
+            <DropdownMenuRadioGroup value={navyIntensity} onValueChange={value => onNavyIntensityChange(value as NavyIntensity)}>
+              <DropdownMenuRadioItem value="standard">Equilibrado</DropdownMenuRadioItem>
+              <DropdownMenuRadioItem value="intense">Intenso</DropdownMenuRadioItem>
+            </DropdownMenuRadioGroup>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
@@ -357,6 +370,14 @@ export function HomeHeaderActions({
                   {preset.name}
                 </DropdownMenuRadioItem>
               ))}
+            </DropdownMenuRadioGroup>
+            <DropdownMenuSeparator className="bg-white/10" />
+            <DropdownMenuLabel className="px-2 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-slate-400">
+              Intensidade azul-marinho
+            </DropdownMenuLabel>
+            <DropdownMenuRadioGroup value={navyIntensity} onValueChange={value => onNavyIntensityChange(value as NavyIntensity)}>
+              <DropdownMenuRadioItem value="standard">Equilibrado</DropdownMenuRadioItem>
+              <DropdownMenuRadioItem value="intense">Intenso</DropdownMenuRadioItem>
             </DropdownMenuRadioGroup>
           </DropdownMenuContent>
         </DropdownMenu>

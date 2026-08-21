@@ -15,5 +15,6 @@ describe("FlightQuotes mobile responsiveness", () => {
   it("keeps weekly badges compact and prevents the current-week label from overflowing", () => {
     expect(source).toContain("flex shrink-0 items-center gap-1 whitespace-nowrap");
     expect(source).toContain("hidden min-[360px]:inline");
+    expect(source).toContain("from-[#071a36] via-[#102f61] to-[#17427e]");
   });
 });

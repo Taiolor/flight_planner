@@ -146,6 +146,7 @@ describe("HomeHeaderActions", () => {
 
   it("permite escolher a ação prioritária persistida no menu móvel", () => {
     const onMobilePrimaryActionChange = vi.fn();
+    const onNavyIntensityChange = vi.fn();
 
     render(
       <HomeHeaderActions
@@ -163,6 +164,8 @@ describe("HomeHeaderActions", () => {
         onShowChart={vi.fn()}
         onToggleTheme={vi.fn()}
         onColorPresetChange={vi.fn()}
+        navyIntensity="standard"
+        onNavyIntensityChange={onNavyIntensityChange}
         onToggleValues={vi.fn()}
         onToggleNotifications={vi.fn()}
         onSignIn={vi.fn()}
@@ -176,5 +179,10 @@ describe("HomeHeaderActions", () => {
     fireEvent.click(screen.getByRole("menuitemradio", { name: "Gestão de Passagens" }));
 
     expect(onMobilePrimaryActionChange).toHaveBeenCalledWith("passages");
+
+    fireEvent.pointerDown(screen.getByRole("button", { name: "Abrir preferências" }));
+    fireEvent.click(screen.getByRole("menuitemradio", { name: "Intenso" }));
+
+    expect(onNavyIntensityChange).toHaveBeenCalledWith("intense");
   });
 });

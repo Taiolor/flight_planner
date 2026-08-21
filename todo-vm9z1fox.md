@@ -134,3 +134,14 @@
 - [x] Adicionar regressão renderizada que comprove a paleta azul-marinho nos controles e meses da Gestão
 - [x] Auditar os demais blocos da Gestão de Passagens para eliminar acentos azul-brilhante remanescentes
 - [x] Adicionar regressão renderizada que comprove a paleta azul-marinho nos controles e meses da Gestão
+- [x] Estender a paleta azul-marinho elegante aos demais módulos operacionais
+- [x] Criar uma preferência visual persistente de intensidade da paleta azul-marinho
+- [x] Revisar cores de companhias aéreas para preservar identificação sem azuis claros ou intensos
+- [ ] Próxima ação: reduzir o botão Aparência do cabeçalho ao ícone atual, mantendo acessibilidade
+- [x] Auditar e substituir variantes azul-brilhante remanescentes nos módulos operacionais
+- [x] Expandir as regressões da paleta azul-marinho para módulos operacionais críticos
+- [x] Substituir explicitamente os acentos azul-brilhante restantes em Admin, Telemetria, Changelog e Home
+- [x] Cobrir variantes azul e módulos restantes com regressões finais de paleta
+- [ ] Substituir explicitamente os acentos azul-brilhante remanescentes em AdminNotifications e Home
+- [ ] Adicionar regressões estruturais para AdminNotifications e blocos restantes da Home
+- [ ] Reexecutar e registrar a auditoria final de acentos azuis dos módulos operacionais

@@ -15,6 +15,9 @@ describe("Calendar mobile responsiveness", () => {
   it("uses a compact, non-growing monthly flight counter", () => {
     expect(calendarSource).toContain("flex shrink-0 items-center gap-0.5");
     expect(calendarSource).toContain('text-[9px] font-semibold px-1 py-0.5');
+    expect(calendarSource).toContain("from-[#071a36] via-[#102f61] to-[#17427e]");
+    expect(calendarSource).toContain("from-[#0b2349] to-[#17427e]");
+    expect(calendarSource).toContain("bg-white/15 border border-white/35 text-white");
   });
 
   it("keeps long World Cup opponent names visible instead of truncating them", () => {

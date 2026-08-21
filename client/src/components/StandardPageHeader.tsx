@@ -22,7 +22,7 @@ export function StandardPageHeader({
   backLabel = "Voltar para a página inicial",
 }: StandardPageHeaderProps) {
   return (
-    <header className="sticky top-0 z-20 bg-gradient-to-r from-blue-600 via-purple-600 to-cyan-500 text-white shadow-lg">
+    <header className="sticky top-0 z-20 bg-gradient-to-r from-[#071a36] via-[#102f61] to-[#17427e] text-white shadow-lg">
       <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-3 px-4 py-3">
         <Link href={backHref}>
           <button

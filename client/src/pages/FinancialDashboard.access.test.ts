@@ -20,4 +20,8 @@ describe("proteção de acesso do Financeiro", () => {
     expect(source).toContain("{isLoading ? (");
     expect(source).toContain("<FinancialDashboardLoadingSkeleton />");
   });
+
+  it("alinha o cabeçalho do módulo à paleta azul-marinho global", () => {
+    expect(source).toContain("from-[#071a36] via-[#102f61] to-[#17427e]");
+  });
 });

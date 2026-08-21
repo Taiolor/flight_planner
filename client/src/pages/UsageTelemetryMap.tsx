@@ -53,7 +53,7 @@ export default function UsageTelemetryMap() {
       <div className="min-h-screen bg-slate-950 text-white">
         <StandardPageHeader icon={MapPinned} title="Locais · Telemetria" />
         <div className="flex min-h-[calc(100vh-60px)] items-center justify-center">
-          <Loader2 className="h-8 w-8 animate-spin text-blue-400" />
+          <Loader2 className="h-8 w-8 animate-spin text-slate-300" />
         </div>
       </div>
     );
