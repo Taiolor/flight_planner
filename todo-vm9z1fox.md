@@ -128,3 +128,4 @@
 - [x] Auditar outras renderizações que podem exibir flags numéricas desativadas
 - [x] Mover o atalho Gráfico do cabeçalho para o menu suspenso de navegação
 - [x] Renomear o atalho administrativo Locais consentidos para Locais de Acesso
+- [x] Remover a indicação de Terminal do cabeçalho resumido da semana na gestão de bilhetes

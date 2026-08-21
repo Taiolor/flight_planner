@@ -33,7 +33,9 @@ describe("frame Gestão de Passagens da Home", () => {
     expect(source).toContain("motion-reduce:animate-none");
   });
 
-  it("exibe os terminais já salvos no resumo de cada bilhete emitido", () => {
+  it("mantém os terminais do resumo semanal desativados de forma reversível", () => {
+    expect(source).toContain("const SHOW_TERMINALS_IN_WEEK_SUMMARY = false;");
+    expect(source).toContain("SHOW_TERMINALS_IN_WEEK_SUMMARY &&");
     expect(source).toContain("Terminal ida:");
     expect(source).toContain("Terminal volta:");
   });

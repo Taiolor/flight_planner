@@ -180,6 +180,8 @@ const AnnualSpendChart = lazy(() =>
 
 // Mantido para possível reativação futura; desativado por decisão de produto.
 const LAYOUT_CONTROLS_ENABLED = false;
+// Mantido para possível reativação futura; terminais seguem disponíveis no detalhe operacional do bilhete.
+const SHOW_TERMINALS_IN_WEEK_SUMMARY = false;
 const PriceVariationCharts = lazy(() =>
   import("@/components/HomeCharts").then(module => ({
     default: module.PriceVariationCharts,
@@ -3382,7 +3384,8 @@ export default function Home({ mode = "home" }: HomeProps) {
                                             Bilhete Emitido
                                           </span>
                                         ) : null}
-                                        {week.isTicketIssued &&
+                                        {SHOW_TERMINALS_IN_WEEK_SUMMARY &&
+                                        week.isTicketIssued &&
                                         (week.departureTerminal ||
                                           ((week.ticketType ?? "roundtrip") !==
                                             "oneway" &&
