@@ -105,4 +105,18 @@
 - [x] Isolar o cenário de preferências compactas para evitar colisões entre renderizações de teste
 - [x] Encaminhar eventos e referência no componente de dica para permitir o acionamento do menu de preferências
 - [x] Alinhar o teste do menu de preferências ao evento de ponteiro usado pelo gatilho móvel
+- [x] Inspecionar rotas, preferências e padrões móveis existentes
+- [x] Definir navegação inferior com Home, Calendário, Gestão e Cotações; ação prioritária persistente entre Calendário e Gestão
+- [x] Formalizar em helper a arquitetura da barra inferior e a preferência persistente de ação prioritária
+- [x] Atualizar a regressão do cabeçalho para validar a ação prioritária configurável
+- [x] Adicionar barra de navegação inferior para uso diário no mobile
+- [x] Permitir escolher e persistir a ação prioritária do cabeçalho
+- [x] Adicionar feedback háptico com degradação segura para dispositivos sem suporte
+- [x] Cobrir persistência, interação, acessibilidade e responsividade das três evoluções
 - [x] Cobrir interação, acessibilidade e responsividade das três melhorias
+- [x] Adicionar integração da Home para persistência e reidratação da ação prioritária móvel
+- [x] Adicionar regressão responsiva do App e da barra inferior para espaçamento e visibilidade móveis
+- [x] Renderizar a Home real para validar persistência e reidratação da ação prioritária móvel
+- [x] Validar na Home real a alternância do link prioritário entre Calendário e Gestão
+- [x] Corrigir a compatibilidade de JSX da Home exposta pela regressão integrada
+- [x] Corrigir o botão Gestão no cabeçalho móvel para impedir quebra visual entre ícone e rótulo

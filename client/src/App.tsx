@@ -6,6 +6,7 @@ import ErrorBoundary from "./components/ErrorBoundary";
 import FlyIA from "./components/FlyIA";
 import PerformanceTelemetry from "./components/PerformanceTelemetry";
 import UsageTelemetry from "./components/UsageTelemetry";
+import { MobileBottomNavigation } from "./components/MobileBottomNavigation";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import { YearProvider } from "./contexts/YearContext";
 import Home from "./pages/Home";
@@ -102,7 +103,10 @@ function App() {
             <Toaster position="top-right" richColors />
             <PerformanceTelemetry />
             <UsageTelemetry />
-            <Router />
+            <div className="pb-24 sm:pb-0">
+              <Router />
+            </div>
+            <MobileBottomNavigation />
             <FlyIA />
           </TooltipProvider>
         </ThemeProvider>

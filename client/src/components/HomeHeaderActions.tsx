@@ -11,6 +11,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { GlobalYearSelector } from "@/components/GlobalYearSelector";
 import { MobileLongPressHint } from "@/components/MobileLongPressHint";
+import { triggerHaptic } from "@/lib/haptics";
+import { getMobilePrimaryActionMeta, type MobilePrimaryAction } from "@/lib/mobileExperience";
 import {
   BarChart2,
   Bell,
@@ -62,6 +64,8 @@ type HomeHeaderActionsProps = {
   onToggleNotifications: () => void;
   onSignIn: () => void;
   onSignOut: () => void;
+  mobilePrimaryAction?: MobilePrimaryAction;
+  onMobilePrimaryActionChange?: (action: MobilePrimaryAction) => void;
 };
 
 const headerButtonClass =
@@ -98,6 +102,8 @@ export function HomeHeaderActions({
   onToggleNotifications,
   onSignIn,
   onSignOut,
+  mobilePrimaryAction = "calendar",
+  onMobilePrimaryActionChange = () => {},
 }: HomeHeaderActionsProps) {
   const notificationsAvailable = pushStatus !== "unsupported";
   const notificationsBlocked = pushStatus === "denied";
@@ -108,6 +114,7 @@ export function HomeHeaderActions({
       : pushSubscribed
         ? "Desativar notificações"
         : "Ativar notificações";
+  const primaryMeta = getMobilePrimaryActionMeta(mobilePrimaryAction);
 
   return (
     <div
@@ -119,25 +126,27 @@ export function HomeHeaderActions({
           <GlobalYearSelector
             className={`${headerButtonClass} min-w-[104px] bg-slate-950/20 text-white hover:bg-white/18`}
           />
-          <MobileLongPressHint label="Calendário">
+          <MobileLongPressHint label={primaryMeta.label}>
             <Link
-              href="/calendar"
-              aria-label="Calendário"
-              data-mobile-primary-action="calendar"
+              href={primaryMeta.href}
+              aria-label={primaryMeta.label}
+              data-mobile-primary-action={mobilePrimaryAction}
+              onClick={() => triggerHaptic()}
               className="order-first inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white px-0 font-semibold text-slate-900 shadow-sm transition-[transform,background-color] duration-150 hover:bg-slate-100 active:scale-[0.97] focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-slate-800 sm:w-auto sm:px-3"
             >
-              <CalendarDays className="size-4" aria-hidden="true" />
-              <span className="ml-1.5 hidden whitespace-nowrap sm:inline">Calendário</span>
+              {mobilePrimaryAction === "calendar" ? <CalendarDays className="size-4" aria-hidden="true" /> : <Ticket className="size-4" aria-hidden="true" />}
+              <span className="ml-1.5 hidden whitespace-nowrap sm:inline">{mobilePrimaryAction === "calendar" ? "Calendário" : "Gestão"}</span>
             </Link>
           </MobileLongPressHint>
-          <MobileLongPressHint label="Gestão de Passagens">
+          <MobileLongPressHint label={mobilePrimaryAction === "calendar" ? "Gestão de Passagens" : "Calendário"}>
             <Link
-              href="/gestao-passagens"
-              aria-label="Abrir Gestão de Passagens"
-              className={`${iconButtonClass} shrink-0 sm:w-auto sm:px-3`}
+              href={mobilePrimaryAction === "calendar" ? "/gestao-passagens" : "/calendar"}
+              aria-label={mobilePrimaryAction === "calendar" ? "Abrir Gestão de Passagens" : "Calendário"}
+              onClick={() => triggerHaptic()}
+              className={`${headerButtonClass} inline-flex h-10 w-10 shrink-0 items-center justify-center whitespace-nowrap px-0 sm:w-auto sm:min-w-[6.75rem] sm:px-3`}
             >
-              <Ticket className="size-4" aria-hidden="true" />
-              <span className="ml-1.5 hidden sm:inline">Gestão</span>
+              {mobilePrimaryAction === "calendar" ? <Ticket className="size-4" aria-hidden="true" /> : <CalendarDays className="size-4" aria-hidden="true" />}
+              <span className="ml-1.5 hidden whitespace-nowrap sm:inline">{mobilePrimaryAction === "calendar" ? "Gestão" : "Calendário"}</span>
             </Link>
           </MobileLongPressHint>
           <Button
@@ -283,6 +292,17 @@ export function HomeHeaderActions({
             </MobileLongPressHint>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className={menuContentClass}>
+            <DropdownMenuLabel className="px-2 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-slate-400">
+              Ação prioritária
+            </DropdownMenuLabel>
+            <DropdownMenuRadioGroup
+              value={mobilePrimaryAction}
+              onValueChange={value => onMobilePrimaryActionChange(value as MobilePrimaryAction)}
+            >
+              <DropdownMenuRadioItem value="calendar">Calendário</DropdownMenuRadioItem>
+              <DropdownMenuRadioItem value="passages">Gestão de Passagens</DropdownMenuRadioItem>
+            </DropdownMenuRadioGroup>
+            <DropdownMenuSeparator className="bg-white/10" />
             <DropdownMenuItem onSelect={onToggleTheme}>
               {theme === "dark" ? <Sun className="size-4" /> : <Moon className="size-4" />}
               {theme === "dark" ? "Usar modo claro" : "Usar modo escuro"}

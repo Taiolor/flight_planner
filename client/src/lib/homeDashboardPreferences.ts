@@ -1,4 +1,5 @@
 import type { HomeExpandablePanels } from "./homeExpandablePanels";
+import { isMobilePrimaryAction, type MobilePrimaryAction } from "./mobileExperience";
 
 export const HOME_DASHBOARD_PREFERENCES_STORAGE_KEY =
   "viagens.home.dashboard-preferences.v1";
@@ -28,6 +29,7 @@ export type HomeDashboardPreferences = {
   profile: HomeLayoutProfile;
   pinnedPanels: HomePanelId[];
   prioritySets: HomePrioritySet[];
+  mobilePrimaryAction: MobilePrimaryAction;
 };
 
 export const HOME_PANEL_PRIORITY_OPTIONS: ReadonlyArray<{
@@ -45,6 +47,7 @@ export const DEFAULT_HOME_DASHBOARD_PREFERENCES: HomeDashboardPreferences = {
   profile: "complete",
   pinnedPanels: [],
   prioritySets: [],
+  mobilePrimaryAction: "calendar",
 };
 
 const panelIds = new Set<HomePanelId>(
@@ -74,8 +77,11 @@ export function readHomeDashboardPreferences(
           .filter((set): set is HomePrioritySet => Boolean(set))
           .slice(0, 8)
       : [];
+    const mobilePrimaryAction = isMobilePrimaryAction(parsed.mobilePrimaryAction)
+      ? parsed.mobilePrimaryAction
+      : "calendar";
 
-    return { profile, pinnedPanels, prioritySets };
+    return { profile, pinnedPanels, prioritySets, mobilePrimaryAction };
   } catch {
     return DEFAULT_HOME_DASHBOARD_PREFERENCES;
   }

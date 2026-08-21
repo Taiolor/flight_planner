@@ -1,4 +1,4 @@
-import {
+import React, {
   lazy,
   Suspense,
   useState,
@@ -2322,9 +2322,13 @@ export default function Home({ mode = "home" }: HomeProps) {
                   }
                 }
               }}
-              onSignIn={() => setShowLoginModal(true)}
-              onSignOut={handleLogout}
-            />
+          onSignIn={() => setShowLoginModal(true)}
+          onSignOut={handleLogout}
+          mobilePrimaryAction={homeDashboardPreferences.mobilePrimaryAction}
+          onMobilePrimaryActionChange={mobilePrimaryAction =>
+            persistDashboardPreferences({ ...homeDashboardPreferences, mobilePrimaryAction })
+          }
+        />
           </div>
         </div>
       </header>

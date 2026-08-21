@@ -27,6 +27,7 @@ describe("preferências de layout da Home", () => {
       profile: "focus",
       pinnedPanels: ["summary", "priceVariation"],
       prioritySets: [],
+      mobilePrimaryAction: "calendar",
     });
   });
 
@@ -46,7 +47,12 @@ describe("preferências de layout da Home", () => {
 
   it("persiste perfil e prioridades no armazenamento local", () => {
     const storage = { setItem: vi.fn() };
-    const preferences = { profile: "compact" as const, pinnedPanels: ["summary" as const] };
+    const preferences = {
+      profile: "compact" as const,
+      pinnedPanels: ["summary" as const],
+      prioritySets: [],
+      mobilePrimaryAction: "passages" as const,
+    };
 
     persistHomeDashboardPreferences(preferences, storage);
 
