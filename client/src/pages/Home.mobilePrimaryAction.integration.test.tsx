@@ -12,6 +12,7 @@ import Home from "./Home";
 const invalidate = vi.fn();
 const mutate = vi.fn();
 const emptyQuery = { data: [], isLoading: false };
+const weeksQuery = { data: [] as any[], isLoading: false };
 const authQuery = { data: { authenticated: false } };
 const mutationResult = { mutate };
 const themeState = {
@@ -78,7 +79,9 @@ vi.mock("@/components/WeeklyPlanning", () => ({
 }));
 
 vi.mock("@/components/PassageManagementFrame", () => ({
-  PassageManagementFrame: () => null,
+  PassageManagementFrame: ({ children }: { children: React.ReactNode }) => (
+    <section aria-label="Gestão de Passagens">{children}</section>
+  ),
 }));
 
 vi.mock("@/components/HomeCharts", () => ({
@@ -105,7 +108,7 @@ vi.mock("@/lib/trpc", () => ({
       logout: { useMutation: () => mutationResult },
     },
     flights: {
-      getWeeks: { useQuery: () => emptyQuery },
+      getWeeks: { useQuery: () => weeksQuery },
       getProgressComparison: { useQuery: () => emptyQuery },
       getPrices: { useQuery: () => emptyQuery },
       getPublicPrices: { useQuery: () => emptyQuery },
@@ -124,6 +127,7 @@ vi.mock("@/lib/trpc", () => ({
 describe("Home mobile primary action", () => {
   beforeEach(() => {
     window.localStorage.clear();
+    weeksQuery.data = [];
     invalidate.mockClear();
     mutate.mockClear();
   });
@@ -172,5 +176,35 @@ describe("Home mobile primary action", () => {
 
     expect(rehydratedPrimaryLink?.dataset.mobilePrimaryAction).toBe("calendar");
     expect(rehydratedPrimaryLink?.getAttribute("href")).toBe("/calendar");
+  });
+
+  it("aplica a paleta azul-marinho aos controles e ao cabeçalho mensal da Gestão", () => {
+    weeksQuery.data = [
+      {
+        weekNumber: 1,
+        departureDate: "04/01/2026",
+        returnDate: "09/01/2026",
+        isTicketIssued: 1,
+        isSelected: false,
+        ticketType: "roundtrip",
+      },
+    ];
+
+    const { container } = render(<Home mode="passage-management" />);
+    const navyScopes = container.querySelectorAll(".management-navy-theme");
+
+    expect(navyScopes.length).toBeGreaterThan(1);
+    expect(screen.getByText("Gestão de Passagens")).toBeTruthy();
+    expect(
+      container.querySelector('.management-navy-theme input[type="range"]')
+    ).toBeTruthy();
+
+    fireEvent.click(
+      screen.getByRole("button", { name: "Expandir mês Janeiro 2026" })
+    );
+
+    expect(
+      container.querySelector(".management-navy-theme .bg-blue-600")
+    ).toBeTruthy();
   });
 });

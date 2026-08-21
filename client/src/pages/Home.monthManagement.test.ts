@@ -17,6 +17,16 @@ describe("frame Gestão de Passagens da Home", () => {
     expect(source).toContain("mb-8");
   });
 
+  it("escopa a paleta azul-marinho à Gestão de Passagens", () => {
+    const styles = readFileSync("client/src/index.css", "utf8");
+
+    expect(source).toContain('className="management-navy-theme"');
+    expect(styles).toContain(".management-navy-theme");
+    expect(styles).toContain("--management-navy-950: #071a36;");
+    expect(styles).toContain(".management-navy-theme .bg-blue-600");
+    expect(styles).toContain('input[type="range"] { accent-color: var(--management-navy-800); }');
+  });
+
   it("anima a expansão mensal sem expor conteúdo recolhido ao teclado", () => {
     expect(source).toContain("transition-[grid-template-rows,opacity]");
     expect(source).toContain("grid-rows-[1fr] opacity-100");

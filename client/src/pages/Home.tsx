@@ -2602,7 +2602,7 @@ export default function Home({ mode = "home" }: HomeProps) {
         )}
 
         {isManagementView && (
-          <section className="mb-6 rounded-3xl border border-blue-100 bg-gradient-to-br from-blue-50 via-white to-indigo-50 p-5 shadow-sm dark:border-slate-800 dark:from-slate-900 dark:via-slate-950 dark:to-indigo-950/30 sm:mb-8 sm:p-7">
+          <section className="management-navy-theme mb-6 rounded-3xl border border-blue-100 bg-gradient-to-br from-blue-50 via-white to-indigo-50 p-5 shadow-sm dark:border-slate-800 dark:from-slate-900 dark:via-slate-950 dark:to-indigo-950/30 sm:mb-8 sm:p-7">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.14em] text-blue-600 dark:text-blue-300">Área operacional dedicada</p>
@@ -2617,7 +2617,7 @@ export default function Home({ mode = "home" }: HomeProps) {
         )}
 
         {isManagementView && (
-          <>
+          <div className="management-navy-theme">
         {/* Filtros com Accordion */}
         {weeksQuery.isLoading ? (
           <SkeletonFilters />
@@ -6393,7 +6393,7 @@ export default function Home({ mode = "home" }: HomeProps) {
             </div>
           </Card>
         )}
-          </>
+          </div>
         )}
 
         {!isManagementView && (

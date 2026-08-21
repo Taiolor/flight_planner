@@ -129,3 +129,8 @@
 - [x] Mover o atalho Gráfico do cabeçalho para o menu suspenso de navegação
 - [x] Renomear o atalho administrativo Locais consentidos para Locais de Acesso
 - [x] Remover a indicação de Terminal do cabeçalho resumido da semana na gestão de bilhetes
+- [x] Mapear e substituir os acentos azul-brilhante da Gestão de Passagens por azul-marinho intenso
+- [x] Auditar os demais blocos da Gestão de Passagens para eliminar acentos azul-brilhante remanescentes
+- [x] Adicionar regressão renderizada que comprove a paleta azul-marinho nos controles e meses da Gestão
+- [x] Auditar os demais blocos da Gestão de Passagens para eliminar acentos azul-brilhante remanescentes
+- [x] Adicionar regressão renderizada que comprove a paleta azul-marinho nos controles e meses da Gestão
