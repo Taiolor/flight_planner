@@ -130,6 +130,16 @@ describe("Home mobile primary action", () => {
 
   afterEach(() => window.localStorage.clear());
 
+  it("oferece a marca Smart Fly como retorno acessível para a Home", () => {
+    const { unmount } = render(<Home />);
+    const brandHomeLink = screen.getByRole("link", {
+      name: "Voltar para a página inicial",
+    });
+
+    expect(brandHomeLink.getAttribute("href")).toBe("/");
+    unmount();
+  });
+
   it("persiste a troca no fluxo real da Home e reidrata o link prioritário após remontagem", () => {
     persistHomeDashboardPreferences({
       ...DEFAULT_HOME_DASHBOARD_PREFERENCES,

@@ -2258,14 +2258,18 @@ export default function Home({ mode = "home" }: HomeProps) {
                 alt="Smart Fly"
                 className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl object-contain"
               />
-              <div>
+              <Link
+                href="/"
+                aria-label="Voltar para a página inicial"
+                className="inline-flex flex-col rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-slate-800"
+              >
                 <h1 className="text-xl sm:text-4xl font-bold leading-tight tracking-tight text-white drop-shadow-md">
                   Smart Fly
                 </h1>
                 <p className="text-slate-200 text-xs sm:text-sm font-medium tracking-wide">
                   Viagens
                 </p>
-              </div>
+              </Link>
             </div>
             <HomeHeaderActions
               selectedYear={selectedYear}

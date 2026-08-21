@@ -120,3 +120,4 @@
 - [x] Validar na Home real a alternância do link prioritário entre Calendário e Gestão
 - [x] Corrigir a compatibilidade de JSX da Home exposta pela regressão integrada
 - [x] Corrigir o botão Gestão no cabeçalho móvel para impedir quebra visual entre ícone e rótulo
+- [x] Transformar a marca Smart Fly no cabeçalho em um link acessível para a Home
