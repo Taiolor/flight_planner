@@ -1,4 +1,5 @@
 import {
+  bigint,
   index,
   int,
   mysqlEnum,
@@ -603,6 +604,8 @@ export const geminiUsageEvents = mysqlTable("gemini_usage_events", {
   outputTokens: int("outputTokens").notNull().default(0),
   totalTokens: int("totalTokens").notNull().default(0),
   estimatedCostCents: int("estimatedCostCents").notNull().default(0),
+  /** Microcentavos evitam a perda de frações em chamadas pequenas. */
+  estimatedCostMicrocents: bigint("estimatedCostMicrocents", { mode: "number" }).notNull().default(0),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
 }, table => [
   index("idx_gemini_usage_events_month_created").on(table.yearMonth, table.createdAt),
@@ -619,6 +622,8 @@ export const geminiMonthlyUsage = mysqlTable("gemini_monthly_usage", {
   outputTokens: int("outputTokens").notNull().default(0),
   totalTokens: int("totalTokens").notNull().default(0),
   estimatedCostCents: int("estimatedCostCents").notNull().default(0),
+  /** Soma exata de custo, em microcentavos. */
+  estimatedCostMicrocents: bigint("estimatedCostMicrocents", { mode: "number" }).notNull().default(0),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });
 
@@ -630,6 +635,7 @@ export const geminiBudgetAlerts = mysqlTable("gemini_budget_alerts", {
   yearMonth: varchar("yearMonth", { length: 7 }).notNull(),
   thresholdPercent: int("thresholdPercent").notNull(),
   estimatedCostCents: int("estimatedCostCents").notNull(),
+  estimatedCostMicrocents: bigint("estimatedCostMicrocents", { mode: "number" }).notNull().default(0),
   emailSent: int("emailSent").notNull().default(0),
   pushSent: int("pushSent").notNull().default(0),
   status: varchar("status", { length: 20 }).notNull().default("processing"),
@@ -689,6 +695,23 @@ export const flyIaContextMetrics = mysqlTable("fly_ia_context_metrics", {
 ]);
 
 export type FlyIaContextMetric = typeof flyIaContextMetrics.$inferSelect;
+
+/**
+ * Telemetria operacional da transcrição de voz. Não armazena áudio, texto,
+ * identificadores de sessão, MIME type ou qualquer conteúdo conversacional.
+ */
+export const flyIaVoiceUsageEvents = mysqlTable("fly_ia_voice_usage_events", {
+  id: int("id").autoincrement().primaryKey(),
+  durationMs: int("durationMs").notNull().default(0),
+  audioBytes: int("audioBytes").notNull().default(0),
+  latencyMs: int("latencyMs").notNull().default(0),
+  outcome: mysqlEnum("outcome", ["transcribed", "empty", "provider_error", "rejected"]).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, table => [
+  index("idx_fly_ia_voice_usage_created").on(table.createdAt),
+]);
+
+export type FlyIaVoiceUsageEvent = typeof flyIaVoiceUsageEvents.$inferSelect;
 
 /**
  * Tabela para armazenar a lista de e-mails que receberão alertas de

@@ -16,7 +16,7 @@ const state = vi.hoisted(() => {
 
   const state = {
     settings,
-    monthly: { requestsCount: 0, inputTokens: 0, outputTokens: 0, totalTokens: 0, estimatedCostCents: 0 },
+    monthly: { requestsCount: 0, inputTokens: 0, outputTokens: 0, totalTokens: 0, estimatedCostCents: 0, estimatedCostMicrocents: 0 },
     usageEvents: [] as Array<Record<string, unknown>>,
     alertClaims: new Set<string>(),
     claimedDeliveryKeys: [] as string[],
@@ -74,6 +74,7 @@ const state = vi.hoisted(() => {
           outputTokens: state.monthly.outputTokens + 1_000_000,
           totalTokens: state.monthly.totalTokens + 2_000_000,
           estimatedCostCents: state.monthly.estimatedCostCents + 1_540,
+          estimatedCostMicrocents: state.monthly.estimatedCostMicrocents + 1_540_000_000,
         };
         return [{ affectedRows: 1 }];
       }
@@ -107,7 +108,7 @@ vi.mock("./_core/notification", () => ({ notifyOwner: state.sentPush }));
 import { recordGeminiUsage } from "./geminiBudget";
 
 afterEach(() => {
-  state.monthly = { requestsCount: 0, inputTokens: 0, outputTokens: 0, totalTokens: 0, estimatedCostCents: 0 };
+  state.monthly = { requestsCount: 0, inputTokens: 0, outputTokens: 0, totalTokens: 0, estimatedCostCents: 0, estimatedCostMicrocents: 0 };
   state.usageEvents.length = 0;
   state.alertClaims.clear();
   state.claimedDeliveryKeys.length = 0;
@@ -128,6 +129,7 @@ describe("recordGeminiUsage", () => {
         yearMonth: "2026-08",
         model: "gemini-3.6-flash",
         estimatedCostCents: 1_540,
+        estimatedCostMicrocents: 1_540_000_000,
       }),
     ]);
     expect(snapshot).toMatchObject({
@@ -135,6 +137,7 @@ describe("recordGeminiUsage", () => {
       requestsCount: 1,
       totalTokens: 2_000_000,
       estimatedCostCents: 1_540,
+      estimatedCostMicrocents: 1_540_000_000,
       isAtLimit: true,
     });
   });
@@ -158,7 +161,7 @@ describe("recordGeminiUsage", () => {
     expect(state.sentEmail).toHaveBeenNthCalledWith(1, "admin@smartfly.test", expect.objectContaining({
       thresholdPercent: 70,
       yearMonth: "2026-08",
-      estimatedCostCents: 1_540,
+      estimatedCostMicrocents: 1_540_000_000,
       monthlyBudgetCents: 1_000,
     }));
     expect(state.sentPush).toHaveBeenNthCalledWith(3, expect.objectContaining({

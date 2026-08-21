@@ -3,10 +3,12 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 const state = vi.hoisted(() => ({
   getSessionFromCookie: vi.fn(),
   transcribeAudioBuffer: vi.fn(),
+  recordFlyIaVoiceUsage: vi.fn(),
 }));
 
 vi.mock("./flightAuthMiddleware", () => ({ getSessionFromCookie: state.getSessionFromCookie }));
 vi.mock("./_core/voiceTranscription", () => ({ transcribeAudioBuffer: state.transcribeAudioBuffer }));
+vi.mock("./flyIaVoiceTelemetry", () => ({ recordFlyIaVoiceUsage: state.recordFlyIaVoiceUsage }));
 
 import { transcribeFlyIaVoice } from "./flyIaVoice";
 
@@ -22,6 +24,8 @@ function createResponse() {
 afterEach(() => {
   state.getSessionFromCookie.mockReset();
   state.transcribeAudioBuffer.mockReset();
+  state.recordFlyIaVoiceUsage.mockReset();
+  state.recordFlyIaVoiceUsage.mockResolvedValue(true);
 });
 
 describe("transcribeFlyIaVoice", () => {
@@ -51,7 +55,7 @@ describe("transcribeFlyIaVoice", () => {
     const body = Buffer.from("audio-secreto");
     const response = createResponse();
 
-    await transcribeFlyIaVoice({ body, headers: { "content-type": "audio/webm;codecs=opus" } } as any, response as any);
+    await transcribeFlyIaVoice({ body, headers: { "content-type": "audio/webm;codecs=opus", "x-flyia-audio-duration-ms": "1250" } } as any, response as any);
 
     expect(state.transcribeAudioBuffer).toHaveBeenCalledWith(expect.objectContaining({
       audio: body,
@@ -60,6 +64,11 @@ describe("transcribeFlyIaVoice", () => {
     }));
     expect(response.status).toHaveBeenCalledWith(200);
     expect(response.json).toHaveBeenCalledWith({ text: "Qual é meu próximo voo?", language: "pt" });
+    expect(state.recordFlyIaVoiceUsage).toHaveBeenCalledWith(expect.objectContaining({
+      durationMs: 1000,
+      audioBytes: "audio-secreto".length,
+      outcome: "transcribed",
+    }));
     expect([...body]).toEqual(new Array(body.length).fill(0));
   });
 
@@ -73,6 +82,10 @@ describe("transcribeFlyIaVoice", () => {
 
     expect(response.status).toHaveBeenCalledWith(503);
     expect(response.json).toHaveBeenCalledWith({ error: "Não foi possível transcrever o áudio agora. Tente novamente." });
+    expect(state.recordFlyIaVoiceUsage).toHaveBeenCalledWith(expect.objectContaining({
+      audioBytes: "audio-secreto".length,
+      outcome: "provider_error",
+    }));
     expect([...body]).toEqual(new Array(body.length).fill(0));
   });
 });

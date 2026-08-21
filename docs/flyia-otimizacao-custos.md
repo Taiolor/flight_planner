@@ -50,3 +50,9 @@ O painel atual estima o custo de cada requisição e arredonda o resultado para 
 ### Ordem de implementação sugerida
 
 Primeiro, corrigir a precisão da telemetria de custo e adicionar métricas de duração de áudio. Em seguida, criar o seletor de contexto por intenção e testar a qualidade com um conjunto de perguntas reais do Fly.IA. Por último, aplicar `thinkingLevel: "minimal"` e o novo teto de saída somente às perguntas operacionais. Cache de contexto deve ficar em observação: com média de entrada abaixo de 4.096 tokens, ele não é a primeira alavanca de economia.
+
+## Telemetria implementada
+
+O custo de Gemini passou a ser persistido em **microcentavos** por evento e por ciclo mensal. Dessa forma, uma chamada de baixo volume não é mais arredondada para zero antes de compor o total do mês. O painel continua exibindo reais com duas casas decimais, mas o percentual de orçamento, os alertas e o saldo estimado usam a soma precisa.
+
+A telemetria de voz registra somente duração, quantidade de bytes, resultado e latência da transcrição. Ela não registra áudio, texto transcrito, tipo de arquivo, endereço de e-mail, chave de sessão ou qualquer identificador de pessoa. A duração é limitada a 60 segundos e o painel administrativo apresenta apenas agregados dos últimos 30 dias.

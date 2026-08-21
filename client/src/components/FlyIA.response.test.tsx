@@ -352,7 +352,13 @@ describe("Fly.IA response flow", () => {
         await new Promise(resolve => setTimeout(resolve, 0));
       });
 
-      expect(upload).toHaveBeenCalledWith("/api/flyia/voice-transcribe", expect.objectContaining({ method: "POST" }));
+      expect(upload).toHaveBeenCalledWith("/api/flyia/voice-transcribe", expect.objectContaining({
+        method: "POST",
+        headers: expect.objectContaining({
+          "Content-Type": "audio/webm",
+          "X-FlyIA-Audio-Duration-Ms": expect.any(String),
+        }),
+      }));
       expect(document.querySelector('[data-testid="voice-transcript"]')?.textContent).toBe("Qual é meu próximo voo?");
       expect(stopTrack).toHaveBeenCalled();
     } finally {

@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   calculateGeminiCostCents,
+  calculateGeminiCostMicrocents,
   getGeminiBudgetMonth,
   getReachedGeminiBudgetThresholds,
 } from "./geminiBudget";
@@ -13,6 +14,14 @@ describe("geminiBudget", () => {
     );
 
     expect(cost).toBe(1_540);
+  });
+
+  it("preserva microcentavos quando uma chamada individual ainda não soma um centavo", () => {
+    const usage = { inputTokens: 1, outputTokens: 0, totalTokens: 1 };
+    const settings = { inputCostCentsPerMillion: 75, outputCostCentsPerMillion: 375 };
+
+    expect(calculateGeminiCostMicrocents(usage, settings)).toBe(75);
+    expect(calculateGeminiCostCents(usage, settings)).toBe(0.000075);
   });
 
   it("normaliza o mês de consumo no fuso horário de Brasília", () => {

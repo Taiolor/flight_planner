@@ -9,6 +9,7 @@ const mocks = vi.hoisted(() => ({
   authCheck: vi.fn(),
   dashboard: vi.fn(),
   memoryDashboard: vi.fn(),
+  voiceDashboard: vi.fn(),
   updateSettings: vi.fn(),
   invalidate: vi.fn(),
 }));
@@ -22,6 +23,7 @@ vi.mock("@/lib/trpc", () => ({
       updateSettings: { useMutation: mocks.updateSettings },
     },
     flyIaMemory: { dashboard: { useQuery: mocks.memoryDashboard } },
+    flyIaVoice: { dashboard: { useQuery: mocks.voiceDashboard } },
   },
 }));
 
@@ -34,6 +36,7 @@ afterEach(() => {
   mocks.authCheck.mockReset();
   mocks.dashboard.mockReset();
   mocks.memoryDashboard.mockReset();
+  mocks.voiceDashboard.mockReset();
   mocks.updateSettings.mockReset();
   mocks.invalidate.mockReset();
 });
@@ -46,6 +49,7 @@ const dashboardData = {
     outputTokens: 1200,
     totalTokens: 5200,
     estimatedCostCents: 155,
+    estimatedCostMicrocents: 155_000_000,
     monthlyBudgetCents: 10000,
     usagePercent: 1.55,
     isAtLimit: false,
@@ -97,6 +101,12 @@ describe("GeminiBudgetDashboard", () => {
       error: null,
       refetch: vi.fn(),
     });
+    mocks.voiceDashboard.mockReturnValue({
+      data: { periodDays: 30, requests: 5, transcribed: 4, failed: 1, totalDurationMs: 12_500, averageDurationMs: 2_500, averageAudioBytes: 12000, averageLatencyMs: 680 },
+      isFetching: false,
+      error: null,
+      refetch: vi.fn(),
+    });
     mocks.updateSettings.mockReturnValue({ mutate: vi.fn(), isPending: false });
 
     render(<GeminiBudgetDashboard />);
@@ -106,6 +116,8 @@ describe("GeminiBudgetDashboard", () => {
     expect(screen.getByText("Configurar alertas")).toBeTruthy();
     expect(screen.getByText(/Memória de sessão/)).toBeTruthy();
     expect(screen.getByText("Contexto poupado")).toBeTruthy();
+    expect(screen.getByText(/Voz · últimos 30 dias/)).toBeTruthy();
+    expect(screen.getByText("Áudio total")).toBeTruthy();
     expect(screen.getByText("Nenhum alerta de orçamento foi disparado ainda.")).toBeTruthy();
   });
 });

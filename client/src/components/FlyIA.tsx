@@ -60,6 +60,7 @@ export default function FlyIA() {
   const [voiceError, setVoiceError] = useState<string | null>(null);
   const recorderRef = useRef<MediaRecorder | null>(null);
   const recordingTimerRef = useRef<number | null>(null);
+  const recordingStartedAtRef = useRef<number | null>(null);
   const internalSessionQuery = trpc.flightAuth.check.useQuery(undefined, {
     retry: false,
     refetchOnWindowFocus: false,
@@ -115,12 +116,18 @@ export default function FlyIA() {
       };
       recorder.onerror = () => {
         stream.getTracks().forEach(track => track.stop());
+        recordingStartedAtRef.current = null;
         setVoiceState("idle");
         setVoiceError("A gravação de voz foi interrompida. Tente novamente.");
       };
       recorder.onstop = async () => {
         stream.getTracks().forEach(track => track.stop());
         recorderRef.current = null;
+        const startedAt = recordingStartedAtRef.current;
+        recordingStartedAtRef.current = null;
+        const recordedDurationMs = startedAt === null
+          ? 0
+          : Math.min(MAX_VOICE_RECORDING_MS, Math.max(0, Date.now() - startedAt));
         const audio = new Blob(chunks, { type: recorder.mimeType || "audio/webm" });
         if (audio.size === 0) {
           setVoiceState("idle");
@@ -138,7 +145,10 @@ export default function FlyIA() {
           const transcriptionResponse = await fetch("/api/flyia/voice-transcribe", {
             method: "POST",
             credentials: "include",
-            headers: { "Content-Type": audio.type || "audio/webm" },
+            headers: {
+              "Content-Type": audio.type || "audio/webm",
+              "X-FlyIA-Audio-Duration-Ms": String(recordedDurationMs),
+            },
             body: audio,
           });
           const transcription = await transcriptionResponse.json().catch(() => ({}));
@@ -156,6 +166,7 @@ export default function FlyIA() {
       };
       recorderRef.current = recorder;
       recorder.start();
+      recordingStartedAtRef.current = Date.now();
       setVoiceState("recording");
       recordingTimerRef.current = window.setTimeout(() => {
         setVoiceError("A gravação foi limitada a 60 segundos.");
@@ -172,6 +183,7 @@ export default function FlyIA() {
     clearRecordingTimer();
     const recorder = recorderRef.current;
     if (recorder?.state === "recording") recorder.stop();
+    recordingStartedAtRef.current = null;
   }, [clearRecordingTimer]);
 
   useEffect(() => {

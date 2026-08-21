@@ -302,6 +302,20 @@
       "when": 1787248135017,
       "tag": "0042_simple_gamora",
       "breakpoints": true
+    },
+    {
+      "idx": 43,
+      "version": "5",
+      "when": 1787315546382,
+      "tag": "0043_moaning_azazel",
+      "breakpoints": true
+    },
+    {
+      "idx": 44,
+      "version": "5",
+      "when": 1787315577645,
+      "tag": "0044_mixed_prowler",
+      "breakpoints": true
     }
   ]
 }

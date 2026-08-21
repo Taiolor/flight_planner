@@ -371,7 +371,7 @@ export async function sendTestEmail(testEmail: string): Promise<boolean> {
 export type GeminiBudgetAlertEmailInput = {
   thresholdPercent: number;
   yearMonth: string;
-  estimatedCostCents: number;
+  estimatedCostMicrocents: number;
   monthlyBudgetCents: number;
   usagePercent: number;
 };
@@ -385,7 +385,7 @@ export async function sendGeminiBudgetAlertEmail(
     style: "currency",
     currency: "BRL",
   });
-  const estimated = currency.format(input.estimatedCostCents / 100);
+  const estimated = currency.format(input.estimatedCostMicrocents / 100_000_000);
   const budget = currency.format(input.monthlyBudgetCents / 100);
   const htmlContent = `
     <div style="font-family: Arial, sans-serif; color: #1f2937; max-width: 640px; margin: 0 auto;">

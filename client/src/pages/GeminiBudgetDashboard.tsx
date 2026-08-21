@@ -37,8 +37,12 @@ type BudgetForm = {
   pushEnabled: boolean;
 };
 
+function formatBrlMicrocents(microcents: number) {
+  return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(microcents / 100_000_000);
+}
+
 function formatBrl(cents: number) {
-  return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(cents / 100);
+  return formatBrlMicrocents(cents * 1_000_000);
 }
 
 function formatNumber(value: number) {
@@ -122,6 +126,7 @@ function GeminiBudgetContent() {
   const utils = trpc.useUtils();
   const dashboardQuery = trpc.geminiBudget.dashboard.useQuery(undefined, queryCachePolicies.admin);
   const memoryQuery = trpc.flyIaMemory.dashboard.useQuery(undefined, queryCachePolicies.admin);
+  const voiceQuery = trpc.flyIaVoice.dashboard.useQuery(undefined, queryCachePolicies.admin);
   const updateSettings = trpc.geminiBudget.updateSettings.useMutation({
     onSuccess: async () => {
       await utils.geminiBudget.dashboard.invalidate();
@@ -171,10 +176,10 @@ function GeminiBudgetContent() {
           <Button
             variant="outline"
             className="border-white/40 bg-white/10 text-white hover:bg-white hover:text-cyan-700"
-            onClick={() => void Promise.all([dashboardQuery.refetch(), memoryQuery.refetch()])}
-            disabled={dashboardQuery.isFetching || memoryQuery.isFetching}
+            onClick={() => void Promise.all([dashboardQuery.refetch(), memoryQuery.refetch(), voiceQuery.refetch()])}
+            disabled={dashboardQuery.isFetching || memoryQuery.isFetching || voiceQuery.isFetching}
           >
-            <RefreshCw className={`mr-2 h-4 w-4 ${dashboardQuery.isFetching || memoryQuery.isFetching ? "animate-spin" : ""}`} />
+            <RefreshCw className={`mr-2 h-4 w-4 ${dashboardQuery.isFetching || memoryQuery.isFetching || voiceQuery.isFetching ? "animate-spin" : ""}`} />
             Atualizar
           </Button>
         }
@@ -199,7 +204,7 @@ function GeminiBudgetContent() {
         ) : (
           <ContentReveal>
             <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-              <MetricCard icon={<WalletCards />} label="Custo estimado" value={formatBrl(snapshot.estimatedCostCents)} note={`Ciclo ${snapshot.yearMonth}`} />
+              <MetricCard icon={<WalletCards />} label="Custo estimado" value={formatBrlMicrocents(snapshot.estimatedCostMicrocents)} note={`Ciclo ${snapshot.yearMonth} · precisão por token`} />
               <MetricCard icon={<Bot />} label="Orçamento interno" value={formatBrl(snapshot.monthlyBudgetCents)} note="Configurável pelo administrador" />
               <MetricCard icon={<Zap />} label="Uso do orçamento" value={`${snapshot.usagePercent.toLocaleString("pt-BR")}%`} note={snapshot.isAtLimit ? "Teto alcançado" : "Acompanhamento ativo"} />
               <MetricCard icon={<Send />} label="Consultas no mês" value={formatNumber(snapshot.requestsCount)} note={`${formatNumber(snapshot.totalTokens)} tokens totais`} />
@@ -229,12 +234,34 @@ function GeminiBudgetContent() {
               )}
             </Card>
 
+            <Card className="border-sky-900/60 bg-sky-950/20 p-5">
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div>
+                  <h2 className="flex items-center gap-2 font-semibold"><Clock3 className="h-5 w-5 text-sky-300" />Voz · últimos {voiceQuery.data?.periodDays ?? 30} dias</h2>
+                  <p className="mt-1 text-sm text-slate-400">Somente duração, tamanho, resultado e latência. Áudio e texto transcrito não são armazenados.</p>
+                </div>
+                <Badge variant="outline" className="border-sky-500/60 text-sky-100">Telemetria privada</Badge>
+              </div>
+              {voiceQuery.error ? (
+                <p className="mt-4 text-sm text-amber-200">As transcrições continuam disponíveis, mas os indicadores de voz não puderam ser carregados.</p>
+              ) : (
+                <section className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+                  <MetricCard icon={<Send />} label="Tentativas" value={formatNumber(voiceQuery.data?.requests ?? 0)} note="Áudio recebido" />
+                  <MetricCard icon={<Bot />} label="Transcritas" value={formatNumber(voiceQuery.data?.transcribed ?? 0)} note="Com texto utilizável" />
+                  <MetricCard icon={<CircleAlert />} label="Sem resultado" value={formatNumber(voiceQuery.data?.failed ?? 0)} note="Falha, vazio ou rejeitado" />
+                  <MetricCard icon={<Clock3 />} label="Áudio total" value={`${((voiceQuery.data?.totalDurationMs ?? 0) / 60_000).toLocaleString("pt-BR", { maximumFractionDigits: 1 })} min`} note="Duração estimada" />
+                  <MetricCard icon={<Clock3 />} label="Duração média" value={`${((voiceQuery.data?.averageDurationMs ?? 0) / 1000).toLocaleString("pt-BR", { maximumFractionDigits: 1 })} s`} note="Por tentativa" />
+                  <MetricCard icon={<Zap />} label="Latência média" value={`${formatNumber(voiceQuery.data?.averageLatencyMs ?? 0)} ms`} note="Transcrição e resposta" />
+                </section>
+              )}
+            </Card>
+
             <Card className="border-slate-800 bg-slate-900 p-5">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
                   <h2 className="font-semibold">Orçamento de {snapshot.yearMonth}</h2>
                   <p className="mt-1 text-sm text-slate-400">
-                    {formatBrl(snapshot.estimatedCostCents)} estimados de {formatBrl(snapshot.monthlyBudgetCents)}.
+                    {formatBrlMicrocents(snapshot.estimatedCostMicrocents)} estimados de {formatBrl(snapshot.monthlyBudgetCents)}.
                   </p>
                 </div>
                 <Badge className={snapshot.isAtLimit ? "bg-rose-500 text-white" : "bg-cyan-600 text-white"}>
@@ -282,7 +309,7 @@ function GeminiBudgetContent() {
                   ) : data.alerts.map(alert => (
                     <div key={alert.id} className="rounded-lg border border-slate-800 bg-slate-950/50 p-3">
                       <div className="flex items-center justify-between gap-3"><span className="font-medium">{alert.thresholdPercent}% · {alert.yearMonth}</span><Badge variant="outline" className="border-slate-600 text-slate-200">{alert.status}</Badge></div>
-                      <p className="mt-1 text-sm text-slate-400">Estimativa: {formatBrl(alert.estimatedCostCents)} · e-mail {alert.emailSent ? "enviado" : "indisponível"} · push {alert.pushSent ? "enviado" : "indisponível"}</p>
+                      <p className="mt-1 text-sm text-slate-400">Estimativa: {formatBrlMicrocents(Number(alert.estimatedCostMicrocents ?? 0))} · e-mail {alert.emailSent ? "enviado" : "indisponível"} · push {alert.pushSent ? "enviado" : "indisponível"}</p>
                     </div>
                   ))}
                 </div>
@@ -295,7 +322,7 @@ function GeminiBudgetContent() {
                 {data.history.map(item => (
                   <div key={item.yearMonth} className="rounded-lg border border-slate-800 bg-slate-950/50 p-3">
                     <p className="text-xs font-medium text-slate-400">{item.yearMonth}</p>
-                    <p className="mt-2 text-lg font-semibold">{formatBrl(Number(item.estimatedCostCents))}</p>
+                    <p className="mt-2 text-lg font-semibold">{formatBrlMicrocents(Number(item.estimatedCostMicrocents ?? 0))}</p>
                     <p className="mt-1 text-xs text-slate-400">{formatNumber(Number(item.requestsCount))} consultas · {formatNumber(Number(item.totalTokens))} tokens</p>
                   </div>
                 ))}

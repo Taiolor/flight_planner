@@ -23,6 +23,7 @@ export type GeminiBudgetSnapshot = {
   inputTokens: number;
   outputTokens: number;
   totalTokens: number;
+  estimatedCostMicrocents: number;
   estimatedCostCents: number;
   monthlyBudgetCents: number;
   usagePercent: number;
@@ -37,6 +38,8 @@ export class GeminiBudgetExceededError extends Error {
     );
   }
 }
+
+export const MICROCENTS_PER_CENT = 1_000_000;
 
 const DEFAULT_SETTINGS: GeminiBudgetSettings = {
   id: 1,
@@ -67,32 +70,47 @@ export function getGeminiBudgetMonth(now = new Date()): string {
   return `${year}-${month}`;
 }
 
+export function calculateGeminiCostMicrocents(
+  usage: GeminiTokenUsage,
+  settings: Pick<GeminiBudgetSettings, "inputCostCentsPerMillion" | "outputCostCentsPerMillion">
+): number {
+  const inputCost = integerAtLeast(usage.inputTokens) * integerAtLeast(settings.inputCostCentsPerMillion);
+  const outputCost = integerAtLeast(usage.outputTokens) * integerAtLeast(settings.outputCostCentsPerMillion);
+  return Math.max(0, inputCost + outputCost);
+}
+
+/** Mantido para consumidores legados; persistência usa microcentavos. */
 export function calculateGeminiCostCents(
   usage: GeminiTokenUsage,
   settings: Pick<GeminiBudgetSettings, "inputCostCentsPerMillion" | "outputCostCentsPerMillion">
 ): number {
-  const inputCost = (integerAtLeast(usage.inputTokens) * settings.inputCostCentsPerMillion) / 1_000_000;
-  const outputCost = (integerAtLeast(usage.outputTokens) * settings.outputCostCentsPerMillion) / 1_000_000;
-  return Math.max(0, Math.round(inputCost + outputCost));
+  return calculateGeminiCostMicrocents(usage, settings) / MICROCENTS_PER_CENT;
 }
+
+type GeminiUsageAggregate = Pick<
+  GeminiBudgetSnapshot,
+  "requestsCount" | "inputTokens" | "outputTokens" | "totalTokens" | "estimatedCostMicrocents"
+>;
 
 function buildSnapshot(
   yearMonth: string,
   settings: GeminiBudgetSettings,
-  usage: Omit<GeminiBudgetSnapshot, "yearMonth" | "monthlyBudgetCents" | "usagePercent" | "isAtLimit" | "settings">
+  usage: GeminiUsageAggregate
 ): GeminiBudgetSnapshot {
   const monthlyBudgetCents = integerAtLeast(settings.monthlyBudgetCents);
+  const monthlyBudgetMicrocents = monthlyBudgetCents * MICROCENTS_PER_CENT;
   const usagePercent = monthlyBudgetCents > 0
-    ? Number(((usage.estimatedCostCents / monthlyBudgetCents) * 100).toFixed(2))
+    ? Number(((usage.estimatedCostMicrocents / monthlyBudgetMicrocents) * 100).toFixed(2))
     : 0;
-  const limitCost = Math.ceil((monthlyBudgetCents * settings.limitThresholdPercent) / 100);
+  const limitCost = Math.ceil((monthlyBudgetMicrocents * settings.limitThresholdPercent) / 100);
 
   return {
     yearMonth,
     ...usage,
+    estimatedCostCents: usage.estimatedCostMicrocents / MICROCENTS_PER_CENT,
     monthlyBudgetCents,
     usagePercent,
-    isAtLimit: monthlyBudgetCents > 0 && usage.estimatedCostCents >= limitCost,
+    isAtLimit: monthlyBudgetCents > 0 && usage.estimatedCostMicrocents >= limitCost,
     settings,
   };
 }
@@ -141,6 +159,7 @@ async function getMonthlyUsage(yearMonth: string) {
       inputTokens: 0,
       outputTokens: 0,
       totalTokens: 0,
+      estimatedCostMicrocents: 0,
       estimatedCostCents: 0,
     };
   }
@@ -150,6 +169,7 @@ async function getMonthlyUsage(yearMonth: string) {
     inputTokens: 0,
     outputTokens: 0,
     totalTokens: 0,
+    estimatedCostMicrocents: 0,
     estimatedCostCents: 0,
   };
 }
@@ -178,11 +198,11 @@ export function getReachedGeminiBudgetThresholds(
   return thresholdEntries(settings).filter(thresholdPercent => usagePercent >= thresholdPercent);
 }
 
-function formatBrl(cents: number) {
+function formatBrlMicrocents(microcents: number) {
   return new Intl.NumberFormat("pt-BR", {
     style: "currency",
     currency: "BRL",
-  }).format(cents / 100);
+  }).format(microcents / 100_000_000);
 }
 
 async function deliverBudgetAlert(
@@ -194,15 +214,15 @@ async function deliverBudgetAlert(
   const deliveryKey = `${snapshot.yearMonth}:${thresholdPercent}`;
   const insert = await db.execute(sql`
     INSERT IGNORE INTO gemini_budget_alerts
-      (yearMonth, thresholdPercent, estimatedCostCents, deliveryKey, status)
+      (yearMonth, thresholdPercent, estimatedCostCents, estimatedCostMicrocents, deliveryKey, status)
     VALUES
-      (${snapshot.yearMonth}, ${thresholdPercent}, ${snapshot.estimatedCostCents}, ${deliveryKey}, 'processing')
+      (${snapshot.yearMonth}, ${thresholdPercent}, ${Math.round(snapshot.estimatedCostCents)}, ${snapshot.estimatedCostMicrocents}, ${deliveryKey}, 'processing')
   `);
   const header = (Array.isArray(insert) ? insert[0] : insert) as { affectedRows?: number };
   if (Number(header.affectedRows ?? 0) === 0) return;
 
   const title = `Fly.IA: ${thresholdPercent}% do orçamento atingido`;
-  const body = `O consumo estimado de ${snapshot.yearMonth} é ${formatBrl(snapshot.estimatedCostCents)} de ${formatBrl(snapshot.monthlyBudgetCents)} (${snapshot.usagePercent}%).`;
+  const body = `O consumo estimado de ${snapshot.yearMonth} é ${formatBrlMicrocents(snapshot.estimatedCostMicrocents)} de ${formatBrlMicrocents(snapshot.monthlyBudgetCents * MICROCENTS_PER_CENT)} (${snapshot.usagePercent}%).`;
   let emailSent = false;
   let pushSent = false;
 
@@ -210,7 +230,7 @@ async function deliverBudgetAlert(
     emailSent = await sendGeminiBudgetAlertEmail(ENV.authEmail, {
       thresholdPercent,
       yearMonth: snapshot.yearMonth,
-      estimatedCostCents: snapshot.estimatedCostCents,
+      estimatedCostMicrocents: snapshot.estimatedCostMicrocents,
       monthlyBudgetCents: snapshot.monthlyBudgetCents,
       usagePercent: snapshot.usagePercent,
     });
@@ -250,25 +270,27 @@ export async function recordGeminiUsage(
     outputTokens: integerAtLeast(usage.outputTokens),
     totalTokens: integerAtLeast(usage.totalTokens),
   };
-  const estimatedCostCents = calculateGeminiCostCents(normalizedUsage, settings);
+  const estimatedCostMicrocents = calculateGeminiCostMicrocents(normalizedUsage, settings);
 
   await db.insert(geminiUsageEvents).values({
     yearMonth,
     model: model.slice(0, 80),
     ...normalizedUsage,
-    estimatedCostCents,
+    estimatedCostCents: Math.round(estimatedCostMicrocents / MICROCENTS_PER_CENT),
+    estimatedCostMicrocents,
   });
   await db.execute(sql`
     INSERT INTO gemini_monthly_usage
-      (yearMonth, requestsCount, inputTokens, outputTokens, totalTokens, estimatedCostCents)
+      (yearMonth, requestsCount, inputTokens, outputTokens, totalTokens, estimatedCostCents, estimatedCostMicrocents)
     VALUES
-      (${yearMonth}, 1, ${normalizedUsage.inputTokens}, ${normalizedUsage.outputTokens}, ${normalizedUsage.totalTokens}, ${estimatedCostCents})
+      (${yearMonth}, 1, ${normalizedUsage.inputTokens}, ${normalizedUsage.outputTokens}, ${normalizedUsage.totalTokens}, ${Math.round(estimatedCostMicrocents / MICROCENTS_PER_CENT)}, ${estimatedCostMicrocents})
     ON DUPLICATE KEY UPDATE
       requestsCount = requestsCount + 1,
       inputTokens = inputTokens + VALUES(inputTokens),
       outputTokens = outputTokens + VALUES(outputTokens),
       totalTokens = totalTokens + VALUES(totalTokens),
-      estimatedCostCents = estimatedCostCents + VALUES(estimatedCostCents)
+      estimatedCostCents = estimatedCostCents + VALUES(estimatedCostCents),
+      estimatedCostMicrocents = estimatedCostMicrocents + VALUES(estimatedCostMicrocents)
   `);
 
   const snapshot = await getGeminiBudgetSnapshot(yearMonth);
@@ -288,7 +310,7 @@ export async function getGeminiBudgetDashboard() {
   const [snapshot, settings] = await Promise.all([getGeminiBudgetSnapshot(), getGeminiBudgetSettings()]);
   const db = await getDb();
   const months = previousMonths(6);
-  if (!db) return { snapshot, settings, history: months.map(yearMonth => ({ yearMonth, requestsCount: 0, estimatedCostCents: 0, totalTokens: 0 })), alerts: [] };
+  if (!db) return { snapshot, settings, history: months.map(yearMonth => ({ yearMonth, requestsCount: 0, estimatedCostCents: 0, estimatedCostMicrocents: 0, totalTokens: 0 })), alerts: [] };
 
   const [historyRows, alerts] = await Promise.all([
     db.select().from(geminiMonthlyUsage).where(inArray(geminiMonthlyUsage.yearMonth, months)).orderBy(geminiMonthlyUsage.yearMonth),
@@ -302,6 +324,7 @@ export async function getGeminiBudgetDashboard() {
       yearMonth,
       requestsCount: 0,
       estimatedCostCents: 0,
+      estimatedCostMicrocents: 0,
       totalTokens: 0,
     }),
     alerts,

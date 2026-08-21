@@ -167,3 +167,8 @@
 - [x] Mapear o consumo atual de tokens, contexto e transcrição de áudio no Fly.IA.
 - [x] Comparar otimizações de tokens e áudio em tempo real, considerando custo, qualidade e privacidade.
 - [x] Apresentar recomendações priorizadas para reduzir custos operacionais do Fly.IA.
+- [x] Corrigir a precisão de custo do Gemini para preservar frações abaixo de um centavo por requisição.
+- [x] Registrar duração, tamanho, resultado e latência do áudio do Fly.IA sem persistir arquivo ou conteúdo transcrito.
+- [x] Exibir no painel Gemini indicadores agregados de custo preciso e uso de áudio.
+- [x] Criar migração, cobertura de regressão, documentação e validação final da nova telemetria.
+- [x] Salvar checkpoint da precisão de custo e telemetria de áudio do Fly.IA.
