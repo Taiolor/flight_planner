@@ -135,8 +135,12 @@ describe("Home mobile primary action", () => {
     const brandHomeLink = screen.getByRole("link", {
       name: "Voltar para a página inicial",
     });
+    const logoHomeLink = screen.getByRole("link", {
+      name: "Voltar para a página inicial pelo logo Smart Fly",
+    });
 
     expect(brandHomeLink.getAttribute("href")).toBe("/");
+    expect(logoHomeLink.getAttribute("href")).toBe("/");
     unmount();
   });
 

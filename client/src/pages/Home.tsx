@@ -2279,11 +2279,18 @@ export default function Home({ mode = "home" }: HomeProps) {
         <div className="container relative z-10 py-4 sm:py-6">
           <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
             <div className="flex items-center gap-2 sm:gap-3">
-              <img
-                src="https://d2xsxph8kpxj0f.cloudfront.net/310419663028456038/HQ655wm9a6bck22hJAwYRc/smartfly-icon-512-fy4eDuGdVJBtxeYLKc2qAk.png"
-                alt="Smart Fly"
-                className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl object-contain"
-              />
+              <Link
+                href="/"
+                aria-label="Voltar para a página inicial pelo logo Smart Fly"
+                className="shrink-0 rounded-xl transition-transform duration-150 hover:scale-[1.03] active:scale-[0.97] focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-slate-800"
+              >
+                <img
+                  src="https://d2xsxph8kpxj0f.cloudfront.net/310419663028456038/HQ655wm9a6bck22hJAwYRc/smartfly-icon-512-fy4eDuGdVJBtxeYLKc2qAk.png"
+                  alt=""
+                  aria-hidden="true"
+                  className="h-10 w-10 rounded-xl object-contain sm:h-12 sm:w-12"
+                />
+              </Link>
               <Link
                 href="/"
                 aria-label="Voltar para a página inicial"
