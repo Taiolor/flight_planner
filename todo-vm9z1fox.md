@@ -137,7 +137,7 @@
 - [x] Estender a paleta azul-marinho elegante aos demais módulos operacionais
 - [x] Criar uma preferência visual persistente de intensidade da paleta azul-marinho
 - [x] Revisar cores de companhias aéreas para preservar identificação sem azuis claros ou intensos
-- [ ] Próxima ação: reduzir o botão Aparência do cabeçalho ao ícone atual, mantendo acessibilidade
+- [x] Próxima ação: reduzir o botão Aparência do cabeçalho ao ícone atual, mantendo acessibilidade
 - [x] Auditar e substituir variantes azul-brilhante remanescentes nos módulos operacionais
 - [x] Expandir as regressões da paleta azul-marinho para módulos operacionais críticos
 - [x] Substituir explicitamente os acentos azul-brilhante restantes em Admin, Telemetria, Changelog e Home

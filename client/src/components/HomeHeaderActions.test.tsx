@@ -52,6 +52,9 @@ describe("HomeHeaderActions", () => {
     expect(
       screen.getByRole("button", { name: "Abrir preferências de aparência" })
     ).toBeTruthy();
+    expect(
+      screen.getByRole("button", { name: "Abrir preferências de aparência" }).getAttribute("title")
+    ).toBe("Aparência");
     expect(screen.getByRole("button", { name: "Entrar" })).toBeTruthy();
   });
 
@@ -68,6 +71,8 @@ describe("HomeHeaderActions", () => {
     expect(source).toContain("sm:min-w-[6.75rem]");
     expect(source).toContain("data-mobile-primary-action={mobilePrimaryAction}");
     expect(source).toContain("SlidersHorizontal");
+    expect(source).toContain('title="Aparência"');
+    expect(source).not.toContain('<span className="ml-1.5 hidden sm:inline">Aparência</span>');
     expect(source).toContain("hidden w-full sm:flex");
     expect(source).toContain('aria-label="Ações do planejamento"');
   });

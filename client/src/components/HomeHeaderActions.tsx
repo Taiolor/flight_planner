@@ -348,11 +348,11 @@ export function HomeHeaderActions({
             <Button
               size="sm"
               variant="outline"
-              className={`${iconButtonClass} sm:w-auto sm:px-3`}
+              className={iconButtonClass}
               aria-label="Abrir preferências de aparência"
+              title="Aparência"
             >
               <Palette className="size-4" aria-hidden="true" />
-              <span className="ml-1.5 hidden sm:inline">Aparência</span>
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className={menuContentClass}>
