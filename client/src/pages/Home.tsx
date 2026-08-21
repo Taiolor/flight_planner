@@ -941,6 +941,30 @@ export default function Home({ mode = "home" }: HomeProps) {
       });
       return next;
     });
+    setTempDepartureTerminal(prev => {
+      const next = { ...prev };
+      weeksQuery.data!.forEach(w => {
+        const saved = (w as any).departureTerminal ?? "";
+        if (prev[w.weekNumber] && prev[w.weekNumber] !== saved) {
+          next[w.weekNumber] = prev[w.weekNumber];
+        } else {
+          next[w.weekNumber] = saved;
+        }
+      });
+      return next;
+    });
+    setTempReturnTerminal(prev => {
+      const next = { ...prev };
+      weeksQuery.data!.forEach(w => {
+        const saved = (w as any).returnTerminal ?? "";
+        if (prev[w.weekNumber] && prev[w.weekNumber] !== saved) {
+          next[w.weekNumber] = prev[w.weekNumber];
+        } else {
+          next[w.weekNumber] = saved;
+        }
+      });
+      return next;
+    });
     setTempTicketType(prev => {
       const next = { ...prev };
       weeksQuery.data!.forEach(w => {
@@ -1081,6 +1105,8 @@ export default function Home({ mode = "home" }: HomeProps) {
         returnLocator: (w as any).returnLocator ?? null,
         departureFlightNumber: (w as any).departureFlightNumber ?? null,
         returnFlightNumber: (w as any).returnFlightNumber ?? null,
+        departureTerminal: (w as any).departureTerminal ?? null,
+        returnTerminal: (w as any).returnTerminal ?? null,
         ticketType: (w as any).ticketType ?? "roundtrip",
         smilesPoints: (w as any).smilesPoints ?? null,
         latamPassPoints: (w as any).latamPassPoints ?? null,

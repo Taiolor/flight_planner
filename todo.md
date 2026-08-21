@@ -809,6 +809,7 @@
 - [x] Calcular os cards de semana anterior, atual e próxima pela data real de acesso
 - [x] Verificar a persistência do Terminal ao salvar bilhetes de ida, volta e somente ida
 - [x] Exibir o Terminal salvo na Gestão de Passagens e no detalhe de bilhetes do Calendário
+- [x] Corrigir a hidratação dos campos de Terminal após salvar na Gestão de Passagens
 
 ## Processo reutilizável
 
