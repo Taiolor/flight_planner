@@ -8,7 +8,49 @@ export type WeeklyWindowItem<T> = {
 type PlanningWeek = {
   weekNumber: number;
   isDeleted?: number | boolean;
+  departureDate?: string;
+  returnDate?: string;
 };
+
+function parseBrazilianDate(value?: string): Date | null {
+  if (!value) return null;
+  const [day, month, year] = value.split("/").map(Number);
+  if (!day || !month || !year) return null;
+
+  const date = new Date(year, month - 1, day);
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
+function startOfDay(date: Date): Date {
+  return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+}
+
+function getCurrentWeekIndexFromTravelDates<T extends PlanningWeek>(
+  weeks: T[],
+  now: Date
+): number | null {
+  const today = startOfDay(now).getTime();
+  const datedWeeks = weeks.map((week, index) => {
+    const departure = parseBrazilianDate(week.departureDate);
+    const returnTrip = parseBrazilianDate(week.returnDate) ?? departure;
+    return { index, departure, returnTrip };
+  });
+
+  if (!datedWeeks.every(({ departure, returnTrip }) => departure && returnTrip)) {
+    return null;
+  }
+
+  const activeTripIndex = datedWeeks.find(
+    ({ departure, returnTrip }) =>
+      departure!.getTime() <= today && today <= returnTrip!.getTime()
+  )?.index;
+  if (activeTripIndex !== undefined) return activeTripIndex;
+
+  const nextTripIndex = datedWeeks.find(
+    ({ departure }) => departure!.getTime() > today
+  )?.index;
+  return nextTripIndex ?? datedWeeks.length - 1;
+}
 
 export function getIsoWeekNumber(date: Date): number {
   const utc = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
@@ -28,16 +70,23 @@ export function getWeeklyPlanningWindow<T extends PlanningWeek>(
     .sort((first, second) => first.weekNumber - second.weekNumber);
   if (activeWeeks.length === 0) return [];
 
-  const referenceWeek =
+  const travelDateIndex =
     selectedYear === now.getFullYear()
-      ? getIsoWeekNumber(now)
-      : activeWeeks[0].weekNumber;
+      ? getCurrentWeekIndexFromTravelDates(activeWeeks, now)
+      : null;
+  const referenceWeek = getIsoWeekNumber(now);
   const exactIndex = activeWeeks.findIndex(week => week.weekNumber === referenceWeek);
-  const currentIndex =
+  const fallbackIndex =
     exactIndex >= 0
       ? exactIndex
       : Math.max(0, activeWeeks.findIndex(week => week.weekNumber > referenceWeek));
-  const resolvedCurrentIndex = currentIndex < 0 ? activeWeeks.length - 1 : currentIndex;
+  const resolvedCurrentIndex =
+    travelDateIndex ??
+    (selectedYear === now.getFullYear()
+      ? fallbackIndex < 0
+        ? activeWeeks.length - 1
+        : fallbackIndex
+      : 0);
 
   return [
     { index: resolvedCurrentIndex - 1, position: "previous" as const },

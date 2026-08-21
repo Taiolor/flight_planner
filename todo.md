@@ -806,6 +806,7 @@
 - [x] Adicionar filtros de período e tipo de evento na página Locais
 - [x] Animar suavemente a expansão e o recolhimento dos meses em Gestão de Passagens
 - [x] Animar a entrada escalonada dos cards semanais ao abrir um mês
+- [x] Calcular os cards de semana anterior, atual e próxima pela data real de acesso
 
 ## Processo reutilizável
 
