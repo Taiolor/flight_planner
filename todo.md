@@ -821,6 +821,9 @@
 - [x] Recalcular o percentual do Progresso anual pela meta de viagens selecionada
 - [x] Atualizar a página de Novidades com entregas das últimas duas semanas
 - [x] Exibir a meta anual configurada no Comparativo entre anos
+- [x] Permitir metas de emissão independentes para cada ano no comparativo
+- [x] Exibir percentual de conclusão para todos os anos comparados
+- [x] Adicionar visualização de tendência de emissões versus metas anuais
 
 ## Processo reutilizável
 

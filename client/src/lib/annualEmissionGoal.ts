@@ -38,6 +38,12 @@ export type AnnualGoalProgress = {
   achieved: boolean;
 };
 
+export type AnnualGoalPace = {
+  expectedPercent: number | null;
+  deltaPercentagePoints: number | null;
+  label: string;
+};
+
 export function getAnnualGoalProgress(issuedWeeks: number, goal: number) {
   if (goal <= 0) return { percent: 0, remaining: 0, achieved: false };
   const remaining = Math.max(goal - issuedWeeks, 0);
@@ -45,5 +51,62 @@ export function getAnnualGoalProgress(issuedWeeks: number, goal: number) {
     percent: Math.min(100, Math.round((issuedWeeks / goal) * 100)),
     remaining,
     achieved: issuedWeeks >= goal,
+  };
+}
+
+export function getAnnualGoalPace(
+  year: number,
+  percent: number,
+  today: Date = new Date()
+): AnnualGoalPace {
+  const currentYear = today.getFullYear();
+
+  if (year > currentYear) {
+    return {
+      expectedPercent: null,
+      deltaPercentagePoints: null,
+      label: "Exercício futuro: a meta começa a ser acompanhada no próximo ano.",
+    };
+  }
+
+  if (year < currentYear) {
+    return {
+      expectedPercent: null,
+      deltaPercentagePoints: null,
+      label: `Exercício encerrado com ${percent}% da meta concluída.`,
+    };
+  }
+
+  const startOfYear = new Date(year, 0, 1).getTime();
+  const startOfNextYear = new Date(year + 1, 0, 1).getTime();
+  const expectedPercent = Math.min(
+    100,
+    Math.max(
+      0,
+      Math.round(((today.getTime() - startOfYear) / (startOfNextYear - startOfYear)) * 100)
+    )
+  );
+  const deltaPercentagePoints = percent - expectedPercent;
+
+  if (deltaPercentagePoints >= 5) {
+    return {
+      expectedPercent,
+      deltaPercentagePoints,
+      label: `${deltaPercentagePoints} p.p. acima do ritmo esperado.`,
+    };
+  }
+
+  if (deltaPercentagePoints <= -5) {
+    return {
+      expectedPercent,
+      deltaPercentagePoints,
+      label: `${Math.abs(deltaPercentagePoints)} p.p. abaixo do ritmo esperado.`,
+    };
+  }
+
+  return {
+    expectedPercent,
+    deltaPercentagePoints,
+    label: "No ritmo esperado para a meta anual.",
   };
 }

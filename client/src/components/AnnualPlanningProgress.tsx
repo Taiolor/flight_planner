@@ -5,13 +5,17 @@ import {
   Clock3,
   Pencil,
   Target,
+  TrendingUp,
   TriangleAlert,
 } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import type { AnnualGoalProgress } from "@/lib/annualEmissionGoal";
+import {
+  getAnnualGoalPace,
+  type AnnualGoalProgress,
+} from "@/lib/annualEmissionGoal";
 import type { AnnualProgress } from "@/lib/annualProgress";
 
 type AnnualPlanningProgressProps = {
@@ -29,8 +33,12 @@ type AnnualPlanningProgressProps = {
     issuedWeeks: number;
     pendingWeeks: number;
     completionPercent: number;
+    goal: number;
+    goalProgress: AnnualGoalProgress;
   }>;
+  onSaveComparisonGoal: (year: number, goal: number, totalWeeks: number) => void;
   isComparisonLoading?: boolean;
+  today?: Date;
 };
 
 export function AnnualPlanningProgress({
@@ -43,10 +51,14 @@ export function AnnualPlanningProgress({
   onShowPending,
   onSaveGoal,
   comparison,
+  onSaveComparisonGoal,
   isComparisonLoading = false,
+  today,
 }: AnnualPlanningProgressProps) {
   const [isEditingGoal, setIsEditingGoal] = useState(false);
   const [draftGoal, setDraftGoal] = useState(String(goal));
+  const [editingComparisonYear, setEditingComparisonYear] = useState<number | null>(null);
+  const [comparisonGoalDraft, setComparisonGoalDraft] = useState("");
 
   useEffect(() => setDraftGoal(String(goal)), [goal]);
 
@@ -54,6 +66,12 @@ export function AnnualPlanningProgress({
     onSaveGoal(Number(draftGoal));
     setIsEditingGoal(false);
   };
+  const selectedComparison = comparison.find(item => item.year === year);
+  const annualPace = getAnnualGoalPace(
+    year,
+    selectedComparison?.goalProgress.percent ?? goalProgress.percent,
+    today
+  );
 
   return (
     <section aria-labelledby="annual-progress-title" className="mb-4 sm:mb-8">
@@ -220,13 +238,7 @@ export function AnnualPlanningProgress({
             <div className="mt-4 space-y-3">
               {comparison.map(item => {
                 const isSelectedYear = item.year === year;
-                const comparisonGoal = isSelectedYear ? goal : item.totalWeeks;
-                const comparisonPercent = isSelectedYear
-                  ? goalProgress.percent
-                  : item.completionPercent;
-                const comparisonRemaining = isSelectedYear
-                  ? goalProgress.remaining
-                  : item.pendingWeeks;
+                const isEditingComparisonGoal = editingComparisonYear === item.year;
                 return (
                   <div
                     key={item.year}
@@ -245,36 +257,119 @@ export function AnnualPlanningProgress({
                           </span>
                         )}
                       </p>
-                      <p className="text-slate-500 dark:text-slate-400">
-                        {comparisonGoal === 0
-                          ? "Ainda não iniciado"
-                          : isSelectedYear
-                            ? `${item.issuedWeeks}/${comparisonGoal} meta · faltam ${comparisonRemaining}`
-                            : `${item.issuedWeeks}/${comparisonGoal} emitidas · ${comparisonRemaining} pendentes`}
-                      </p>
+                      {isEditingComparisonGoal ? (
+                        <form
+                          className="flex items-center gap-1.5"
+                          onSubmit={event => {
+                            event.preventDefault();
+                            onSaveComparisonGoal(
+                              item.year,
+                              Number(comparisonGoalDraft),
+                              item.totalWeeks
+                            );
+                            setEditingComparisonYear(null);
+                          }}
+                        >
+                          <Input
+                            type="number"
+                            min={1}
+                            max={Math.max(1, item.totalWeeks)}
+                            value={comparisonGoalDraft}
+                            onChange={event => setComparisonGoalDraft(event.target.value)}
+                            aria-label={`Meta de emissões para ${item.year}`}
+                            className="h-7 w-16 bg-white text-xs dark:bg-slate-900"
+                          />
+                          <Button type="submit" size="sm" className="h-7 px-2 text-xs">Salvar</Button>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            className="h-7 px-2 text-xs"
+                            onClick={() => setEditingComparisonYear(null)}
+                          >
+                            Cancelar
+                          </Button>
+                        </form>
+                      ) : (
+                        <div className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400">
+                          <p>
+                            {item.goal === 0
+                              ? "Ainda não iniciado"
+                              : `${item.issuedWeeks}/${item.goal} meta · ${item.goalProgress.percent}% · faltam ${item.goalProgress.remaining}`}
+                          </p>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setEditingComparisonYear(item.year);
+                              setComparisonGoalDraft(String(item.goal));
+                            }}
+                            aria-label={`Ajustar meta de ${item.year}`}
+                            className="rounded p-0.5 text-slate-500 transition-colors hover:bg-slate-200 hover:text-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 dark:hover:bg-slate-700 dark:hover:text-slate-100"
+                          >
+                            <Pencil className="h-3 w-3" aria-hidden="true" />
+                          </button>
+                        </div>
+                      )}
                     </div>
                     <div
                       className="mt-1.5 h-2 overflow-hidden rounded-full bg-slate-200 dark:bg-slate-700"
                       role="progressbar"
-                      aria-label={
-                        isSelectedYear
-                          ? `Progresso da meta de emissões em ${item.year}`
-                          : `Progresso de emissões em ${item.year}`
-                      }
+                      aria-label={`Progresso da meta de emissões em ${item.year}`}
                       aria-valuemin={0}
                       aria-valuemax={100}
-                      aria-valuenow={comparisonPercent}
+                      aria-valuenow={item.goalProgress.percent}
                     >
                       <div
                         className={`h-full rounded-full ${
                           isSelectedYear ? "bg-emerald-500" : "bg-cyan-500"
                         }`}
-                        style={{ width: `${comparisonPercent}%` }}
+                        style={{ width: `${item.goalProgress.percent}%` }}
                       />
                     </div>
                   </div>
                 );
               })}
+            </div>
+          )}
+
+          {!isComparisonLoading && selectedComparison && (
+            <div className="mt-4 rounded-md border border-cyan-100 bg-cyan-50/70 p-3 dark:border-cyan-900/60 dark:bg-cyan-950/20">
+              <div className="flex items-start gap-2">
+                <TrendingUp className="mt-0.5 h-4 w-4 shrink-0 text-cyan-700 dark:text-cyan-300" />
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs font-semibold text-cyan-900 dark:text-cyan-100">
+                    Tendência de emissões versus meta
+                  </p>
+                  <p className="mt-0.5 text-xs text-cyan-800 dark:text-cyan-200">
+                    {annualPace.label}
+                  </p>
+                  <div
+                    className="relative mt-2 h-2 overflow-hidden rounded-full bg-cyan-100 dark:bg-cyan-950"
+                    role="progressbar"
+                    aria-label={`Tendência da meta anual em ${year}`}
+                    aria-valuemin={0}
+                    aria-valuemax={100}
+                    aria-valuenow={selectedComparison.goalProgress.percent}
+                  >
+                    <div
+                      className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-cyan-500"
+                      style={{ width: `${selectedComparison.goalProgress.percent}%` }}
+                    />
+                    {annualPace.expectedPercent !== null && (
+                      <span
+                        className="absolute inset-y-0 w-0.5 bg-slate-900/70 dark:bg-white/80"
+                        style={{ left: `${annualPace.expectedPercent}%` }}
+                        aria-hidden="true"
+                      />
+                    )}
+                  </div>
+                  {annualPace.expectedPercent !== null && (
+                    <p className="mt-1 text-[11px] text-cyan-800 dark:text-cyan-200">
+                      {selectedComparison.goalProgress.percent}% emitido · ritmo esperado até hoje: {annualPace.expectedPercent}%
+                    </p>
+                  )}
+                </div>
+              </div>
             </div>
           )}
         </section>

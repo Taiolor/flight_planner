@@ -1230,6 +1230,7 @@ export default function Home({ mode = "home" }: HomeProps) {
   const [annualEmissionGoal, setAnnualEmissionGoal] = useState(() =>
     readAnnualEmissionGoal(selectedYear, annualProgress.totalWeeks)
   );
+  const [comparisonGoals, setComparisonGoals] = useState<Record<number, number>>({});
   const [expandablePanels, setExpandablePanels] = useState(() =>
     readHomeExpandablePanels()
   );
@@ -1241,6 +1242,22 @@ export default function Home({ mode = "home" }: HomeProps) {
   const annualGoalProgress = useMemo(
     () => getAnnualGoalProgress(annualProgress.issuedWeeks, annualEmissionGoal),
     [annualEmissionGoal, annualProgress.issuedWeeks]
+  );
+  const comparisonWithGoals = useMemo(
+    () =>
+      (progressComparisonQuery.data ?? []).map(item => {
+        const goal =
+          item.year === selectedYear
+            ? annualEmissionGoal
+            : comparisonGoals[item.year] ??
+              readAnnualEmissionGoal(item.year, item.totalWeeks);
+        return {
+          ...item,
+          goal,
+          goalProgress: getAnnualGoalProgress(item.issuedWeeks, goal),
+        };
+      }),
+    [annualEmissionGoal, comparisonGoals, progressComparisonQuery.data, selectedYear]
   );
   const persistDashboardPreferences = (
     next: typeof homeDashboardPreferences
@@ -1396,7 +1413,20 @@ export default function Home({ mode = "home" }: HomeProps) {
       annualProgress.totalWeeks
     );
     setAnnualEmissionGoal(savedGoal);
+    setComparisonGoals(current => ({ ...current, [selectedYear]: savedGoal }));
     toast.success(`Meta anual atualizada para ${savedGoal} emissões.`);
+  };
+  const handleSaveComparisonGoal = (
+    comparisonYear: number,
+    goal: number,
+    totalWeeks: number
+  ) => {
+    const savedGoal = saveAnnualEmissionGoal(comparisonYear, goal, totalWeeks);
+    setComparisonGoals(current => ({ ...current, [comparisonYear]: savedGoal }));
+    if (comparisonYear === selectedYear) {
+      setAnnualEmissionGoal(savedGoal);
+    }
+    toast.success(`Meta de ${comparisonYear} atualizada para ${savedGoal} emissões.`);
   };
   const [attentionDismissals, setAttentionDismissals] = useState(() =>
     readAttentionDismissals()
@@ -2582,7 +2612,8 @@ export default function Home({ mode = "home" }: HomeProps) {
             onToggle={() => updateExpandablePanel("annualProgress")}
             onShowPending={showPendingWeeks}
             onSaveGoal={handleSaveAnnualGoal}
-            comparison={progressComparisonQuery.data ?? []}
+            comparison={comparisonWithGoals}
+            onSaveComparisonGoal={handleSaveComparisonGoal}
             isComparisonLoading={progressComparisonQuery.isLoading}
           />
         )}

@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { beforeEach, describe, expect, it } from "vitest";
 import {
+  getAnnualGoalPace,
   getAnnualGoalProgress,
   readAnnualEmissionGoal,
   saveAnnualEmissionGoal,
@@ -26,6 +27,18 @@ describe("meta anual de emissões", () => {
       percent: 100,
       remaining: 0,
       achieved: true,
+    });
+  });
+
+  it("compara o ritmo atual com o avanço esperado no exercício", () => {
+    expect(getAnnualGoalPace(2026, 80, new Date("2026-08-22T12:00:00"))).toMatchObject({
+      expectedPercent: 64,
+      deltaPercentagePoints: 16,
+      label: "16 p.p. acima do ritmo esperado.",
+    });
+    expect(getAnnualGoalPace(2027, 0, new Date("2026-08-22T12:00:00"))).toMatchObject({
+      expectedPercent: null,
+      label: "Exercício futuro: a meta começa a ser acompanhada no próximo ano.",
     });
   });
 });
