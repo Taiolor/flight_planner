@@ -156,3 +156,6 @@
 - [x] Revalidar tipos, build e suíte completa após a regressão integrada de erro
 - [x] Corrigir o fundo e o contraste do card Total investido na Gestão Financeira
 - [x] Aplicar padrão de contraste azul-marinho aos cards financeiros secundários
+- [x] Inventariar e revisar todas as telas da plataforma sob o design system azul-marinho
+- [x] Identificar melhorias de consistência, acessibilidade e responsividade entre telas
+- [x] Entregar recomendações priorizadas para a evolução do design system
