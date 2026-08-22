@@ -137,16 +137,17 @@ function KpiCard({
   subtitle,
   icon: Icon,
   trend,
-  color = "blue",
+  color = "navy",
 }: {
   title: string;
   value: string;
   subtitle?: string;
   icon: React.ElementType;
   trend?: { value: number; label: string };
-  color?: "blue" | "green" | "orange" | "purple" | "red";
+  color?: "navy" | "blue" | "green" | "orange" | "purple" | "red";
 }) {
   const colorMap = {
+    navy: "bg-[#071a36] text-white border border-[#315c99]",
     blue: "from-blue-500 to-blue-700 text-white",
     green: "from-emerald-500 to-emerald-700 text-white",
     orange: "from-orange-500 to-orange-700 text-white",
@@ -155,7 +156,7 @@ function KpiCard({
   };
   return (
     <div
-      className={`rounded-2xl bg-gradient-to-br ${colorMap[color]} p-3 sm:p-5 shadow-lg overflow-hidden`}
+      className={`rounded-2xl ${color === "navy" ? "" : "bg-gradient-to-br"} ${colorMap[color]} p-3 sm:p-5 shadow-lg overflow-hidden`}
     >
       <div className="flex items-start justify-between">
         <div className="flex-1 min-w-0 overflow-hidden">
@@ -546,7 +547,7 @@ function FinancialDashboardContent() {
               value={formatBRL(yearSummary?.totalCashBRL ?? 0, !showValues)}
               subtitle={`${yearSummary?.issuedCount ?? 0} viagens emitidas`}
               icon={DollarSign}
-              color="blue"
+              color="navy"
               trend={
                 trendData
                   ? { value: trendData.trend, label: "2º sem. vs 1º sem." }

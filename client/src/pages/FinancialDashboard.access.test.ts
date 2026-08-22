@@ -24,4 +24,10 @@ describe("proteção de acesso do Financeiro", () => {
   it("alinha o cabeçalho do módulo à paleta azul-marinho global", () => {
     expect(source).toContain("from-[#071a36] via-[#102f61] to-[#17427e]");
   });
+
+  it("mantém o Total investido em superfície azul-marinho com texto branco legível", () => {
+    expect(source).toContain('navy: "bg-[#071a36] text-white border border-[#315c99]"');
+    expect(source).toContain('color="navy"');
+    expect(source).toContain('color === "navy" ? "" : "bg-gradient-to-br"');
+  });
 });
