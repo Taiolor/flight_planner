@@ -592,7 +592,7 @@ export default function CalendarView() {
 
       {/* Grade anual */}
       <main className="px-4 py-6 max-w-7xl mx-auto">
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-5">
+        <div className="grid grid-cols-1 min-[360px]:grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-5">
           {MONTHS.map((monthName, monthIdx) => {
             const grid = monthGrids[monthIdx];
             const issuedCount = issuedPerMonth[monthIdx];

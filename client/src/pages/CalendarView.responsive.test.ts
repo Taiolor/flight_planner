@@ -20,6 +20,10 @@ describe("Calendar mobile responsiveness", () => {
     expect(calendarSource).toContain("bg-white/15 border border-white/35 text-white");
   });
 
+  it("prioriza uma coluna abaixo de 360 px para preservar a leitura dos dias", () => {
+    expect(calendarSource).toContain("grid grid-cols-1 min-[360px]:grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-5");
+  });
+
   it("destaca voos cancelados com roxo-escuro distinto", () => {
     expect(calendarSource).toContain('cellBg = "bg-[#4B0082]";');
     expect(calendarSource).not.toContain('cellBg = "bg-slate-700";');

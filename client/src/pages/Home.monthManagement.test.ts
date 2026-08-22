@@ -54,7 +54,8 @@ describe("frame Gestão de Passagens da Home", () => {
     const frameSource = readFileSync("client/src/components/PassageManagementFrame.tsx", "utf8");
 
     expect(frameSource).toContain("Legenda: voo cancelado em roxo-escuro");
-    expect(frameSource).toContain("bg-[#4B0082]");
+    expect(frameSource).toContain('import { StatusPill } from "@/components/StatusPill"');
+    expect(frameSource).toContain('<StatusPill tone="cancelled">Cancelado</StatusPill>');
     expect(frameSource).toContain("Dias e voos cancelados usam roxo-escuro.");
   });
 });

@@ -159,3 +159,7 @@
 - [x] Inventariar e revisar todas as telas da plataforma sob o design system azul-marinho
 - [x] Identificar melhorias de consistência, acessibilidade e responsividade entre telas
 - [x] Entregar recomendações priorizadas para a evolução do design system
+- [x] Adaptar o Calendário para uma coluna em telas de até 359 px
+- [x] Criar tokens e componentes compartilhados AppPageHeader, StatusPill e AccessGate
+- [x] Localizar e redesenhar a página 404 no padrão Smart Fly
+- [x] Harmonizar o filtro de empresas do Gráfico em uma escala azul-marinho

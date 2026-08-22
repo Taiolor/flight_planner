@@ -68,7 +68,7 @@ function AccessMessageContent({
 }: Omit<LoginRequiredScreenProps, "children"> & { compact?: boolean }) {
   return (
     <div className={compact ? "py-2" : "p-7 sm:p-9"}>
-      <div className="mx-auto grid h-14 w-14 animate-in zoom-in-90 fade-in duration-300 motion-reduce:animate-none place-items-center rounded-2xl bg-gradient-to-br from-blue-600 via-indigo-600 to-fuchsia-600 text-white shadow-lg shadow-blue-500/30">
+      <div className="mx-auto grid h-14 w-14 animate-in zoom-in-90 fade-in duration-300 motion-reduce:animate-none place-items-center rounded-2xl bg-gradient-to-br from-[#071a36] via-[#102f61] to-[#17427e] text-white shadow-lg shadow-[#071a36]/30">
         <Icon className="h-7 w-7" aria-hidden="true" />
       </div>
       <div className="mt-5 text-center">
@@ -82,7 +82,7 @@ function AccessMessageContent({
       <Button
         type="button"
         onClick={onLogin}
-        className="mx-auto mt-6 flex min-h-11 gap-2 rounded-xl bg-blue-600 px-5 font-bold text-white shadow-md shadow-blue-500/20 hover:bg-blue-700"
+        className="mx-auto mt-6 flex min-h-11 gap-2 rounded-xl bg-[#071a36] px-5 font-bold text-white shadow-md shadow-[#071a36]/20 hover:bg-[#102f61] focus-visible:ring-2 focus-visible:ring-[#315c99] focus-visible:ring-offset-2"
       >
         <PlaneTakeoff className="h-4 w-4" aria-hidden="true" />
         {loginLabel}
@@ -135,7 +135,7 @@ export function LoginRequiredMessageBox({
   );
 }
 
-export function LoginRequiredScreen({
+export function AccessGate({
   icon,
   title,
   description,
@@ -167,4 +167,9 @@ export function LoginRequiredScreen({
       </section>
     </div>
   );
+}
+
+/** Alias de compatibilidade para os fluxos protegidos existentes. */
+export function LoginRequiredScreen(props: LoginRequiredScreenProps) {
+  return <AccessGate {...props} />;
 }

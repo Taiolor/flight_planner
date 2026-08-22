@@ -6484,7 +6484,7 @@ export default function Home({ mode = "home" }: HomeProps) {
               <div className="flex flex-wrap gap-1 sm:gap-2">
                 <button
                   onClick={selectAllChartAirlines}
-                  className="text-xs text-blue-600 hover:text-blue-800 font-medium px-2 py-1 rounded hover:bg-blue-50 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                  className="rounded px-2 py-1 text-xs font-medium text-[#0b2349] transition-colors hover:bg-[#e7edf6] hover:text-[#071a36] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#315c99]"
                   title="Selecionar todas as empresas"
                   aria-label="Selecionar todas as empresas"
                 >
@@ -6493,7 +6493,7 @@ export default function Home({ mode = "home" }: HomeProps) {
                 <span className="text-slate-300">|</span>
                 <button
                   onClick={clearChartAirlines}
-                  className="text-xs text-slate-500 hover:text-slate-700 font-medium px-2 py-1 rounded hover:bg-slate-100 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+                  className="rounded px-2 py-1 text-xs font-medium text-slate-600 transition-colors hover:bg-slate-100 hover:text-[#071a36] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#315c99]"
                   title="Limpar seleção de empresas"
                   aria-label="Limpar seleção de empresas"
                 >
@@ -6503,13 +6503,6 @@ export default function Home({ mode = "home" }: HomeProps) {
             </div>
             <div className="flex flex-wrap gap-2">
               {airlines.map(airline => {
-                const colorMap: Record<string, string> = {
-                  kayak: "bg-red-500",
-                  latam: "bg-blue-600",
-                  gol: "bg-yellow-500",
-                  azul: "bg-sky-400",
-                  onhappy: "bg-green-600",
-                };
                 const isSelected = chartSelectedAirlines.has(airline.id);
                 return (
                   <button
@@ -6517,24 +6510,11 @@ export default function Home({ mode = "home" }: HomeProps) {
                     key={airline.id}
                     onClick={() => toggleChartAirline(airline.id)}
                     aria-pressed={isSelected}
-                    className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium border-2 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 ${
+                    className={`flex items-center gap-2 rounded-full border-2 px-3 py-1.5 text-sm font-medium transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-[#315c99] focus-visible:ring-offset-2 ${
                       isSelected
-                        ? "border-transparent text-white shadow-sm"
-                        : "border-slate-300 text-slate-500 bg-white hover:border-slate-400"
+                        ? "border-[#315c99] bg-[#071a36] text-white shadow-sm"
+                        : "border-[#c8d6e9] bg-white text-[#0b2349] hover:border-[#315c99] hover:bg-[#f4f7fb] dark:border-slate-600 dark:bg-slate-900 dark:text-slate-100 dark:hover:border-[#315c99]"
                     }`}
-                    style={
-                      isSelected
-                        ? {
-                            backgroundColor: {
-                              kayak: "#ef4444",
-                              latam: "#2563eb",
-                              gol: "#eab308",
-                              azul: "#38bdf8",
-                              onhappy: "#16a34a",
-                            }[airline.id],
-                          }
-                        : {}
-                    }
                   >
                     <span>{airline.icon}</span>
                     {airline.name}

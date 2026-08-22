@@ -12,7 +12,7 @@ describe("Admin mobile responsiveness", () => {
     "utf8"
   );
   const headerSource = readFileSync(
-    resolve(process.cwd(), "client/src/components/StandardPageHeader.tsx"),
+    resolve(process.cwd(), "client/src/components/AppPageHeader.tsx"),
     "utf8"
   );
 

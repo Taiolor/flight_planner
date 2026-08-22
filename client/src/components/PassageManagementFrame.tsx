@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { StatusPill } from "@/components/StatusPill";
 import { CalendarDays, ChevronDown, ChevronUp } from "lucide-react";
 import React, { type ReactNode } from "react";
 
@@ -49,8 +50,7 @@ export function PassageManagementFrame({
           className="mb-4 flex flex-wrap items-center gap-2 rounded-xl border border-violet-200 bg-violet-50 px-3 py-2 text-xs font-medium text-violet-950 dark:border-violet-900/70 dark:bg-violet-950/30 dark:text-violet-100"
           aria-label="Legenda: voo cancelado em roxo-escuro"
         >
-          <span aria-hidden="true" className="size-2.5 shrink-0 rounded-full bg-[#4B0082] shadow-sm shadow-violet-950/40" />
-          <span>Cancelado</span>
+          <StatusPill tone="cancelled">Cancelado</StatusPill>
           <span className="text-violet-700 dark:text-violet-300">Dias e voos cancelados usam roxo-escuro.</span>
         </div>
         {children}
