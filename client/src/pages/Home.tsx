@@ -21,6 +21,7 @@ import {
 } from "@/lib/flightData";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { MetricCard } from "@/components/MetricCard";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -65,6 +66,7 @@ import {
   CheckCircle2,
   Circle,
   RotateCcw,
+  SlidersHorizontal,
   Loader2,
   TrendingUp,
   Lock,
@@ -2500,59 +2502,14 @@ export default function Home({ mode = "home" }: HomeProps) {
                     </p>
                   </div>
                   <div className="flex flex-wrap gap-3 sm:gap-6">
-                    <div className="text-center">
-                      <p className="text-slate-300 text-[10px] sm:text-xs uppercase tracking-wider mb-1">
-                        Bilhetes Emitidos
-                      </p>
-                      <p className="text-3xl sm:text-4xl font-black text-cyan-300">
-                        {annualIssuedCount}
-                      </p>
-                    </div>
-                    <div className="text-center">
-                      <p className="text-slate-300 text-[10px] sm:text-xs uppercase tracking-wider mb-1">
-                        Total Investido
-                      </p>
-                      <p className="text-2xl sm:text-4xl font-black text-emerald-200">
-                        {hideValues
-                          ? "••••"
-                          : `R$ ${annualTotalIssued.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
-                      </p>
-                    </div>
-                    <div className="text-center">
-                      <p className="text-slate-300 text-[10px] sm:text-xs uppercase tracking-wider mb-1">
-                        Média por Viagem
-                      </p>
-                      <p className="text-2xl sm:text-4xl font-black text-amber-200">
-                        {hideValues
-                          ? "••••"
-                          : annualIssuedCount > 0
-                            ? `R$ ${(annualTotalIssued / annualIssuedCount).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-                            : "—"}
-                      </p>
-                    </div>
+                    <MetricCard variant="transparent" title="Bilhetes Emitidos" value={String(annualIssuedCount)} valueClassName="text-cyan-300 sm:text-4xl" />
+                    <MetricCard variant="transparent" title="Total Investido" value={hideValues ? "••••" : `R$ ${annualTotalIssued.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`} valueClassName="text-emerald-200 sm:text-4xl" />
+                    <MetricCard variant="transparent" title="Média por Viagem" value={hideValues ? "••••" : annualIssuedCount > 0 ? `R$ ${(annualTotalIssued / annualIssuedCount).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : "—"} valueClassName="text-amber-200 sm:text-4xl" />
                     {annualSmilesTotal > 0 && (
-                      <div className="text-center">
-                        <p className="text-orange-200 text-[10px] sm:text-xs uppercase tracking-wider mb-1">
-                          ✦ Total SMILES
-                        </p>
-                        <p className="text-2xl sm:text-3xl font-black text-orange-300">
-                          {hideValues
-                            ? "••••"
-                            : `${annualSmilesTotal.toLocaleString("pt-BR")} pts`}
-                        </p>
-                      </div>
+                      <MetricCard variant="transparent" title="Total SMILES" value={hideValues ? "••••" : `${annualSmilesTotal.toLocaleString("pt-BR")} pts`} valueClassName="text-orange-300 sm:text-3xl" />
                     )}
                     {annualLatamPassTotal > 0 && (
-                      <div className="text-center">
-                        <p className="text-red-200 text-[10px] sm:text-xs uppercase tracking-wider mb-1">
-                          ✦ Total LATAM PASS
-                        </p>
-                        <p className="text-2xl sm:text-3xl font-black text-red-300">
-                          {hideValues
-                            ? "••••"
-                            : `${annualLatamPassTotal.toLocaleString("pt-BR")} pts`}
-                        </p>
-                      </div>
+                      <MetricCard variant="transparent" title="Total LATAM PASS" value={hideValues ? "••••" : `${annualLatamPassTotal.toLocaleString("pt-BR")} pts`} valueClassName="text-red-300 sm:text-3xl" />
                     )}
                   </div>
                 </div>
@@ -2674,14 +2631,30 @@ export default function Home({ mode = "home" }: HomeProps) {
               )}
             </button>
             {expandFilters && (
+              <button
+                type="button"
+                tabIndex={-1}
+                aria-label="Fechar painel de filtros"
+                onClick={() => setExpandFilters(false)}
+                className="fixed inset-0 z-40 bg-slate-950/55 sm:hidden"
+              />
+            )}
+            {expandFilters && (
               <Card
                 id="filters-content"
-                className={`overflow-hidden p-4 sm:p-6 mb-4 sm:mb-8 backdrop-blur-md border rounded-b-3xl rounded-t-none shadow-xl transition-colors duration-300 ${
+                className={`z-50 mb-4 overflow-hidden rounded-b-3xl rounded-t-none border p-4 shadow-xl backdrop-blur-md transition-colors duration-300 sm:mb-8 sm:p-6 max-sm:fixed max-sm:inset-x-0 max-sm:bottom-0 max-sm:max-h-[86dvh] max-sm:overflow-y-auto max-sm:rounded-b-none max-sm:rounded-t-[2rem] max-sm:border-[#315c99] ${
                   theme === "dark"
                     ? "bg-slate-800/80 border-slate-700/30"
                     : "bg-white/80 border-white/20"
                 }`}
               >
+                <div className="mb-4 flex items-center justify-between border-b border-[#c8d6e9] pb-3 sm:hidden">
+                  <div className="flex items-center gap-2 text-[#071a36] dark:text-white">
+                    <SlidersHorizontal className="size-4" aria-hidden="true" />
+                    <span className="font-bold">Filtros de passagens</span>
+                  </div>
+                  <Button type="button" variant="ghost" size="sm" onClick={() => setExpandFilters(false)} aria-label="Fechar filtros">Fechar</Button>
+                </div>
                 {/* Linha 1: Mês, Companhia, Ordenar por, Filtro de Preço, Status do Bilhete */}
                 <div className="grid min-w-0 grid-cols-1 min-[480px]:grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4 [&>div]:min-w-0">
                   <div>

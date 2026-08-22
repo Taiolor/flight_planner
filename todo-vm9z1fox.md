@@ -163,3 +163,6 @@
 - [x] Criar tokens e componentes compartilhados AppPageHeader, StatusPill e AccessGate
 - [x] Localizar e redesenhar a página 404 no padrão Smart Fly
 - [x] Harmonizar o filtro de empresas do Gráfico em uma escala azul-marinho
+- [x] Transformar os filtros da Gestão de Passagens em painel inferior no mobile
+- [x] Criar e aplicar o componente compartilhado MetricCard na Home e no Financeiro
+- [x] Adicionar uma legenda de status persistente acima do Calendário

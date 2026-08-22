@@ -1,13 +1,14 @@
 import type { LucideIcon } from "lucide-react";
 import React, { type ReactNode } from "react";
 
-export type StatusPillTone = "navy" | "success" | "warning" | "cancelled" | "neutral";
+export type StatusPillTone = "navy" | "success" | "warning" | "cancelled" | "rescheduled" | "neutral";
 
 const toneClasses: Record<StatusPillTone, string> = {
   navy: "border-[#315c99] bg-[#071a36] text-white",
   success: "border-emerald-300 bg-emerald-50 text-emerald-800 dark:border-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-200",
   warning: "border-amber-300 bg-amber-50 text-amber-900 dark:border-amber-700 dark:bg-amber-950/40 dark:text-amber-200",
   cancelled: "border-violet-300 bg-[#4B0082] text-white dark:border-violet-500",
+  rescheduled: "border-rose-300 bg-rose-600 text-white dark:border-rose-500",
   neutral: "border-slate-300 bg-slate-50 text-slate-700 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200",
 };
 

@@ -8,6 +8,7 @@ import { useYear } from "@/contexts/YearContext";
 import { GlobalYearSelector } from "@/components/GlobalYearSelector";
 import { FinancialDashboardLoadingSkeleton } from "@/components/FinancialDashboardLoadingSkeleton";
 import { ContentReveal } from "@/components/ContentReveal";
+import { MetricCard } from "@/components/MetricCard";
 import { formatAirlineDisplayName } from "@/lib/airlinePresentation";
 import { queryCachePolicies } from "@/lib/queryCache";
 import {
@@ -31,6 +32,7 @@ import {
   AlertCircle,
   Info,
   WalletCards,
+  type LucideIcon,
 } from "lucide-react";
 
 const FinancialChart = lazy(() => import("@/components/FinancialCharts"));
@@ -142,51 +144,19 @@ function KpiCard({
   title: string;
   value: string;
   subtitle?: string;
-  icon: React.ElementType;
+  icon: LucideIcon;
   trend?: { value: number; label: string };
   accent?: "blue" | "green" | "orange" | "purple" | "red";
 }) {
   const accentMap = {
-    blue: "bg-sky-300/15 text-sky-100 ring-sky-200/30",
-    green: "bg-emerald-300/15 text-emerald-100 ring-emerald-200/30",
-    orange: "bg-amber-300/15 text-amber-100 ring-amber-200/30",
-    purple: "bg-violet-300/15 text-violet-100 ring-violet-200/30",
-    red: "bg-rose-300/15 text-rose-100 ring-rose-200/30",
-  };
-  return (
-    <div
-      className="overflow-hidden rounded-2xl border border-[#315c99] bg-[#071a36] p-3 text-white shadow-lg sm:p-5"
-    >
-      <div className="flex items-start justify-between">
-        <div className="flex-1 min-w-0 overflow-hidden">
-          <p className="text-xs font-semibold uppercase tracking-wider opacity-80 mb-1">
-            {title}
-          </p>
-          <p className="text-sm sm:text-2xl font-bold break-all leading-tight">
-            {value}
-          </p>
-          {subtitle && (
-            <p className="text-xs opacity-75 mt-1 line-clamp-2">{subtitle}</p>
-          )}
-        </div>
-        <div className={`ml-3 rounded-xl p-2 ring-1 ${accentMap[accent]}`}>
-          <Icon className="w-5 h-5" />
-        </div>
-      </div>
-      {trend && (
-        <div className="mt-3 flex items-center gap-1 text-xs">
-          {trend.value >= 0 ? (
-            <TrendingUp className="w-3.5 h-3.5 opacity-80" />
-          ) : (
-            <TrendingDown className="w-3.5 h-3.5 opacity-80" />
-          )}
-          <span className="opacity-90">
-            {formatPct(trend.value)} {trend.label}
-          </span>
-        </div>
-      )}
-    </div>
-  );
+    blue: "navy",
+    green: "green",
+    orange: "amber",
+    purple: "violet",
+    red: "rose",
+  } as const;
+
+  return <MetricCard title={title} value={value} subtitle={subtitle} icon={Icon} trend={trend} accent={accentMap[accent]} />;
 }
 
 function SectionHeader({

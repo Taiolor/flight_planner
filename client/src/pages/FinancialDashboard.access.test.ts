@@ -25,8 +25,9 @@ describe("proteção de acesso do Financeiro", () => {
     expect(source).toContain("from-[#071a36] via-[#102f61] to-[#17427e]");
   });
 
-  it("mantém o Total investido em superfície azul-marinho com texto branco legível", () => {
-    expect(source).toContain('className="overflow-hidden rounded-2xl border border-[#315c99] bg-[#071a36] p-3 text-white shadow-lg sm:p-5"');
+  it("centraliza o Total investido em superfície azul-marinho com texto branco legível", () => {
+    expect(source).toContain('import { MetricCard } from "@/components/MetricCard"');
+    expect(source).toContain("return <MetricCard title={title}");
     expect(source).toContain('accent="blue"');
   });
 
@@ -34,6 +35,6 @@ describe("proteção de acesso do Financeiro", () => {
     expect(source).toContain('accent="green"');
     expect(source).toContain('accent="orange"');
     expect(source).toContain('accent="purple"');
-    expect(source).toContain('green: "bg-emerald-300/15 text-emerald-100 ring-emerald-200/30"');
+    expect(source).toContain('green: "green"');
   });
 });

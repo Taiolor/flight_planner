@@ -13,6 +13,14 @@ describe("Home mobile responsiveness", () => {
     expect(source).toContain("[&>div]:min-w-0");
   });
 
+  it("converte os filtros da Gestão em painel inferior com fechamento explícito no mobile", () => {
+    expect(source).toContain("fixed inset-0 z-40 bg-slate-950/55 sm:hidden");
+    expect(source).toContain("max-sm:fixed max-sm:inset-x-0 max-sm:bottom-0");
+    expect(source).toContain("max-sm:max-h-[86dvh] max-sm:overflow-y-auto");
+    expect(source).toContain("Filtros de passagens");
+    expect(source).toContain('aria-label="Fechar filtros"');
+  });
+
   it("allows graph actions and empty-state buttons to wrap on small screens", () => {
     expect(source).toContain("flex flex-col gap-2 sm:flex-row");
     expect(source).toContain("max-w-full whitespace-normal");
@@ -21,7 +29,8 @@ describe("Home mobile responsiveness", () => {
   it("usa azul-marinho e textos neutros no Resumo Anual", () => {
     expect(source).toContain("via-[#071a36]");
     expect(source).toContain("bg-gradient-to-br from-[#071a36] via-[#102f61] to-[#17427e]");
-    expect(source).toContain("text-slate-300 text-[10px] sm:text-xs uppercase");
+    expect(source).toContain('import { MetricCard } from "@/components/MetricCard"');
+    expect(source).toContain('variant="transparent" title="Bilhetes Emitidos"');
     expect(source).not.toContain("border border-blue-300 border-dashed text-blue-100");
   });
 });

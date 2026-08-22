@@ -30,6 +30,13 @@ describe("Calendar mobile responsiveness", () => {
     expect(calendarSource).not.toContain('cellBg = "bg-slate-600";');
   });
 
+  it("mantém uma legenda de status acima da grade anual", () => {
+    expect(calendarSource).toContain("Legenda persistente de status dos voos");
+    expect(calendarSource).toContain('<StatusPill tone="success">Registrado</StatusPill>');
+    expect(calendarSource).toContain('<StatusPill tone="rescheduled">Remarcado</StatusPill>');
+    expect(calendarSource).toContain('<StatusPill tone="cancelled">Cancelado</StatusPill>');
+  });
+
   it("keeps long World Cup opponent names visible instead of truncating them", () => {
     expect(cupSource).toContain("min-w-0 break-words text-right");
     expect(cupSource).not.toContain(

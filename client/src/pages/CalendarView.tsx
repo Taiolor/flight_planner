@@ -10,6 +10,7 @@ import {
 import { trpc } from "@/lib/trpc";
 import { ContentReveal } from "@/components/ContentReveal";
 import { CalendarLoadingSkeleton } from "@/components/CalendarLoadingSkeleton";
+import { StatusPill } from "@/components/StatusPill";
 import {
   ArrowLeft,
   Plane,
@@ -592,6 +593,12 @@ export default function CalendarView() {
 
       {/* Grade anual */}
       <main className="px-4 py-6 max-w-7xl mx-auto">
+        <section aria-label="Legenda persistente de status dos voos" className="mb-4 flex flex-wrap items-center gap-2 rounded-2xl border border-[#c8d6e9] bg-white/90 px-3 py-2 shadow-sm dark:border-slate-700 dark:bg-slate-900/90">
+          <span className="mr-1 text-xs font-semibold text-[#071a36] dark:text-white">Status dos voos</span>
+          <StatusPill tone="success">Registrado</StatusPill>
+          <StatusPill tone="rescheduled">Remarcado</StatusPill>
+          <StatusPill tone="cancelled">Cancelado</StatusPill>
+        </section>
         <div className="grid grid-cols-1 min-[360px]:grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-5">
           {MONTHS.map((monthName, monthIdx) => {
             const grid = monthGrids[monthIdx];
