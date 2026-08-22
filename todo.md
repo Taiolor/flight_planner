@@ -820,6 +820,7 @@
 - [x] Adicionar logos pequenos e acessíveis aos badges de companhia dos bilhetes
 - [x] Recalcular o percentual do Progresso anual pela meta de viagens selecionada
 - [x] Atualizar a página de Novidades com entregas das últimas duas semanas
+- [x] Exibir a meta anual configurada no Comparativo entre anos
 
 ## Processo reutilizável
 

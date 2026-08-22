@@ -220,6 +220,13 @@ export function AnnualPlanningProgress({
             <div className="mt-4 space-y-3">
               {comparison.map(item => {
                 const isSelectedYear = item.year === year;
+                const comparisonGoal = isSelectedYear ? goal : item.totalWeeks;
+                const comparisonPercent = isSelectedYear
+                  ? goalProgress.percent
+                  : item.completionPercent;
+                const comparisonRemaining = isSelectedYear
+                  ? goalProgress.remaining
+                  : item.pendingWeeks;
                 return (
                   <div
                     key={item.year}
@@ -239,24 +246,30 @@ export function AnnualPlanningProgress({
                         )}
                       </p>
                       <p className="text-slate-500 dark:text-slate-400">
-                        {item.totalWeeks === 0
+                        {comparisonGoal === 0
                           ? "Ainda não iniciado"
-                          : `${item.issuedWeeks}/${item.totalWeeks} emitidas · ${item.pendingWeeks} pendentes`}
+                          : isSelectedYear
+                            ? `${item.issuedWeeks}/${comparisonGoal} meta · faltam ${comparisonRemaining}`
+                            : `${item.issuedWeeks}/${comparisonGoal} emitidas · ${comparisonRemaining} pendentes`}
                       </p>
                     </div>
                     <div
                       className="mt-1.5 h-2 overflow-hidden rounded-full bg-slate-200 dark:bg-slate-700"
                       role="progressbar"
-                      aria-label={`Progresso de emissões em ${item.year}`}
+                      aria-label={
+                        isSelectedYear
+                          ? `Progresso da meta de emissões em ${item.year}`
+                          : `Progresso de emissões em ${item.year}`
+                      }
                       aria-valuemin={0}
                       aria-valuemax={100}
-                      aria-valuenow={item.completionPercent}
+                      aria-valuenow={comparisonPercent}
                     >
                       <div
                         className={`h-full rounded-full ${
                           isSelectedYear ? "bg-emerald-500" : "bg-cyan-500"
                         }`}
-                        style={{ width: `${item.completionPercent}%` }}
+                        style={{ width: `${comparisonPercent}%` }}
                       />
                     </div>
                   </div>

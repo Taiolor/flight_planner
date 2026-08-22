@@ -49,8 +49,13 @@ describe("AnnualPlanningProgress", () => {
       }).getAttribute("aria-valuenow")
     ).toBe("80");
     expect(screen.getByText("Comparativo entre anos")).toBeTruthy();
-    expect(screen.getByText("28/44 emitidas · 16 pendentes")).toBeTruthy();
+    expect(screen.getByText("28/35 meta · faltam 7")).toBeTruthy();
     expect(screen.getByText("8/44 emitidas · 36 pendentes")).toBeTruthy();
+    expect(
+      screen.getByRole("progressbar", {
+        name: "Progresso da meta de emissões em 2026",
+      }).getAttribute("aria-valuenow")
+    ).toBe("80");
     expect(screen.getByText("Atual")).toBeTruthy();
   });
 
