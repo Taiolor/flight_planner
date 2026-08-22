@@ -5,6 +5,28 @@ import { releases } from "./Changelog";
 describe("Novidades de agosto de 2026", () => {
   const source = readFileSync("client/src/pages/Changelog.tsx", "utf8");
 
+  it("publica o ciclo completo das últimas duas semanas em v1.9.0", () => {
+    const release = releases.find(item => item.version === "v1.9.0");
+
+    expect(release).toMatchObject({
+      date: "22/08/2026",
+      month: "Agosto 2026",
+      status: "released",
+    });
+    expect(release?.features.map(feature => feature.category)).toEqual(
+      expect.arrayContaining([
+        "Gestão de Passagens e Bilhetes",
+        "Calendário com Datas Efetivas",
+        "Planejamento, Metas e Financeiro",
+        "Experiência e Acessibilidade",
+        "Telemetria e Fly.IA",
+        "Confiabilidade e Qualidade",
+      ])
+    );
+    expect(source).toContain('new Set(["v1.9.0"])');
+    expect(source).toContain(">600+</div>");
+  });
+
   it("publica a release v1.8.0 com a evolução recente de Viagens", () => {
     const release = releases.find(item => item.version === "v1.8.0");
 

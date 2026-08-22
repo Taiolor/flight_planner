@@ -39,6 +39,74 @@ interface Release {
 export const releases: Release[] = [
   // Agosto 2026
   {
+    version: "v1.9.0",
+    date: "22/08/2026",
+    month: "Agosto 2026",
+    status: "released",
+    highlights:
+      "Gestão de passagens, calendário, metas e experiência diária mais precisos, consistentes e acessíveis",
+    features: [
+      {
+        icon: <Plane className="w-5 h-5" />,
+        category: "Gestão de Passagens e Bilhetes",
+        items: [
+          "Nova área dedicada de Gestão de Passagens, com expansão global ou individual dos meses, animações suaves e entrada escalonada dos cards semanais",
+          "Confirmação visual acessível após salvar dados do bilhete, com reidratação dos campos de Terminal para ida, volta e somente ida",
+          "Terminais, localizadores, remarcações, cancelamentos e logos compactos das companhias agora aparecem nos resumos e detalhes dos bilhetes",
+          "Nomes de companhias padronizados em CAIXA ALTA em Planejamento, Calendário, Cotações, Financeiro, Memórias, notificações e compartilhamentos",
+        ],
+      },
+      {
+        icon: <Calendar className="w-5 h-5" />,
+        category: "Calendário com Datas Efetivas",
+        items: [
+          "Dias emitidos, popup de bilhete, rastreamento, WhatsApp, Google Agenda, Outlook e arquivo .ics passam a usar a data efetiva do voo emitido",
+          "Correção de bilhetes somente ida e de remarcações: o Calendário não marca mais a data planejada quando a passagem foi emitida em outro dia",
+          "Resumo de semanas sem passagem alinhado aos trechos realmente emitidos, evitando pendências falsas para semanas com ida ou volta registrada",
+          "Legenda para voos cancelados em roxo-escuro e melhorias de contraste, responsividade e detalhes do Calendário",
+        ],
+      },
+      {
+        icon: <TrendingUp className="w-5 h-5" />,
+        category: "Planejamento, Metas e Financeiro",
+        items: [
+          "Cards da Home calculados pela data real de acesso: semana anterior, atual e próxima, sem referência fixa de calendário",
+          "Central de atenção priorizada por escore de urgência e adiamento configurável de alertas por 8 horas, 24 horas ou 3 dias",
+          "Meta anual de emissões editável por exercício, agora usada corretamente no percentual e na barra de progresso em vez do divisor fixo de semanas",
+          "Orçamentos mensais com realizado, projeção, cópia para o próximo ano com ajuste percentual e alertas ao atingir 90% ou ultrapassar o limite",
+        ],
+      },
+      {
+        icon: <Sparkles className="w-5 h-5" />,
+        category: "Experiência e Acessibilidade",
+        items: [
+          "Skeletons completos e responsivos para Calendário e Cotações, com revelação gradual do conteúdo após o carregamento",
+          "Fade-in acessível padronizado entre estados de carregamento e conteúdo nas telas principais, respeitando redução de movimento",
+          "Logo Smart Fly com microinteração, tooltip de retorno à Home e navegação de cabeçalho refinada para desktop e celular",
+          "Refinamento visual azul-marinho nos módulos operacionais, preferência de aparência persistida e controles compactos sem perda de acessibilidade",
+        ],
+      },
+      {
+        icon: <Gauge className="w-5 h-5" />,
+        category: "Telemetria e Fly.IA",
+        items: [
+          "Mapa administrativo com filtros combináveis de período e tipo de evento, totais por período e persistência da última seleção",
+          "Fly.IA ampliado com contexto factual de voo, orientações de embarque e ação segura para abrir direções no Google Maps quando houver origem informada",
+          "Painel administrativo de consumo do Gemini com estimativa de uso, orçamento, bloqueio preventivo e alertas operacionais",
+        ],
+      },
+      {
+        icon: <Shield className="w-5 h-5" />,
+        category: "Confiabilidade e Qualidade",
+        items: [
+          "Proteções de acesso, mensagens centralizadas de autenticação e isolamento por exercício preservados nas novas funcionalidades",
+          "Cobertura automatizada ampliada continuamente para calendário, gestão, metas, telemetria, interações de cabeçalho e interface responsiva",
+          "Mais de 600 testes automatizados no ciclo, com validações recorrentes de TypeScript e build de produção",
+        ],
+      },
+    ],
+  },
+  {
     version: "v1.8.0",
     date: "18/08/2026",
     month: "Agosto 2026",
@@ -747,7 +815,7 @@ const sortedMonths = Object.keys(releasesByMonth).sort((a, b) => {
 
 export default function Changelog() {
   const [expandedReleases, setExpandedReleases] = useState<Set<string>>(
-    new Set(["v1.8.0"])
+    new Set(["v1.9.0"])
   );
 
   const toggleRelease = (version: string) => {
@@ -802,7 +870,7 @@ export default function Changelog() {
             </div>
           </Card>
           <Card className="p-4 text-center">
-            <div className="text-3xl font-bold text-green-600">307</div>
+            <div className="text-3xl font-bold text-green-600">600+</div>
             <div className="text-sm text-slate-600 dark:text-slate-400">
               Testes
             </div>

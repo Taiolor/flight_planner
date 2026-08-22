@@ -819,6 +819,7 @@
 - [x] Exibir nomes de companhias aéreas em caixa alta em toda a interface
 - [x] Adicionar logos pequenos e acessíveis aos badges de companhia dos bilhetes
 - [x] Recalcular o percentual do Progresso anual pela meta de viagens selecionada
+- [x] Atualizar a página de Novidades com entregas das últimas duas semanas
 
 ## Processo reutilizável
 
