@@ -38,7 +38,7 @@ import {
   TrendingUp,
 } from "lucide-react";
 import React, { type ReactNode } from "react";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 
 type ColorPresetOption = {
   name: string;
@@ -79,6 +79,12 @@ const iconButtonClass = `${headerButtonClass} w-10 px-0`;
 const menuContentClass =
   "w-[min(18rem,calc(100vw-2rem))] rounded-xl border-white/15 bg-slate-950/95 p-1.5 text-white shadow-2xl backdrop-blur-xl";
 
+type ViewTransitionDocument = Document & {
+  startViewTransition?: (callback: () => void) => {
+    finished?: Promise<unknown>;
+  };
+};
+
 /**
  * Organiza as ações da página inicial em três níveis: contexto e ação primária,
  * navegação secundária e preferências/conta. Em telas estreitas, os grupos têm
@@ -110,6 +116,8 @@ export function HomeHeaderActions({
   mobilePrimaryAction = "calendar",
   onMobilePrimaryActionChange = () => {},
 }: HomeHeaderActionsProps) {
+  const [, setLocation] = useLocation();
+  const [isCalendarNavigating, setIsCalendarNavigating] = React.useState(false);
   const notificationsAvailable = pushStatus !== "unsupported";
   const notificationsBlocked = pushStatus === "denied";
   const notificationLabel = pushLoading
@@ -120,6 +128,26 @@ export function HomeHeaderActions({
         ? "Desativar notificações"
         : "Ativar notificações";
   const primaryMeta = getMobilePrimaryActionMeta(mobilePrimaryAction);
+  const navigateToCalendar = (
+    event: React.MouseEvent<HTMLAnchorElement>,
+    href: string
+  ) => {
+    event.preventDefault();
+    triggerHaptic();
+
+    const navigate = () => setLocation(href);
+    const shouldReduceMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches;
+    const transitionDocument = document as ViewTransitionDocument;
+
+    if (shouldReduceMotion || !transitionDocument.startViewTransition) {
+      navigate();
+      return;
+    }
+
+    setIsCalendarNavigating(true);
+    const transition = transitionDocument.startViewTransition(navigate);
+    transition.finished?.finally(() => setIsCalendarNavigating(false));
+  };
 
   return (
     <div
@@ -136,8 +164,16 @@ export function HomeHeaderActions({
               href={primaryMeta.href}
               aria-label={primaryMeta.label}
               data-mobile-primary-action={mobilePrimaryAction}
-              onClick={() => triggerHaptic()}
-              className="order-first inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white px-0 font-semibold text-slate-900 shadow-sm transition-[transform,background-color] duration-150 hover:bg-slate-100 active:scale-[0.97] focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-slate-800 sm:w-auto sm:px-3"
+              data-calendar-navigation={mobilePrimaryAction === "calendar" || undefined}
+              aria-busy={isCalendarNavigating || undefined}
+              onClick={event =>
+                mobilePrimaryAction === "calendar"
+                  ? navigateToCalendar(event, primaryMeta.href)
+                  : triggerHaptic()
+              }
+              className={`order-first inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white px-0 font-semibold text-slate-900 shadow-sm transition-[transform,background-color,opacity] duration-150 hover:bg-slate-100 active:scale-[0.97] focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-slate-800 sm:w-auto sm:px-3 ${
+                isCalendarNavigating ? "scale-[0.98] opacity-80" : ""
+              }`}
             >
               {mobilePrimaryAction === "calendar" ? <CalendarDays className="size-4" aria-hidden="true" /> : <Ticket className="size-4" aria-hidden="true" />}
               <span className="ml-1.5 hidden whitespace-nowrap sm:inline">{mobilePrimaryAction === "calendar" ? "Calendário" : "Gestão"}</span>
@@ -147,7 +183,13 @@ export function HomeHeaderActions({
             <Link
               href={mobilePrimaryAction === "calendar" ? "/gestao-passagens" : "/calendar"}
               aria-label={mobilePrimaryAction === "calendar" ? "Abrir Gestão de Passagens" : "Calendário"}
-              onClick={() => triggerHaptic()}
+              data-calendar-navigation={mobilePrimaryAction === "passages" || undefined}
+              aria-busy={isCalendarNavigating || undefined}
+              onClick={event =>
+                mobilePrimaryAction === "passages"
+                  ? navigateToCalendar(event, "/calendar")
+                  : triggerHaptic()
+              }
               className={`${headerButtonClass} inline-flex h-10 w-10 shrink-0 items-center justify-center whitespace-nowrap px-0 sm:w-auto sm:min-w-[6.75rem] sm:px-3`}
             >
               {mobilePrimaryAction === "calendar" ? <Ticket className="size-4" aria-hidden="true" /> : <CalendarDays className="size-4" aria-hidden="true" />}

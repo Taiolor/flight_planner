@@ -824,6 +824,7 @@
 - [x] Permitir metas de emissão independentes para cada ano no comparativo
 - [x] Exibir percentual de conclusão para todos os anos comparados
 - [x] Adicionar visualização de tendência de emissões versus metas anuais
+- [x] Adicionar transição suave e acessível ao navegar pelo botão de Calendário
 
 ## Processo reutilizável
 

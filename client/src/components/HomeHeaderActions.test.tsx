@@ -1,8 +1,8 @@
 /** @vitest-environment jsdom */
 import React from "react";
-import { fireEvent, render, screen, within } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import { readFileSync } from "node:fs";
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { HomeHeaderActions } from "./HomeHeaderActions";
 
 vi.mock("@/components/GlobalYearSelector", () => ({
@@ -10,6 +10,8 @@ vi.mock("@/components/GlobalYearSelector", () => ({
 }));
 
 describe("HomeHeaderActions", () => {
+  afterEach(cleanup);
+
   it("mantém a ação primária visível e agrupa controles secundários de forma acessível", () => {
     const onShowChart = vi.fn();
 
@@ -58,6 +60,64 @@ describe("HomeHeaderActions", () => {
     expect(screen.getByRole("button", { name: "Entrar" })).toBeTruthy();
   });
 
+  it("usa uma View Transition ao abrir o Calendário quando o navegador oferece suporte", () => {
+    const viewTransitionDocument = document as Document & {
+      startViewTransition?: unknown;
+    };
+    const originalStartViewTransition = viewTransitionDocument.startViewTransition;
+    const originalMatchMedia = window.matchMedia;
+    const startViewTransition = vi.fn((callback: () => void) => {
+      callback();
+      return { finished: Promise.resolve() };
+    });
+    Object.defineProperty(viewTransitionDocument, "startViewTransition", {
+      configurable: true,
+      value: startViewTransition,
+    });
+    Object.defineProperty(window, "matchMedia", {
+      configurable: true,
+      value: vi.fn().mockReturnValue({ matches: false }),
+    });
+
+    render(
+      <HomeHeaderActions
+        selectedYear={2026}
+        theme="light"
+        colorPreset="ocean"
+        colorPresetOptions={{ ocean: { name: "Azul" } }}
+        hideValues={false}
+        pushStatus="default"
+        pushSubscribed={false}
+        pushLoading={false}
+        isAuthenticated={false}
+        isAdmin={false}
+        pdfExport={<button type="button">Exportar PDF</button>}
+        onShowChart={vi.fn()}
+        onToggleTheme={vi.fn()}
+        onColorPresetChange={vi.fn()}
+        onToggleValues={vi.fn()}
+        onToggleNotifications={vi.fn()}
+        onSignIn={vi.fn()}
+        onSignOut={vi.fn()}
+      />
+    );
+
+    const calendarLink = screen.getByRole("link", { name: "Calendário" });
+    fireEvent.click(calendarLink);
+
+    expect(calendarLink.getAttribute("data-calendar-navigation")).toBe("true");
+    expect(startViewTransition).toHaveBeenCalledOnce();
+
+    Object.defineProperty(viewTransitionDocument, "startViewTransition", {
+      configurable: true,
+      value: originalStartViewTransition,
+    });
+    Object.defineProperty(window, "matchMedia", {
+      configurable: true,
+      value: originalMatchMedia,
+    });
+  });
+
   it("preserva a quebra controlada dos grupos em telas estreitas", () => {
     const source = readFileSync(
       "client/src/components/HomeHeaderActions.tsx",
@@ -70,6 +130,8 @@ describe("HomeHeaderActions", () => {
     expect(source).toContain("inline-flex h-10 w-10 shrink-0 items-center justify-center whitespace-nowrap");
     expect(source).toContain("sm:min-w-[6.75rem]");
     expect(source).toContain("data-mobile-primary-action={mobilePrimaryAction}");
+    expect(source).toContain("data-calendar-navigation");
+    expect(source).toContain("startViewTransition");
     expect(source).toContain("SlidersHorizontal");
     expect(source).toContain('title="Aparência"');
     expect(source).not.toContain('<span className="ml-1.5 hidden sm:inline">Aparência</span>');
