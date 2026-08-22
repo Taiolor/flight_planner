@@ -137,26 +137,25 @@ function KpiCard({
   subtitle,
   icon: Icon,
   trend,
-  color = "navy",
+  accent = "blue",
 }: {
   title: string;
   value: string;
   subtitle?: string;
   icon: React.ElementType;
   trend?: { value: number; label: string };
-  color?: "navy" | "blue" | "green" | "orange" | "purple" | "red";
+  accent?: "blue" | "green" | "orange" | "purple" | "red";
 }) {
-  const colorMap = {
-    navy: "bg-[#071a36] text-white border border-[#315c99]",
-    blue: "from-blue-500 to-blue-700 text-white",
-    green: "from-emerald-500 to-emerald-700 text-white",
-    orange: "from-orange-500 to-orange-700 text-white",
-    purple: "from-purple-500 to-purple-700 text-white",
-    red: "from-red-500 to-red-700 text-white",
+  const accentMap = {
+    blue: "bg-sky-300/15 text-sky-100 ring-sky-200/30",
+    green: "bg-emerald-300/15 text-emerald-100 ring-emerald-200/30",
+    orange: "bg-amber-300/15 text-amber-100 ring-amber-200/30",
+    purple: "bg-violet-300/15 text-violet-100 ring-violet-200/30",
+    red: "bg-rose-300/15 text-rose-100 ring-rose-200/30",
   };
   return (
     <div
-      className={`rounded-2xl ${color === "navy" ? "" : "bg-gradient-to-br"} ${colorMap[color]} p-3 sm:p-5 shadow-lg overflow-hidden`}
+      className="overflow-hidden rounded-2xl border border-[#315c99] bg-[#071a36] p-3 text-white shadow-lg sm:p-5"
     >
       <div className="flex items-start justify-between">
         <div className="flex-1 min-w-0 overflow-hidden">
@@ -170,7 +169,7 @@ function KpiCard({
             <p className="text-xs opacity-75 mt-1 line-clamp-2">{subtitle}</p>
           )}
         </div>
-        <div className="ml-3 p-2 rounded-xl bg-white/20">
+        <div className={`ml-3 rounded-xl p-2 ring-1 ${accentMap[accent]}`}>
           <Icon className="w-5 h-5" />
         </div>
       </div>
@@ -547,7 +546,7 @@ function FinancialDashboardContent() {
               value={formatBRL(yearSummary?.totalCashBRL ?? 0, !showValues)}
               subtitle={`${yearSummary?.issuedCount ?? 0} viagens emitidas`}
               icon={DollarSign}
-              color="navy"
+              accent="blue"
               trend={
                 trendData
                   ? { value: trendData.trend, label: "2º sem. vs 1º sem." }
@@ -559,21 +558,21 @@ function FinancialDashboardContent() {
               value={formatBRL(yearSummary?.avgCashBRL ?? 0, !showValues)}
               subtitle="Passagens em dinheiro"
               icon={Plane}
-              color="green"
+              accent="green"
             />
             <KpiCard
               title="Milhas SMILES"
               value={formatMiles(yearSummary?.totalSmilesPoints ?? 0)}
               subtitle="Pontos gastos no ano"
               icon={Star}
-              color="orange"
+              accent="orange"
             />
             <KpiCard
               title="Milhas LATAM Pass"
               value={formatMiles(yearSummary?.totalLatamPassPoints ?? 0)}
               subtitle="Pontos gastos no ano"
               icon={Star}
-              color="purple"
+              accent="purple"
             />
           </div>
 

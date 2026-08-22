@@ -155,3 +155,4 @@
 - [x] Simular falha de query de total por período em teste renderizado da Telemetria
 - [x] Revalidar tipos, build e suíte completa após a regressão integrada de erro
 - [x] Corrigir o fundo e o contraste do card Total investido na Gestão Financeira
+- [x] Aplicar padrão de contraste azul-marinho aos cards financeiros secundários
