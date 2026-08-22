@@ -818,6 +818,7 @@
 - [x] Atualizar o resumo de semanas sem passagens pelas datas efetivas emitidas
 - [x] Exibir nomes de companhias aéreas em caixa alta em toda a interface
 - [x] Adicionar logos pequenos e acessíveis aos badges de companhia dos bilhetes
+- [x] Recalcular o percentual do Progresso anual pela meta de viagens selecionada
 
 ## Processo reutilizável
 

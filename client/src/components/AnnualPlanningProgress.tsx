@@ -73,12 +73,12 @@ export function AnnualPlanningProgress({
               Progresso anual de emissões
             </h2>
             <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-              {progress.issuedWeeks} de {progress.totalWeeks} semanas já possuem passagem emitida.
+              {progress.issuedWeeks} de {goal} emissões da meta anual já foram registradas.
             </p>
           </div>
           <div className="flex items-center gap-2 self-start sm:self-auto">
             <span className="text-3xl font-black text-emerald-600 dark:text-emerald-400">
-              {progress.completionPercent}%
+              {goalProgress.percent}%
             </span>
             <span className="mb-1 text-xs text-slate-500 dark:text-slate-400">concluído</span>
             {isOpen ? (
@@ -96,11 +96,11 @@ export function AnnualPlanningProgress({
           aria-label="Progresso anual de passagens emitidas"
           aria-valuemin={0}
           aria-valuemax={100}
-          aria-valuenow={progress.completionPercent}
+          aria-valuenow={goalProgress.percent}
         >
           <div
             className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-cyan-500 transition-[width] duration-500"
-            style={{ width: `${progress.completionPercent}%` }}
+            style={{ width: `${goalProgress.percent}%` }}
           />
         </div>
 

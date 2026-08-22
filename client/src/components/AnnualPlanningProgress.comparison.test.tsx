@@ -41,6 +41,13 @@ describe("AnnualPlanningProgress", () => {
   it("exibe emissões e pendências de cada ano", () => {
     render(<AnnualPlanningProgress {...baseProps} />);
 
+    expect(screen.getByText("28 de 35 emissões da meta anual já foram registradas.")).toBeTruthy();
+    expect(screen.getByText("80%")).toBeTruthy();
+    expect(
+      screen.getByRole("progressbar", {
+        name: "Progresso anual de passagens emitidas",
+      }).getAttribute("aria-valuenow")
+    ).toBe("80");
     expect(screen.getByText("Comparativo entre anos")).toBeTruthy();
     expect(screen.getByText("28/44 emitidas · 16 pendentes")).toBeTruthy();
     expect(screen.getByText("8/44 emitidas · 36 pendentes")).toBeTruthy();
