@@ -45,6 +45,14 @@ export function PassageManagementFrame({
         </div>
       </div>
       <div id="passage-management-content" className="p-3 sm:p-5">
+        <div
+          className="mb-4 flex flex-wrap items-center gap-2 rounded-xl border border-violet-200 bg-violet-50 px-3 py-2 text-xs font-medium text-violet-950 dark:border-violet-900/70 dark:bg-violet-950/30 dark:text-violet-100"
+          aria-label="Legenda: voo cancelado em roxo-escuro"
+        >
+          <span aria-hidden="true" className="size-2.5 shrink-0 rounded-full bg-[#4B0082] shadow-sm shadow-violet-950/40" />
+          <span>Cancelado</span>
+          <span className="text-violet-700 dark:text-violet-300">Dias e voos cancelados usam roxo-escuro.</span>
+        </div>
         {children}
       </div>
     </section>

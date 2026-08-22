@@ -147,3 +147,10 @@
 - [x] Reexecutar e registrar a auditoria final de acentos azuis dos módulos operacionais
 - [x] Organizar os filtros de período da Telemetria em uma única linha distribuída e acessível
 - [x] Aplicar #4B0082 ao fundo dos dias com voos cancelados no Calendário
+- [x] Adicionar legenda roxa de voos cancelados à Gestão de Passagens
+- [x] Persistir o último período escolhido nos filtros de Telemetria
+- [x] Exibir totais de eventos diretamente nos filtros de período da Telemetria
+- [x] Exibir estado neutro quando o total de um período da Telemetria falhar
+- [x] Cobrir falha individual de total por período com regressão automatizada
+- [x] Simular falha de query de total por período em teste renderizado da Telemetria
+- [x] Revalidar tipos, build e suíte completa após a regressão integrada de erro

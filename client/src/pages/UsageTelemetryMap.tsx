@@ -7,6 +7,12 @@ import { Card } from "@/components/ui/card";
 import { ContentReveal } from "@/components/ContentReveal";
 import { StandardPageHeader } from "@/components/StandardPageHeader";
 import { queryCachePolicies } from "@/lib/queryCache";
+import {
+  readTelemetryPeriodPreference,
+  saveTelemetryPeriodPreference,
+  type TelemetryPeriod,
+} from "@/lib/telemetryPeriodPreference";
+import { getTelemetryPeriodTotalLabel } from "@/lib/telemetryPeriodTotals";
 import { trpc } from "@/lib/trpc";
 import {
   Activity,
@@ -86,7 +92,7 @@ export default function UsageTelemetryMap() {
 }
 
 function UsageTelemetryMapContent() {
-  const [hours, setHours] = useState(24);
+  const [hours, setHours] = useState<TelemetryPeriod>(() => readTelemetryPeriodPreference());
   const [eventTypes, setEventTypes] = useState<EventType[]>([]);
   const telemetryFilters = useMemo(
     () => ({
@@ -103,6 +109,17 @@ function UsageTelemetryMapContent() {
     telemetryFilters,
     { enabled: true, ...queryCachePolicies.admin }
   );
+  const periodSummaryQueries = trpc.useQueries(query =>
+    PERIOD_FILTERS.map(option =>
+      query.usageTelemetry.getSummary(
+        {
+          hours: option.hours,
+          eventTypes: eventTypes.length > 0 ? eventTypes : undefined,
+        },
+        { enabled: true, ...queryCachePolicies.admin }
+      )
+    )
+  );
 
   const totalEvents = useMemo(
     () => (summaryQuery.data ?? []).reduce((total, item) => total + Number(item.count), 0),
@@ -111,6 +128,19 @@ function UsageTelemetryMapContent() {
   const locatedEvents = useMemo(
     () => (summaryQuery.data ?? []).reduce((total, item) => total + Number(item.located), 0),
     [summaryQuery.data]
+  );
+  const periodEventTotals = useMemo(
+    () =>
+      PERIOD_FILTERS.map((option, index) => ({
+        hours: option.hours,
+        isLoading: periodSummaryQueries[index]?.isLoading ?? true,
+        isError: periodSummaryQueries[index]?.isError ?? false,
+        total: (periodSummaryQueries[index]?.data ?? []).reduce(
+          (total, item) => total + Number(item.count),
+          0
+        ),
+      })),
+    [periodSummaryQueries]
   );
   const mapPoints = useMemo<OpenStreetMapPoint[]>(
     () =>
@@ -131,6 +161,10 @@ function UsageTelemetryMapContent() {
         ? current.filter(type => type !== eventType)
         : [...current, eventType]
     );
+  };
+  const handlePeriodChange = (nextPeriod: TelemetryPeriod) => {
+    setHours(nextPeriod);
+    saveTelemetryPeriodPreference(nextPeriod);
   };
 
   return (
@@ -174,16 +208,29 @@ function UsageTelemetryMapContent() {
 
         <section className="grid grid-cols-4 gap-2" aria-label="Filtros de telemetria">
           {PERIOD_FILTERS.map(option => (
-            <Button
-              key={option.hours}
-              size="sm"
-              className="w-full min-w-0 whitespace-nowrap px-1.5 text-[10px] sm:px-3 sm:text-sm"
-              variant={hours === option.hours ? "default" : "outline"}
-              aria-label={option.ariaLabel}
-              onClick={() => setHours(option.hours)}
-            >
-              {option.label}
-            </Button>
+            (() => {
+              const periodTotal = periodEventTotals.find(item => item.hours === option.hours);
+              const totalLabel = getTelemetryPeriodTotalLabel({
+                isLoading: periodTotal?.isLoading ?? true,
+                isError: periodTotal?.isError ?? false,
+                total: periodTotal?.total ?? 0,
+              });
+
+              return (
+                <Button
+                  key={option.hours}
+                  size="sm"
+                  className="w-full min-w-0 whitespace-nowrap px-1.5 text-[10px] sm:px-3 sm:text-sm"
+                  variant={hours === option.hours ? "default" : "outline"}
+                  aria-label={`${option.ariaLabel}: ${totalLabel === "—" ? "total indisponível" : `${totalLabel} eventos`}`}
+                  aria-pressed={hours === option.hours}
+                  onClick={() => handlePeriodChange(option.hours)}
+                >
+                  <span>{option.label}</span>
+                  <span className="ml-1 opacity-75" aria-hidden="true">{totalLabel}</span>
+                </Button>
+              );
+            })()
           ))}
           <Badge variant="outline" className="col-span-4 justify-center border-slate-600 text-slate-300">
             até 200 pontos aproximados

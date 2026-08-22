@@ -49,4 +49,12 @@ describe("frame Gestão de Passagens da Home", () => {
     expect(source).toContain("Terminal ida:");
     expect(source).toContain("Terminal volta:");
   });
+
+  it("identifica voos cancelados com legenda roxa no frame de Gestão", () => {
+    const frameSource = readFileSync("client/src/components/PassageManagementFrame.tsx", "utf8");
+
+    expect(frameSource).toContain("Legenda: voo cancelado em roxo-escuro");
+    expect(frameSource).toContain("bg-[#4B0082]");
+    expect(frameSource).toContain("Dias e voos cancelados usam roxo-escuro.");
+  });
 });
