@@ -32,6 +32,11 @@ export function TestNextAlertButton() {
       className="gap-2 text-blue-600 border-blue-200 hover:bg-blue-50"
       onClick={handleTest}
       disabled={isLoading}
+      aria-label={
+        isLoading
+          ? "Enviando..."
+          : "Testar alerta de passagens do próximo mês"
+      }
     >
       <FlaskConical className="w-4 h-4" />
       {isLoading ? "Enviando..." : "Testar"}

@@ -136,6 +136,11 @@ export function ShareByEmailButton({
     <Button
       onClick={handleShareByEmail}
       disabled={isDisabled}
+      aria-label={
+        isLoading
+          ? "Enviando..."
+          : `📧 Compartilhar bilhetes da semana ${weekNumber} por e-mail`
+      }
       className="w-full bg-blue-600 hover:bg-blue-700 text-white"
       size="sm"
     >
