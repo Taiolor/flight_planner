@@ -1334,11 +1334,15 @@ export default function FinancialDashboard() {
               {/* Parâmetros de projeção */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="bg-slate-50 dark:bg-slate-800/50 rounded-xl p-4">
-                  <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wide mb-2">
+                  <label
+                    htmlFor="inflation-rate"
+                    className="block text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wide mb-2"
+                  >
                     Inflação estimada (IPCA)
                   </label>
                   <div className="flex items-center gap-3">
                     <input
+                      id="inflation-rate"
                       type="range"
                       min={0}
                       max={20}
@@ -1354,11 +1358,15 @@ export default function FinancialDashboard() {
                   </div>
                 </div>
                 <div className="bg-slate-50 dark:bg-slate-800/50 rounded-xl p-4">
-                  <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wide mb-2">
+                  <label
+                    htmlFor="trips-per-month"
+                    className="block text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wide mb-2"
+                  >
                     Viagens por mês (frequência)
                   </label>
                   <div className="flex items-center gap-3">
                     <input
+                      id="trips-per-month"
                       type="range"
                       min={1}
                       max={8}
