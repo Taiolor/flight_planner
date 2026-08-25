@@ -1,7 +1,7 @@
 /** @vitest-environment jsdom */
 import React from "react";
-import { render, screen } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { YearProvider } from "@/contexts/YearContext";
 
 (globalThis as typeof globalThis & { React: typeof React }).React = React;
@@ -13,6 +13,7 @@ const mocks = vi.hoisted(() => ({
   performance: vi.fn(),
   reliability: vi.fn(),
   sendTest: vi.fn(),
+  sendNextAlert: vi.fn(),
   recipients: vi.fn(),
   addRecipient: vi.fn(),
   removeRecipient: vi.fn(),
@@ -25,6 +26,7 @@ vi.mock("@/lib/trpc", () => ({
     adminNotifications: {
       getStatus: { useQuery: mocks.status },
       getLogs: { useInfiniteQuery: mocks.logs },
+      sendNextAlert: { useMutation: mocks.sendNextAlert },
     },
     performanceMetrics: { getSummary: { useQuery: mocks.performance } },
     reliability: { getFlightWeeksSummary: { useQuery: mocks.reliability } },
@@ -60,7 +62,8 @@ function renderPage() {
 function configureSharedQueries() {
   mocks.logs.mockReturnValue({
     data: { pages: [{ items: [] }] },
-    refetch: vi.fn(),
+    refetch: vi.fn().mockResolvedValue({ error: null }),
+    isFetching: false,
     hasNextPage: false,
     isFetchingNextPage: false,
     fetchNextPage: vi.fn(),
@@ -77,6 +80,7 @@ function configureSharedQueries() {
     isError: false,
   });
   mocks.sendTest.mockReturnValue({ mutate: vi.fn(), isPending: false });
+  mocks.sendNextAlert.mockReturnValue({ mutate: vi.fn(), isPending: false });
   mocks.recipients.mockReturnValue({ data: [], refetch: vi.fn() });
   mocks.addRecipient.mockReturnValue({ mutate: vi.fn(), isPending: false });
   mocks.removeRecipient.mockReturnValue({ mutate: vi.fn(), isPending: false });
@@ -84,6 +88,11 @@ function configureSharedQueries() {
 }
 
 describe("AdminNotifications", () => {
+  afterEach(() => {
+    cleanup();
+    vi.clearAllMocks();
+  });
+
   it("mantém a ordem dos Hooks quando a sessão autenticada deixa o estado de carregamento", () => {
     configureSharedQueries();
     mocks.authCheck.mockReturnValue({ data: undefined, isLoading: true });
@@ -168,5 +177,49 @@ describe("AdminNotifications", () => {
     expect(screen.getByRole("alert").textContent).toContain(
       "Divergência permanente de schema detectada"
     );
+  });
+
+  it("exibe confirmação visual ao alternar a atualização automática", () => {
+    configureSharedQueries();
+    mocks.authCheck.mockReturnValue({
+      data: { authenticated: true, email: "admin@smartfly.test", isAdmin: true },
+      isLoading: false,
+    });
+    mocks.status.mockReturnValue({
+      data: emptyStatus,
+      isLoading: false,
+      error: null,
+      refetch: vi.fn().mockResolvedValue({ error: null }),
+      isFetching: false,
+    });
+
+    renderPage();
+    fireEvent.click(screen.getByRole("button", { name: "Ativar atualização automática" }));
+
+    expect(screen.getByRole("status").textContent).toContain(
+      "Atualização automática ativada"
+    );
+  });
+
+  it("informa a conclusão após atualizar manualmente os dados do painel", async () => {
+    configureSharedQueries();
+    const refetch = vi.fn().mockResolvedValue({ error: null });
+    mocks.authCheck.mockReturnValue({
+      data: { authenticated: true, email: "admin@smartfly.test", isAdmin: true },
+      isLoading: false,
+    });
+    mocks.status.mockReturnValue({
+      data: emptyStatus,
+      isLoading: false,
+      error: null,
+      refetch,
+      isFetching: false,
+    });
+
+    renderPage();
+    fireEvent.click(screen.getByLabelText("Atualizar"));
+
+    await waitFor(() => expect(refetch).toHaveBeenCalledOnce());
+    expect(screen.getByRole("status").textContent).toContain("Dados do painel atualizados");
   });
 });

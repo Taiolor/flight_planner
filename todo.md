@@ -831,6 +831,7 @@
 - [x] Aplicar a transição suave às rotas Novidades e administrativas no cabeçalho
 - [x] Restaurar o foco no controle que iniciou uma navegação de retorno
 - [x] Adicionar atalho acessível para voltar ao topo das páginas longas
+- [x] Aprimorar animações de carregamento e feedback visual nas interações do painel administrativo de notificações
 
 ## Processo reutilizável
 

@@ -70,6 +70,11 @@ export type AdminActionTimelineEntry = AdminFormAction & {
   source: "push" | "recipients" | "test-email";
 };
 
+type AdminInteractionFeedback = {
+  kind: "success" | "error" | "info";
+  message: string;
+};
+
 const ADMIN_ACTION_TIMELINE_KEY = "viagens.admin.action-timeline";
 const MAX_ADMIN_ACTION_TIMELINE_ENTRIES = 30;
 
@@ -228,6 +233,34 @@ function LastAdminFormAction({
   );
 }
 
+function AdminInteractionFeedback({
+  feedback,
+}: {
+  feedback: AdminInteractionFeedback | null;
+}) {
+  if (!feedback) return null;
+
+  const Icon = feedback.kind === "success" ? CheckCircle2 : AlertCircle;
+  const colorClass =
+    feedback.kind === "success"
+      ? "border-emerald-200 bg-emerald-50 text-emerald-800"
+      : feedback.kind === "error"
+        ? "border-red-200 bg-red-50 text-red-800"
+        : "border-[#c8d6e9] bg-[#f4f7fb] text-[#0b2349]";
+
+  return (
+    <div
+      role={feedback.kind === "error" ? "alert" : "status"}
+      aria-live={feedback.kind === "error" ? "assertive" : "polite"}
+      aria-atomic="true"
+      className={`flex items-start gap-2 rounded-lg border p-3 text-sm animate-in fade-in slide-in-from-top-1 duration-200 motion-reduce:animate-none ${colorClass}`}
+    >
+      <Icon className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+      <span>{feedback.message}</span>
+    </div>
+  );
+}
+
 export function getAdminAccessState({
   isCheckingAuthentication,
   isAuthenticated,
@@ -299,6 +332,7 @@ function AdminNotificationsContent() {
     kind: "success" | "error";
     message: string;
   } | null>(null);
+  const [panelFeedback, setPanelFeedback] = useState<AdminInteractionFeedback | null>(null);
   const registerPushAction = (
     label: string,
     status: AdminFormAction["status"]
@@ -323,6 +357,19 @@ function AdminNotificationsContent() {
     clearAdminActionTimeline();
     setActionTimeline([]);
     toast.success("Linha do tempo local limpa.");
+  };
+
+  const handleAutoRefreshToggle = () => {
+    setAutoRefresh(current => {
+      const next = !current;
+      setPanelFeedback({
+        kind: "success",
+        message: next
+          ? "Atualização automática ativada: o painel será atualizado a cada minuto."
+          : "Atualização automática desativada. Use Atualizar quando quiser consultar dados novos.",
+      });
+      return next;
+    });
   };
 
   const toggleSection = (section: string) => {
@@ -351,6 +398,31 @@ function AdminNotificationsContent() {
       getNextPageParam: lastPage => lastPage.nextCursor,
     }
   );
+  const handlePanelRefresh = async () => {
+    setPanelFeedback({ kind: "info", message: "Atualizando dados do painel..." });
+    const result = await refetch();
+    if (result.error) {
+      setPanelFeedback({
+        kind: "error",
+        message: "Não foi possível atualizar os dados do painel. Tente novamente.",
+      });
+      return;
+    }
+    setPanelFeedback({ kind: "success", message: "Dados do painel atualizados." });
+  };
+
+  const handleHistoryRefresh = async () => {
+    setPanelFeedback({ kind: "info", message: "Atualizando histórico de envios..." });
+    const result = await logsQuery.refetch();
+    if (result.error) {
+      setPanelFeedback({
+        kind: "error",
+        message: "Não foi possível atualizar o histórico de envios. Tente novamente.",
+      });
+      return;
+    }
+    setPanelFeedback({ kind: "success", message: "Histórico de envios atualizado." });
+  };
   const logs = useMemo(
     () => logsQuery.data?.pages.flatMap(page => page.items) ?? [],
     [logsQuery.data]
@@ -489,7 +561,7 @@ function AdminNotificationsContent() {
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => setAutoRefresh(v => !v)}
+              onClick={handleAutoRefreshToggle}
               aria-label={
                 autoRefresh
                   ? "Desativar atualização automática"
@@ -509,21 +581,23 @@ function AdminNotificationsContent() {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => refetch()}
+              onClick={() => void handlePanelRefresh()}
               disabled={isFetching}
               aria-label="Atualizar"
+              aria-busy={isFetching}
               className="gap-2 border-white/40 bg-white/10 text-white hover:bg-white hover:text-[#0b2349]"
             >
               <RefreshCw
                 className={`w-4 h-4 ${isFetching ? "animate-spin" : ""}`}
               />
-              <span className="hidden sm:inline">Atualizar</span>
+              <span className="hidden sm:inline">{isFetching ? "Atualizando..." : "Atualizar"}</span>
             </Button>
           </>
         }
       />
 
       <div className="max-w-5xl mx-auto px-4 py-6 space-y-6">
+        <AdminInteractionFeedback feedback={panelFeedback} />
         {/* Cards de resumo */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           <Card className="p-4 border-l-4 border-l-blue-500">
@@ -602,6 +676,7 @@ function AdminNotificationsContent() {
               size="sm"
               onClick={() => reliabilityQuery.refetch()}
               disabled={reliabilityQuery.isFetching}
+              aria-busy={reliabilityQuery.isFetching}
               className="shrink-0"
             >
               <RefreshCw className={`mr-2 h-4 w-4 ${reliabilityQuery.isFetching ? "animate-spin" : ""}`} aria-hidden="true" />
@@ -672,12 +747,13 @@ function AdminNotificationsContent() {
               size="sm"
               onClick={() => performanceSummaryQuery.refetch()}
               disabled={performanceSummaryQuery.isFetching}
+              aria-busy={performanceSummaryQuery.isFetching}
               className="text-xs text-gray-500 gap-1"
             >
               <RefreshCw
                 className={`w-3 h-3 ${performanceSummaryQuery.isFetching ? "animate-spin" : ""}`}
               />
-              Atualizar
+              {performanceSummaryQuery.isFetching ? "Atualizando..." : "Atualizar"}
             </Button>
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
@@ -1024,11 +1100,14 @@ function AdminNotificationsContent() {
             </button>
             <button
               type="button"
-              onClick={() => logsQuery.refetch()}
+              onClick={() => void handleHistoryRefresh()}
+              disabled={logsQuery.isFetching}
+              aria-busy={logsQuery.isFetching}
               className="text-xs text-gray-400 hover:text-gray-600 flex items-center gap-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm"
               aria-label="Atualizar histórico de envios"
             >
-              <RefreshCw className="w-3 h-3" /> Atualizar
+              <RefreshCw className={`w-3 h-3 ${logsQuery.isFetching ? "animate-spin" : ""}`} />
+              {logsQuery.isFetching ? "Atualizando..." : "Atualizar"}
             </button>
           </div>
 
@@ -1385,24 +1464,7 @@ function TicketNotificationEmailsSection({
 
   return (
     <div className="space-y-5 p-4 sm:p-5">
-      {emailFeedback && (
-        <div
-          role="status"
-          aria-live="polite"
-          className={`flex items-start gap-2 rounded-lg border p-3 text-sm animate-in fade-in slide-in-from-top-1 duration-200 ${
-            emailFeedback.kind === "success"
-              ? "border-emerald-200 bg-emerald-50 text-emerald-800"
-              : "border-red-200 bg-red-50 text-red-800"
-          }`}
-        >
-          {emailFeedback.kind === "success" ? (
-            <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0" />
-          ) : (
-            <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
-          )}
-          <span>{emailFeedback.message}</span>
-        </div>
-      )}
+      <AdminInteractionFeedback feedback={emailFeedback} />
       {/* Formulário para adicionar novo e-mail */}
       <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
         <h3 className="font-medium text-gray-800 mb-3 text-sm">
@@ -1442,6 +1504,7 @@ function TicketNotificationEmailsSection({
             <Button
               type="submit"
               disabled={addRecipientMutation.isPending}
+              aria-busy={addRecipientMutation.isPending}
               className="w-full bg-purple-600 text-white gap-2 hover:bg-purple-700 sm:w-auto"
             >
               {addRecipientMutation.isPending ? (
@@ -1488,6 +1551,7 @@ function TicketNotificationEmailsSection({
                     removeRecipientMutation.mutate({ emailId: recipient.id })
                   }
                   disabled={removeRecipientMutation.isPending}
+                  aria-busy={removeRecipientMutation.isPending}
                   className="text-red-600 hover:text-red-700 hover:bg-red-50 ml-2 flex-shrink-0"
                   aria-label="Remover destinatário"
                   title="Remover destinatário"
@@ -1551,6 +1615,7 @@ function TicketNotificationEmailsSection({
               <Button
                 type="submit"
                 disabled={sendTestEmailMutation.isPending}
+                aria-busy={sendTestEmailMutation.isPending}
                 className="w-full bg-[#102f61] text-white gap-2 hover:bg-[#0b2349] sm:w-auto"
               >
                 {sendTestEmailMutation.isPending ? (
