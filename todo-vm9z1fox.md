@@ -169,3 +169,5 @@
 - [x] Exibir contador de filtros ativos no gatilho da Gestão de Passagens
 - [x] Permitir recolher e persistir a preferência da legenda de status do Calendário
 - [x] Exibir comparação mensal baseada em dados reais nos KPIs financeiros
+- [x] Corrigir a causa transitória da consulta flight_weeks no backend e no cliente
+- [x] Adicionar regressão de compatibilidade da projeção completa de flight_weeks

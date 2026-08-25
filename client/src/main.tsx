@@ -8,6 +8,7 @@ import App from "./App";
 import "./index.css";
 import { queryCachePolicies } from "./lib/queryCache";
 import { getTrpcProcedure } from "./lib/performanceTelemetry";
+import { isRetryableDatabaseQueryError } from "./lib/queryErrorRecovery";
 
 // Detecta se o erro é HTML em vez de JSON (ocorre quando o servidor está reiniciando após hibernação)
 const isHtmlResponse = (error: unknown): boolean => {
@@ -33,6 +34,8 @@ const queryClient = new QueryClient({
           return false;
         // Fazer até 3 retries para erros de HTML (servidor reiniciando)
         if (isHtmlResponse(error)) return failureCount < 3;
+        // Repetir falhas de banco transitórias antes de expor um erro na Home.
+        if (isRetryableDatabaseQueryError(error)) return failureCount < 2;
         // Não fazer retry para outros erros tRPC
         if (error instanceof TRPCClientError) return false;
         return failureCount < 1;

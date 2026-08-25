@@ -32,6 +32,7 @@ import {
   buildNotificationLogPage,
   type NotificationLogCursor,
 } from "./notificationLogPagination";
+import { retryTransientFlightWeeksRead } from "./flightWeeksQueryRecovery";
 
 let _db: ReturnType<typeof drizzle> | null = null;
 
@@ -129,6 +130,40 @@ export async function getUserByOpenId(openId: string) {
 
 const DEFAULT_PLANNING_YEAR = 2026;
 const flightWeeksPromises = new Map<number, Promise<FlightWeek[]>>();
+export const flightWeeksProjection = {
+  id: flightWeeks.id,
+  year: flightWeeks.year,
+  weekNumber: flightWeeks.weekNumber,
+  departureDate: flightWeeks.departureDate,
+  returnDate: flightWeeks.returnDate,
+  departureDayOfWeek: flightWeeks.departureDayOfWeek,
+  returnDayOfWeek: flightWeeks.returnDayOfWeek,
+  holiday: flightWeeks.holiday,
+  isDeleted: flightWeeks.isDeleted,
+  isTicketIssued: flightWeeks.isTicketIssued,
+  isSelected: flightWeeks.isSelected,
+  departureAirline: flightWeeks.departureAirline,
+  returnAirline: flightWeeks.returnAirline,
+  departureFlightDatetime: flightWeeks.departureFlightDatetime,
+  returnFlightDatetime: flightWeeks.returnFlightDatetime,
+  departureAirport: flightWeeks.departureAirport,
+  returnAirport: flightWeeks.returnAirport,
+  departureLocator: flightWeeks.departureLocator,
+  returnLocator: flightWeeks.returnLocator,
+  departureFlightNumber: flightWeeks.departureFlightNumber,
+  returnFlightNumber: flightWeeks.returnFlightNumber,
+  departureTerminal: flightWeeks.departureTerminal,
+  returnTerminal: flightWeeks.returnTerminal,
+  ticketType: flightWeeks.ticketType,
+  smilesPoints: flightWeeks.smilesPoints,
+  latamPassPoints: flightWeeks.latamPassPoints,
+  departureRescheduled: flightWeeks.departureRescheduled,
+  returnRescheduled: flightWeeks.returnRescheduled,
+  departureCancelled: flightWeeks.departureCancelled,
+  returnCancelled: flightWeeks.returnCancelled,
+  createdAt: flightWeeks.createdAt,
+  updatedAt: flightWeeks.updatedAt,
+};
 
 export async function getAllFlightWeeks(
   year = DEFAULT_PLANNING_YEAR
@@ -140,11 +175,14 @@ export async function getAllFlightWeeks(
     try {
       const db = await getDb();
       if (!db) return [];
-      return await db
-        .select()
-        .from(flightWeeks)
-        .where(eq(flightWeeks.year, year))
-        .orderBy(flightWeeks.weekNumber);
+      return await retryTransientFlightWeeksRead(
+        () =>
+          db
+            .select(flightWeeksProjection)
+            .from(flightWeeks)
+            .where(eq(flightWeeks.year, year))
+            .orderBy(flightWeeks.weekNumber),
+      );
     } finally {
       flightWeeksPromises.delete(year);
     }
