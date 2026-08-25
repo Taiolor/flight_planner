@@ -3,7 +3,7 @@ import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 
 describe("PWA Viagens branding", () => {
-  it("exposes Viagens as the installable app name with the dedicated icon", () => {
+  it("exposes Viagens with the same official SF icon used by the site", () => {
     const manifest = readFileSync(
       resolve(process.cwd(), "client/public/manifest.json"),
       "utf8"
@@ -15,7 +15,10 @@ describe("PWA Viagens branding", () => {
 
     expect(manifest).toContain('"name": "Viagens"');
     expect(manifest).toContain('"short_name": "Viagens"');
-    expect(manifest).toContain("/manus-storage/viagens-pwa-icon_9fa8e578.png");
+    expect(manifest).toContain("/manus-storage/smartfly-sf-pwa-icon_783c04c6.webp");
+    expect(manifest).toContain('"type": "image/webp"');
+    expect(document).toContain("smartfly-icon-512-fy4eDuGdVJBtxeYLKc2qAk.png");
+    expect(document).toContain("/manus-storage/smartfly-sf-apple-touch-icon_598faae4.png");
     expect(document).toContain('apple-mobile-web-app-title" content="Viagens"');
   });
 });

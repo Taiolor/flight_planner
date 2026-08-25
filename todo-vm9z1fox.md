@@ -174,3 +174,4 @@
 - [x] Registrar telemetria minimizada para falhas de leitura de flight_weeks, inclusive as recuperadas pelo retry
 - [x] Exibir estado de erro da Home com botão acessível para tentar novamente
 - [x] Alertar a área administrativa quando houver divergência permanente de schema
+- [x] Alinhar os ícones instaláveis Android e iOS ao logotipo oficial SF do menu

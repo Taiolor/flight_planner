@@ -10,10 +10,10 @@
   "lang": "pt-BR",
   "icons": [
     {
-      "src": "/manus-storage/viagens-pwa-icon_9fa8e578.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any maskable"
+      "src": "/manus-storage/smartfly-sf-pwa-icon_783c04c6.webp",
+      "sizes": "2048x2048",
+      "type": "image/webp",
+      "purpose": "any"
     }
   ],
   "categories": ["travel", "productivity"],
