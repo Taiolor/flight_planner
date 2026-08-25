@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import {
+  isFlightWeeksSchemaMismatchError,
   isTransientFlightWeeksReadError,
   retryTransientFlightWeeksRead,
 } from "./flightWeeksQueryRecovery";
@@ -15,16 +16,27 @@ describe("flightWeeksQueryRecovery", () => {
     expect(isTransientFlightWeeksReadError({ code: "ER_BAD_FIELD_ERROR" })).toBe(false);
   });
 
+  it("classifica divergências permanentes de schema sem tratá-las como transitórias", () => {
+    const error = { code: "ER_BAD_FIELD_ERROR", message: "Unknown column 'year'" };
+    expect(isFlightWeeksSchemaMismatchError(error)).toBe(true);
+    expect(isTransientFlightWeeksReadError(error)).toBe(false);
+  });
+
   it("repete uma única vez leituras transitórias e devolve os dados recuperados", async () => {
     const read = vi
       .fn()
       .mockRejectedValueOnce({ code: "ETIMEDOUT", message: "Connection timed out" })
       .mockResolvedValueOnce(["semana 26"]);
 
+    const onTransientFailure = vi.fn();
+
     await expect(
-      retryTransientFlightWeeksRead(read, { retryDelayMs: 0 })
+      retryTransientFlightWeeksRead(read, { retryDelayMs: 0, onTransientFailure })
     ).resolves.toEqual(["semana 26"]);
     expect(read).toHaveBeenCalledTimes(2);
+    expect(onTransientFailure).toHaveBeenCalledWith(
+      expect.objectContaining({ code: "ETIMEDOUT" })
+    );
   });
 
   it("não mascara uma falha permanente de schema", async () => {

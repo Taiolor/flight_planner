@@ -1,5 +1,5 @@
 import crypto from "crypto";
-import { and, desc, eq, gt, lt, or, sql } from "drizzle-orm";
+import { and, desc, eq, gt, gte, lt, or, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import {
   FlightWeek,
@@ -26,13 +26,18 @@ import {
   ticketNotificationEmails,
   InsertTicketNotificationEmail,
   TicketNotificationEmail,
+  performanceMetrics,
 } from "../drizzle/schema";
 import { ENV } from "./_core/env";
 import {
   buildNotificationLogPage,
   type NotificationLogCursor,
 } from "./notificationLogPagination";
-import { retryTransientFlightWeeksRead } from "./flightWeeksQueryRecovery";
+import {
+  isFlightWeeksSchemaMismatchError,
+  isTransientFlightWeeksReadError,
+  retryTransientFlightWeeksRead,
+} from "./flightWeeksQueryRecovery";
 
 let _db: ReturnType<typeof drizzle> | null = null;
 
@@ -130,6 +135,9 @@ export async function getUserByOpenId(openId: string) {
 
 const DEFAULT_PLANNING_YEAR = 2026;
 const flightWeeksPromises = new Map<number, Promise<FlightWeek[]>>();
+const FLIGHT_WEEKS_RELIABILITY_METRIC = "DBQ";
+const FLIGHT_WEEKS_TRANSIENT_PROCEDURE = "flights.getWeeks.transient";
+const FLIGHT_WEEKS_SCHEMA_PROCEDURE = "flights.getWeeks.schema";
 export const flightWeeksProjection = {
   id: flightWeeks.id,
   year: flightWeeks.year,
@@ -165,6 +173,77 @@ export const flightWeeksProjection = {
   updatedAt: flightWeeks.updatedAt,
 };
 
+async function recordFlightWeeksReadFailure(
+  db: NonNullable<Awaited<ReturnType<typeof getDb>>>,
+  error: unknown
+) {
+  const procedure = isFlightWeeksSchemaMismatchError(error)
+    ? FLIGHT_WEEKS_SCHEMA_PROCEDURE
+    : FLIGHT_WEEKS_TRANSIENT_PROCEDURE;
+
+  try {
+    await db.insert(performanceMetrics).values({
+      metric: FLIGHT_WEEKS_RELIABILITY_METRIC,
+      value: 1,
+      route: "/",
+      procedure,
+    });
+  } catch {
+    // A telemetria jamais deve impedir o retorno controlado do erro original.
+  }
+}
+
+export type FlightWeeksReliabilitySummary = {
+  transientFailures: number;
+  schemaFailures: number;
+  lastFailureAt: Date | null;
+};
+
+export async function getFlightWeeksReliabilitySummary(
+  hours: number
+): Promise<FlightWeeksReliabilitySummary> {
+  const db = await getDb();
+  if (!db) {
+    return { transientFailures: 0, schemaFailures: 0, lastFailureAt: null };
+  }
+
+  const since = new Date(Date.now() - hours * 60 * 60 * 1000);
+  const rows = await db
+    .select({
+      procedure: performanceMetrics.procedure,
+      count: sql<number>`count(*)`,
+      lastFailureAt: sql<Date | null>`max(${performanceMetrics.recordedAt})`,
+    })
+    .from(performanceMetrics)
+    .where(
+      and(
+        eq(performanceMetrics.metric, FLIGHT_WEEKS_RELIABILITY_METRIC),
+        gte(performanceMetrics.recordedAt, since)
+      )
+    )
+    .groupBy(performanceMetrics.procedure);
+
+  return rows.reduce<FlightWeeksReliabilitySummary>(
+    (summary, row) => {
+      const count = Number(row.count);
+      if (row.procedure === FLIGHT_WEEKS_SCHEMA_PROCEDURE) {
+        summary.schemaFailures += count;
+      } else if (row.procedure === FLIGHT_WEEKS_TRANSIENT_PROCEDURE) {
+        summary.transientFailures += count;
+      }
+
+      if (
+        row.lastFailureAt &&
+        (!summary.lastFailureAt || row.lastFailureAt > summary.lastFailureAt)
+      ) {
+        summary.lastFailureAt = row.lastFailureAt;
+      }
+      return summary;
+    },
+    { transientFailures: 0, schemaFailures: 0, lastFailureAt: null }
+  );
+}
+
 export async function getAllFlightWeeks(
   year = DEFAULT_PLANNING_YEAR
 ): Promise<FlightWeek[]> {
@@ -175,14 +254,25 @@ export async function getAllFlightWeeks(
     try {
       const db = await getDb();
       if (!db) return [];
-      return await retryTransientFlightWeeksRead(
-        () =>
-          db
-            .select(flightWeeksProjection)
-            .from(flightWeeks)
-            .where(eq(flightWeeks.year, year))
-            .orderBy(flightWeeks.weekNumber),
-      );
+      try {
+        return await retryTransientFlightWeeksRead(
+          () =>
+            db
+              .select(flightWeeksProjection)
+              .from(flightWeeks)
+              .where(eq(flightWeeks.year, year))
+              .orderBy(flightWeeks.weekNumber),
+          {
+            onTransientFailure: error =>
+              recordFlightWeeksReadFailure(db, error),
+          }
+        );
+      } catch (error) {
+        if (!isTransientFlightWeeksReadError(error)) {
+          await recordFlightWeeksReadFailure(db, error);
+        }
+        throw error;
+      }
     } finally {
       flightWeeksPromises.delete(year);
     }

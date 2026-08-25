@@ -2452,6 +2452,32 @@ export default function Home({ mode = "home" }: HomeProps) {
       </header>
 
       <main className="container py-4 sm:py-8">
+        {weeksQuery.isError && (
+          <Card
+            role="alert"
+            className="mb-4 flex flex-col gap-3 border-amber-300 bg-amber-50 p-4 text-amber-950 shadow-sm dark:border-amber-700 dark:bg-amber-950/30 dark:text-amber-50 sm:mb-6 sm:flex-row sm:items-center sm:justify-between"
+          >
+            <div className="flex items-start gap-3">
+              <AlertCircle className="mt-0.5 size-5 shrink-0 text-amber-700 dark:text-amber-300" aria-hidden="true" />
+              <div>
+                <p className="font-semibold">Não foi possível atualizar o planejamento agora.</p>
+                <p className="mt-1 text-sm text-amber-900/85 dark:text-amber-100/80">
+                  Seus dados não foram substituídos. Tente carregar novamente em alguns instantes.
+                </p>
+              </div>
+            </div>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => void weeksQuery.refetch()}
+              disabled={weeksQuery.isFetching}
+              className="shrink-0 border-amber-500 bg-white text-amber-950 hover:bg-amber-100 dark:bg-transparent dark:text-amber-50 dark:hover:bg-amber-900/50"
+            >
+              <RotateCw className={`mr-2 size-4 ${weeksQuery.isFetching ? "animate-spin" : ""}`} aria-hidden="true" />
+              Tentar novamente
+            </Button>
+          </Card>
+        )}
         {!isManagementView && (
           <>
             {LAYOUT_CONTROLS_ENABLED && (

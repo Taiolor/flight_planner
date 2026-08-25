@@ -11,6 +11,7 @@ const mocks = vi.hoisted(() => ({
   status: vi.fn(),
   logs: vi.fn(),
   performance: vi.fn(),
+  reliability: vi.fn(),
   sendTest: vi.fn(),
   recipients: vi.fn(),
   addRecipient: vi.fn(),
@@ -26,6 +27,7 @@ vi.mock("@/lib/trpc", () => ({
       getLogs: { useInfiniteQuery: mocks.logs },
     },
     performanceMetrics: { getSummary: { useQuery: mocks.performance } },
+    reliability: { getFlightWeeksSummary: { useQuery: mocks.reliability } },
     push: { sendTest: { useMutation: mocks.sendTest } },
     ticketNotifications: {
       getRecipients: { useQuery: mocks.recipients },
@@ -67,6 +69,12 @@ function configureSharedQueries() {
     data: [],
     refetch: vi.fn(),
     isFetching: false,
+  });
+  mocks.reliability.mockReturnValue({
+    data: { transientFailures: 0, schemaFailures: 0, lastFailureAt: null },
+    refetch: vi.fn(),
+    isFetching: false,
+    isError: false,
   });
   mocks.sendTest.mockReturnValue({ mutate: vi.fn(), isPending: false });
   mocks.recipients.mockReturnValue({ data: [], refetch: vi.fn() });
@@ -133,5 +141,32 @@ describe("AdminNotifications", () => {
     expect(
       screen.getByText("Serviço de notificações indisponível.")
     ).toBeTruthy();
+  });
+
+  it("sinaliza ao administrador uma divergência permanente de schema", () => {
+    configureSharedQueries();
+    mocks.authCheck.mockReturnValue({
+      data: { authenticated: true, email: "admin@smartfly.test", isAdmin: true },
+      isLoading: false,
+    });
+    mocks.status.mockReturnValue({
+      data: emptyStatus,
+      isLoading: false,
+      error: null,
+      refetch: vi.fn(),
+      isFetching: false,
+    });
+    mocks.reliability.mockReturnValue({
+      data: { transientFailures: 0, schemaFailures: 2, lastFailureAt: new Date() },
+      refetch: vi.fn(),
+      isFetching: false,
+      isError: false,
+    });
+
+    renderPage();
+
+    expect(screen.getByRole("alert").textContent).toContain(
+      "Divergência permanente de schema detectada"
+    );
   });
 });

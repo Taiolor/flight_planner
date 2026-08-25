@@ -362,6 +362,13 @@ function AdminNotificationsContent() {
       ...queryCachePolicies.admin,
     }
   );
+  const reliabilityQuery = trpc.reliability.getFlightWeeksSummary.useQuery(
+    { hours: 24 },
+    {
+      enabled: true,
+      ...queryCachePolicies.admin,
+    }
+  );
   const performanceByMetric = useMemo(
     () =>
       new Map(
@@ -372,6 +379,12 @@ function AdminNotificationsContent() {
       ),
     [performanceSummaryQuery.data]
   );
+  const reliabilitySummary = reliabilityQuery.data ?? {
+    transientFailures: 0,
+    schemaFailures: 0,
+    lastFailureAt: null,
+  };
+  const hasSchemaMismatch = reliabilitySummary.schemaFailures > 0;
 
   const sendTestMutation = trpc.push.sendTest.useMutation({
     onSuccess: result => {
@@ -546,6 +559,56 @@ function AdminNotificationsContent() {
             </p>
           </Card>
         </div>
+
+        <section
+          aria-labelledby="flight-weeks-integrity-title"
+          role={hasSchemaMismatch ? "alert" : undefined}
+          className={`rounded-2xl border p-4 ${
+            hasSchemaMismatch
+              ? "border-rose-200 bg-rose-50 text-rose-950"
+              : reliabilitySummary.transientFailures > 0
+                ? "border-amber-200 bg-amber-50 text-amber-950"
+                : "border-emerald-200 bg-emerald-50 text-emerald-950"
+          }`}
+        >
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-start gap-3">
+              {hasSchemaMismatch ? (
+                <AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-rose-700" aria-hidden="true" />
+              ) : (
+                <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-emerald-700" aria-hidden="true" />
+              )}
+              <div>
+                <p id="flight-weeks-integrity-title" className="text-sm font-semibold">
+                  Integridade de flight_weeks
+                </p>
+                {reliabilityQuery.isError ? (
+                  <p className="mt-1 text-sm">Não foi possível verificar a integridade nesta atualização.</p>
+                ) : hasSchemaMismatch ? (
+                  <p className="mt-1 text-sm">
+                    Divergência permanente de schema detectada em {reliabilitySummary.schemaFailures} leitura(s) nas últimas 24 horas. Revise a migração antes de alterar o planejamento.
+                  </p>
+                ) : reliabilitySummary.transientFailures > 0 ? (
+                  <p className="mt-1 text-sm">
+                    {reliabilitySummary.transientFailures} falha(s) transitória(s) de leitura foram registradas nas últimas 24 horas, inclusive as recuperadas automaticamente.
+                  </p>
+                ) : (
+                  <p className="mt-1 text-sm">Nenhuma falha de leitura de semanas foi registrada nas últimas 24 horas.</p>
+                )}
+              </div>
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => reliabilityQuery.refetch()}
+              disabled={reliabilityQuery.isFetching}
+              className="shrink-0"
+            >
+              <RefreshCw className={`mr-2 h-4 w-4 ${reliabilityQuery.isFetching ? "animate-spin" : ""}`} aria-hidden="true" />
+              Atualizar integridade
+            </Button>
+          </div>
+        </section>
 
         {/* Próximo alerta */}
         {nextAlert && (

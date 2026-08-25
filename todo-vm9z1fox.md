@@ -171,3 +171,6 @@
 - [x] Exibir comparação mensal baseada em dados reais nos KPIs financeiros
 - [x] Corrigir a causa transitória da consulta flight_weeks no backend e no cliente
 - [x] Adicionar regressão de compatibilidade da projeção completa de flight_weeks
+- [x] Registrar telemetria minimizada para falhas de leitura de flight_weeks, inclusive as recuperadas pelo retry
+- [x] Exibir estado de erro da Home com botão acessível para tentar novamente
+- [x] Alertar a área administrativa quando houver divergência permanente de schema

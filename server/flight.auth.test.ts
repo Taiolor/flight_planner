@@ -29,6 +29,11 @@ vi.mock("./db", () => ({
   deleteFlightPrice: vi.fn().mockResolvedValue(undefined),
   upsertUser: vi.fn().mockResolvedValue(undefined),
   getUserByOpenId: vi.fn().mockResolvedValue(undefined),
+  getFlightWeeksReliabilitySummary: vi.fn().mockResolvedValue({
+    transientFailures: 0,
+    schemaFailures: 0,
+    lastFailureAt: null,
+  }),
 }));
 
 vi.mock("./_core/emailNotification", () => ({
@@ -173,6 +178,16 @@ describe("usageTelemetry access", () => {
         sessionId: "b8d3ca80b31544f4a8ac4dd2fdd4c803",
         events: [{ eventType: "route", route: "/" }],
       })
+    ).rejects.toThrow("Faça login para acessar.");
+  });
+});
+
+describe("reliability access", () => {
+  it("should reject the reliability summary without an administrator session", async () => {
+    const caller = appRouter.createCaller(createTestContext());
+
+    await expect(
+      caller.reliability.getFlightWeeksSummary({ hours: 24 })
     ).rejects.toThrow("Faça login para acessar.");
   });
 });

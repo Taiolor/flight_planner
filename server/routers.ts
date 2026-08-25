@@ -34,6 +34,7 @@ import {
   addTicketNotificationEmail,
   removeTicketNotificationEmail,
   updateTicketNotificationEmail,
+  getFlightWeeksReliabilitySummary,
 } from "./db";
 import { ensurePlanningYearWeeks } from "./planningYears";
 import { summarizeYearPlanningProgress } from "./planningProgress";
@@ -1744,6 +1745,12 @@ export const appRouter = router({
     getSummary: flightProtectedProcedure
       .input(z.object({ hours: z.number().int().min(1).max(168).default(24) }))
       .query(({ input }) => getPerformanceMetricSummary(input.hours)),
+  }),
+
+  reliability: router({
+    getFlightWeeksSummary: flightAdminProcedure
+      .input(z.object({ hours: z.number().int().min(1).max(168).default(24) }))
+      .query(({ input }) => getFlightWeeksReliabilitySummary(input.hours)),
   }),
 
   usageTelemetry: router({

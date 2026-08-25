@@ -27,6 +27,13 @@ describe("Home mobile responsiveness", () => {
     expect(source).toContain('aria-label={`${activeManagementFilterCount}');
   });
 
+  it("oferece uma recuperação acessível quando a consulta de semanas falha", () => {
+    expect(source).toContain("weeksQuery.isError");
+    expect(source).toContain('role="alert"');
+    expect(source).toContain("Tentar novamente");
+    expect(source).toContain("weeksQuery.refetch()");
+  });
+
   it("allows graph actions and empty-state buttons to wrap on small screens", () => {
     expect(source).toContain("flex flex-col gap-2 sm:flex-row");
     expect(source).toContain("max-w-full whitespace-normal");
