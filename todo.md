@@ -825,6 +825,7 @@
 - [x] Exibir percentual de conclusão para todos os anos comparados
 - [x] Adicionar visualização de tendência de emissões versus metas anuais
 - [x] Adicionar transição suave e acessível ao navegar pelo botão de Calendário
+- [x] Aplicar a transição suave e acessível aos botões Gestão e Financeiro do cabeçalho
 
 ## Processo reutilizável
 

@@ -60,7 +60,7 @@ describe("HomeHeaderActions", () => {
     expect(screen.getByRole("button", { name: "Entrar" })).toBeTruthy();
   });
 
-  it("usa uma View Transition ao abrir o Calendário quando o navegador oferece suporte", () => {
+  it("usa uma View Transition ao abrir Calendário, Gestão e Financeiro quando o navegador oferece suporte", () => {
     const viewTransitionDocument = document as Document & {
       startViewTransition?: unknown;
     };
@@ -106,7 +106,21 @@ describe("HomeHeaderActions", () => {
     fireEvent.click(calendarLink);
 
     expect(calendarLink.getAttribute("data-calendar-navigation")).toBe("true");
+    expect(calendarLink.getAttribute("data-view-transition-destination")).toBe("calendar");
     expect(startViewTransition).toHaveBeenCalledOnce();
+
+    const passagesLink = screen.getByRole("link", { name: "Abrir Gestão de Passagens" });
+    fireEvent.click(passagesLink);
+
+    expect(passagesLink.getAttribute("data-view-transition-destination")).toBe("passages");
+    expect(startViewTransition).toHaveBeenCalledTimes(2);
+
+    fireEvent.pointerDown(screen.getByRole("button", { name: "Abrir navegação" }));
+    const financialLink = screen.getByRole("menuitem", { name: "Financeiro" });
+    fireEvent.click(financialLink);
+
+    expect(financialLink.getAttribute("data-view-transition-destination")).toBe("financial");
+    expect(startViewTransition).toHaveBeenCalledTimes(3);
 
     Object.defineProperty(viewTransitionDocument, "startViewTransition", {
       configurable: true,
@@ -131,6 +145,8 @@ describe("HomeHeaderActions", () => {
     expect(source).toContain("sm:min-w-[6.75rem]");
     expect(source).toContain("data-mobile-primary-action={mobilePrimaryAction}");
     expect(source).toContain("data-calendar-navigation");
+    expect(source).toContain("data-view-transition-destination");
+    expect(source).toContain("navigateWithTransition");
     expect(source).toContain("startViewTransition");
     expect(source).toContain("SlidersHorizontal");
     expect(source).toContain('title="Aparência"');

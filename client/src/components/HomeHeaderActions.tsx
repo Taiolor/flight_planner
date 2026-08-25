@@ -85,6 +85,8 @@ type ViewTransitionDocument = Document & {
   };
 };
 
+type HeaderTransitionDestination = "calendar" | "passages" | "financial";
+
 /**
  * Organiza as ações da página inicial em três níveis: contexto e ação primária,
  * navegação secundária e preferências/conta. Em telas estreitas, os grupos têm
@@ -117,7 +119,8 @@ export function HomeHeaderActions({
   onMobilePrimaryActionChange = () => {},
 }: HomeHeaderActionsProps) {
   const [, setLocation] = useLocation();
-  const [isCalendarNavigating, setIsCalendarNavigating] = React.useState(false);
+  const [navigatingDestination, setNavigatingDestination] =
+    React.useState<HeaderTransitionDestination | null>(null);
   const notificationsAvailable = pushStatus !== "unsupported";
   const notificationsBlocked = pushStatus === "denied";
   const notificationLabel = pushLoading
@@ -128,8 +131,9 @@ export function HomeHeaderActions({
         ? "Desativar notificações"
         : "Ativar notificações";
   const primaryMeta = getMobilePrimaryActionMeta(mobilePrimaryAction);
-  const navigateToCalendar = (
+  const navigateWithTransition = (
     event: React.MouseEvent<HTMLAnchorElement>,
+    destination: HeaderTransitionDestination,
     href: string
   ) => {
     event.preventDefault();
@@ -144,9 +148,13 @@ export function HomeHeaderActions({
       return;
     }
 
-    setIsCalendarNavigating(true);
+    setNavigatingDestination(destination);
     const transition = transitionDocument.startViewTransition(navigate);
-    transition.finished?.finally(() => setIsCalendarNavigating(false));
+    void Promise.resolve(transition.finished).finally(() =>
+      setNavigatingDestination(current =>
+        current === destination ? null : current
+      )
+    );
   };
 
   return (
@@ -165,14 +173,15 @@ export function HomeHeaderActions({
               aria-label={primaryMeta.label}
               data-mobile-primary-action={mobilePrimaryAction}
               data-calendar-navigation={mobilePrimaryAction === "calendar" || undefined}
-              aria-busy={isCalendarNavigating || undefined}
-              onClick={event =>
-                mobilePrimaryAction === "calendar"
-                  ? navigateToCalendar(event, primaryMeta.href)
-                  : triggerHaptic()
-              }
+              data-view-transition-destination={mobilePrimaryAction === "calendar" ? "calendar" : "passages"}
+              aria-busy={navigatingDestination === (mobilePrimaryAction === "calendar" ? "calendar" : "passages") || undefined}
+              onClick={event => navigateWithTransition(
+                event,
+                mobilePrimaryAction === "calendar" ? "calendar" : "passages",
+                primaryMeta.href
+              )}
               className={`order-first inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white px-0 font-semibold text-slate-900 shadow-sm transition-[transform,background-color,opacity] duration-150 hover:bg-slate-100 active:scale-[0.97] focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-slate-800 sm:w-auto sm:px-3 ${
-                isCalendarNavigating ? "scale-[0.98] opacity-80" : ""
+                navigatingDestination === (mobilePrimaryAction === "calendar" ? "calendar" : "passages") ? "scale-[0.98] opacity-80" : ""
               }`}
             >
               {mobilePrimaryAction === "calendar" ? <CalendarDays className="size-4" aria-hidden="true" /> : <Ticket className="size-4" aria-hidden="true" />}
@@ -184,13 +193,16 @@ export function HomeHeaderActions({
               href={mobilePrimaryAction === "calendar" ? "/gestao-passagens" : "/calendar"}
               aria-label={mobilePrimaryAction === "calendar" ? "Abrir Gestão de Passagens" : "Calendário"}
               data-calendar-navigation={mobilePrimaryAction === "passages" || undefined}
-              aria-busy={isCalendarNavigating || undefined}
-              onClick={event =>
-                mobilePrimaryAction === "passages"
-                  ? navigateToCalendar(event, "/calendar")
-                  : triggerHaptic()
-              }
-              className={`${headerButtonClass} inline-flex h-10 w-10 shrink-0 items-center justify-center whitespace-nowrap px-0 sm:w-auto sm:min-w-[6.75rem] sm:px-3`}
+              data-view-transition-destination={mobilePrimaryAction === "calendar" ? "passages" : "calendar"}
+              aria-busy={navigatingDestination === (mobilePrimaryAction === "calendar" ? "passages" : "calendar") || undefined}
+              onClick={event => navigateWithTransition(
+                event,
+                mobilePrimaryAction === "calendar" ? "passages" : "calendar",
+                mobilePrimaryAction === "calendar" ? "/gestao-passagens" : "/calendar"
+              )}
+              className={`${headerButtonClass} inline-flex h-10 w-10 shrink-0 items-center justify-center whitespace-nowrap px-0 sm:w-auto sm:min-w-[6.75rem] sm:px-3 ${
+                navigatingDestination === (mobilePrimaryAction === "calendar" ? "passages" : "calendar") ? "scale-[0.98] opacity-80" : ""
+              }`}
             >
               {mobilePrimaryAction === "calendar" ? <Ticket className="size-4" aria-hidden="true" /> : <CalendarDays className="size-4" aria-hidden="true" />}
               <span className="ml-1.5 hidden whitespace-nowrap sm:inline">{mobilePrimaryAction === "calendar" ? "Gestão" : "Calendário"}</span>
@@ -217,12 +229,20 @@ export function HomeHeaderActions({
                 Planejamento
               </DropdownMenuLabel>
               <DropdownMenuItem asChild>
-                <Link href="/calendar">
+                <Link
+                  href="/calendar"
+                  data-view-transition-destination="calendar"
+                  onClick={event => navigateWithTransition(event, "calendar", "/calendar")}
+                >
                   <span className="flex items-center gap-2"><Sparkles className="size-4 text-cyan-300" />Calendário</span>
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
-                <Link href="/gestao-passagens">
+                <Link
+                  href="/gestao-passagens"
+                  data-view-transition-destination="passages"
+                  onClick={event => navigateWithTransition(event, "passages", "/gestao-passagens")}
+                >
                   <span className="flex items-center gap-2"><Ticket className="size-4 text-blue-300" />Gestão de Passagens</span>
                 </Link>
               </DropdownMenuItem>
@@ -235,7 +255,11 @@ export function HomeHeaderActions({
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
-                <Link href="/financeiro">
+                <Link
+                  href="/financeiro"
+                  data-view-transition-destination="financial"
+                  onClick={event => navigateWithTransition(event, "financial", "/financeiro")}
+                >
                   <span className="flex items-center gap-2"><BarChart2 className="size-4 text-violet-300" />Financeiro</span>
                 </Link>
               </DropdownMenuItem>
