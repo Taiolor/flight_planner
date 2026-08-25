@@ -37,6 +37,13 @@ describe("Calendar mobile responsiveness", () => {
     expect(calendarSource).toContain('<StatusPill tone="cancelled">Cancelado</StatusPill>');
   });
 
+  it("permite recolher a legenda de status com preferência local validada", () => {
+    expect(calendarSource).toContain("readCalendarStatusLegendExpanded");
+    expect(calendarSource).toContain("saveCalendarStatusLegendExpanded");
+    expect(calendarSource).toContain('aria-controls="calendar-status-legend-content"');
+    expect(calendarSource).toContain("isStatusLegendExpanded && (");
+  });
+
   it("keeps long World Cup opponent names visible instead of truncating them", () => {
     expect(cupSource).toContain("min-w-0 break-words text-right");
     expect(cupSource).not.toContain(

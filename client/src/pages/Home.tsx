@@ -173,6 +173,7 @@ import {
   type HomeLayoutProfile,
 } from "@/lib/homeDashboardPreferences";
 import { useHomePanelToggleShortcut } from "@/lib/homePanelShortcuts";
+import { getActiveManagementFilterCount } from "@/lib/managementFilterSummary";
 
 const AnnualSpendChart = lazy(() =>
   import("@/components/HomeCharts").then(module => ({
@@ -623,6 +624,14 @@ export default function Home({ mode = "home" }: HomeProps) {
     useState<DepartureAirport>("GRU");
   const [showCheapestOnly, setShowCheapestOnly] = useState<boolean>(false);
   const [pricePercentile, setPricePercentile] = useState<number>(25);
+  const activeManagementFilterCount = getActiveManagementFilterCount({
+    month: filterMonth,
+    airline: filterAirline,
+    ticketStatus: filterTicketStatus,
+    cheapestOnly: showCheapestOnly,
+    departureTime: departureTimeFilter,
+    returnTime: returnTimeFilter,
+  });
 
   const [savingPrice, setSavingPrice] = useState<{
     week: number;
@@ -2623,7 +2632,17 @@ export default function Home({ mode = "home" }: HomeProps) {
               aria-expanded={expandFilters}
               aria-controls="filters-content"
             >
-              <span className="text-lg font-bold">Filtros e Controles</span>
+              <span className="flex items-center gap-2 text-lg font-bold">
+                Filtros e Controles
+                {activeManagementFilterCount > 0 && (
+                  <span
+                    className="rounded-full bg-white/15 px-2 py-0.5 text-xs font-bold text-white ring-1 ring-white/30"
+                    aria-label={`${activeManagementFilterCount} ${activeManagementFilterCount === 1 ? "filtro ativo" : "filtros ativos"}`}
+                  >
+                    {activeManagementFilterCount}
+                  </span>
+                )}
+              </span>
               {expandFilters ? (
                 <ChevronUp className="w-5 h-5" />
               ) : (

@@ -12,6 +12,10 @@ import { ContentReveal } from "@/components/ContentReveal";
 import { CalendarLoadingSkeleton } from "@/components/CalendarLoadingSkeleton";
 import { StatusPill } from "@/components/StatusPill";
 import {
+  readCalendarStatusLegendExpanded,
+  saveCalendarStatusLegendExpanded,
+} from "@/lib/calendarStatusLegendPreference";
+import {
   ArrowLeft,
   Plane,
   Circle,
@@ -21,6 +25,7 @@ import {
   Download,
   ExternalLink,
   ChevronDown,
+  ChevronUp,
   AlertCircle,
 } from "lucide-react";
 import {
@@ -248,6 +253,9 @@ export default function CalendarView() {
     useState(false);
   const [showOnlyCancelledFlights, setShowOnlyCancelledFlights] =
     useState(false);
+  const [isStatusLegendExpanded, setIsStatusLegendExpanded] = useState(
+    () => readCalendarStatusLegendExpanded()
+  );
   const [showCupPanel, setShowCupPanel] = useState(() => {
     // Carregar preferência do localStorage
     if (typeof window !== "undefined") {
@@ -261,6 +269,10 @@ export default function CalendarView() {
   useEffect(() => {
     localStorage.setItem("showCupPanel", JSON.stringify(showCupPanel));
   }, [showCupPanel]);
+
+  useEffect(() => {
+    saveCalendarStatusLegendExpanded(isStatusLegendExpanded);
+  }, [isStatusLegendExpanded]);
 
   const today = useMemo(() => {
     const d = new Date();
@@ -593,11 +605,28 @@ export default function CalendarView() {
 
       {/* Grade anual */}
       <main className="px-4 py-6 max-w-7xl mx-auto">
-        <section aria-label="Legenda persistente de status dos voos" className="mb-4 flex flex-wrap items-center gap-2 rounded-2xl border border-[#c8d6e9] bg-white/90 px-3 py-2 shadow-sm dark:border-slate-700 dark:bg-slate-900/90">
-          <span className="mr-1 text-xs font-semibold text-[#071a36] dark:text-white">Status dos voos</span>
-          <StatusPill tone="success">Registrado</StatusPill>
-          <StatusPill tone="rescheduled">Remarcado</StatusPill>
-          <StatusPill tone="cancelled">Cancelado</StatusPill>
+        <section aria-label="Legenda persistente de status dos voos" className="mb-4 rounded-2xl border border-[#c8d6e9] bg-white/90 px-3 py-2 shadow-sm dark:border-slate-700 dark:bg-slate-900/90">
+          <div className="flex items-center justify-between gap-3">
+            <span className="text-xs font-semibold text-[#071a36] dark:text-white">Status dos voos</span>
+            <button
+              type="button"
+              onClick={() => setIsStatusLegendExpanded(value => !value)}
+              aria-expanded={isStatusLegendExpanded}
+              aria-controls="calendar-status-legend-content"
+              aria-label={isStatusLegendExpanded ? "Recolher legenda de status dos voos" : "Expandir legenda de status dos voos"}
+              className="inline-flex min-h-8 items-center gap-1 rounded-lg px-2 text-xs font-semibold text-[#102f61] transition-colors hover:bg-[#e6eef8] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#315c99] dark:text-slate-200 dark:hover:bg-slate-800"
+            >
+              {isStatusLegendExpanded ? "Recolher" : "Expandir"}
+              {isStatusLegendExpanded ? <ChevronUp className="size-3.5" aria-hidden="true" /> : <ChevronDown className="size-3.5" aria-hidden="true" />}
+            </button>
+          </div>
+          {isStatusLegendExpanded && (
+            <div id="calendar-status-legend-content" className="mt-2 flex flex-wrap items-center gap-2">
+              <StatusPill tone="success">Registrado</StatusPill>
+              <StatusPill tone="rescheduled">Remarcado</StatusPill>
+              <StatusPill tone="cancelled">Cancelado</StatusPill>
+            </div>
+          )}
         </section>
         <div className="grid grid-cols-1 min-[360px]:grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-5">
           {MONTHS.map((monthName, monthIdx) => {

@@ -12,6 +12,10 @@ import { MetricCard } from "@/components/MetricCard";
 import { formatAirlineDisplayName } from "@/lib/airlinePresentation";
 import { queryCachePolicies } from "@/lib/queryCache";
 import {
+  getLatestMonthlyKpiComparisons,
+  type MonthlyKpiComparison,
+} from "@/lib/monthlyKpiComparison";
+import {
   buildMonthlyBudgetEnvelopes,
   getBudgetAlerts,
   getBudgetInsight,
@@ -129,6 +133,15 @@ function formatPct(value: number): string {
 
 function formatBudgetInput(cents: number): string {
   return cents > 0 ? (cents / 100).toFixed(2) : "";
+}
+
+function toMonthlyKpiTrend(comparison: MonthlyKpiComparison | undefined) {
+  if (!comparison) return undefined;
+
+  return {
+    value: comparison.value,
+    label: `${MONTH_NAMES[comparison.currentMonth]}. vs. ${MONTH_NAMES[comparison.previousMonth]}.`,
+  };
 }
 
 // ─── Componentes auxiliares ───────────────────────────────────────────────────
@@ -381,6 +394,11 @@ function FinancialDashboardContent() {
     return { h1, h2, trend };
   }, [yearSummary]);
 
+  const monthlyKpiComparisons = useMemo(
+    () => getLatestMonthlyKpiComparisons(yearSummary?.byMonth ?? []),
+    [yearSummary]
+  );
+
   // Projeção por mês para gráfico
   const projectionChartData = useMemo(() => {
     if (!projections?.byMonth) return [];
@@ -517,11 +535,7 @@ function FinancialDashboardContent() {
               subtitle={`${yearSummary?.issuedCount ?? 0} viagens emitidas`}
               icon={DollarSign}
               accent="blue"
-              trend={
-                trendData
-                  ? { value: trendData.trend, label: "2º sem. vs 1º sem." }
-                  : undefined
-              }
+              trend={toMonthlyKpiTrend(monthlyKpiComparisons.cash)}
             />
             <KpiCard
               title="Média por Viagem"
@@ -529,6 +543,7 @@ function FinancialDashboardContent() {
               subtitle="Passagens em dinheiro"
               icon={Plane}
               accent="green"
+              trend={toMonthlyKpiTrend(monthlyKpiComparisons.averageCash)}
             />
             <KpiCard
               title="Milhas SMILES"
@@ -536,6 +551,7 @@ function FinancialDashboardContent() {
               subtitle="Pontos gastos no ano"
               icon={Star}
               accent="orange"
+              trend={toMonthlyKpiTrend(monthlyKpiComparisons.smiles)}
             />
             <KpiCard
               title="Milhas LATAM Pass"
@@ -543,6 +559,7 @@ function FinancialDashboardContent() {
               subtitle="Pontos gastos no ano"
               icon={Star}
               accent="purple"
+              trend={toMonthlyKpiTrend(monthlyKpiComparisons.latamPass)}
             />
           </div>
 

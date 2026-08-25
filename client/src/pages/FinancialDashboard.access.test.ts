@@ -37,4 +37,12 @@ describe("proteção de acesso do Financeiro", () => {
     expect(source).toContain('accent="purple"');
     expect(source).toContain('green: "green"');
   });
+
+  it("alimenta os KPIs com comparação do último mês real contra o anterior", () => {
+    expect(source).toContain("getLatestMonthlyKpiComparisons");
+    expect(source).toContain("toMonthlyKpiTrend(monthlyKpiComparisons.cash)");
+    expect(source).toContain("toMonthlyKpiTrend(monthlyKpiComparisons.averageCash)");
+    expect(source).toContain("toMonthlyKpiTrend(monthlyKpiComparisons.smiles)");
+    expect(source).toContain("toMonthlyKpiTrend(monthlyKpiComparisons.latamPass)");
+  });
 });

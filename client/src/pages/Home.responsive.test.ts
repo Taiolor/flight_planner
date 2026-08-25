@@ -21,6 +21,12 @@ describe("Home mobile responsiveness", () => {
     expect(source).toContain('aria-label="Fechar filtros"');
   });
 
+  it("informa filtros ativos no gatilho sem confundir ordenação com critério", () => {
+    expect(source).toContain('getActiveManagementFilterCount');
+    expect(source).toContain("activeManagementFilterCount > 0");
+    expect(source).toContain('aria-label={`${activeManagementFilterCount}');
+  });
+
   it("allows graph actions and empty-state buttons to wrap on small screens", () => {
     expect(source).toContain("flex flex-col gap-2 sm:flex-row");
     expect(source).toContain("max-w-full whitespace-normal");

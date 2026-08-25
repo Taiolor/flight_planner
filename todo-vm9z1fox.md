@@ -166,3 +166,6 @@
 - [x] Transformar os filtros da Gestão de Passagens em painel inferior no mobile
 - [x] Criar e aplicar o componente compartilhado MetricCard na Home e no Financeiro
 - [x] Adicionar uma legenda de status persistente acima do Calendário
+- [x] Exibir contador de filtros ativos no gatilho da Gestão de Passagens
+- [x] Permitir recolher e persistir a preferência da legenda de status do Calendário
+- [x] Exibir comparação mensal baseada em dados reais nos KPIs financeiros
