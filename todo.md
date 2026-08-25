@@ -832,6 +832,9 @@
 - [x] Restaurar o foco no controle que iniciou uma navegação de retorno
 - [x] Adicionar atalho acessível para voltar ao topo das páginas longas
 - [x] Aprimorar animações de carregamento e feedback visual nas interações do painel administrativo de notificações
+- [x] Adicionar filtro por status ao histórico de envios administrativos
+- [x] Exibir resumo diário de entregas e falhas no histórico de notificações
+- [x] Permitir exportar o histórico administrativo filtrado em CSV
 
 ## Processo reutilizável
 

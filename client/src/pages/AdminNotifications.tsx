@@ -40,6 +40,7 @@ import {
   Loader2,
   Activity,
   MapPinned,
+  Download,
 } from "lucide-react";
 import { useState, useMemo } from "react";
 import { toast } from "sonner";
@@ -56,6 +57,7 @@ import { GlobalYearSelector } from "@/components/GlobalYearSelector";
 import { StandardPageHeader } from "@/components/StandardPageHeader";
 import { useYear } from "@/contexts/YearContext";
 import { queryCachePolicies } from "@/lib/queryCache";
+import { downloadNotificationHistoryCsv } from "@/lib/notificationHistoryCsv";
 
 export type AdminAccessState = "checking" | "login-required" | "authorized";
 
@@ -74,6 +76,26 @@ type AdminInteractionFeedback = {
   kind: "success" | "error" | "info";
   message: string;
 };
+
+type NotificationHistoryStatusFilter = "all" | "success" | "partial" | "failed";
+
+const notificationHistoryStatusOptions: Array<{
+  value: NotificationHistoryStatusFilter;
+  label: string;
+}> = [
+  { value: "all", label: "Todos os status" },
+  { value: "success", label: "Sucessos" },
+  { value: "partial", label: "Parciais" },
+  { value: "failed", label: "Falhas" },
+];
+
+function formatDailySummaryDate(day: string) {
+  return new Intl.DateTimeFormat("pt-BR", {
+    timeZone: "America/Sao_Paulo",
+    day: "2-digit",
+    month: "short",
+  }).format(new Date(`${day}T12:00:00-03:00`));
+}
 
 const ADMIN_ACTION_TIMELINE_KEY = "viagens.admin.action-timeline";
 const MAX_ADMIN_ACTION_TIMELINE_ENTRIES = 30;
@@ -333,6 +355,8 @@ function AdminNotificationsContent() {
     message: string;
   } | null>(null);
   const [panelFeedback, setPanelFeedback] = useState<AdminInteractionFeedback | null>(null);
+  const [historyStatus, setHistoryStatus] =
+    useState<NotificationHistoryStatusFilter>("all");
   const registerPushAction = (
     label: string,
     status: AdminFormAction["status"]
@@ -390,12 +414,37 @@ function AdminNotificationsContent() {
     });
 
   const logsQuery = trpc.adminNotifications.getLogs.useInfiniteQuery(
-    { year: selectedYear, limit: 25 },
+    {
+      year: selectedYear,
+      limit: 25,
+      status: historyStatus === "all" ? undefined : historyStatus,
+    },
     {
       enabled: true,
       ...queryCachePolicies.admin,
       refetchInterval: autoRefresh ? 60_000 : false,
       getNextPageParam: lastPage => lastPage.nextCursor,
+    }
+  );
+  const dailySummaryQuery = trpc.adminNotifications.getDailySummary.useQuery(
+    {
+      year: selectedYear,
+      status: historyStatus === "all" ? undefined : historyStatus,
+    },
+    {
+      enabled: true,
+      ...queryCachePolicies.admin,
+      refetchInterval: autoRefresh ? 60_000 : false,
+    }
+  );
+  const exportLogsQuery = trpc.adminNotifications.exportLogs.useQuery(
+    {
+      year: selectedYear,
+      status: historyStatus === "all" ? undefined : historyStatus,
+    },
+    {
+      enabled: false,
+      retry: false,
     }
   );
   const handlePanelRefresh = async () => {
@@ -413,8 +462,11 @@ function AdminNotificationsContent() {
 
   const handleHistoryRefresh = async () => {
     setPanelFeedback({ kind: "info", message: "Atualizando histórico de envios..." });
-    const result = await logsQuery.refetch();
-    if (result.error) {
+    const [logsResult, summaryResult] = await Promise.all([
+      logsQuery.refetch(),
+      dailySummaryQuery.refetch(),
+    ]);
+    if (logsResult.error || summaryResult.error) {
       setPanelFeedback({
         kind: "error",
         message: "Não foi possível atualizar o histórico de envios. Tente novamente.",
@@ -422,6 +474,19 @@ function AdminNotificationsContent() {
       return;
     }
     setPanelFeedback({ kind: "success", message: "Histórico de envios atualizado." });
+  };
+  const handleHistoryExport = async () => {
+    setPanelFeedback({ kind: "info", message: "Preparando o CSV do histórico filtrado..." });
+    const result = await exportLogsQuery.refetch();
+    if (result.error || !result.data) {
+      setPanelFeedback({
+        kind: "error",
+        message: "Não foi possível exportar o histórico de envios. Tente novamente.",
+      });
+      return;
+    }
+    downloadNotificationHistoryCsv(result.data, selectedYear);
+    setPanelFeedback({ kind: "success", message: "Histórico exportado em CSV." });
   };
   const logs = useMemo(
     () => logsQuery.data?.pages.flatMap(page => page.items) ?? [],
@@ -1113,11 +1178,89 @@ function AdminNotificationsContent() {
 
           {expandedSections.has("history") && (
             <Card id="section-history" className="overflow-hidden mt-3">
+              <div className="space-y-4 border-b border-slate-100 bg-slate-50/70 p-4">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+                  <div className="min-w-0">
+                    <label
+                      htmlFor="notification-history-status"
+                      className="block text-xs font-semibold uppercase tracking-wide text-slate-500"
+                    >
+                      Filtrar por status
+                    </label>
+                    <select
+                      id="notification-history-status"
+                      value={historyStatus}
+                      onChange={event =>
+                        setHistoryStatus(event.target.value as NotificationHistoryStatusFilter)
+                      }
+                      className="mt-1 min-h-9 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-[#17427e] sm:w-52"
+                    >
+                      {notificationHistoryStatusOptions.map(option => (
+                        <option key={option.value} value={option.value}>
+                          {option.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => void handleHistoryExport()}
+                    disabled={exportLogsQuery.isFetching}
+                    aria-busy={exportLogsQuery.isFetching}
+                    className="w-full gap-2 sm:w-auto"
+                  >
+                    <Download className={`h-4 w-4 ${exportLogsQuery.isFetching ? "animate-pulse" : ""}`} aria-hidden="true" />
+                    {exportLogsQuery.isFetching ? "Preparando CSV..." : "Exportar CSV"}
+                  </Button>
+                </div>
+
+                {dailySummaryQuery.isLoading ? (
+                  <div className="grid grid-cols-2 gap-2 sm:grid-cols-4" aria-label="Carregando resumo diário">
+                    {[0, 1, 2, 3].map(index => (
+                      <div key={index} className="h-16 animate-pulse rounded-lg bg-slate-200 motion-reduce:animate-none" />
+                    ))}
+                  </div>
+                ) : dailySummaryQuery.data && dailySummaryQuery.data.length > 0 ? (
+                  <div aria-labelledby="notification-daily-summary-title">
+                    <p id="notification-daily-summary-title" className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                      Resumo diário de entregas
+                    </p>
+                    <div className="mt-2 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+                      {dailySummaryQuery.data.map(summary => (
+                        <div key={summary.day} className="rounded-lg border border-slate-200 bg-white p-3">
+                          <p className="text-xs font-medium capitalize text-slate-600">
+                            {formatDailySummaryDate(summary.day)}
+                          </p>
+                          <p className="mt-1 text-lg font-semibold text-slate-900">
+                            {summary.total} {summary.total === 1 ? "envio" : "envios"}
+                          </p>
+                          <p className="mt-1 text-xs text-emerald-700">
+                            {summary.success} sucesso{summary.success === 1 ? "" : "s"}
+                          </p>
+                          <p className="text-xs text-amber-700">
+                            {summary.partial} parcial{summary.partial === 1 ? "" : "is"}
+                          </p>
+                          <p className="text-xs text-red-700">
+                            {summary.failed} falha{summary.failed === 1 ? "" : "s"}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ) : (
+                  <p className="text-sm text-slate-500">
+                    Ainda não há entregas para compor o resumo diário neste filtro.
+                  </p>
+                )}
+              </div>
               {logs.length === 0 ? (
                 <div className="p-8 text-center">
                   <History className="w-10 h-10 text-gray-300 mx-auto mb-3" />
                   <p className="text-gray-500 text-sm">
-                    Nenhum envio registrado ainda.
+                    {historyStatus === "all"
+                      ? "Nenhum envio registrado ainda."
+                      : "Nenhum envio corresponde ao status selecionado."}
                   </p>
                   <p className="text-gray-400 text-xs mt-1">
                     Os próximos envios automáticos e testes aparecerão aqui.

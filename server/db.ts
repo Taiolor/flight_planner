@@ -34,6 +34,10 @@ import {
   type NotificationLogCursor,
 } from "./notificationLogPagination";
 import {
+  summarizeNotificationLogsByDay,
+  type NotificationLogStatus,
+} from "./notificationLogAnalytics";
+import {
   isFlightWeeksSchemaMismatchError,
   isTransientFlightWeeksReadError,
   retryTransientFlightWeeksRead,
@@ -733,7 +737,8 @@ export async function insertNotificationLog(
 export async function getNotificationLogs(
   year: number,
   limit = 25,
-  cursor?: NotificationLogCursor
+  cursor?: NotificationLogCursor,
+  status?: NotificationLogStatus
 ) {
   const db = await getDb();
   if (!db) return { items: [], nextCursor: null };
@@ -747,9 +752,11 @@ export async function getNotificationLogs(
         )
       )
     : undefined;
-  const whereClause = cursorCondition
-    ? and(eq(notificationLogs.year, year), cursorCondition)
-    : eq(notificationLogs.year, year);
+  const whereClause = and(
+    eq(notificationLogs.year, year),
+    status ? eq(notificationLogs.status, status) : undefined,
+    cursorCondition
+  );
 
   const rows = await db
     .select()
@@ -759,6 +766,46 @@ export async function getNotificationLogs(
     .limit(limit + 1);
 
   return buildNotificationLogPage(rows, limit);
+}
+
+export async function getNotificationLogDailySummary(
+  year: number,
+  status?: NotificationLogStatus
+) {
+  const db = await getDb();
+  if (!db) return [];
+
+  const rows = await db
+    .select({ sentAt: notificationLogs.sentAt, status: notificationLogs.status })
+    .from(notificationLogs)
+    .where(
+      and(
+        eq(notificationLogs.year, year),
+        status ? eq(notificationLogs.status, status) : undefined
+      )
+    )
+    .orderBy(desc(notificationLogs.sentAt), desc(notificationLogs.id));
+
+  return summarizeNotificationLogsByDay(rows);
+}
+
+export async function getNotificationLogsForExport(
+  year: number,
+  status?: NotificationLogStatus
+) {
+  const db = await getDb();
+  if (!db) return [];
+
+  return db
+    .select()
+    .from(notificationLogs)
+    .where(
+      and(
+        eq(notificationLogs.year, year),
+        status ? eq(notificationLogs.status, status) : undefined
+      )
+    )
+    .orderBy(desc(notificationLogs.sentAt), desc(notificationLogs.id));
 }
 
 /**

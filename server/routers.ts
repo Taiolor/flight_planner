@@ -30,6 +30,8 @@ import {
   updateNotificationSettings,
   insertNotificationLog,
   getNotificationLogs,
+  getNotificationLogDailySummary,
+  getNotificationLogsForExport,
   getTicketNotificationEmails,
   addTicketNotificationEmail,
   removeTicketNotificationEmail,
@@ -1361,6 +1363,7 @@ export const appRouter = router({
         z.object({
           year: planningYearSchema,
           limit: z.number().min(1).max(100).default(25),
+          status: z.enum(["success", "partial", "failed"]).optional(),
           cursor: z
             .object({
               id: z.number().int().positive(),
@@ -1370,7 +1373,34 @@ export const appRouter = router({
         })
       )
       .query(async ({ input }) => {
-        return getNotificationLogs(input.year, input.limit, input.cursor ?? undefined);
+        return getNotificationLogs(
+          input.year,
+          input.limit,
+          input.cursor ?? undefined,
+          input.status
+        );
+      }),
+
+    getDailySummary: flightAdminProcedure
+      .input(
+        z.object({
+          year: planningYearSchema,
+          status: z.enum(["success", "partial", "failed"]).optional(),
+        })
+      )
+      .query(async ({ input }) => {
+        return getNotificationLogDailySummary(input.year, input.status);
+      }),
+
+    exportLogs: flightAdminProcedure
+      .input(
+        z.object({
+          year: planningYearSchema,
+          status: z.enum(["success", "partial", "failed"]).optional(),
+        })
+      )
+      .query(async ({ input }) => {
+        return getNotificationLogsForExport(input.year, input.status);
       }),
   }),
 

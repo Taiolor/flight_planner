@@ -10,6 +10,9 @@ const mocks = vi.hoisted(() => ({
   authCheck: vi.fn(),
   status: vi.fn(),
   logs: vi.fn(),
+  dailySummary: vi.fn(),
+  exportLogs: vi.fn(),
+  downloadCsv: vi.fn(),
   performance: vi.fn(),
   reliability: vi.fn(),
   sendTest: vi.fn(),
@@ -26,6 +29,8 @@ vi.mock("@/lib/trpc", () => ({
     adminNotifications: {
       getStatus: { useQuery: mocks.status },
       getLogs: { useInfiniteQuery: mocks.logs },
+      getDailySummary: { useQuery: mocks.dailySummary },
+      exportLogs: { useQuery: mocks.exportLogs },
       sendNextAlert: { useMutation: mocks.sendNextAlert },
     },
     performanceMetrics: { getSummary: { useQuery: mocks.performance } },
@@ -38,6 +43,10 @@ vi.mock("@/lib/trpc", () => ({
       sendTestEmail: { useMutation: mocks.sendTestEmail },
     },
   },
+}));
+
+vi.mock("@/lib/notificationHistoryCsv", () => ({
+  downloadNotificationHistoryCsv: mocks.downloadCsv,
 }));
 
 import AdminNotifications from "./AdminNotifications";
@@ -67,6 +76,15 @@ function configureSharedQueries() {
     hasNextPage: false,
     isFetchingNextPage: false,
     fetchNextPage: vi.fn(),
+  });
+  mocks.dailySummary.mockReturnValue({
+    data: [],
+    isLoading: false,
+    refetch: vi.fn().mockResolvedValue({ error: null }),
+  });
+  mocks.exportLogs.mockReturnValue({
+    isFetching: false,
+    refetch: vi.fn().mockResolvedValue({ data: [], error: null }),
   });
   mocks.performance.mockReturnValue({
     data: [],
@@ -221,5 +239,104 @@ describe("AdminNotifications", () => {
 
     await waitFor(() => expect(refetch).toHaveBeenCalledOnce());
     expect(screen.getByRole("status").textContent).toContain("Dados do painel atualizados");
+  });
+
+  it("aplica o filtro de status ao histórico administrativo", async () => {
+    configureSharedQueries();
+    mocks.authCheck.mockReturnValue({
+      data: { authenticated: true, email: "admin@smartfly.test", isAdmin: true },
+      isLoading: false,
+    });
+    mocks.status.mockReturnValue({
+      data: emptyStatus,
+      isLoading: false,
+      error: null,
+      refetch: vi.fn(),
+      isFetching: false,
+    });
+
+    renderPage();
+    fireEvent.click(screen.getByRole("button", { name: /Histórico de Envios/ }));
+    fireEvent.change(screen.getByLabelText("Filtrar por status"), {
+      target: { value: "failed" },
+    });
+
+    await waitFor(() =>
+      expect(mocks.logs.mock.calls.at(-1)?.[0]).toEqual({
+        year: 2026,
+        limit: 25,
+        status: "failed",
+      })
+    );
+  });
+
+  it("exibe o resumo diário de sucessos, parciais e falhas", () => {
+    configureSharedQueries();
+    mocks.authCheck.mockReturnValue({
+      data: { authenticated: true, email: "admin@smartfly.test", isAdmin: true },
+      isLoading: false,
+    });
+    mocks.status.mockReturnValue({
+      data: emptyStatus,
+      isLoading: false,
+      error: null,
+      refetch: vi.fn(),
+      isFetching: false,
+    });
+    mocks.dailySummary.mockReturnValue({
+      data: [{ day: "2026-08-25", total: 4, success: 2, partial: 1, failed: 1 }],
+      isLoading: false,
+      refetch: vi.fn(),
+    });
+
+    renderPage();
+    fireEvent.click(screen.getByRole("button", { name: /Histórico de Envios/ }));
+
+    expect(screen.getByText("Resumo diário de entregas")).toBeTruthy();
+    expect(screen.getByText("4 envios")).toBeTruthy();
+    expect(screen.getByText("2 sucessos")).toBeTruthy();
+    expect(screen.getByText("1 parcial")).toBeTruthy();
+    expect(screen.getByText("1 falha")).toBeTruthy();
+  });
+
+  it("exporta em CSV todo o histórico correspondente ao filtro ativo", async () => {
+    configureSharedQueries();
+    const exportedLogs = [
+      {
+        id: 1,
+        sentAt: new Date("2026-08-25T15:30:00.000Z"),
+        status: "success",
+        isTest: 0,
+        weekNumber: 34,
+        direction: "ida",
+        avisoLabel: "24h antes",
+        airline: "LATAM",
+        flightNumber: "LA1234",
+        devicesReached: 2,
+        totalDevices: 2,
+        errorMessage: null,
+      },
+    ];
+    const exportRefetch = vi.fn().mockResolvedValue({ data: exportedLogs, error: null });
+    mocks.authCheck.mockReturnValue({
+      data: { authenticated: true, email: "admin@smartfly.test", isAdmin: true },
+      isLoading: false,
+    });
+    mocks.status.mockReturnValue({
+      data: emptyStatus,
+      isLoading: false,
+      error: null,
+      refetch: vi.fn(),
+      isFetching: false,
+    });
+    mocks.exportLogs.mockReturnValue({ isFetching: false, refetch: exportRefetch });
+
+    renderPage();
+    fireEvent.click(screen.getByRole("button", { name: /Histórico de Envios/ }));
+    fireEvent.click(screen.getByRole("button", { name: "Exportar CSV" }));
+
+    await waitFor(() => expect(exportRefetch).toHaveBeenCalledOnce());
+    expect(mocks.downloadCsv).toHaveBeenCalledWith(exportedLogs, 2026);
+    expect(screen.getByRole("status").textContent).toContain("Histórico exportado em CSV");
   });
 });
