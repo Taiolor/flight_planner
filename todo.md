@@ -828,6 +828,9 @@
 - [x] Aplicar a transição suave e acessível aos botões Gestão e Financeiro do cabeçalho
 - [x] Aplicar a transição suave e acessível às rotas Cotações e Memórias no cabeçalho
 - [x] Restaurar a posição de rolagem ao retornar entre páginas
+- [x] Aplicar a transição suave às rotas Novidades e administrativas no cabeçalho
+- [x] Restaurar o foco no controle que iniciou uma navegação de retorno
+- [x] Adicionar atalho acessível para voltar ao topo das páginas longas
 
 ## Processo reutilizável
 

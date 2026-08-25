@@ -21,7 +21,7 @@ describe("StandardPageHeader", () => {
     ).toBeTruthy();
     expect(
       screen
-        .getByRole("link", { name: "Voltar" })
+        .getByRole("link", { name: "Voltar para a página inicial" })
         .getAttribute("href")
     ).toBe("/");
     expect(screen.getByRole("button", { name: "Atualizar" })).toBeTruthy();

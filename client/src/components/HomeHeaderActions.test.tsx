@@ -60,7 +60,7 @@ describe("HomeHeaderActions", () => {
     expect(screen.getByRole("button", { name: "Entrar" })).toBeTruthy();
   });
 
-  it("usa uma View Transition ao abrir os destinos principais quando o navegador oferece suporte", () => {
+  it("usa uma View Transition ao abrir os destinos principais e administrativos quando o navegador oferece suporte", () => {
     const viewTransitionDocument = document as Document & {
       startViewTransition?: unknown;
     };
@@ -89,8 +89,8 @@ describe("HomeHeaderActions", () => {
         pushStatus="default"
         pushSubscribed={false}
         pushLoading={false}
-        isAuthenticated={false}
-        isAdmin={false}
+        isAuthenticated
+        isAdmin
         pdfExport={<button type="button">Exportar PDF</button>}
         onShowChart={vi.fn()}
         onToggleTheme={vi.fn()}
@@ -133,6 +133,30 @@ describe("HomeHeaderActions", () => {
 
     expect(memoriesLink.getAttribute("data-view-transition-destination")).toBe("memories");
     expect(startViewTransition).toHaveBeenCalledTimes(5);
+
+    const changelogLink = screen.getByRole("menuitem", { name: "Novidades" });
+    fireEvent.click(changelogLink);
+
+    expect(changelogLink.getAttribute("data-view-transition-destination")).toBe("changelog");
+    expect(startViewTransition).toHaveBeenCalledTimes(6);
+
+    const adminNotificationsLink = screen.getByRole("menuitem", { name: "Painel de avisos" });
+    fireEvent.click(adminNotificationsLink);
+
+    expect(adminNotificationsLink.getAttribute("data-view-transition-destination")).toBe("admin-notifications");
+    expect(startViewTransition).toHaveBeenCalledTimes(7);
+
+    const telemetryLink = screen.getByRole("menuitem", { name: "Locais de Acesso" });
+    fireEvent.click(telemetryLink);
+
+    expect(telemetryLink.getAttribute("data-view-transition-destination")).toBe("telemetry");
+    expect(startViewTransition).toHaveBeenCalledTimes(8);
+
+    const geminiLink = screen.getByRole("menuitem", { name: "Uso de IA" });
+    fireEvent.click(geminiLink);
+
+    expect(geminiLink.getAttribute("data-view-transition-destination")).toBe("gemini");
+    expect(startViewTransition).toHaveBeenCalledTimes(9);
 
     Object.defineProperty(viewTransitionDocument, "startViewTransition", {
       configurable: true,

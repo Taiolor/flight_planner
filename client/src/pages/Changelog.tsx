@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, type MouseEvent } from "react";
 import {
   ChevronDown,
   Sparkles,
@@ -21,7 +21,15 @@ import {
   ArrowLeft,
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
-import { Link } from "wouter";
+import { triggerHaptic } from "@/lib/haptics";
+import { rememberNavigationFocus } from "@/lib/navigationFocus";
+import { Link, useLocation } from "wouter";
+
+type ViewTransitionDocument = Document & {
+  startViewTransition?: (callback: () => void) => {
+    finished?: Promise<unknown>;
+  };
+};
 
 interface Release {
   version: string;
@@ -814,9 +822,27 @@ const sortedMonths = Object.keys(releasesByMonth).sort((a, b) => {
 });
 
 export default function Changelog() {
+  const [location, setLocation] = useLocation();
   const [expandedReleases, setExpandedReleases] = useState<Set<string>>(
     new Set(["v1.9.0"])
   );
+
+  const navigateHome = (event: MouseEvent<HTMLAnchorElement>) => {
+    event.preventDefault();
+    rememberNavigationFocus(location, "changelog-back");
+    triggerHaptic();
+
+    const navigate = () => setLocation("/");
+    const shouldReduceMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches;
+    const transitionDocument = document as ViewTransitionDocument;
+
+    if (shouldReduceMotion || !transitionDocument.startViewTransition) {
+      navigate();
+      return;
+    }
+
+    transitionDocument.startViewTransition(navigate);
+  };
 
   const toggleRelease = (version: string) => {
     const newExpanded = new Set(expandedReleases);
@@ -832,14 +858,15 @@ export default function Changelog() {
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
       {/* Header */}
       <header className="bg-gradient-to-r from-[#071a36] via-[#102f61] to-[#17427e] text-white px-4 py-3 flex items-center gap-3 shadow-lg sticky top-0 z-10">
-        <Link href="/">
-          <button
-            aria-label="Voltar para a página inicial"
-            className="flex items-center gap-1.5 text-white/80 hover:text-white transition-colors text-sm font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-blue-700 rounded-sm"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Voltar
-          </button>
+        <Link
+          href="/"
+          aria-label="Voltar para a página inicial"
+          data-navigation-focus="changelog-back"
+          onClick={navigateHome}
+          className="flex items-center gap-1.5 rounded-sm text-sm font-medium text-white/80 transition-colors hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-blue-700"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          Voltar
         </Link>
         <div className="flex items-center gap-2 ml-2">
           <Sparkles className="w-5 h-5" />

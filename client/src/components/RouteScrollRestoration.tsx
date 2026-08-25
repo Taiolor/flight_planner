@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import { restoreNavigationFocus } from "@/lib/navigationFocus";
 import { useLocation } from "wouter";
 
 type ScrollPosition = {
@@ -37,6 +38,7 @@ export function RouteScrollRestoration() {
       ? window.requestAnimationFrame(() => {
           const position = savedPosition ?? { left: 0, top: 0 };
           window.scrollTo({ ...position, behavior: "auto" });
+          restoreNavigationFocus(route);
         })
       : null;
 

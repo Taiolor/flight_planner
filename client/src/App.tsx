@@ -3,6 +3,7 @@ import NotFound from "@/pages/NotFound";
 import { lazy, Suspense } from "react";
 import { Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
+import { BackToTopButton } from "./components/BackToTopButton";
 import FlyIA from "./components/FlyIA";
 import PerformanceTelemetry from "./components/PerformanceTelemetry";
 import { RouteScrollRestoration } from "./components/RouteScrollRestoration";
@@ -108,6 +109,7 @@ function App() {
             <div className="pb-24 sm:pb-0">
               <Router />
             </div>
+            <BackToTopButton />
             <MobileBottomNavigation />
             <FlyIA />
           </TooltipProvider>

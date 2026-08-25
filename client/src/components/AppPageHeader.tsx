@@ -1,6 +1,14 @@
 import { ArrowLeft, type LucideIcon } from "lucide-react";
 import React, { type ReactNode } from "react";
-import { Link } from "wouter";
+import { triggerHaptic } from "@/lib/haptics";
+import { rememberNavigationFocus } from "@/lib/navigationFocus";
+import { Link, useLocation } from "wouter";
+
+type ViewTransitionDocument = Document & {
+  startViewTransition?: (callback: () => void) => {
+    finished?: Promise<unknown>;
+  };
+};
 
 export interface AppPageHeaderProps {
   title: ReactNode;
@@ -18,18 +26,37 @@ export function AppPageHeader({
   backHref = "/",
   backLabel = "Voltar para a página inicial",
 }: AppPageHeaderProps) {
+  const [location, setLocation] = useLocation();
+  const focusId = `page-back-${encodeURIComponent(location)}`;
+  const navigateBack = (event: React.MouseEvent<HTMLAnchorElement>) => {
+    event.preventDefault();
+    rememberNavigationFocus(location, focusId);
+    triggerHaptic();
+
+    const navigate = () => setLocation(backHref);
+    const shouldReduceMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches;
+    const transitionDocument = document as ViewTransitionDocument;
+
+    if (shouldReduceMotion || !transitionDocument.startViewTransition) {
+      navigate();
+      return;
+    }
+
+    transitionDocument.startViewTransition(navigate);
+  };
+
   return (
     <header className="sticky top-0 z-20 bg-gradient-to-r from-[#071a36] via-[#102f61] to-[#17427e] text-white shadow-lg">
       <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-3 px-4 py-3">
-        <Link href={backHref}>
-          <button
-            type="button"
-            aria-label={backLabel}
-            className="flex items-center gap-1.5 rounded-sm text-sm font-medium text-white/80 transition-colors hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-blue-700"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            <span>Voltar</span>
-          </button>
+        <Link
+          href={backHref}
+          aria-label={backLabel}
+          data-navigation-focus={focusId}
+          onClick={navigateBack}
+          className="flex items-center gap-1.5 rounded-sm text-sm font-medium text-white/80 transition-colors hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-blue-700"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          <span>Voltar</span>
         </Link>
         <div className="flex min-w-0 items-center gap-2 sm:ml-2">
           <Icon className="h-5 w-5 shrink-0" aria-hidden="true" />

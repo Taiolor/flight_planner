@@ -12,6 +12,7 @@ import {
 import { GlobalYearSelector } from "@/components/GlobalYearSelector";
 import { MobileLongPressHint } from "@/components/MobileLongPressHint";
 import { triggerHaptic } from "@/lib/haptics";
+import { rememberNavigationFocus } from "@/lib/navigationFocus";
 import { getMobilePrimaryActionMeta, type MobilePrimaryAction } from "@/lib/mobileExperience";
 import type { NavyIntensity } from "@/contexts/ThemeContext";
 import {
@@ -90,7 +91,11 @@ type HeaderTransitionDestination =
   | "passages"
   | "financial"
   | "quotes"
-  | "memories";
+  | "memories"
+  | "changelog"
+  | "admin-notifications"
+  | "telemetry"
+  | "gemini";
 
 /**
  * Organiza as ações da página inicial em três níveis: contexto e ação primária,
@@ -123,7 +128,7 @@ export function HomeHeaderActions({
   mobilePrimaryAction = "calendar",
   onMobilePrimaryActionChange = () => {},
 }: HomeHeaderActionsProps) {
-  const [, setLocation] = useLocation();
+  const [location, setLocation] = useLocation();
   const [navigatingDestination, setNavigatingDestination] =
     React.useState<HeaderTransitionDestination | null>(null);
   const notificationsAvailable = pushStatus !== "unsupported";
@@ -142,6 +147,8 @@ export function HomeHeaderActions({
     href: string
   ) => {
     event.preventDefault();
+    const focusId = event.currentTarget.dataset.navigationFocus;
+    if (focusId) rememberNavigationFocus(location, focusId);
     triggerHaptic();
 
     const navigate = () => setLocation(href);
@@ -178,6 +185,7 @@ export function HomeHeaderActions({
               aria-label={primaryMeta.label}
               data-mobile-primary-action={mobilePrimaryAction}
               data-calendar-navigation={mobilePrimaryAction === "calendar" || undefined}
+              data-navigation-focus="home-primary-navigation"
               data-view-transition-destination={mobilePrimaryAction === "calendar" ? "calendar" : "passages"}
               aria-busy={navigatingDestination === (mobilePrimaryAction === "calendar" ? "calendar" : "passages") || undefined}
               onClick={event => navigateWithTransition(
@@ -198,6 +206,7 @@ export function HomeHeaderActions({
               href={mobilePrimaryAction === "calendar" ? "/gestao-passagens" : "/calendar"}
               aria-label={mobilePrimaryAction === "calendar" ? "Abrir Gestão de Passagens" : "Calendário"}
               data-calendar-navigation={mobilePrimaryAction === "passages" || undefined}
+              data-navigation-focus="home-secondary-navigation"
               data-view-transition-destination={mobilePrimaryAction === "calendar" ? "passages" : "calendar"}
               aria-busy={navigatingDestination === (mobilePrimaryAction === "calendar" ? "passages" : "calendar") || undefined}
               onClick={event => navigateWithTransition(
@@ -224,6 +233,7 @@ export function HomeHeaderActions({
                 variant="outline"
                 className={iconButtonClass}
                 aria-label="Abrir navegação"
+                data-navigation-focus="home-navigation-menu-trigger"
               >
                 <MoreHorizontal className="size-5" aria-hidden="true" />
                 <span className="sr-only">Abrir navegação</span>
@@ -237,6 +247,7 @@ export function HomeHeaderActions({
                 <Link
                   href="/calendar"
                   data-view-transition-destination="calendar"
+                  data-navigation-focus="home-navigation-menu-trigger"
                   onClick={event => navigateWithTransition(event, "calendar", "/calendar")}
                 >
                   <span className="flex items-center gap-2"><Sparkles className="size-4 text-cyan-300" />Calendário</span>
@@ -246,6 +257,7 @@ export function HomeHeaderActions({
                 <Link
                   href="/gestao-passagens"
                   data-view-transition-destination="passages"
+                  data-navigation-focus="home-navigation-menu-trigger"
                   onClick={event => navigateWithTransition(event, "passages", "/gestao-passagens")}
                 >
                   <span className="flex items-center gap-2"><Ticket className="size-4 text-blue-300" />Gestão de Passagens</span>
@@ -258,6 +270,7 @@ export function HomeHeaderActions({
                 <Link
                   href="/cotacoes"
                   data-view-transition-destination="quotes"
+                  data-navigation-focus="home-navigation-menu-trigger"
                   onClick={event => navigateWithTransition(event, "quotes", "/cotacoes")}
                 >
                   <span className="flex items-center gap-2"><DollarSign className="size-4 text-emerald-300" />Cotações</span>
@@ -267,6 +280,7 @@ export function HomeHeaderActions({
                 <Link
                   href="/financeiro"
                   data-view-transition-destination="financial"
+                  data-navigation-focus="home-navigation-menu-trigger"
                   onClick={event => navigateWithTransition(event, "financial", "/financeiro")}
                 >
                   <span className="flex items-center gap-2"><BarChart2 className="size-4 text-violet-300" />Financeiro</span>
@@ -276,13 +290,19 @@ export function HomeHeaderActions({
                 <Link
                   href={`/memorias?ano=${selectedYear}`}
                   data-view-transition-destination="memories"
+                  data-navigation-focus="home-navigation-menu-trigger"
                   onClick={event => navigateWithTransition(event, "memories", `/memorias?ano=${selectedYear}`)}
                 >
                   <span className="flex items-center gap-2"><Sparkles className="size-4 text-fuchsia-300" />Memórias</span>
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
-                <Link href="/novidades">
+                <Link
+                  href="/novidades"
+                  data-view-transition-destination="changelog"
+                  data-navigation-focus="home-navigation-menu-trigger"
+                  onClick={event => navigateWithTransition(event, "changelog", "/novidades")}
+                >
                   <span className="flex items-center gap-2"><Sparkles className="size-4 text-amber-300" />Novidades</span>
                 </Link>
               </DropdownMenuItem>
@@ -293,7 +313,12 @@ export function HomeHeaderActions({
               <div className="px-1 py-0.5">{pdfExport}</div>
               {isAuthenticated && (
                 <DropdownMenuItem asChild>
-                  <Link href="/admin/notifications">
+                  <Link
+                    href="/admin/notifications"
+                    data-view-transition-destination="admin-notifications"
+                    data-navigation-focus="home-navigation-menu-trigger"
+                    onClick={event => navigateWithTransition(event, "admin-notifications", "/admin/notifications")}
+                  >
                     <span className="flex items-center gap-2"><ShieldCheck className="size-4 text-blue-300" />Painel de avisos</span>
                   </Link>
                 </DropdownMenuItem>
@@ -301,12 +326,22 @@ export function HomeHeaderActions({
               {isAdmin && (
                 <>
                   <DropdownMenuItem asChild>
-                    <Link href="/admin/telemetria">
+                    <Link
+                      href="/admin/telemetria"
+                      data-view-transition-destination="telemetry"
+                      data-navigation-focus="home-navigation-menu-trigger"
+                      onClick={event => navigateWithTransition(event, "telemetry", "/admin/telemetria")}
+                    >
                       <span className="flex items-center gap-2"><MapPinned className="size-4 text-blue-300" />Locais de Acesso</span>
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
-                    <Link href="/admin/gemini">
+                    <Link
+                      href="/admin/gemini"
+                      data-view-transition-destination="gemini"
+                      data-navigation-focus="home-navigation-menu-trigger"
+                      onClick={event => navigateWithTransition(event, "gemini", "/admin/gemini")}
+                    >
                       <span className="flex items-center gap-2"><Sparkles className="size-4 text-cyan-300" />Uso de IA</span>
                     </Link>
                   </DropdownMenuItem>
