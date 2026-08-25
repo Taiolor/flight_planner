@@ -4,6 +4,7 @@ import {
   buildBoardingGuidanceAnswerFromWeeks,
   buildNextFlightAnswerFromWeeks,
   buildFlyIaPayload,
+  createFlightradarFlightUrl,
   createFlyIaRateLimiter,
   formatFlightDatetime,
   FlyIaProviderError,
@@ -178,6 +179,13 @@ describe("Fly.IA", () => {
     expect(answer).toContain("01/05/2026 às 19:10");
     expect(answer).toContain("G35678");
     expect(answer).toContain("**Terminal:** 1");
+  });
+
+  it("monta um link externo de rastreamento apenas para número de voo compatível", () => {
+    expect(createFlightradarFlightUrl("LA 3000")).toBe("https://www.flightradar24.com/data/flights/la3000");
+    expect(createFlightradarFlightUrl("G31234")).toBe("https://www.flightradar24.com/data/flights/g31234");
+    expect(createFlightradarFlightUrl("https://exemplo.test")).toBeNull();
+    expect(createFlightradarFlightUrl(null)).toBeNull();
   });
 
   it("repete os detalhes completos quando a pergunta seguinte pede detalhes do próximo voo", () => {

@@ -67,17 +67,25 @@ export default function FlyIA() {
   });
   const chatMutation = trpc.flyIa.chat.useMutation({
     onSuccess: result => {
+      const routeUrl = "routeUrl" in result ? result.routeUrl : undefined;
+      const trackingUrl = "trackingUrl" in result ? result.trackingUrl : undefined;
       setMessages(current => [
         ...current,
         {
           role: "assistant",
           content: result.response,
-          action: result.routeUrl
+          action: routeUrl
             ? {
                 label: "Ver rota no mapa",
-                href: result.routeUrl,
+                href: routeUrl,
                 ariaLabel: "Abrir rota até o aeroporto no Google Maps",
               }
+            : trackingUrl
+              ? {
+                  label: "Rastrear no Flightradar24",
+                  href: trackingUrl,
+                  ariaLabel: "Abrir rastreamento do voo no Flightradar24",
+                }
             : undefined,
         },
       ]);

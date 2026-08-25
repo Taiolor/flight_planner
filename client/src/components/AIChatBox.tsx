@@ -118,6 +118,17 @@ function isGoogleMapsDirectionsUrl(href: string) {
   }
 }
 
+function isFlightradarFlightUrl(href: string) {
+  try {
+    const url = new URL(href);
+    return url.protocol === "https:"
+      && url.hostname === "www.flightradar24.com"
+      && /^\/data\/flights\/[a-z0-9]+$/i.test(url.pathname);
+  } catch {
+    return false;
+  }
+}
+
 /**
  * A ready-to-use AI chat box component that integrates with the LLM system.
  *
@@ -371,6 +382,20 @@ export function AIChatBox({
                             <MapPinned className="size-3.5" aria-hidden="true" />
                             {message.action.label}
                             <ExternalLink className="size-3" aria-hidden="true" />
+                          </a>
+                        </Button>
+                      )}
+                      {message.role === "assistant" && message.action && isFlightradarFlightUrl(message.action.href) && (
+                        <Button asChild variant="outline" size="sm" className="mt-2 h-8 gap-1.5 border-primary/30 bg-background text-primary hover:bg-primary/5">
+                          <a
+                            href={message.action.href}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            aria-label={message.action.ariaLabel}
+                            data-testid="flyia-flight-tracking-action"
+                          >
+                            <ExternalLink className="size-3.5" aria-hidden="true" />
+                            {message.action.label}
                           </a>
                         </Button>
                       )}

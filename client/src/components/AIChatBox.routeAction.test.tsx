@@ -48,4 +48,35 @@ describe("AIChatBox action de rota", () => {
     mount([{ role: "assistant", content: "Seu próximo voo parte às 22:05." }]);
     expect(document.querySelector("[data-testid='flyia-map-route-action']")).toBeNull();
   });
+
+  it("exibe o rastreamento externo somente para URL validada do Flightradar24", () => {
+    mount([{
+      role: "assistant",
+      content: "Abra o rastreamento externo.",
+      action: {
+        label: "Rastrear no Flightradar24",
+        href: "https://www.flightradar24.com/data/flights/la3000",
+        ariaLabel: "Abrir rastreamento do voo no Flightradar24",
+      },
+    }]);
+
+    const action = document.querySelector<HTMLAnchorElement>("[data-testid='flyia-flight-tracking-action']");
+    expect(action?.textContent).toContain("Rastrear no Flightradar24");
+    expect(action?.target).toBe("_blank");
+    expect(action?.rel).toContain("noreferrer");
+    expect(action?.href).toBe("https://www.flightradar24.com/data/flights/la3000");
+  });
+
+  it("não renderiza rastreamento para URL externa não reconhecida", () => {
+    mount([{
+      role: "assistant",
+      content: "Ação inválida.",
+      action: {
+        label: "Rastrear",
+        href: "https://exemplo.test/data/flights/la3000",
+        ariaLabel: "Ação inválida",
+      },
+    }]);
+    expect(document.querySelector("[data-testid='flyia-flight-tracking-action']")).toBeNull();
+  });
 });

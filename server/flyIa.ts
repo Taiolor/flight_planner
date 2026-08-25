@@ -133,6 +133,11 @@ export type FlightLeg = {
   status: "Programado" | "Remarcado" | "Cancelado" | "Concluído";
 };
 
+export type FlyIaDeterministicAnswer = {
+  text: string;
+  trackingUrl?: string;
+};
+
 function isNextFlightQuestion(messages: FlyIaMessage[]) {
   const userMessages = messages.filter(message => message.role === "user");
   const question = userMessages.at(-1)?.content ?? "";
@@ -142,6 +147,17 @@ function isNextFlightQuestion(messages: FlyIaMessage[]) {
     /pr[oó]xim[oa]\s+(voo|viagem)|qual\s+(é|e)\s+(o|a)\s+meu\s+pr[oó]xim/i.test(message.content)
   );
   return asksNextFlight || (asksDetails && previouslyAskedNextFlight);
+}
+
+function isFlightTrackingQuestion(messages: FlyIaMessage[]) {
+  const question = messages.filter(message => message.role === "user").at(-1)?.content ?? "";
+  return /rastre(?:ar|ie)|acompanhar.*voo|voo.*(?:ao vivo|em tempo real)|flightradar/i.test(question);
+}
+
+export function createFlightradarFlightUrl(flightNumber: string | null) {
+  const normalized = flightNumber?.trim().replace(/\s+/g, "").toLowerCase() ?? "";
+  if (!/^(?:[a-z]{2,3}\d{1,4}[a-z]?|[a-z]\d{1,5}[a-z]?)$/i.test(normalized)) return null;
+  return `https://www.flightradar24.com/data/flights/${encodeURIComponent(normalized)}`;
 }
 
 function getLegStatus(
@@ -280,9 +296,38 @@ export function buildNextFlightAnswerFromWeeks(
 
 export async function getDeterministicFlyIaAnswer(year: number, messages: FlyIaMessage[]) {
   const weeks = await getAllFlightWeeks(year);
-  const text = buildNextFlightAnswerFromWeeks(weeks, messages)
-    ?? buildBoardingGuidanceAnswerFromWeeks(weeks, messages);
-  return text ? { text } : null;
+  const nextFlightAnswer = buildNextFlightAnswerFromWeeks(weeks, messages);
+  if (nextFlightAnswer) {
+    const next = findNextIssuedFlight(weeks);
+    return {
+      text: nextFlightAnswer,
+      trackingUrl: createFlightradarFlightUrl(next?.flight.flightNumber ?? null) ?? undefined,
+    } satisfies FlyIaDeterministicAnswer;
+  }
+
+  const boardingGuidance = buildBoardingGuidanceAnswerFromWeeks(weeks, messages);
+  if (boardingGuidance) return { text: boardingGuidance } satisfies FlyIaDeterministicAnswer;
+
+  if (isFlightTrackingQuestion(messages)) {
+    const next = findNextIssuedFlight(weeks);
+    if (!next) return { text: "Não há um próximo voo emitido e ativo registrado para rastrear." } satisfies FlyIaDeterministicAnswer;
+    const trackingUrl = createFlightradarFlightUrl(next.flight.flightNumber);
+    if (!trackingUrl) {
+      return { text: "O próximo voo não tem um número de voo compatível cadastrado para abrir o rastreador externo." } satisfies FlyIaDeterministicAnswer;
+    }
+    return {
+      text: [
+        "**Rastreamento externo do próximo voo**",
+        `- **Voo (base SmartFly):** ${next.flight.flightNumber} · ${next.flight.airportFrom} → ${next.flight.airportTo}`,
+        `- **Partida cadastrada:** ${formatFlightDatetime(next.flight.datetime)}`,
+        "",
+        "Use a ação abaixo para abrir o Flightradar24. A posição exibida no rastreador é externa e temporária; ela não altera os dados cadastrados no SmartFly.",
+      ].join("\n"),
+      trackingUrl,
+    } satisfies FlyIaDeterministicAnswer;
+  }
+
+  return null;
 }
 
 /**

@@ -204,3 +204,8 @@
 - [x] Exibir botão acessível “Ver rota no mapa” junto à resposta aplicável, abrindo em nova aba com proteção de referência.
 - [x] Cobrir link, ausência da ação em outras respostas, acessibilidade e responsividade; documentar e versionar.
 - [x] Salvar checkpoint do botão de rota no mapa do Fly.IA.
+- [x] Definir identificadores mínimos de companhia, número, rota e data para montar um link externo de rastreamento sem API.
+- [x] Adicionar acesso de rastreamento apenas a trechos emitidos que possuam os dados mínimos necessários.
+- [x] Abrir o rastreador em nova aba com rótulo acessível e proteção de referência, sem persistir dados externos.
+- [x] Cobrir o link, estados sem dados, segurança e responsividade; documentar e versionar a ação.
+- [x] Salvar checkpoint do link externo de rastreamento do Fly.IA.

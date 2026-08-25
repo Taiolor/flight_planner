@@ -222,11 +222,13 @@ describe("flyIa.chat", () => {
   it("responde o próximo voo completo a partir dos dados persistidos sem chamar Gemini", async () => {
     state.getDeterministicFlyIaAnswer.mockResolvedValue({
       text: "**Próximo voo — ida**\n- **Data e hora:** 26/04/2026 às 22:05",
+      trackingUrl: "https://www.flightradar24.com/data/flights/g31234",
     });
     const caller = createCaller(true);
 
     await expect(caller.flyIa.chat(input)).resolves.toEqual({
       response: "**Próximo voo — ida**\n- **Data e hora:** 26/04/2026 às 22:05",
+      trackingUrl: "https://www.flightradar24.com/data/flights/g31234",
     });
     expect(state.getGeminiBudgetSnapshot).not.toHaveBeenCalled();
     expect(state.askFlyIa).not.toHaveBeenCalled();
