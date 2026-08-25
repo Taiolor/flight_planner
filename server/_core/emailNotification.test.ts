@@ -28,6 +28,8 @@ describe("email notification sanitization", () => {
     expect(html).toContain("&lt;script&gt;alert(1)&lt;/script&gt;");
     expect(html).toContain("&lt;before&gt;");
     expect(html).toContain("&lt;after&gt;");
+    expect(html).toContain("smartfly-sf-apple-touch-icon_598faae4.png");
+    expect(html).toContain("Smart Fly · Planejamento de viagens");
   });
 
   it("escapes shared-flight labels and rejects unsafe link protocols", () => {
@@ -61,6 +63,7 @@ describe("email notification sanitization", () => {
     expect(html).toContain("&lt;GRU&gt;");
     expect(html).not.toContain("href=\"javascript:alert(1)\"");
     expect(html).toContain('href="#"');
+    expect(html).toContain("smartfly-sf-apple-touch-icon_598faae4.png");
   });
 
   it("prevents line breaks from becoming e-mail subject header injection", () => {

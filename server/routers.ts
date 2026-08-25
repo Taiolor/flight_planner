@@ -455,12 +455,12 @@ export const appRouter = router({
     sendTest: flightAdminProcedure
       .input(z.object({ year: planningYearSchema }))
       .mutation(async ({ input }) => {
-      const { sendPushToAll } = await import("./pushNotifications");
+      const { sendPushToAll, SMART_FLY_PUSH_BADGE, SMART_FLY_PUSH_ICON } = await import("./pushNotifications");
       const sent = await sendPushToAll({
         title: "✈️ Smart Fly — Teste",
         body: "Notificações push estão funcionando!",
-        icon: "/icons/icon-192.png",
-        badge: "/icons/icon-192.png",
+        icon: SMART_FLY_PUSH_ICON,
+        badge: SMART_FLY_PUSH_BADGE,
         tag: "test",
       });
       const totalDevices = (await getAllPushSubscriptions()).length;
@@ -1328,12 +1328,12 @@ export const appRouter = router({
       });
 
       // Enviar notificação com dados oficiais
-      const { sendPushToAll } = await import("./pushNotifications");
+      const { sendPushToAll, SMART_FLY_PUSH_BADGE, SMART_FLY_PUSH_ICON } = await import("./pushNotifications");
       const sent = await sendPushToAll({
         title: `✈️ ${nextAlert.airline} ${nextAlert.flightNumber} - ${nextAlert.avisoLabel}`,
         body: `${nextAlert.direction === "ida" ? "Partida" : "Retorno"} em ${dateStr} às ${timeStr}\n${nextAlert.departureAirport} → ${nextAlert.arrivalAirport}`,
-        icon: "/icons/icon-192.png",
-        badge: "/icons/icon-192.png",
+        icon: SMART_FLY_PUSH_ICON,
+        badge: SMART_FLY_PUSH_BADGE,
         tag: `test-${nextAlert.year}-${nextAlert.weekNumber}`,
       });
 

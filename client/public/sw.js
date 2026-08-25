@@ -1,5 +1,7 @@
 const CACHE_NAME = "smartfly-v4";
 const STATIC_ASSETS = ["/manifest.json"];
+const SMART_FLY_PUSH_ICON = "/manus-storage/smartfly-sf-pwa-icon_783c04c6.webp";
+const SMART_FLY_PUSH_BADGE = "/manus-storage/smartfly-sf-apple-touch-icon_598faae4.png";
 
 // =====================
 // Ciclo de vida do SW
@@ -96,8 +98,8 @@ self.addEventListener("push", event => {
   let payload = {
     title: "✈️ Smart Fly",
     body: "Você tem um voo em breve!",
-    icon: "/icons/icon-192.png",
-    badge: "/icons/icon-192.png",
+    icon: SMART_FLY_PUSH_ICON,
+    badge: SMART_FLY_PUSH_BADGE,
     tag: "flight-reminder",
     data: {},
   };

@@ -19,6 +19,9 @@ import { type FlightWeek } from "../drizzle/schema";
 import { sdk } from "./_core/sdk";
 import type { Request, Response } from "express";
 
+export const SMART_FLY_PUSH_ICON = "/manus-storage/smartfly-sf-pwa-icon_783c04c6.webp";
+export const SMART_FLY_PUSH_BADGE = "/manus-storage/smartfly-sf-apple-touch-icon_598faae4.png";
+
 // Configurar VAPID uma única vez ao carregar o módulo
 let vapidConfigured = false;
 
@@ -215,8 +218,8 @@ async function processDepartureFlight(
     {
       title: `✈️ ${antecedenciaLabel} — ${airline} ${flightNum}`,
       body: `Voo de ida GRU → NVT: ${dateStr} às ${timeStr}. Prepare-se! 🧳`,
-      icon: "/icons/icon-192.png",
-      badge: "/icons/icon-192.png",
+      icon: SMART_FLY_PUSH_ICON,
+      badge: SMART_FLY_PUSH_BADGE,
       tag: `departure-${week.year}-week-${week.weekNumber}-aviso${aviso.minutes}`,
       data: { year: week.year, weekNumber: week.weekNumber, direction: "departure" },
     },
@@ -293,8 +296,8 @@ async function processReturnFlight(
     {
       title: `🏠 ${antecedenciaLabel} — ${airline} ${flightNum}`,
       body: `Voo de volta NVT → GRU: ${dateStr} às ${timeStr}. Boa viagem! ✈️`,
-      icon: "/icons/icon-192.png",
-      badge: "/icons/icon-192.png",
+      icon: SMART_FLY_PUSH_ICON,
+      badge: SMART_FLY_PUSH_BADGE,
       tag: `return-${week.year}-week-${week.weekNumber}-aviso${aviso.minutes}`,
       data: { year: week.year, weekNumber: week.weekNumber, direction: "return" },
     },

@@ -19,6 +19,9 @@ describe("PWA Viagens branding", () => {
     expect(manifest).toContain('"type": "image/webp"');
     expect(document).toContain("smartfly-icon-512-fy4eDuGdVJBtxeYLKc2qAk.png");
     expect(document).toContain("/manus-storage/smartfly-sf-apple-touch-icon_598faae4.png");
+    expect(document).toContain("/manus-storage/smartfly-sf-favicon-48_45731084.png");
+    expect(document).toContain("/manus-storage/smartfly-sf-favicon-32_fa912500.png");
+    expect(document).toContain("/manus-storage/smartfly-sf-favicon-16_8b3260d7.png");
     expect(document).toContain('apple-mobile-web-app-title" content="Viagens"');
   });
 });

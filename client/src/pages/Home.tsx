@@ -115,6 +115,7 @@ import { DeferredPdfExportButton } from "@/components/DeferredPdfExportButton";
 import { SkeletonFilters } from "@/components/SkeletonFilters";
 import { SkeletonChart } from "@/components/SkeletonChart";
 import { NotificationSettingsPopup } from "@/components/NotificationSettingsPopup";
+import { PwaInstallGuide } from "@/components/PwaInstallGuide";
 import { trpc } from "@/lib/trpc";
 import { LoginModal } from "@/components/auth/LoginModal";
 import { useTheme, COLOR_PRESETS } from "@/contexts/ThemeContext";
@@ -2411,6 +2412,7 @@ export default function Home({ mode = "home" }: HomeProps) {
                   totalInvested={annualTotalIssued}
                 />
               }
+              installGuide={<PwaInstallGuide />}
               onShowChart={() => {
                 setIsPriceChartVisible(true);
                 requestAnimationFrame(() => {

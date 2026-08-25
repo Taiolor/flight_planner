@@ -175,3 +175,6 @@
 - [x] Exibir estado de erro da Home com botão acessível para tentar novamente
 - [x] Alertar a área administrativa quando houver divergência permanente de schema
 - [x] Alinhar os ícones instaláveis Android e iOS ao logotipo oficial SF do menu
+- [x] Padronizar os favicons de desktop com o logotipo oficial SF
+- [x] Adicionar uma experiência guiada e acessível para instalação do aplicativo
+- [x] Aplicar a assinatura visual SF aos e-mails e notificações enviados pela plataforma

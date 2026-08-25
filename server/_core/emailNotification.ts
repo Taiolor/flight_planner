@@ -1,6 +1,9 @@
 import { Resend } from "resend";
 import { ENV } from "./env";
 
+const SMART_FLY_EMAIL_LOGO_URL =
+  "https://flightplan-hq655wm9.manus.space/manus-storage/smartfly-sf-apple-touch-icon_598faae4.png";
+
 /**
  * Email notification for ticket changes
  * Supports: creation, update, deletion of tickets
@@ -61,6 +64,26 @@ function safeEmailHref(value: string | undefined): string {
   } catch {
     return "#";
   }
+}
+
+function smartFlyEmailHeader(context: string): string {
+  return `
+    <div style="background: #071a36; border-radius: 12px; padding: 16px 18px; margin-bottom: 20px; color: #ffffff;">
+      <table role="presentation" width="100%" cellspacing="0" cellpadding="0"><tr>
+        <td width="48" valign="middle"><img src="${SMART_FLY_EMAIL_LOGO_URL}" width="40" height="40" alt="SF" style="display:block; border-radius:10px;" /></td>
+        <td valign="middle" style="padding-left: 10px;"><strong style="font-size: 18px; line-height: 22px;">Smart Fly</strong><br /><span style="font-size: 12px; color: #cbd5e1;">${escapeHtml(context)}</span></td>
+      </tr></table>
+    </div>
+  `;
+}
+
+function smartFlyEmailFooter(): string {
+  return `
+    <p style="color: #64748b; font-size: 12px; margin: 28px 0 0; border-top: 1px solid #dbe3ef; padding-top: 18px; text-align: center;">
+      Smart Fly · Planejamento de viagens<br />
+      Esta é uma comunicação automática. Não responda este e-mail.
+    </p>
+  `;
 }
 
 export interface TicketShareEmailInput {
@@ -124,13 +147,12 @@ function formatTicketShareLeg(
 export function formatTicketShareEmail(input: TicketShareEmailInput): string {
   return `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+      ${smartFlyEmailHeader("Compartilhamento de bilhetes")}
       <h2 style="color: #1f2937; margin-bottom: 20px;">Compartilhamento de Bilhetes ✈️</h2>
       <p style="color: #4b5563; margin-bottom: 20px;"><strong>${formatEmailValue(input.weekLabel)}</strong></p>
       ${formatTicketShareLeg("Voo de Ida 🛫", input.departure)}
       ${formatTicketShareLeg("Voo de Volta 🛬", input.return)}
-      <p style="color: #6b7280; font-size: 12px; margin-top: 30px; border-top: 1px solid #e5e7eb; padding-top: 20px;">
-        Compartilhado via Smart Fly - Planejador de Passagens Aéreas 2026
-      </p>
+      ${smartFlyEmailFooter()}
     </div>
   `;
 }
@@ -171,6 +193,7 @@ export function formatTicketDetails(notification: TicketChangeNotification): str
 
   let html = `
     <div style="font-family: Arial, sans-serif; color: #333; max-width: 700px; margin: 0 auto;">
+      ${smartFlyEmailHeader("Atualização de bilhete")}
       <h2 style="color: #1e40af; border-bottom: 2px solid #1e40af; padding-bottom: 10px;">Notificação de Alteração de Bilhete</h2>
       
       <div style="background-color: #f8f9fa; padding: 15px; border-radius: 5px; margin: 15px 0;">
@@ -256,11 +279,7 @@ export function formatTicketDetails(notification: TicketChangeNotification): str
 
   html += `
     </div>
-    <hr style="margin: 20px 0; border: none; border-top: 1px solid #ddd;">
-    <p style="font-size: 12px; color: #666; text-align: center;">
-      Smart Fly — Planejador de Passagens Aéreas 2026<br>
-      Esta é uma notificação automática. Não responda este e-mail.
-    </p>
+    ${smartFlyEmailFooter()}
   </div>
   `;
 
@@ -351,13 +370,11 @@ export async function sendTestEmail(testEmail: string): Promise<boolean> {
     const subject = "✅ Teste de Configuração de E-mail — Smart Fly";
     const htmlContent = `
       <div style="font-family: Arial, sans-serif; color: #333; max-width: 600px; margin: 0 auto;">
+        ${smartFlyEmailHeader("Teste de comunicação")}
         <h2 style="color: #1e40af;">✅ Configuração de E-mail Funcionando</h2>
         <p>Este é um e-mail de teste para verificar se a integração com Resend está correta.</p>
         <p><strong>Data/Hora:</strong> ${new Date().toLocaleString("pt-BR")}</p>
-        <hr style="margin: 20px 0; border: none; border-top: 1px solid #ddd;">
-        <p style="margin-top: 20px; font-size: 12px; color: #666;">
-          Smart Fly — Planejador de Passagens Aéreas 2026
-        </p>
+        ${smartFlyEmailFooter()}
       </div>
     `;
 
@@ -389,6 +406,7 @@ export async function sendGeminiBudgetAlertEmail(
   const budget = currency.format(input.monthlyBudgetCents / 100);
   const htmlContent = `
     <div style="font-family: Arial, sans-serif; color: #1f2937; max-width: 640px; margin: 0 auto;">
+      ${smartFlyEmailHeader("Alerta do Fly.IA")}
       <h2 style="color: #1d4ed8;">Alerta de orçamento do Fly.IA</h2>
       <p>O consumo estimado do Gemini atingiu <strong>${formatEmailValue(input.thresholdPercent)}%</strong> do orçamento configurado.</p>
       <div style="background: #eff6ff; border-radius: 8px; padding: 16px; margin: 18px 0;">
@@ -398,6 +416,7 @@ export async function sendGeminiBudgetAlertEmail(
         <p style="margin: 6px 0;"><strong>Uso calculado:</strong> ${formatEmailValue(input.usagePercent)}%</p>
       </div>
       <p>Revise o painel administrativo do SmartFly e o saldo oficial no Google AI Studio. Esta é uma estimativa baseada nos tokens registrados pela aplicação.</p>
+      ${smartFlyEmailFooter()}
     </div>
   `;
   return sendEmailViaResend(

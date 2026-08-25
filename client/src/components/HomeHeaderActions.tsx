@@ -60,6 +60,7 @@ type HomeHeaderActionsProps = {
   accountEmail?: string | null;
   notificationSettings?: ReactNode;
   pdfExport: ReactNode;
+  installGuide?: ReactNode;
   onShowChart: () => void;
   onToggleTheme: () => void;
   onColorPresetChange: (value: string) => void;
@@ -117,6 +118,7 @@ export function HomeHeaderActions({
   accountEmail,
   notificationSettings,
   pdfExport,
+  installGuide,
   onShowChart,
   onToggleTheme,
   onColorPresetChange,
@@ -310,6 +312,7 @@ export function HomeHeaderActions({
               <DropdownMenuLabel className="px-2 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-slate-400">
                 Recursos
               </DropdownMenuLabel>
+              {installGuide && <div className="px-1 py-0.5">{installGuide}</div>}
               <div className="px-1 py-0.5">{pdfExport}</div>
               {isAuthenticated && (
                 <DropdownMenuItem asChild>
