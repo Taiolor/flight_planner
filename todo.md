@@ -826,6 +826,8 @@
 - [x] Adicionar visualização de tendência de emissões versus metas anuais
 - [x] Adicionar transição suave e acessível ao navegar pelo botão de Calendário
 - [x] Aplicar a transição suave e acessível aos botões Gestão e Financeiro do cabeçalho
+- [x] Aplicar a transição suave e acessível às rotas Cotações e Memórias no cabeçalho
+- [x] Restaurar a posição de rolagem ao retornar entre páginas
 
 ## Processo reutilizável
 

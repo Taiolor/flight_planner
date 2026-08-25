@@ -85,7 +85,12 @@ type ViewTransitionDocument = Document & {
   };
 };
 
-type HeaderTransitionDestination = "calendar" | "passages" | "financial";
+type HeaderTransitionDestination =
+  | "calendar"
+  | "passages"
+  | "financial"
+  | "quotes"
+  | "memories";
 
 /**
  * Organiza as ações da página inicial em três níveis: contexto e ação primária,
@@ -250,7 +255,11 @@ export function HomeHeaderActions({
                 <TrendingUp className="size-4 text-sky-300" />Gráfico
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
-                <Link href="/cotacoes">
+                <Link
+                  href="/cotacoes"
+                  data-view-transition-destination="quotes"
+                  onClick={event => navigateWithTransition(event, "quotes", "/cotacoes")}
+                >
                   <span className="flex items-center gap-2"><DollarSign className="size-4 text-emerald-300" />Cotações</span>
                 </Link>
               </DropdownMenuItem>
@@ -264,7 +273,11 @@ export function HomeHeaderActions({
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
-                <Link href={`/memorias?ano=${selectedYear}`}>
+                <Link
+                  href={`/memorias?ano=${selectedYear}`}
+                  data-view-transition-destination="memories"
+                  onClick={event => navigateWithTransition(event, "memories", `/memorias?ano=${selectedYear}`)}
+                >
                   <span className="flex items-center gap-2"><Sparkles className="size-4 text-fuchsia-300" />Memórias</span>
                 </Link>
               </DropdownMenuItem>

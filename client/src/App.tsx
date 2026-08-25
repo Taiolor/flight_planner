@@ -5,6 +5,7 @@ import { Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import FlyIA from "./components/FlyIA";
 import PerformanceTelemetry from "./components/PerformanceTelemetry";
+import { RouteScrollRestoration } from "./components/RouteScrollRestoration";
 import UsageTelemetry from "./components/UsageTelemetry";
 import { MobileBottomNavigation } from "./components/MobileBottomNavigation";
 import { ThemeProvider } from "./contexts/ThemeContext";
@@ -103,6 +104,7 @@ function App() {
             <Toaster position="top-right" richColors />
             <PerformanceTelemetry />
             <UsageTelemetry />
+            <RouteScrollRestoration />
             <div className="pb-24 sm:pb-0">
               <Router />
             </div>

@@ -60,7 +60,7 @@ describe("HomeHeaderActions", () => {
     expect(screen.getByRole("button", { name: "Entrar" })).toBeTruthy();
   });
 
-  it("usa uma View Transition ao abrir Calendário, Gestão e Financeiro quando o navegador oferece suporte", () => {
+  it("usa uma View Transition ao abrir os destinos principais quando o navegador oferece suporte", () => {
     const viewTransitionDocument = document as Document & {
       startViewTransition?: unknown;
     };
@@ -121,6 +121,18 @@ describe("HomeHeaderActions", () => {
 
     expect(financialLink.getAttribute("data-view-transition-destination")).toBe("financial");
     expect(startViewTransition).toHaveBeenCalledTimes(3);
+
+    const quotesLink = screen.getByRole("menuitem", { name: "Cotações" });
+    fireEvent.click(quotesLink);
+
+    expect(quotesLink.getAttribute("data-view-transition-destination")).toBe("quotes");
+    expect(startViewTransition).toHaveBeenCalledTimes(4);
+
+    const memoriesLink = screen.getByRole("menuitem", { name: "Memórias" });
+    fireEvent.click(memoriesLink);
+
+    expect(memoriesLink.getAttribute("data-view-transition-destination")).toBe("memories");
+    expect(startViewTransition).toHaveBeenCalledTimes(5);
 
     Object.defineProperty(viewTransitionDocument, "startViewTransition", {
       configurable: true,
