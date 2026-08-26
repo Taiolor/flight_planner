@@ -184,6 +184,7 @@
         text-align: center;
       }
       .pwa-splash-logo {
+        animation: pwa-splash-logo-breathe 1.8s ease-in-out infinite;
         background: rgba(255, 255, 255, 0.14);
         border: 1px solid rgba(255, 255, 255, 0.26);
         border-radius: 24px;
@@ -208,7 +209,20 @@
         height: 4px;
         margin-top: 28px;
         overflow: hidden;
+        position: relative;
         width: 132px;
+      }
+      .pwa-splash-loader::before {
+        animation: pwa-splash-loader-beacon 900ms ease-in-out infinite;
+        background: rgba(220, 252, 231, 0.92);
+        border-radius: inherit;
+        content: "";
+        height: 8px;
+        left: 0;
+        position: absolute;
+        top: -2px;
+        width: 8px;
+        z-index: 1;
       }
       .pwa-splash-loader::after {
         animation: pwa-splash-progress 900ms ease-in-out infinite;
@@ -239,6 +253,13 @@
         50% { transform: translateX(54%); }
         100% { transform: translateX(160%); }
       }
+      @keyframes pwa-splash-logo-breathe {
+        50% { transform: translateY(-2px) scale(1.025); }
+      }
+      @keyframes pwa-splash-loader-beacon {
+        0%, 100% { opacity: 0.38; transform: translateX(10px) scale(0.78); }
+        50% { opacity: 1; transform: translateX(114px) scale(1); }
+      }
       @keyframes pwa-root-reveal {
         from { opacity: 0; transform: translateY(4px); }
         to { opacity: 1; transform: translateY(0); }
@@ -246,6 +267,8 @@
       @media (prefers-reduced-motion: reduce) {
         #pwa-startup-splash { transition: none; }
         #root[data-pwa-revealed="true"] { animation: none; opacity: 1; transform: none; }
+        .pwa-splash-logo { animation: none; }
+        .pwa-splash-loader::before { animation: none; opacity: 0.8; transform: translateX(62px); }
         .pwa-splash-loader::after { animation: none; transform: translateX(54%); }
       }
     </style>

@@ -187,3 +187,4 @@
 - [x] Adicionar fila secundária recolhível com preferência persistente e validada
 - [x] Exibir preço e tendência real nos itens prioritários da Central de decisão
 - [x] Permitir ajuste manual e persistente de relevância para prioridades por semana
+- [x] Adicionar animação de carregamento sutil e acessível à splash antes da transição de conteúdo
