@@ -15,13 +15,15 @@ describe("PWA Viagens branding", () => {
 
     expect(manifest).toContain('"name": "Viagens"');
     expect(manifest).toContain('"short_name": "Viagens"');
-    expect(manifest).toContain("/manus-storage/smartfly-sf-pwa-icon_783c04c6.webp");
+    expect(manifest).toContain("/manus-storage/smartfly-sf-pwa-icon_783c04c6.webp?v=20260826");
     expect(manifest).toContain('"type": "image/webp"');
+    expect(manifest).toContain('"purpose": "any maskable"');
+    expect(document).toContain('/manifest.json?v=20260826');
     expect(document).toContain("smartfly-icon-512-fy4eDuGdVJBtxeYLKc2qAk.png");
-    expect(document).toContain("/manus-storage/smartfly-sf-apple-touch-icon_598faae4.png");
-    expect(document).toContain("/manus-storage/smartfly-sf-favicon-48_45731084.png");
-    expect(document).toContain("/manus-storage/smartfly-sf-favicon-32_fa912500.png");
-    expect(document).toContain("/manus-storage/smartfly-sf-favicon-16_8b3260d7.png");
+    expect(document).toContain("/manus-storage/smartfly-sf-apple-touch-icon_598faae4.png?v=20260826");
+    expect(document).toContain("/manus-storage/smartfly-sf-favicon-48_45731084.png?v=20260826");
+    expect(document).toContain("/manus-storage/smartfly-sf-favicon-32_fa912500.png?v=20260826");
+    expect(document).toContain("/manus-storage/smartfly-sf-favicon-16_8b3260d7.png?v=20260826");
     expect(document).toContain('apple-mobile-web-app-title" content="Viagens"');
   });
 });

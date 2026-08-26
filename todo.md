@@ -844,6 +844,7 @@
 - [x] Adicionar metas por categoria de viagens, orçamento, milhas e créditos
 - [x] Criar Centro de decisões com recomendações prioritárias e explicáveis
 - [x] Criar relatório executivo com geração manual de PDF/CSV e opção de agendamento seguro
+- [x] Corrigir a atualização do ícone do site, favicon e cache do PWA
 
 ## Processo reutilizável
 

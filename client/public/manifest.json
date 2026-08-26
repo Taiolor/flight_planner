@@ -2,7 +2,8 @@
   "name": "Viagens",
   "short_name": "Viagens",
   "description": "Smart Fly — Planejamento inteligente de viagens",
-  "start_url": "/",
+  "id": "/?app=viagens",
+  "start_url": "/?app=viagens",
   "display": "standalone",
   "background_color": "#1e3a8a",
   "theme_color": "#2563eb",
@@ -10,10 +11,10 @@
   "lang": "pt-BR",
   "icons": [
     {
-      "src": "/manus-storage/smartfly-sf-pwa-icon_783c04c6.webp",
+      "src": "/manus-storage/smartfly-sf-pwa-icon_783c04c6.webp?v=20260826",
       "sizes": "2048x2048",
       "type": "image/webp",
-      "purpose": "any"
+      "purpose": "any maskable"
     }
   ],
   "categories": ["travel", "productivity"],
