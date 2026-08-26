@@ -107,7 +107,11 @@ export function WeeklyPlanning({ year, items, hideValues, onToggleFavorite = () 
           {items.map(item => {
             const status = statusCopy[item.status];
             return (
-              <article key={item.weekNumber} className="group relative rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition-[transform,border-color,box-shadow] duration-150 hover:-translate-y-0.5 hover:border-blue-300 hover:shadow-md dark:border-slate-800 dark:bg-slate-900 dark:hover:border-blue-700">
+              <article
+                key={item.weekNumber}
+                data-flight-card="weekly"
+                className="group relative rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition-[transform,border-color,box-shadow] duration-200 hover:border-blue-400 hover:shadow-lg hover:shadow-blue-950/10 motion-safe:hover:-translate-y-1 motion-reduce:transition-none dark:border-slate-800 dark:bg-slate-900 dark:hover:border-blue-500 dark:hover:shadow-blue-950/30"
+              >
                 <button
                   type="button"
                   aria-pressed={item.favorite}
@@ -122,7 +126,7 @@ export function WeeklyPlanning({ year, items, hideValues, onToggleFavorite = () 
                     <div>
                       <span className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500 dark:text-slate-400">{temporalCopy[item.temporalPosition]}</span>
                       <span className="mt-1 block text-xs font-medium text-blue-600 dark:text-blue-300">Semana {item.weekNumber}</span>
-                      <p className="mt-2 flex items-center gap-2 text-lg font-bold text-slate-900 dark:text-white"><Plane className="size-4 text-blue-600 dark:text-blue-300" aria-hidden="true" />{item.route}</p>
+                      <p className="mt-2 flex items-center gap-2 text-lg font-bold text-slate-900 transition-colors duration-200 group-hover:text-blue-700 motion-reduce:transition-none dark:text-white dark:group-hover:text-blue-200"><Plane className="size-4 text-blue-600 dark:text-blue-300" aria-hidden="true" />{item.route}</p>
                     </div>
                     <Badge variant="outline" className={status.className}>{status.label}</Badge>
                   </div>
@@ -133,7 +137,7 @@ export function WeeklyPlanning({ year, items, hideValues, onToggleFavorite = () 
                       <span className="mt-1 flex items-center gap-1 font-semibold text-slate-800 dark:text-slate-100">
                         <Ticket className="size-3.5 text-blue-600 dark:text-blue-300" aria-hidden="true" />
                         {hideValues ? "••••" : item.lowestPrice !== null ? `R$ ${item.lowestPrice.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}` : "Sem cotação"}
-                        <ChevronRight className="size-4 text-slate-400 transition-transform group-hover:translate-x-0.5" aria-hidden="true" />
+                        <ChevronRight className="size-4 text-slate-400 transition-transform duration-200 motion-safe:group-hover:translate-x-1 motion-reduce:transition-none" aria-hidden="true" />
                       </span>
                     </div>
                     <MonthPreview departureDate={item.departureDate} returnDate={item.returnDate} />

@@ -33,6 +33,13 @@ describe("WeeklyPlanning", () => {
       screen.getByLabelText("Abrir semana 18 no Calendário").getAttribute("href")
     ).toBe("/calendar?week=18");
     expect(screen.getByText("R$ 850,00")).toBeTruthy();
+
+    const card = screen
+      .getByLabelText("Abrir semana 18 no Calendário")
+      .closest("[data-flight-card='weekly']");
+    expect(card?.className).toContain("hover:shadow-lg");
+    expect(card?.className).toContain("motion-safe:hover:-translate-y-1");
+    expect(card?.className).toContain("motion-reduce:transition-none");
   });
 
   it("direciona ao Calendário quando não há semanas selecionadas", () => {
@@ -84,5 +91,7 @@ describe("WeeklyPlanning", () => {
     expect(source).toContain("grid gap-3 md:grid-cols-2 xl:grid-cols-3");
     expect(source).toContain("flex flex-col gap-3 sm:mb-4 sm:flex-row");
     expect(source).toContain("w-[104px] shrink-0");
+    expect(source).toContain("data-flight-card=\"weekly\"");
+    expect(source).toContain("motion-safe:group-hover:translate-x-1");
   });
 });

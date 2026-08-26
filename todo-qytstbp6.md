@@ -227,3 +227,8 @@
 - [x] Garantir anúncio acessível, preferência de redução de movimento e cobertura responsiva.
 - [x] Criar regressões, validar visualmente e versionar a animação de atualização de voos.
 - [x] Salvar checkpoint da animação suave de atualização dos voos.
+- [x] Mapear os cartões de voo exibidos na Home e no Calendário e seus estilos compartilhados.
+- [x] Adicionar hover e foco com elevação, contraste e destaque de informações sem deslocamento de layout.
+- [x] Respeitar preferência de redução de movimento e preservar estados de cartão em telas táteis.
+- [x] Criar regressões, validar visualmente em desktop e celular e versionar a melhoria de interatividade.
+- [x] Salvar checkpoint dos efeitos de hover nos cartões de voo.
