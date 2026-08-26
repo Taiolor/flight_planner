@@ -238,3 +238,9 @@
 - [x] Adicionar feedback tátil opcional às aberturas de detalhes de voo em dispositivos compatíveis.
 - [x] Criar regressões, validar em desktop e celular, documentar e versionar as três melhorias.
 - [x] Salvar checkpoint das interações de voo no Calendário.
+- [x] Mapear a legenda, os filtros de status e os rótulos das células de voo no Calendário.
+- [x] Adicionar explicação acessível e discreta sobre o feedback tátil opcional.
+- [x] Permitir filtrar a grade anual para exibir somente voos remarcados.
+- [x] Adicionar rótulo textual de cancelamento sem depender apenas da cor.
+- [x] Criar regressões, validar em desktop e celular, documentar e versionar os três aprimoramentos.
+- [x] Salvar checkpoint da legenda, dos filtros e dos rótulos de status do Calendário.

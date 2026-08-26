@@ -42,9 +42,21 @@ describe("Calendar mobile responsiveness", () => {
   });
 
   it("identifica voo remarcado também por texto, sem depender apenas da cor", () => {
-    expect(calendarSource).toContain('aria-label="Voo remarcado"');
+    expect(calendarSource).toContain('"Voo remarcado"');
     expect(calendarSource).toContain("Rem.");
     expect(calendarSource).toContain("com voo remarcado");
+  });
+
+  it("permite filtrar remarcações e identifica cancelamentos por texto", () => {
+    expect(calendarSource).toContain("showOnlyRescheduledFlights");
+    expect(calendarSource).toContain('id="rescheduled-flights-filter"');
+    expect(calendarSource).toContain("Mostrar apenas voos remarcados");
+    expect(calendarSource).toContain('aria-label={anyCancelled ? "Voo cancelado" : "Voo remarcado"}');
+    expect(calendarSource).toContain('anyCancelled ? "Canc." : "Rem."');
+  });
+
+  it("explica de forma discreta o feedback tátil opcional", () => {
+    expect(calendarSource).toContain("abrir um voo gera uma vibração curta opcional");
   });
 
   it("mantém uma legenda de status acima da grade anual", () => {

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { hasCancelledFlight, type DayMark } from "./types";
+import { hasCancelledFlight, hasRescheduledFlight, type DayMark } from "./types";
 
 describe("hasCancelledFlight", () => {
   const week = {
@@ -33,6 +33,43 @@ describe("hasCancelledFlight", () => {
     expect(hasCancelledFlight(undefined)).toBe(false);
     expect(
       hasCancelledFlight({ departure: true, return: false, isPast: false, week })
+    ).toBe(false);
+  });
+});
+
+describe("hasRescheduledFlight", () => {
+  const week = {
+    weekNumber: 2,
+    departureDate: "11/01/2026",
+    returnDate: "16/01/2026",
+    isTicketIssued: 1,
+  };
+
+  it("identifica remarcação na ida ou na volta", () => {
+    expect(
+      hasRescheduledFlight({
+        departure: true,
+        return: false,
+        isPast: false,
+        week,
+        departureRescheduled: true,
+      })
+    ).toBe(true);
+    expect(
+      hasRescheduledFlight({
+        departure: false,
+        return: true,
+        isPast: false,
+        week,
+        returnRescheduled: true,
+      })
+    ).toBe(true);
+  });
+
+  it("não marca voos sem remarcação ou datas vazias", () => {
+    expect(hasRescheduledFlight(undefined)).toBe(false);
+    expect(
+      hasRescheduledFlight({ departure: true, return: false, isPast: false, week })
     ).toBe(false);
   });
 });

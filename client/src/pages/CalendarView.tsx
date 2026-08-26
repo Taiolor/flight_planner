@@ -226,7 +226,7 @@ function getExtendedWeekends(
   return extended;
 }
 
-import { WeekRow, DayMark, AdditionalCalendarFlight, hasCancelledFlight } from "@/components/flights/types";
+import { WeekRow, DayMark, AdditionalCalendarFlight, hasCancelledFlight, hasRescheduledFlight } from "@/components/flights/types";
 import FlightPopup from "@/components/flights/FlightPopup";
 import { useYear } from "@/contexts/YearContext";
 import { GlobalYearSelector } from "@/components/GlobalYearSelector";
@@ -253,6 +253,8 @@ export default function CalendarView() {
   const [showOnlyHolidaysAndWeekends, setShowOnlyHolidaysAndWeekends] =
     useState(false);
   const [showOnlyCancelledFlights, setShowOnlyCancelledFlights] =
+    useState(false);
+  const [showOnlyRescheduledFlights, setShowOnlyRescheduledFlights] =
     useState(false);
   const [isStatusLegendExpanded, setIsStatusLegendExpanded] = useState(
     () => readCalendarStatusLegendExpanded()
@@ -590,6 +592,21 @@ export default function CalendarView() {
               Mostrar apenas voos cancelados
             </span>
           </label>
+          <label
+            htmlFor="rescheduled-flights-filter"
+            className="inline-flex cursor-pointer items-center gap-2 rounded-lg px-1 py-1 text-slate-700 transition-colors hover:bg-rose-50 focus-within:ring-2 focus-within:ring-rose-500"
+          >
+            <input
+              id="rescheduled-flights-filter"
+              type="checkbox"
+              checked={showOnlyRescheduledFlights}
+              onChange={e => setShowOnlyRescheduledFlights(e.target.checked)}
+              className="w-4 h-4 rounded border-slate-300 text-rose-600 focus:ring-2 focus:ring-rose-500"
+            />
+            <span className="text-sm font-medium text-slate-700">
+              Mostrar apenas voos remarcados
+            </span>
+          </label>
         </div>
       </div>
 
@@ -622,10 +639,15 @@ export default function CalendarView() {
             </button>
           </div>
           {isStatusLegendExpanded && (
-            <div id="calendar-status-legend-content" className="mt-2 flex flex-wrap items-center gap-2">
-              <StatusPill tone="success">Registrado</StatusPill>
-              <StatusPill tone="rescheduled">Remarcado</StatusPill>
-              <StatusPill tone="cancelled">Cancelado</StatusPill>
+            <div id="calendar-status-legend-content" className="mt-2 space-y-2">
+              <div className="flex flex-wrap items-center gap-2">
+                <StatusPill tone="success">Registrado</StatusPill>
+                <StatusPill tone="rescheduled">Remarcado</StatusPill>
+                <StatusPill tone="cancelled">Cancelado</StatusPill>
+              </div>
+              <p className="text-xs text-slate-600 dark:text-slate-300">
+                Em dispositivos compatíveis, abrir um voo gera uma vibração curta opcional.
+              </p>
             </div>
           )}
         </section>
@@ -709,15 +731,13 @@ export default function CalendarView() {
                             (mark.return && mark.returnRescheduled)
                           )
                         );
+                        const anyCancelled = hasCancelledFlight(mark);
 
                         if (mark) {
                           const allCancelled =
                             (mark.departure && mark.departureCancelled && !mark.return) ||
                             (mark.return && mark.returnCancelled && !mark.departure) ||
                             (mark.departure && mark.departureCancelled && mark.return && mark.returnCancelled);
-                          const anyCancelled =
-                            (mark.departure && mark.departureCancelled) ||
-                            (mark.return && mark.returnCancelled);
                           // Verificar se TODOS os voos marcados neste dia são remarcados
                           const allRescheduled =
                             (mark.departure &&
@@ -805,7 +825,8 @@ export default function CalendarView() {
                           (showOnlyHolidaysAndWeekends &&
                             !holiday &&
                             !isExtendedWeekend) ||
-                          (showOnlyCancelledFlights && !hasCancelledFlight(mark))
+                          (showOnlyCancelledFlights && !anyCancelled) ||
+                          (showOnlyRescheduledFlights && !hasRescheduledFlight(mark))
                         ) {
                           return <div key={di} className="aspect-square" />;
                         }
@@ -818,7 +839,7 @@ export default function CalendarView() {
                             data-calendar-flight-interactive={isClickable ? "true" : undefined}
                             role={isClickable ? "button" : undefined}
                             tabIndex={isClickable ? 0 : undefined}
-                            aria-label={mark ? `Abrir detalhes da semana ${mark.week.weekNumber}${anyRescheduled ? ", com voo remarcado" : ""}` : undefined}
+                            aria-label={mark ? `Abrir detalhes da semana ${mark.week.weekNumber}${anyCancelled ? ", com voo cancelado" : anyRescheduled ? ", com voo remarcado" : ""}` : undefined}
                             onClick={() => {
                               if (!mark) return;
                               triggerHaptic();
@@ -838,9 +859,9 @@ export default function CalendarView() {
                             `}
                           >
                             <span>{day}</span>
-                            {mark && anyRescheduled && (
-                              <span className="absolute right-0.5 top-0.5 rounded-full bg-white/90 px-1 py-px text-[6px] font-bold uppercase tracking-wide text-red-700 shadow-sm dark:bg-slate-950/90 dark:text-red-300" aria-label="Voo remarcado">
-                                Rem.
+                            {mark && (anyCancelled || anyRescheduled) && (
+                              <span className={`absolute right-0.5 top-0.5 rounded-full bg-white/90 px-1 py-px text-[6px] font-bold uppercase tracking-wide shadow-sm dark:bg-slate-950/90 ${anyCancelled ? "text-violet-800 dark:text-violet-200" : "text-red-700 dark:text-red-300"}`} aria-label={anyCancelled ? "Voo cancelado" : "Voo remarcado"}>
+                                {anyCancelled ? "Canc." : "Rem."}
                               </span>
                             )}
                             {cupMatch && !mark && (

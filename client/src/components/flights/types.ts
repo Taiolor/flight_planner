@@ -56,3 +56,11 @@ export function hasCancelledFlight(mark: DayMark | undefined): boolean {
         (mark.return && mark.returnCancelled))
   );
 }
+
+export function hasRescheduledFlight(mark: DayMark | undefined): boolean {
+  return Boolean(
+    mark &&
+      ((mark.departure && mark.departureRescheduled) ||
+        (mark.return && mark.returnRescheduled))
+  );
+}
