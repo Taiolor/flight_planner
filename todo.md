@@ -848,6 +848,7 @@
 - [x] Adicionar tela de abertura personalizada e acessível ao carregamento inicial do PWA
 - [x] Adaptar a tela de abertura do PWA ao modo escuro do sistema
 - [x] Refinar o fade out entre a splash screen e a tela principal do PWA
+- [x] Adicionar skeletons responsivos e acessíveis à Home após a splash screen
 
 ## Processo reutilizável
 

@@ -114,6 +114,8 @@ import { usePushNotifications } from "@/hooks/usePushNotifications";
 import { DeferredPdfExportButton } from "@/components/DeferredPdfExportButton";
 import { SkeletonFilters } from "@/components/SkeletonFilters";
 import { SkeletonChart } from "@/components/SkeletonChart";
+import { HomeInitialLoadingSkeleton } from "@/components/HomeInitialLoadingSkeleton";
+import { ContentReveal } from "@/components/ContentReveal";
 import { NotificationSettingsPopup } from "@/components/NotificationSettingsPopup";
 import { PwaInstallGuide } from "@/components/PwaInstallGuide";
 import { trpc } from "@/lib/trpc";
@@ -2326,6 +2328,11 @@ export default function Home({ mode = "home" }: HomeProps) {
     weeksQuery.isLoading ||
     pricesQuery.isLoading ||
     publicPricesQuery.isLoading;
+  const isHomeInitialLoading =
+    !isManagementView &&
+    (isLoading ||
+      authCheckQuery.isLoading ||
+      (isAuthenticated && additionalFlightsQuery.isLoading));
   const isRefreshingFlightData =
     !isLoading &&
     !isRefreshing &&
@@ -2575,7 +2582,10 @@ export default function Home({ mode = "home" }: HomeProps) {
           </Card>
         )}
         {!isManagementView && (
-          <>
+          isHomeInitialLoading ? (
+            <HomeInitialLoadingSkeleton year={selectedYear} />
+          ) : (
+          <ContentReveal className="space-y-5 sm:space-y-7">
             {LAYOUT_CONTROLS_ENABLED && (
               <HomeDashboardControls
                 theme={theme}
@@ -2752,7 +2762,8 @@ export default function Home({ mode = "home" }: HomeProps) {
             onRestore={handleRestoreAttention}
           />
         )}
-          </>
+          </ContentReveal>
+          )
         )}
 
         {isManagementView && (
