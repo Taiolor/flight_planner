@@ -129,6 +129,8 @@ import { HomeHeaderActions } from "@/components/HomeHeaderActions";
 import { HomeDashboardControls } from "@/components/HomeDashboardControls";
 import { WeeklyPlanning, type WeeklyPlanningItem } from "@/components/WeeklyPlanning";
 import { PassageManagementFrame } from "@/components/PassageManagementFrame";
+import { DecisionCenter } from "@/components/DecisionCenter";
+import { buildDecisionItems, getNextDecisionTrip } from "@/lib/decisionCenter";
 import {
   persistWeeklyPlanningFavorites,
   readWeeklyPlanningFavorites,
@@ -1828,6 +1830,29 @@ export default function Home({ mode = "home" }: HomeProps) {
     }, 80);
   };
 
+  useEffect(() => {
+    if (!isManagementView || weeksData.length === 0) return;
+    const weekNumber = Number(new URLSearchParams(window.location.search).get("week"));
+    if (!Number.isInteger(weekNumber) || weekNumber < 1 || weekNumber > 53) return;
+    const week = weeksData.find(item => item.weekNumber === weekNumber);
+    if (!week) return;
+
+    const monthKey = week.departureDate.substring(3, 5);
+    setFilterMonth(monthKey);
+    setFilterAirline("all");
+    setFilterTicketStatus("all");
+    setShowCheapestOnly(false);
+    setExpandedMonths(previous => new Set(previous).add(monthKey));
+    setExpandedWeekCards(previous => new Set(previous).add(weekNumber));
+
+    const timeout = window.setTimeout(() => {
+      document
+        .getElementById(`week-card-${weekNumber}`)
+        ?.scrollIntoView({ behavior: "smooth", block: "center" });
+    }, 120);
+    return () => window.clearTimeout(timeout);
+  }, [isManagementView, weeksData]);
+
   const expandAllWeeks = () => {
     const allWeekNumbers = new Set(weeksData.map(w => w.weekNumber));
     setExpandedWeekCards(allWeekNumbers);
@@ -2097,6 +2122,28 @@ export default function Home({ mode = "home" }: HomeProps) {
   }, [weeksData, getTotalWeekCost]);
 
   const annualHasData = annualSummaryData.some(d => d.total > 0);
+
+  const decisionItems = useMemo(
+    () => buildDecisionItems(weeksData, priceMap),
+    [weeksData, priceMap]
+  );
+  const nextDecisionTrip = useMemo(
+    () => getNextDecisionTrip(weeksData),
+    [weeksData]
+  );
+  const pendingDecisionWeeks = useMemo(
+    () => weeksData.filter(week => !week.isDeleted && !week.isTicketIssued).length,
+    [weeksData]
+  );
+  const decisionAverageTrip = annualIssuedCount > 0
+    ? annualTotalIssued / annualIssuedCount
+    : null;
+  const openDecisionManagementWeek = useCallback((weekNumber: number) => {
+    window.location.assign(`/gestao-passagens?week=${weekNumber}`);
+  }, []);
+  const openDecisionCalendarWeek = useCallback((weekNumber: number) => {
+    window.location.assign(`/calendar?week=${weekNumber}`);
+  }, []);
 
   // Handlers
   const handleToggleSelect = (weekNumber: number, current: number) => {
@@ -2585,6 +2632,30 @@ export default function Home({ mode = "home" }: HomeProps) {
               </Card>
             )}
           </div>
+        )}
+
+        {!weeksQuery.isLoading && (
+          <DecisionCenter
+            items={decisionItems}
+            nextTrip={nextDecisionTrip}
+            isLoading={weeksQuery.isLoading}
+            hasError={weeksQuery.isError}
+            onRetry={() => void weeksQuery.refetch()}
+            onOpenManagementWeek={openDecisionManagementWeek}
+            onOpenCalendarWeek={openDecisionCalendarWeek}
+            metrics={{
+              issuedCount: annualIssuedCount,
+              pendingCount: pendingDecisionWeeks,
+              annualTotal: hideValues
+                ? "••••"
+                : `R$ ${annualTotalIssued.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+              averageTrip: hideValues
+                ? "••••"
+                : decisionAverageTrip === null
+                  ? "—"
+                  : `R$ ${decisionAverageTrip.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+            }}
+          />
         )}
 
         {!weeksQuery.isLoading && (

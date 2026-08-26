@@ -181,3 +181,6 @@
 - [x] Registrar histórico de instalações somente após consentimento explícito do usuário
 - [x] Permitir preferências de canal por tipo de aviso para notificações push e e-mail
 - [x] Exibir prévia segura dos e-mails no painel administrativo
+- [x] Criar apresentação detalhada do Smart Fly e da Central de decisão na Home
+- [x] Implementar a Central de decisão na Home com ranking, próxima viagem e atalhos contextuais
+- [x] Cobrir a Central de decisão com testes de regras, acessibilidade, navegação e responsividade

@@ -34,6 +34,15 @@ describe("Home mobile responsiveness", () => {
     expect(source).toContain("weeksQuery.refetch()");
   });
 
+  it("posiciona a Central de decisão após o Resumo Anual e preserva CTAs contextuais", () => {
+    expect(source).toContain('import { DecisionCenter } from "@/components/DecisionCenter"');
+    expect(source).toContain("buildDecisionItems(weeksData, priceMap)");
+    expect(source).toContain("getNextDecisionTrip(weeksData)");
+    expect(source).toContain("/gestao-passagens?week=${weekNumber}");
+    expect(source).toContain("/calendar?week=${weekNumber}");
+    expect(source.indexOf("<DecisionCenter")).toBeLessThan(source.indexOf("<WeeklyPlanning"));
+  });
+
   it("allows graph actions and empty-state buttons to wrap on small screens", () => {
     expect(source).toContain("flex flex-col gap-2 sm:flex-row");
     expect(source).toContain("max-w-full whitespace-normal");
