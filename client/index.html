@@ -153,6 +153,8 @@
         animation: pwa-root-reveal 420ms cubic-bezier(0.2, 0.75, 0.25, 1) both;
       }
       #pwa-startup-splash {
+        --pwa-splash-accent: #dcfce7;
+        --pwa-splash-progress: 0%;
         align-items: center;
         background:
           radial-gradient(circle at 76% 18%, rgba(45, 212, 191, 0.32), transparent 33%),
@@ -203,6 +205,19 @@
         font: 400 14px/1.45 Roboto, system-ui, sans-serif;
         margin: 0;
       }
+      .pwa-splash-status {
+        color: rgba(255, 255, 255, 0.76);
+        font: 500 12px/1.4 Roboto, system-ui, sans-serif;
+        margin: 16px 0 0;
+        min-height: 17px;
+      }
+      .pwa-splash-progress {
+        color: rgba(255, 255, 255, 0.78);
+        display: none;
+        font: 700 11px/1 Roboto, system-ui, sans-serif;
+        letter-spacing: 0.08em;
+        margin-top: 9px;
+      }
       .pwa-splash-loader {
         background: rgba(255, 255, 255, 0.24);
         border-radius: 999px;
@@ -214,7 +229,7 @@
       }
       .pwa-splash-loader::before {
         animation: pwa-splash-loader-beacon 900ms ease-in-out infinite;
-        background: rgba(220, 252, 231, 0.92);
+        background: var(--pwa-splash-accent);
         border-radius: inherit;
         content: "";
         height: 8px;
@@ -234,6 +249,23 @@
         transform: translateX(-65%);
         width: 65%;
       }
+      #pwa-startup-splash[data-progress-known="true"] .pwa-splash-progress {
+        display: block;
+      }
+      #pwa-startup-splash[data-progress-known="true"] .pwa-splash-loader::before {
+        animation: none;
+        left: var(--pwa-splash-progress);
+        transform: translateX(-50%);
+      }
+      #pwa-startup-splash[data-progress-known="true"] .pwa-splash-loader::after {
+        animation: none;
+        transform: none;
+        width: var(--pwa-splash-progress);
+      }
+      #pwa-startup-splash[data-season="autumn"] { --pwa-splash-accent: #fde68a; }
+      #pwa-startup-splash[data-season="winter"] { --pwa-splash-accent: #bae6fd; }
+      #pwa-startup-splash[data-season="spring"] { --pwa-splash-accent: #bbf7d0; }
+      #pwa-startup-splash[data-connection="offline"] .pwa-splash-status { color: #fef3c7; }
       @media (prefers-color-scheme: dark) {
         #pwa-startup-splash {
           background:
@@ -275,12 +307,14 @@
   </head>
 
   <body>
-    <div id="pwa-startup-splash" role="status" aria-live="polite" aria-label="Carregando o Smart Fly">
+    <div id="pwa-startup-splash" aria-label="Carregando o Smart Fly">
       <div class="pwa-splash-content">
         <img class="pwa-splash-logo" src="/manus-storage/smartfly-sf-pwa-icon_783c04c6.webp?v=20260826" alt="" />
         <strong class="pwa-splash-title">Smart Fly</strong>
         <p class="pwa-splash-subtitle">Preparando suas viagens</p>
+        <p class="pwa-splash-status" id="pwa-splash-status" role="status" aria-live="polite" aria-atomic="true">Verificando a inicialização</p>
         <span class="pwa-splash-loader" aria-hidden="true"></span>
+        <span class="pwa-splash-progress" id="pwa-splash-progress" aria-hidden="true"></span>
       </div>
     </div>
     <div id="root"></div>

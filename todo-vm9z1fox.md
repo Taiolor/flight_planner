@@ -188,3 +188,6 @@
 - [x] Exibir preço e tendência real nos itens prioritários da Central de decisão
 - [x] Permitir ajuste manual e persistente de relevância para prioridades por semana
 - [x] Adicionar animação de carregamento sutil e acessível à splash antes da transição de conteúdo
+- [x] Exibir percentual somente quando o progresso real de inicialização estiver disponível
+- [x] Exibir mensagem contextual e acessível quando a abertura detectar modo offline
+- [x] Aplicar variação sazonal sutil e automática à identidade visual da splash
