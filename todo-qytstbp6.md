@@ -209,3 +209,16 @@
 - [x] Abrir o rastreador em nova aba com rótulo acessível e proteção de referência, sem persistir dados externos.
 - [x] Cobrir o link, estados sem dados, segurança e responsividade; documentar e versionar a ação.
 - [x] Salvar checkpoint do link externo de rastreamento do Fly.IA.
+- [x] Mapear os componentes de calendário e detalhes de voo para adicionar rastreamento separado de ida e volta.
+- [x] Reutilizar links públicos seguros do Flightradar24 para trechos emitidos sem importar dados externos.
+- [x] Avaliar fontes licenciadas e selecionar a modalidade de alerta planejado, sem custo ou consulta externa.
+- [x] Manter alertas de decolagem opt-in sem substituir os horários persistidos no SmartFly.
+- [x] Criar cobertura de links, alertas, falhas, autorização e privacidade; documentar e versionar.
+- [x] Avaliar as três modalidades e selecionar o link público mais alerta baseado no horário planejado.
+- [x] Manter os controles administrativos existentes para ativar e configurar os alertas planejados.
+- [x] Não integrar provedor de status licenciado enquanto a modalidade planejada estiver selecionada.
+- [x] Cobrir configuração, prioridade, falhas, privacidade e idempotência da modalidade planejada.
+- [x] Manter somente alertas de decolagem baseados no horário planejado da base SmartFly, sem API externa.
+- [x] Padronizar os links públicos de rastreamento de ida e volta no calendário e no Fly.IA.
+- [x] Validar configuração, idempotência, autorização e comunicação explícita de que os alertas seguem horários planejados.
+- [x] Salvar checkpoint do rastreamento por trecho e alertas planejados do SmartFly.

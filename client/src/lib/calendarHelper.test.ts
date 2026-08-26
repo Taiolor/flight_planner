@@ -1,5 +1,19 @@
 import { describe, it, expect } from "vitest";
-import { buildWhatsAppShareUrl } from "./calendarHelper";
+import { buildFlightTrackUrl, buildWhatsAppShareUrl } from "./calendarHelper";
+
+describe("buildFlightTrackUrl", () => {
+  it("monta o link público do Flightradar24 para ida e volta", () => {
+    expect(buildFlightTrackUrl("latam", "LA3045", "GRU", "NVT", "2024-05-15T10:00"))
+      .toBe("https://www.flightradar24.com/data/flights/la3045");
+    expect(buildFlightTrackUrl("gol", "1234", "NVT", "GRU", "2024-05-20T15:00"))
+      .toBe("https://www.flightradar24.com/data/flights/g31234");
+  });
+
+  it("não monta link para número de voo ausente ou inválido", () => {
+    expect(buildFlightTrackUrl("latam", "", "GRU", "NVT", "2024-05-15T10:00")).toBe("");
+    expect(buildFlightTrackUrl("latam", "###", "GRU", "NVT", "2024-05-15T10:00")).toBe("");
+  });
+});
 
 describe("buildWhatsAppShareUrl", () => {
   it("generates a complete WhatsApp share URL with all fields provided", () => {
@@ -32,7 +46,7 @@ describe("buildWhatsAppShareUrl", () => {
     expect(decodedText).toContain("LATAM AIRLINES • Voo LA3045");
     expect(decodedText).toContain("🔑 Localizador: *ABC123*");
     expect(decodedText).toContain(
-      "🔍 Rastrear: https://www.google.com/search?q=LA+flight+3045+from+GRU+to+NVT,+2024-05-15"
+      "🔍 Rastrear: https://www.flightradar24.com/data/flights/la3045"
     );
 
     expect(decodedText).toContain("🛬 *VOLTA — NVT → GRU*");
@@ -40,7 +54,7 @@ describe("buildWhatsAppShareUrl", () => {
     expect(decodedText).toContain("GOL LINHAS AÉREAS • Voo G31234");
     expect(decodedText).toContain("🔑 Localizador: *XYZ987*");
     expect(decodedText).toContain(
-      "🔍 Rastrear: https://www.google.com/search?q=G3+flight+1234+from+NVT+to+GRU,+2024-05-20"
+      "🔍 Rastrear: https://www.flightradar24.com/data/flights/g31234"
     );
   });
 
@@ -97,8 +111,6 @@ describe("buildWhatsAppShareUrl", () => {
     expect(decodedText).toContain("🔑 Localizador: *ABC123*");
 
     expect(decodedText).toContain("🛬 *VOLTA — NVT → GRU*");
-    expect(decodedText).not.toContain(
-      "🔍 Rastrear: https://www.google.com/search?q=from+NVT+to+GRU"
-    ); // No track URL for return flight
+    expect(decodedText.match(/🔍 Rastrear:/g)).toHaveLength(1); // Apenas a ida possui link
   });
 });

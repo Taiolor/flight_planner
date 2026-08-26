@@ -217,7 +217,7 @@ async function processDepartureFlight(
   const sentDepCount = await sendPushToAll(
     {
       title: `✈️ ${antecedenciaLabel} — ${airline} ${flightNum}`,
-      body: `Voo de ida GRU → NVT: ${dateStr} às ${timeStr}. Prepare-se! 🧳`,
+      body: `Horário planejado — ida GRU → NVT: ${dateStr} às ${timeStr}. Prepare-se! 🧳`,
       icon: SMART_FLY_PUSH_ICON,
       badge: SMART_FLY_PUSH_BADGE,
       tag: `departure-${week.year}-week-${week.weekNumber}-aviso${aviso.minutes}`,
@@ -295,7 +295,7 @@ async function processReturnFlight(
   const sentRetCount = await sendPushToAll(
     {
       title: `🏠 ${antecedenciaLabel} — ${airline} ${flightNum}`,
-      body: `Voo de volta NVT → GRU: ${dateStr} às ${timeStr}. Boa viagem! ✈️`,
+      body: `Horário planejado — volta NVT → GRU: ${dateStr} às ${timeStr}. Boa viagem! ✈️`,
       icon: SMART_FLY_PUSH_ICON,
       badge: SMART_FLY_PUSH_BADGE,
       tag: `return-${week.year}-week-${week.weekNumber}-aviso${aviso.minutes}`,
