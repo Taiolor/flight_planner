@@ -222,3 +222,8 @@
 - [x] Padronizar os links públicos de rastreamento de ida e volta no calendário e no Fly.IA.
 - [x] Validar configuração, idempotência, autorização e comunicação explícita de que os alertas seguem horários planejados.
 - [x] Salvar checkpoint do rastreamento por trecho e alertas planejados do SmartFly.
+- [x] Mapear o estado de atualização das consultas de voos e o ponto de exibição mais adequado.
+- [x] Adicionar uma animação suave de atualização sem ocultar dados já carregados nem causar deslocamento de layout.
+- [x] Garantir anúncio acessível, preferência de redução de movimento e cobertura responsiva.
+- [x] Criar regressões, validar visualmente e versionar a animação de atualização de voos.
+- [x] Salvar checkpoint da animação suave de atualização dos voos.

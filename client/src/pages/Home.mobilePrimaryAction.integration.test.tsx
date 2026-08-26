@@ -11,8 +11,8 @@ import Home from "./Home";
 
 const invalidate = vi.fn();
 const mutate = vi.fn();
-const emptyQuery = { data: [], isLoading: false };
-const weeksQuery = { data: [] as any[], isLoading: false };
+const emptyQuery = { data: [], isLoading: false, isFetching: false };
+const weeksQuery = { data: [] as any[], isLoading: false, isFetching: false };
 const authQuery = { data: { authenticated: false } };
 const mutationResult = { mutate };
 const themeState = {
@@ -130,6 +130,7 @@ describe("Home mobile primary action", () => {
   beforeEach(() => {
     window.localStorage.clear();
     weeksQuery.data = [];
+    weeksQuery.isFetching = false;
     invalidate.mockClear();
     mutate.mockClear();
   });
@@ -148,6 +149,16 @@ describe("Home mobile primary action", () => {
     expect(brandHomeLink.getAttribute("href")).toBe("/");
     expect(logoHomeLink.getAttribute("href")).toBe("/");
     unmount();
+  });
+
+  it("anuncia uma atualização suave sem ocultar a Home durante o refetch dos voos", () => {
+    weeksQuery.isFetching = true;
+    const view = render(<Home />);
+    const refreshIndicator = view.container.querySelector("[data-flight-refreshing='true']");
+
+    expect(refreshIndicator?.textContent).toContain("Atualizando dados de voo...");
+    expect(refreshIndicator?.innerHTML).toContain("motion-reduce:animate-none");
+    view.unmount();
   });
 
   it("persiste a troca no fluxo real da Home e reidrata o link prioritário após remontagem", () => {

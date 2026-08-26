@@ -2297,6 +2297,13 @@ export default function Home({ mode = "home" }: HomeProps) {
     weeksQuery.isLoading ||
     pricesQuery.isLoading ||
     publicPricesQuery.isLoading;
+  const isRefreshingFlightData =
+    !isLoading &&
+    !isRefreshing &&
+    (weeksQuery.isFetching ||
+      pricesQuery.isFetching ||
+      publicPricesQuery.isFetching ||
+      additionalFlightsQuery.isFetching);
 
   return (
     <div
@@ -2356,8 +2363,19 @@ export default function Home({ mode = "home" }: HomeProps) {
       >
         {weeksQuery.isLoading ? (
           <div key="loading" className="fade-in flex items-center gap-2">
-            <Loader2 className="w-3 h-3 animate-spin" />
+            <Loader2 className="w-3 h-3 animate-spin motion-reduce:animate-none" />
             <span>Atualizando dados...</span>
+          </div>
+        ) : isRefreshingFlightData ? (
+          <div
+            key="refreshing"
+            className="fade-in flex items-center gap-2"
+            role="status"
+            aria-live="polite"
+            data-flight-refreshing="true"
+          >
+            <Loader2 className="w-3 h-3 animate-spin motion-reduce:animate-none" aria-hidden="true" />
+            <span>Atualizando dados de voo...</span>
           </div>
         ) : (
           <div key="loaded" className="fade-in">
