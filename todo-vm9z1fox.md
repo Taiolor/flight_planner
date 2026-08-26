@@ -184,3 +184,6 @@
 - [x] Criar apresentação detalhada do Smart Fly e da Central de decisão na Home
 - [x] Implementar a Central de decisão na Home com ranking, próxima viagem e atalhos contextuais
 - [x] Cobrir a Central de decisão com testes de regras, acessibilidade, navegação e responsividade
+- [x] Adicionar fila secundária recolhível com preferência persistente e validada
+- [x] Exibir preço e tendência real nos itens prioritários da Central de decisão
+- [x] Permitir ajuste manual e persistente de relevância para prioridades por semana

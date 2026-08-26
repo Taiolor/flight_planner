@@ -36,8 +36,10 @@ describe("Home mobile responsiveness", () => {
 
   it("posiciona a Central de decisão após o Resumo Anual e preserva CTAs contextuais", () => {
     expect(source).toContain('import { DecisionCenter } from "@/components/DecisionCenter"');
-    expect(source).toContain("buildDecisionItems(weeksData, priceMap)");
+    expect(source).toContain("buildDecisionItemQueue(");
     expect(source).toContain("getNextDecisionTrip(weeksData)");
+    expect(source).toContain("secondaryItems={secondaryDecisionItems}");
+    expect(source).toContain("readDecisionCenterPreferences(selectedYear)");
     expect(source).toContain("/gestao-passagens?week=${weekNumber}");
     expect(source).toContain("/calendar?week=${weekNumber}");
     expect(source.indexOf("<DecisionCenter")).toBeLessThan(source.indexOf("<WeeklyPlanning"));

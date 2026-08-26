@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildDecisionItems, getNextDecisionTrip } from "./decisionCenter";
+import { buildDecisionItemQueue, buildDecisionItems, getNextDecisionTrip } from "./decisionCenter";
 
 const now = new Date(2026, 7, 20);
 
@@ -44,5 +44,24 @@ describe("decisionCenter", () => {
     );
 
     expect(trip).toEqual(expect.objectContaining({ weekNumber: 31, route: "GRU → NVT", airline: "GOL", status: "issued" }));
+  });
+
+  it("expõe preço e tendência contra a referência anual, sem inventar série histórica", () => {
+    const queue = buildDecisionItemQueue(
+      [
+        { weekNumber: 30, departureDate: "30/08/2026", returnDate: "04/09/2026", isDeleted: 0, isTicketIssued: 0 },
+        { weekNumber: 31, departureDate: "06/09/2026", returnDate: "10/09/2026", isDeleted: 0, isTicketIssued: 0 },
+        { weekNumber: 32, departureDate: "13/09/2026", returnDate: "17/09/2026", isDeleted: 0, isTicketIssued: 0 },
+      ],
+      { 30: { GOL: "100" }, 31: { GOL: "150" }, 32: { GOL: "200" } },
+      now,
+      { 32: 160 }
+    );
+
+    const week32 = queue.find(item => item.weekNumber === 32);
+    expect(week32).toMatchObject({ price: 200, priceVariationPercent: 33, manualAdjustment: 160 });
+    expect(queue.indexOf(week32!)).toBeLessThan(
+      queue.findIndex(item => item.weekNumber === 31)
+    );
   });
 });

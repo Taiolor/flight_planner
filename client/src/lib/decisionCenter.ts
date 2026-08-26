@@ -26,6 +26,9 @@ export type DecisionItem = {
   reason: string;
   actionLabel: string;
   score: number;
+  price: number | null;
+  priceVariationPercent: number | null;
+  manualAdjustment: number;
 };
 
 export type DecisionTrip = {
@@ -61,7 +64,7 @@ function formatRoute(week: DecisionWeek): string {
   return departure && arrival ? `${departure} → ${arrival}` : "Rota a definir";
 }
 
-function getLowestPrice(
+function lowestPrice(
   pricesByWeek: Record<number, Record<string, string>>,
   weekNumber: number
 ): number | null {
@@ -73,21 +76,36 @@ function getLowestPrice(
 
 function formatPrice(price: number | null): string | null {
   if (price === null) return null;
-  return new Intl.NumberFormat("pt-BR", {
-    style: "currency",
-    currency: "BRL",
-  }).format(price);
+  return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(price);
 }
 
-/**
- * Produz prioridades explicáveis apenas a partir de semanas e preços já carregados.
- * A função não persiste dados e facilita testar o ranking sem renderizar a Home.
- */
-export function buildDecisionItems(
+function median(values: number[]): number | null {
+  if (!values.length) return null;
+  const ordered = [...values].sort((a, b) => a - b);
+  const middle = Math.floor(ordered.length / 2);
+  return ordered.length % 2 === 0
+    ? (ordered[middle - 1] + ordered[middle]) / 2
+    : ordered[middle];
+}
+
+function trend(price: number | null, reference: number | null): number | null {
+  if (price === null || reference === null || reference <= 0) return null;
+  return Math.round(((price - reference) / reference) * 100);
+}
+
+/** Cria uma fila explicável, usando preços reais e ajuste visual manual validado por semana. */
+export function buildDecisionItemQueue(
   weeks: DecisionWeek[],
   pricesByWeek: Record<number, Record<string, string>>,
-  now: Date = new Date()
+  now: Date = new Date(),
+  relevanceByWeek: Record<number, number> = {}
 ): DecisionItem[] {
+  const priceReference = median(
+    weeks
+      .filter(week => !week.isDeleted)
+      .map(week => lowestPrice(pricesByWeek, week.weekNumber))
+      .filter((price): price is number => price !== null)
+  );
   const items: DecisionItem[] = [];
 
   for (const week of weeks) {
@@ -96,7 +114,10 @@ export function buildDecisionItems(
     if (daysUntil === null || daysUntil < -1) continue;
 
     const route = formatRoute(week);
-    const price = formatPrice(getLowestPrice(pricesByWeek, week.weekNumber));
+    const price = lowestPrice(pricesByWeek, week.weekNumber);
+    const priceVariationPercent = trend(price, priceReference);
+    const formattedPrice = formatPrice(price);
+    const manualAdjustment = relevanceByWeek[week.weekNumber] ?? 0;
     const hasCancelled = Boolean(week.departureCancelled || week.returnCancelled);
     const hasRescheduled = Boolean(week.departureRescheduled || week.returnRescheduled);
 
@@ -109,7 +130,10 @@ export function buildDecisionItems(
         title: `Voo cancelado na semana ${week.weekNumber}`,
         reason: `${route} exige conferência dos trechos e das alternativas de viagem.`,
         actionLabel: "Abrir no Calendário",
-        score: 1_000 + Math.max(0, 60 - daysUntil),
+        score: 1_000 + Math.max(0, 60 - daysUntil) + manualAdjustment,
+        price,
+        priceVariationPercent,
+        manualAdjustment,
       });
       continue;
     }
@@ -123,46 +147,58 @@ export function buildDecisionItems(
         title: `Voo remarcado na semana ${week.weekNumber}`,
         reason: `${route} teve alteração de trecho; revise horários e conexão com a agenda.`,
         actionLabel: "Revisar no Calendário",
-        score: 800 + Math.max(0, 45 - daysUntil),
+        score: 800 + Math.max(0, 45 - daysUntil) + manualAdjustment,
+        price,
+        priceVariationPercent,
+        manualAdjustment,
       });
       continue;
     }
 
     if (!week.isTicketIssued) {
-      const urgency = daysUntil <= 14 ? "critical" : "warning";
+      const severity: DecisionSeverity = daysUntil <= 14 ? "critical" : "warning";
       const deadline = daysUntil <= 0 ? "A viagem começa hoje." : `Viagem em ${daysUntil} dia${daysUntil === 1 ? "" : "s"}.`;
+      const priceContext = formattedPrice
+        ? ` Menor preço registrado: ${formattedPrice}${priceVariationPercent === null ? "." : ` (${priceVariationPercent >= 0 ? "+" : ""}${priceVariationPercent}% versus a referência anual).`}`
+        : " Ainda não há preço registrado.";
       items.push({
         id: `pending-${week.weekNumber}`,
-        severity: urgency,
+        severity,
         destination: "management",
         weekNumber: week.weekNumber,
         title: `Emitir passagem da semana ${week.weekNumber}`,
-        reason: `${deadline}${price ? ` Menor preço registrado: ${price}.` : " Ainda não há preço registrado."}`,
+        reason: `${deadline}${priceContext}`,
         actionLabel: "Abrir Gestão",
-        score: (urgency === "critical" ? 900 : 650) + Math.max(0, 90 - daysUntil),
+        score: (severity === "critical" ? 900 : 650) + Math.max(0, 90 - daysUntil) + manualAdjustment,
+        price,
+        priceVariationPercent,
+        manualAdjustment,
       });
     }
   }
 
-  return items
-    .sort((a, b) => b.score - a.score || a.weekNumber - b.weekNumber)
-    .slice(0, 3);
+  return items.sort((a, b) => b.score - a.score || a.weekNumber - b.weekNumber);
 }
 
-export function getNextDecisionTrip(
+/** Mantém compatibilidade da API original, entregando somente as três prioridades principais. */
+export function buildDecisionItems(
   weeks: DecisionWeek[],
-  now: Date = new Date()
-): DecisionTrip | null {
+  pricesByWeek: Record<number, Record<string, string>>,
+  now: Date = new Date(),
+  relevanceByWeek: Record<number, number> = {}
+): DecisionItem[] {
+  return buildDecisionItemQueue(weeks, pricesByWeek, now, relevanceByWeek).slice(0, 3);
+}
+
+export function getNextDecisionTrip(weeks: DecisionWeek[], now: Date = new Date()): DecisionTrip | null {
   const candidates = weeks
     .filter(week => !week.isDeleted)
     .map(week => ({ week, daysUntil: getDaysUntil(week.departureDate, now) }))
     .filter((candidate): candidate is { week: DecisionWeek; daysUntil: number } => candidate.daysUntil !== null)
     .filter(candidate => candidate.daysUntil >= -1)
     .sort((a, b) => a.daysUntil - b.daysUntil);
-
   const next = candidates[0]?.week;
   if (!next) return null;
-
   const status: DecisionTrip["status"] = next.departureCancelled || next.returnCancelled
     ? "cancelled"
     : next.departureRescheduled || next.returnRescheduled
@@ -170,13 +206,5 @@ export function getNextDecisionTrip(
       : next.isTicketIssued
         ? "issued"
         : "pending";
-
-  return {
-    weekNumber: next.weekNumber,
-    departureDate: next.departureDate,
-    returnDate: next.returnDate,
-    route: formatRoute(next),
-    airline: next.departureAirline || next.returnAirline || null,
-    status,
-  };
+  return { weekNumber: next.weekNumber, departureDate: next.departureDate, returnDate: next.returnDate, route: formatRoute(next), airline: next.departureAirline || next.returnAirline || null, status };
 }

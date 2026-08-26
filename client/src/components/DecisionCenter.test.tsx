@@ -8,11 +8,15 @@ import { DecisionCenter } from "./DecisionCenter";
 
 describe("DecisionCenter", () => {
   const props = {
-    items: [{ id: "pending-27", severity: "warning" as const, destination: "management" as const, weekNumber: 27, title: "Emitir passagem da semana 27", reason: "Viagem em 10 dias.", actionLabel: "Abrir Gestão", score: 900 }],
+    items: [{ id: "pending-27", severity: "warning" as const, destination: "management" as const, weekNumber: 27, title: "Emitir passagem da semana 27", reason: "Viagem em 10 dias.", actionLabel: "Abrir Gestão", score: 900, price: 620, priceVariationPercent: 8, manualAdjustment: 0 }],
+    secondaryItems: [],
+    secondaryQueueOpen: false,
     nextTrip: { weekNumber: 27, departureDate: "30/08/2026", returnDate: "04/09/2026", route: "GRU → NVT", airline: "GOL", status: "pending" as const },
     isLoading: false,
     hasError: false,
     onRetry: vi.fn(),
+    onToggleSecondaryQueue: vi.fn(),
+    onAdjustRelevance: vi.fn(),
     onOpenManagementWeek: vi.fn(),
     onOpenCalendarWeek: vi.fn(),
     metrics: { issuedCount: 2, pendingCount: 3, annualTotal: "R$ 1.240,00", averageTrip: "R$ 620,00" },
@@ -27,6 +31,18 @@ describe("DecisionCenter", () => {
     expect(props.onOpenManagementWeek).toHaveBeenCalledWith(27);
     fireEvent.click(screen.getByRole("button", { name: /abrir no calendário/i }));
     expect(props.onOpenCalendarWeek).toHaveBeenCalledWith(27);
+    fireEvent.click(screen.getByRole("button", { name: "Elevar relevância da semana 27" }));
+    expect(props.onAdjustRelevance).toHaveBeenCalledWith(27, "raise");
+  });
+
+  it("permite expandir a fila secundária sem misturá-la às prioridades do dia", () => {
+    const secondary = { id: "pending-31", severity: "warning" as const, destination: "management" as const, weekNumber: 31, title: "Emitir passagem da semana 31", reason: "Viagem em 25 dias.", actionLabel: "Abrir Gestão", score: 640, price: 540, priceVariationPercent: -4, manualAdjustment: 0 };
+    render(<DecisionCenter {...props} secondaryItems={[secondary]} secondaryQueueOpen={false} />);
+
+    const toggle = screen.getByRole("button", { name: /fila secundária/i });
+    expect(toggle.getAttribute("aria-expanded")).toBe("false");
+    fireEvent.click(toggle);
+    expect(props.onToggleSecondaryQueue).toHaveBeenCalledTimes(1);
   });
 
   it("oferece recuperação explícita quando a Central falha", () => {

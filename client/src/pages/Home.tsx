@@ -130,7 +130,12 @@ import { HomeDashboardControls } from "@/components/HomeDashboardControls";
 import { WeeklyPlanning, type WeeklyPlanningItem } from "@/components/WeeklyPlanning";
 import { PassageManagementFrame } from "@/components/PassageManagementFrame";
 import { DecisionCenter } from "@/components/DecisionCenter";
-import { buildDecisionItems, getNextDecisionTrip } from "@/lib/decisionCenter";
+import { buildDecisionItemQueue, getNextDecisionTrip } from "@/lib/decisionCenter";
+import {
+  adjustDecisionWeekRelevance,
+  persistDecisionCenterPreferences,
+  readDecisionCenterPreferences,
+} from "@/lib/decisionCenterPreferences";
 import {
   persistWeeklyPlanningFavorites,
   readWeeklyPlanningFavorites,
@@ -763,6 +768,15 @@ export default function Home({ mode = "home" }: HomeProps) {
 
   // Usar contexto de ano compartilhado
   const { selectedYear } = useYear();
+  const [decisionCenterPreferences, setDecisionCenterPreferences] = useState(() =>
+    readDecisionCenterPreferences(selectedYear)
+  );
+  useEffect(() => {
+    setDecisionCenterPreferences(readDecisionCenterPreferences(selectedYear));
+  }, [selectedYear]);
+  useEffect(() => {
+    persistDecisionCenterPreferences(selectedYear, decisionCenterPreferences);
+  }, [selectedYear, decisionCenterPreferences]);
 
   // tRPC queries
   const weeksQuery = trpc.flights.getWeeks.useQuery(
@@ -2123,10 +2137,17 @@ export default function Home({ mode = "home" }: HomeProps) {
 
   const annualHasData = annualSummaryData.some(d => d.total > 0);
 
-  const decisionItems = useMemo(
-    () => buildDecisionItems(weeksData, priceMap),
-    [weeksData, priceMap]
+  const decisionQueue = useMemo(
+    () => buildDecisionItemQueue(
+      weeksData,
+      priceMap,
+      new Date(),
+      decisionCenterPreferences.relevanceByWeek
+    ),
+    [weeksData, priceMap, decisionCenterPreferences.relevanceByWeek]
   );
+  const decisionItems = decisionQueue.slice(0, 3);
+  const secondaryDecisionItems = decisionQueue.slice(3);
   const nextDecisionTrip = useMemo(
     () => getNextDecisionTrip(weeksData),
     [weeksData]
@@ -2144,6 +2165,14 @@ export default function Home({ mode = "home" }: HomeProps) {
   const openDecisionCalendarWeek = useCallback((weekNumber: number) => {
     window.location.assign(`/calendar?week=${weekNumber}`);
   }, []);
+  const adjustDecisionRelevance = useCallback(
+    (weekNumber: number, direction: "raise" | "lower") => {
+      setDecisionCenterPreferences(previous =>
+        adjustDecisionWeekRelevance(previous, weekNumber, direction)
+      );
+    },
+    []
+  );
 
   // Handlers
   const handleToggleSelect = (weekNumber: number, current: number) => {
@@ -2655,10 +2684,19 @@ export default function Home({ mode = "home" }: HomeProps) {
         {!weeksQuery.isLoading && (
           <DecisionCenter
             items={decisionItems}
+            secondaryItems={secondaryDecisionItems}
+            secondaryQueueOpen={decisionCenterPreferences.secondaryQueueOpen}
             nextTrip={nextDecisionTrip}
             isLoading={weeksQuery.isLoading}
             hasError={weeksQuery.isError}
             onRetry={() => void weeksQuery.refetch()}
+            onToggleSecondaryQueue={() =>
+              setDecisionCenterPreferences(previous => ({
+                ...previous,
+                secondaryQueueOpen: !previous.secondaryQueueOpen,
+              }))
+            }
+            onAdjustRelevance={adjustDecisionRelevance}
             onOpenManagementWeek={openDecisionManagementWeek}
             onOpenCalendarWeek={openDecisionCalendarWeek}
             metrics={{
