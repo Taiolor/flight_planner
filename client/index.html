@@ -146,6 +146,11 @@
       #root {
         background-color: #f8fafc;
         min-height: 100dvh;
+        opacity: 0;
+        transform: translateY(4px);
+      }
+      #root[data-pwa-revealed="true"] {
+        animation: pwa-root-reveal 420ms cubic-bezier(0.2, 0.75, 0.25, 1) both;
       }
       #pwa-startup-splash {
         align-items: center;
@@ -162,13 +167,13 @@
         padding: max(24px, env(safe-area-inset-top)) 24px max(24px, env(safe-area-inset-bottom));
         position: fixed;
         transform: scale(1);
-        transition: opacity 220ms ease-out, transform 220ms ease-out, visibility 220ms ease-out;
+        transition: opacity 420ms cubic-bezier(0.2, 0.75, 0.25, 1), transform 420ms cubic-bezier(0.2, 0.75, 0.25, 1), visibility 0s linear 420ms;
         z-index: 2147483647;
       }
       #pwa-startup-splash[data-ready="true"] {
         opacity: 0;
         pointer-events: none;
-        transform: scale(1.015);
+        transform: scale(1.025);
         visibility: hidden;
       }
       .pwa-splash-content {
@@ -234,8 +239,13 @@
         50% { transform: translateX(54%); }
         100% { transform: translateX(160%); }
       }
+      @keyframes pwa-root-reveal {
+        from { opacity: 0; transform: translateY(4px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
       @media (prefers-reduced-motion: reduce) {
         #pwa-startup-splash { transition: none; }
+        #root[data-pwa-revealed="true"] { animation: none; opacity: 1; transform: none; }
         .pwa-splash-loader::after { animation: none; transform: translateX(54%); }
       }
     </style>

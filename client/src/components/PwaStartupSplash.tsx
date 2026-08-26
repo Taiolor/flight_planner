@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 
 const splashId = "pwa-startup-splash";
+const splashFadeOutMs = 420;
 
 /** Inicia a saída do splash estático sem bloquear a primeira renderização do React. */
 export function dismissPwaStartupSplash() {
@@ -8,9 +9,10 @@ export function dismissPwaStartupSplash() {
   if (!splash) return () => {};
 
   const remove = () => splash.remove();
+  document.getElementById("root")?.setAttribute("data-pwa-revealed", "true");
   splash.dataset.ready = "true";
   splash.addEventListener("transitionend", remove, { once: true });
-  const fallback = window.setTimeout(remove, 700);
+  const fallback = window.setTimeout(remove, splashFadeOutMs + 180);
 
   return () => {
     splash.removeEventListener("transitionend", remove);
