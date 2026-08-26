@@ -3,6 +3,7 @@ import BrazilWorldCupPanel from "@/components/BrazilWorldCupPanel";
 import { brazilMatchByDate } from "@/lib/worldCup2026";
 import { Link, useLocation } from "wouter";
 import { extractTime, toIsoDate } from "@/lib/utils";
+import { triggerHaptic } from "@/lib/haptics";
 import {
   getCalendarIssuedLegDates,
   hasEffectiveIssuedTicketLeg,
@@ -702,6 +703,13 @@ export default function CalendarView() {
                           else holidayDotColor = "bg-amber-400";
                         }
 
+                        const anyRescheduled = Boolean(
+                          mark && (
+                            (mark.departure && mark.departureRescheduled) ||
+                            (mark.return && mark.returnRescheduled)
+                          )
+                        );
+
                         if (mark) {
                           const allCancelled =
                             (mark.departure && mark.departureCancelled && !mark.return) ||
@@ -722,11 +730,6 @@ export default function CalendarView() {
                               mark.departureRescheduled &&
                               mark.return &&
                               mark.returnRescheduled);
-                          // Verificar se ALGUM voo neste dia é remarcado
-                          const anyRescheduled =
-                            (mark.departure && mark.departureRescheduled) ||
-                            (mark.return && mark.returnRescheduled);
-
                           if (allCancelled) {
                             cellBg = "bg-[#4B0082]";
                             textColor = "text-white";
@@ -812,15 +815,34 @@ export default function CalendarView() {
                             key={di}
                             title={tooltipText}
                             data-calendar-week={mark?.week.weekNumber}
-                            onClick={() => mark && setSelectedMark(mark)}
-                            className={`relative flex flex-col items-center justify-center rounded-md aspect-square text-[10px] font-medium select-none transition-all
+                            data-calendar-flight-interactive={isClickable ? "true" : undefined}
+                            role={isClickable ? "button" : undefined}
+                            tabIndex={isClickable ? 0 : undefined}
+                            aria-label={mark ? `Abrir detalhes da semana ${mark.week.weekNumber}${anyRescheduled ? ", com voo remarcado" : ""}` : undefined}
+                            onClick={() => {
+                              if (!mark) return;
+                              triggerHaptic();
+                              setSelectedMark(mark);
+                            }}
+                            onKeyDown={event => {
+                              if (!mark || (event.key !== "Enter" && event.key !== " ")) return;
+                              event.preventDefault();
+                              triggerHaptic();
+                              setSelectedMark(mark);
+                            }}
+                            className={`relative flex flex-col items-center justify-center rounded-md aspect-square text-[10px] font-medium select-none transition-[transform,filter,box-shadow] duration-150
                               ${cellBg || "hover:bg-slate-50"}
                               ${textColor}
                               ${isToday && !mark ? "ring-1 ring-blue-400" : ""}
-                              ${isClickable ? "cursor-pointer hover:brightness-110 hover:scale-110 active:scale-95 shadow-sm" : "cursor-default"}
+                              ${isClickable ? "cursor-pointer shadow-sm hover:z-10 hover:brightness-110 hover:shadow-md motion-safe:hover:scale-105 active:scale-95 focus:outline-none focus-visible:z-10 focus-visible:ring-2 focus-visible:ring-blue-500 motion-reduce:transition-none motion-reduce:hover:scale-100" : "cursor-default"}
                             `}
                           >
                             <span>{day}</span>
+                            {mark && anyRescheduled && (
+                              <span className="absolute right-0.5 top-0.5 rounded-full bg-white/90 px-1 py-px text-[6px] font-bold uppercase tracking-wide text-red-700 shadow-sm dark:bg-slate-950/90 dark:text-red-300" aria-label="Voo remarcado">
+                                Rem.
+                              </span>
+                            )}
                             {cupMatch && !mark && (
                               <span className="absolute bottom-0.5 left-1/2 -translate-x-1/2 text-[6px] leading-none">
                                 {cupMatch.status === "finished"

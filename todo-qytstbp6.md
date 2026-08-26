@@ -232,3 +232,9 @@
 - [x] Respeitar preferência de redução de movimento e preservar estados de cartão em telas táteis.
 - [x] Criar regressões, validar visualmente em desktop e celular e versionar a melhoria de interatividade.
 - [x] Salvar checkpoint dos efeitos de hover nos cartões de voo.
+- [x] Mapear células clicáveis do Calendário, estado de voo remarcado e utilitários de feedback tátil já disponíveis.
+- [x] Aplicar hover, foco e feedback visual consistente nas células de voo do Calendário sem afetar datas comuns.
+- [x] Reforçar a distinção de voo remarcado com sinal visual acessível e sem depender apenas da cor.
+- [x] Adicionar feedback tátil opcional às aberturas de detalhes de voo em dispositivos compatíveis.
+- [x] Criar regressões, validar em desktop e celular, documentar e versionar as três melhorias.
+- [x] Salvar checkpoint das interações de voo no Calendário.

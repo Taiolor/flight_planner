@@ -30,6 +30,23 @@ describe("Calendar mobile responsiveness", () => {
     expect(calendarSource).not.toContain('cellBg = "bg-slate-600";');
   });
 
+  it("oferece interação de cartão acessível e com movimento reduzido para os dias de voo", () => {
+    expect(calendarSource).toContain('data-calendar-flight-interactive={isClickable ? "true" : undefined}');
+    expect(calendarSource).toContain('role={isClickable ? "button" : undefined}');
+    expect(calendarSource).toContain("motion-safe:hover:scale-105");
+    expect(calendarSource).toContain("motion-reduce:hover:scale-100");
+    expect(calendarSource).toContain("triggerHaptic();");
+    expect(calendarSource).toContain("onKeyDown={event => {");
+    expect(calendarSource).toContain('event.key !== "Enter" && event.key !== " "');
+    expect(calendarSource).toContain("event.preventDefault();");
+  });
+
+  it("identifica voo remarcado também por texto, sem depender apenas da cor", () => {
+    expect(calendarSource).toContain('aria-label="Voo remarcado"');
+    expect(calendarSource).toContain("Rem.");
+    expect(calendarSource).toContain("com voo remarcado");
+  });
+
   it("mantém uma legenda de status acima da grade anual", () => {
     expect(calendarSource).toContain("Legenda persistente de status dos voos");
     expect(calendarSource).toContain('<StatusPill tone="success">Registrado</StatusPill>');
