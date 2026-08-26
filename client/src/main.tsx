@@ -9,6 +9,7 @@ import "./index.css";
 import { queryCachePolicies } from "./lib/queryCache";
 import { getTrpcProcedure } from "./lib/performanceTelemetry";
 import { isRetryableDatabaseQueryError } from "./lib/queryErrorRecovery";
+import { PwaStartupSplashController } from "./components/PwaStartupSplash";
 
 // Detecta se o erro é HTML em vez de JSON (ocorre quando o servidor está reiniciando após hibernação)
 const isHtmlResponse = (error: unknown): boolean => {
@@ -125,6 +126,7 @@ const trpcClient = trpc.createClient({
 createRoot(document.getElementById("root")!).render(
   <trpc.Provider client={trpcClient} queryClient={queryClient}>
     <QueryClientProvider client={queryClient}>
+      <PwaStartupSplashController />
       <App />
     </QueryClientProvider>
   </trpc.Provider>
