@@ -371,6 +371,8 @@ export const notificationSettings = mysqlTable("notification_settings", {
   id: int("id").autoincrement().primaryKey(),
   aviso1Minutes: int("aviso1Minutes").notNull().default(1440), // 24h por padrão
   aviso2Minutes: int("aviso2Minutes").notNull().default(0), // desativado por padrão
+  flightPushEnabled: int("flightPushEnabled").notNull().default(1),
+  ticketEmailEnabled: int("ticketEmailEnabled").notNull().default(1),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });
 export type NotificationSettings = typeof notificationSettings.$inferSelect;
@@ -410,6 +412,25 @@ export const notificationLogs = mysqlTable("notification_logs", {
 
 export type NotificationLog = typeof notificationLogs.$inferSelect;
 export type InsertNotificationLog = typeof notificationLogs.$inferInsert;
+
+/**
+ * Histórico pseudônimo de instalações do PWA. O identificador só é criado e
+ * enviado após consentimento explícito; não armazena conta, IP ou user-agent.
+ */
+export const pwaInstallationEvents = mysqlTable("pwa_installation_events", {
+  id: int("id").autoincrement().primaryKey(),
+  installationId: varchar("installationId", { length: 64 }).notNull(),
+  platform: varchar("platform", { length: 20 }).notNull().default("unknown"),
+  method: varchar("method", { length: 20 }).notNull().default("manual"),
+  consentedAt: timestamp("consentedAt").defaultNow().notNull(),
+  installedAt: timestamp("installedAt").defaultNow().notNull(),
+}, table => [
+  uniqueIndex("uq_pwa_installation_events_installation_id").on(table.installationId),
+  index("idx_pwa_installation_events_installed_at").on(table.installedAt),
+]);
+
+export type PwaInstallationEvent = typeof pwaInstallationEvents.$inferSelect;
+export type InsertPwaInstallationEvent = typeof pwaInstallationEvents.$inferInsert;
 
 /**
  * Métricas anônimas de desempenho da aplicação. Não armazena usuário, IP,

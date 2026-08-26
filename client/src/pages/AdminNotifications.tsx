@@ -43,6 +43,8 @@ import {
   Download,
   Search,
   X,
+  Eye,
+  Mail,
 } from "lucide-react";
 import { useDeferredValue, useState, useMemo } from "react";
 import { toast } from "sonner";
@@ -1490,6 +1492,8 @@ function AdminNotificationsContent() {
         </div>
       </div>
 
+      <PwaInstallationHistory />
+
       {/* Seção: Notificações por E-mail de Bilhetes */}
         <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
         <div className="bg-gradient-to-r from-purple-50 to-pink-50 border-b border-gray-200 px-5 py-4">
@@ -1528,6 +1532,7 @@ function TicketNotificationEmailsSection({
   const [newName, setNewName] = useState("");
   const [testEmail, setTestEmail] = useState("");
   const [showTestForm, setShowTestForm] = useState(false);
+  const [showEmailPreview, setShowEmailPreview] = useState(false);
   const [emailFeedback, setEmailFeedback] = useState<{
     kind: "success" | "error";
     message: string;
@@ -1572,6 +1577,9 @@ function TicketNotificationEmailsSection({
 
   const { data: recipients, refetch } =
     trpc.ticketNotifications.getRecipients.useQuery();
+  const emailPreviewQuery = trpc.ticketNotifications.preview.useQuery(undefined, {
+    enabled: showEmailPreview,
+  });
 
   const addRecipientMutation =
     trpc.ticketNotifications.addRecipient.useMutation({
@@ -1765,6 +1773,16 @@ function TicketNotificationEmailsSection({
       <div className="flex gap-2">
         <Button
           variant="outline"
+          onClick={() => setShowEmailPreview(current => !current)}
+          className="w-full gap-2 sm:w-auto"
+          aria-expanded={showEmailPreview}
+          aria-controls="ticket-email-preview"
+        >
+          <Eye className="w-4 h-4" />
+          {showEmailPreview ? "Fechar Prévia" : "Ver Prévia do E-mail"}
+        </Button>
+        <Button
+          variant="outline"
           onClick={() => setShowTestForm(!showTestForm)}
           className="w-full gap-2 sm:w-auto"
         >
@@ -1776,6 +1794,34 @@ function TicketNotificationEmailsSection({
         action={lastTestEmailAction}
         onClear={clearTestEmailAction}
       />
+
+      {showEmailPreview && (
+        <section
+          id="ticket-email-preview"
+          aria-labelledby="ticket-email-preview-title"
+          className="overflow-hidden rounded-lg border border-[#c8d6e9] bg-[#f4f7fb]"
+        >
+          <div className="flex items-start gap-2 border-b border-[#c8d6e9] px-4 py-3">
+            <Mail className="mt-0.5 size-4 text-[#17427e]" aria-hidden="true" />
+            <div>
+              <h3 id="ticket-email-preview-title" className="text-sm font-semibold text-slate-800">Prévia segura do e-mail</h3>
+              <p className="text-xs text-slate-500">Exemplo estático, sem dados reais de passageiros ou bilhetes.</p>
+            </div>
+          </div>
+          {emailPreviewQuery.isLoading ? (
+            <div className="h-72 animate-pulse bg-white motion-reduce:animate-none" aria-label="Carregando prévia do e-mail" />
+          ) : emailPreviewQuery.data ? (
+            <iframe
+              title="Prévia do e-mail Smart Fly"
+              sandbox=""
+              srcDoc={emailPreviewQuery.data.html}
+              className="h-[32rem] w-full border-0 bg-white"
+            />
+          ) : (
+            <p role="status" className="p-4 text-sm text-rose-700">Não foi possível carregar a prévia agora.</p>
+          )}
+        </section>
+      )}
 
       {/* Formulário para enviar e-mail de teste */}
       {showTestForm && (
@@ -1822,5 +1868,48 @@ function TicketNotificationEmailsSection({
         </div>
       )}
     </div>
+  );
+}
+
+function PwaInstallationHistory() {
+  const installationsQuery = trpc.pwaInstallations.listRecent.useQuery();
+  const platformLabel: Record<string, string> = {
+    ios: "iPhone/iPad",
+    android: "Android",
+    desktop: "Computador",
+    unknown: "Outro dispositivo",
+  };
+
+  return (
+    <section className="rounded-lg border border-gray-200 bg-white p-4 sm:p-5" aria-labelledby="pwa-installation-history-title">
+      <div className="flex items-start gap-3">
+        <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-[#102f61] text-white">
+          <Smartphone className="size-4" aria-hidden="true" />
+        </div>
+        <div>
+          <h2 id="pwa-installation-history-title" className="font-semibold text-gray-800">Instalações consentidas</h2>
+          <p className="mt-0.5 text-xs text-gray-500">Histórico mínimo: plataforma, método e data. Não inclui conta, IP, user-agent ou identificador do aparelho.</p>
+        </div>
+      </div>
+      {installationsQuery.isLoading ? (
+        <div className="mt-4 h-16 animate-pulse rounded-lg bg-slate-100 motion-reduce:animate-none" aria-label="Carregando instalações consentidas" />
+      ) : installationsQuery.data && installationsQuery.data.length > 0 ? (
+        <ul className="mt-4 divide-y divide-slate-100 rounded-lg border border-slate-200">
+          {installationsQuery.data.map(installation => {
+            const installedAt = installation.installedAt instanceof Date
+              ? installation.installedAt.toISOString()
+              : String(installation.installedAt);
+            return (
+              <li key={installation.id} className="flex items-center justify-between gap-3 px-3 py-2 text-sm">
+                <span className="font-medium text-slate-700">{platformLabel[installation.platform] ?? "Outro dispositivo"} · {installation.method === "native" ? "Instalação nativa" : "Registro manual"}</span>
+                <time className="shrink-0 text-xs text-slate-500">{formatDatetimeBRT(installedAt)}</time>
+              </li>
+            );
+          })}
+        </ul>
+      ) : (
+        <p className="mt-4 text-sm text-slate-500">Ainda não há instalações registradas com consentimento.</p>
+      )}
+    </section>
   );
 }

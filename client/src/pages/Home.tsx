@@ -2412,7 +2412,7 @@ export default function Home({ mode = "home" }: HomeProps) {
                   totalInvested={annualTotalIssued}
                 />
               }
-              installGuide={<PwaInstallGuide />}
+              installGuide={<PwaInstallGuide isAuthenticated={isAuthenticated} />}
               onShowChart={() => {
                 setIsPriceChartVisible(true);
                 requestAnimationFrame(() => {

@@ -23,6 +23,15 @@ vi.mock("./db", () => ({
   getFlightWeek: vi.fn().mockResolvedValue(null),
   getAllFlightPrices: vi.fn().mockResolvedValue([]),
   getTicketNotificationEmails: vi.fn().mockResolvedValue([]),
+  getNotificationSettings: vi.fn().mockResolvedValue({
+    aviso1Minutes: 1440,
+    aviso2Minutes: 0,
+    flightPushEnabled: true,
+    ticketEmailEnabled: true,
+  }),
+  recordPwaInstallation: vi.fn().mockResolvedValue(undefined),
+  deletePwaInstallation: vi.fn().mockResolvedValue(undefined),
+  getRecentPwaInstallations: vi.fn().mockResolvedValue([]),
   initFlightWeeks: vi.fn().mockResolvedValue(undefined),
   updateFlightWeekStatus: vi.fn().mockResolvedValue(undefined),
   upsertFlightPrice: vi.fn().mockResolvedValue(undefined),
@@ -40,6 +49,7 @@ vi.mock("./_core/emailNotification", () => ({
   sendTicketNotificationEmail: vi.fn().mockResolvedValue(true),
   sendTestEmail: vi.fn().mockResolvedValue(true),
   sendShareByEmailNotification: vi.fn().mockResolvedValue(true),
+  formatTicketShareEmail: vi.fn().mockReturnValue("<main>Prévia SF</main>"),
 }));
 
 vi.mock("./additionalFlightsDb", () => ({
@@ -189,6 +199,50 @@ describe("reliability access", () => {
     await expect(
       caller.reliability.getFlightWeeksSummary({ hours: 24 })
     ).rejects.toThrow("Faça login para acessar.");
+  });
+});
+
+describe("installations and email preview access", () => {
+  it("should reject an installation record without the internal session", async () => {
+    const caller = appRouter.createCaller(createTestContext());
+    await expect(caller.pwaInstallations.record({
+      installationId: "b6e118ca-6de3-4e1c-9f5c-260a6c5cb4c2",
+      platform: "android",
+      method: "native",
+      consent: true,
+    })).rejects.toThrow("Faça login para acessar.");
+  });
+
+  it("should provide the anonymized installation history and email preview only to an admin", async () => {
+    const { validateAuthSession, getRecentPwaInstallations, recordPwaInstallation } = await import("./db");
+    (validateAuthSession as ReturnType<typeof vi.fn>)
+      .mockResolvedValueOnce({ email: "taiolor@gmail.com", role: "admin" })
+      .mockResolvedValueOnce({ email: "taiolor@gmail.com", role: "admin" })
+      .mockResolvedValueOnce({ email: "taiolor@gmail.com", role: "admin" });
+    (getRecentPwaInstallations as ReturnType<typeof vi.fn>).mockResolvedValueOnce([
+      { id: 1, platform: "android", method: "native", installedAt: new Date() },
+    ]);
+    const caller = appRouter.createCaller(createTestContext("flight_session=owner-session"));
+
+    await caller.pwaInstallations.record({
+      installationId: "b6e118ca-6de3-4e1c-9f5c-260a6c5cb4c2",
+      platform: "android",
+      method: "native",
+      consent: true,
+    });
+    const installations = await caller.pwaInstallations.listRecent();
+    const preview = await caller.ticketNotifications.preview();
+
+    expect(recordPwaInstallation).toHaveBeenCalledWith({
+      installationId: "b6e118ca-6de3-4e1c-9f5c-260a6c5cb4c2",
+      platform: "android",
+      method: "native",
+    });
+    expect(installations).toHaveLength(1);
+    expect(preview).toEqual(expect.objectContaining({
+      subject: expect.stringContaining("Semana 24"),
+      html: "<main>Prévia SF</main>",
+    }));
   });
 });
 

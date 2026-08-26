@@ -27,6 +27,7 @@ import {
   InsertTicketNotificationEmail,
   TicketNotificationEmail,
   performanceMetrics,
+  pwaInstallationEvents,
 } from "../drizzle/schema";
 import { ENV } from "./_core/env";
 import {
@@ -671,10 +672,21 @@ export async function getPushSubscriptionByEndpoint(endpoint: string) {
 // Notification Settings
 // =====================
 
-let cachedSettingsPromise: Promise<{
+export type NotificationChannelSettings = {
   aviso1Minutes: number;
   aviso2Minutes: number;
-}> | null = null;
+  flightPushEnabled: boolean;
+  ticketEmailEnabled: boolean;
+};
+
+const defaultNotificationSettings: NotificationChannelSettings = {
+  aviso1Minutes: 1440,
+  aviso2Minutes: 0,
+  flightPushEnabled: true,
+  ticketEmailEnabled: true,
+};
+
+let cachedSettingsPromise: Promise<NotificationChannelSettings> | null = null;
 
 export async function getNotificationSettings() {
   if (cachedSettingsPromise) {
@@ -683,19 +695,26 @@ export async function getNotificationSettings() {
 
   cachedSettingsPromise = (async () => {
     const db = await getDb();
-    if (!db) return { aviso1Minutes: 1440, aviso2Minutes: 0 };
+    if (!db) return defaultNotificationSettings;
 
     const rows = await db.select().from(notificationSettings).limit(1);
     if (rows.length === 0) {
       // Criar registro padrão se não existir
       await db
         .insert(notificationSettings)
-        .values({ aviso1Minutes: 1440, aviso2Minutes: 0 });
-      return { aviso1Minutes: 1440, aviso2Minutes: 0 };
+        .values({
+          aviso1Minutes: defaultNotificationSettings.aviso1Minutes,
+          aviso2Minutes: defaultNotificationSettings.aviso2Minutes,
+          flightPushEnabled: 1,
+          ticketEmailEnabled: 1,
+        });
+      return defaultNotificationSettings;
     }
     return {
       aviso1Minutes: rows[0].aviso1Minutes,
       aviso2Minutes: rows[0].aviso2Minutes,
+      flightPushEnabled: rows[0].flightPushEnabled === 1,
+      ticketEmailEnabled: rows[0].ticketEmailEnabled === 1,
     };
   })();
 
@@ -707,10 +726,7 @@ export async function getNotificationSettings() {
   }
 }
 
-export async function updateNotificationSettings(
-  aviso1Minutes: number,
-  aviso2Minutes: number
-) {
+export async function updateNotificationSettings(settings: NotificationChannelSettings) {
   const db = await getDb();
   if (!db) return;
 
@@ -718,16 +734,66 @@ export async function updateNotificationSettings(
   if (rows.length === 0) {
     await db
       .insert(notificationSettings)
-      .values({ aviso1Minutes, aviso2Minutes });
+      .values({
+        aviso1Minutes: settings.aviso1Minutes,
+        aviso2Minutes: settings.aviso2Minutes,
+        flightPushEnabled: settings.flightPushEnabled ? 1 : 0,
+        ticketEmailEnabled: settings.ticketEmailEnabled ? 1 : 0,
+      });
   } else {
     await db
       .update(notificationSettings)
-      .set({ aviso1Minutes, aviso2Minutes })
+      .set({
+        aviso1Minutes: settings.aviso1Minutes,
+        aviso2Minutes: settings.aviso2Minutes,
+        flightPushEnabled: settings.flightPushEnabled ? 1 : 0,
+        ticketEmailEnabled: settings.ticketEmailEnabled ? 1 : 0,
+      })
       .where(eq(notificationSettings.id, rows[0].id));
   }
 
   // Invalidate cache
-  cachedSettingsPromise = Promise.resolve({ aviso1Minutes, aviso2Minutes });
+  cachedSettingsPromise = Promise.resolve(settings);
+}
+
+export type PwaInstallationInput = {
+  installationId: string;
+  platform: "ios" | "android" | "desktop" | "unknown";
+  method: "native" | "manual";
+};
+
+export async function recordPwaInstallation(input: PwaInstallationInput) {
+  const db = await getDb();
+  if (!db) return;
+  const now = new Date();
+  await db.insert(pwaInstallationEvents).values({
+    ...input,
+    consentedAt: now,
+    installedAt: now,
+  }).onDuplicateKeyUpdate({
+    set: { platform: input.platform, method: input.method, installedAt: now },
+  });
+}
+
+export async function deletePwaInstallation(installationId: string) {
+  const db = await getDb();
+  if (!db) return;
+  await db.delete(pwaInstallationEvents).where(eq(pwaInstallationEvents.installationId, installationId));
+}
+
+export async function getRecentPwaInstallations(limit = 30) {
+  const db = await getDb();
+  if (!db) return [];
+  return db
+    .select({
+      id: pwaInstallationEvents.id,
+      platform: pwaInstallationEvents.platform,
+      method: pwaInstallationEvents.method,
+      installedAt: pwaInstallationEvents.installedAt,
+    })
+    .from(pwaInstallationEvents)
+    .orderBy(desc(pwaInstallationEvents.installedAt))
+    .limit(Math.min(Math.max(limit, 1), 100));
 }
 
 // =====================

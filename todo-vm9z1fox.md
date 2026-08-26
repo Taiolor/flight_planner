@@ -178,3 +178,6 @@
 - [x] Padronizar os favicons de desktop com o logotipo oficial SF
 - [x] Adicionar uma experiência guiada e acessível para instalação do aplicativo
 - [x] Aplicar a assinatura visual SF aos e-mails e notificações enviados pela plataforma
+- [x] Registrar histórico de instalações somente após consentimento explícito do usuário
+- [x] Permitir preferências de canal por tipo de aviso para notificações push e e-mail
+- [x] Exibir prévia segura dos e-mails no painel administrativo

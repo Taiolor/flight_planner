@@ -327,10 +327,12 @@ export async function checkAndNotifyUpcomingFlights(): Promise<void> {
     ? [currentYear, currentYear + 1]
     : [currentYear];
 
+  const settings = await getNotificationSettings();
+  if (settings.flightPushEnabled === false) return;
+
   // Buscar somente exercícios que podem conter voos iminentes.
-  const [weeksByYear, settings, pushSubscriptions] = await Promise.all([
+  const [weeksByYear, pushSubscriptions] = await Promise.all([
     Promise.all(yearsToCheck.map(year => getAllFlightWeeks(year))),
-    getNotificationSettings(),
     // Buscar subscriptions uma única vez antes do loop para evitar N+1 queries ao banco
     getAllPushSubscriptions(),
   ]);

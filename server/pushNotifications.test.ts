@@ -219,6 +219,21 @@ describe("pushNotifications", () => {
       expect(webpush.sendNotification).not.toHaveBeenCalled();
     });
 
+    it("should not send flight alerts when the push channel is disabled", async () => {
+      vi.mocked(db.getNotificationSettings).mockResolvedValue({
+        aviso1Minutes: 60,
+        aviso2Minutes: 0,
+        flightPushEnabled: false,
+        ticketEmailEnabled: true,
+      } as any);
+
+      await checkAndNotifyUpcomingFlights();
+
+      expect(db.getAllFlightWeeks).not.toHaveBeenCalled();
+      expect(db.getAllPushSubscriptions).not.toHaveBeenCalled();
+      expect(webpush.sendNotification).not.toHaveBeenCalled();
+    });
+
     it("should notify about a departure flight within the warning window", async () => {
       vi.mocked(db.getNotificationSettings).mockResolvedValue({
         aviso1Minutes: 60,

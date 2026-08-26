@@ -21,6 +21,8 @@ const mocks = vi.hoisted(() => ({
   addRecipient: vi.fn(),
   removeRecipient: vi.fn(),
   sendTestEmail: vi.fn(),
+  emailPreview: vi.fn(),
+  installations: vi.fn(),
 }));
 
 vi.mock("@/lib/trpc", () => ({
@@ -41,7 +43,9 @@ vi.mock("@/lib/trpc", () => ({
       addRecipient: { useMutation: mocks.addRecipient },
       removeRecipient: { useMutation: mocks.removeRecipient },
       sendTestEmail: { useMutation: mocks.sendTestEmail },
+      preview: { useQuery: mocks.emailPreview },
     },
+    pwaInstallations: { listRecent: { useQuery: mocks.installations } },
   },
 }));
 
@@ -103,6 +107,8 @@ function configureSharedQueries() {
   mocks.addRecipient.mockReturnValue({ mutate: vi.fn(), isPending: false });
   mocks.removeRecipient.mockReturnValue({ mutate: vi.fn(), isPending: false });
   mocks.sendTestEmail.mockReturnValue({ mutate: vi.fn(), isPending: false });
+  mocks.emailPreview.mockReturnValue({ data: undefined, isLoading: false });
+  mocks.installations.mockReturnValue({ data: [], isLoading: false });
 }
 
 describe("AdminNotifications", () => {
@@ -383,5 +389,57 @@ describe("AdminNotifications", () => {
     await waitFor(() => expect(exportRefetch).toHaveBeenCalledOnce());
     expect(mocks.downloadCsv).toHaveBeenCalledWith(exportedLogs, 2026);
     expect(screen.getByRole("status").textContent).toContain("Histórico exportado em CSV");
+  });
+
+  it("mostra apenas dados exemplificativos na prévia administrativa de e-mail", () => {
+    configureSharedQueries();
+    mocks.authCheck.mockReturnValue({
+      data: { authenticated: true, email: "admin@smartfly.test", isAdmin: true },
+      isLoading: false,
+    });
+    mocks.status.mockReturnValue({
+      data: emptyStatus,
+      isLoading: false,
+      error: null,
+      refetch: vi.fn(),
+      isFetching: false,
+    });
+    mocks.emailPreview.mockReturnValue({
+      data: { subject: "Exemplo", html: "<p>Semana 24 · Exemplo de comunicação</p>" },
+      isLoading: false,
+    });
+
+    renderPage();
+    fireEvent.click(screen.getByRole("button", { name: "Ver Prévia do E-mail" }));
+
+    expect(screen.getByRole("heading", { name: "Prévia segura do e-mail" })).toBeTruthy();
+    expect(screen.getByTitle("Prévia do e-mail Smart Fly").getAttribute("srcdoc")).toBe(
+      "<p>Semana 24 · Exemplo de comunicação</p>"
+    );
+  });
+
+  it("exibe somente instalações registradas com consentimento", () => {
+    configureSharedQueries();
+    mocks.authCheck.mockReturnValue({
+      data: { authenticated: true, email: "admin@smartfly.test", isAdmin: true },
+      isLoading: false,
+    });
+    mocks.status.mockReturnValue({
+      data: emptyStatus,
+      isLoading: false,
+      error: null,
+      refetch: vi.fn(),
+      isFetching: false,
+    });
+    mocks.installations.mockReturnValue({
+      data: [{ id: 1, platform: "android", method: "native", installedAt: new Date("2026-08-26T12:00:00.000Z") }],
+      isLoading: false,
+    });
+
+    renderPage();
+
+    expect(screen.getByRole("heading", { name: "Instalações consentidas" })).toBeTruthy();
+    expect(screen.getByText(/Android · Instalação nativa/)).toBeTruthy();
+    expect(screen.getByText(/Não inclui conta, IP, user-agent/)).toBeTruthy();
   });
 });

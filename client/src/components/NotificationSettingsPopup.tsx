@@ -108,6 +108,10 @@ interface NotificationSettingsFormProps {
   setAviso1: (val: number) => void;
   aviso2: number;
   setAviso2: (val: number) => void;
+  flightPushEnabled: boolean;
+  setFlightPushEnabled: (value: boolean) => void;
+  ticketEmailEnabled: boolean;
+  setTicketEmailEnabled: (value: boolean) => void;
   onSave: () => void;
   isPending: boolean;
   saved: boolean;
@@ -118,6 +122,10 @@ function NotificationSettingsForm({
   setAviso1,
   aviso2,
   setAviso2,
+  flightPushEnabled,
+  setFlightPushEnabled,
+  ticketEmailEnabled,
+  setTicketEmailEnabled,
   onSave,
   isPending,
   saved,
@@ -130,6 +138,32 @@ function NotificationSettingsForm({
         <strong className="text-slate-300">Desativado</strong> para não receber
         aquele aviso.
       </p>
+
+      <fieldset className="space-y-2 rounded-lg border border-slate-700 bg-slate-800/60 p-3">
+        <legend className="px-1 text-xs font-semibold uppercase tracking-wide text-slate-300">
+          Canais por tipo de aviso
+        </legend>
+        <label className="flex cursor-pointer items-center justify-between gap-3 text-sm text-slate-200">
+          <span><strong>Voos próximos</strong><span className="block text-xs text-slate-400">Notificação push nos dispositivos ativos</span></span>
+          <input
+            type="checkbox"
+            checked={flightPushEnabled}
+            onChange={event => setFlightPushEnabled(event.target.checked)}
+            aria-label="Ativar notificações push para voos próximos"
+            className="size-4 accent-cyan-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-300"
+          />
+        </label>
+        <label className="flex cursor-pointer items-center justify-between gap-3 text-sm text-slate-200">
+          <span><strong>Alterações de bilhetes</strong><span className="block text-xs text-slate-400">E-mail para destinatários cadastrados</span></span>
+          <input
+            type="checkbox"
+            checked={ticketEmailEnabled}
+            onChange={event => setTicketEmailEnabled(event.target.checked)}
+            aria-label="Ativar e-mails para alterações de bilhetes"
+            className="size-4 accent-cyan-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-300"
+          />
+        </label>
+      </fieldset>
 
       <NotificationOption
         label="Aviso 1"
@@ -211,6 +245,8 @@ export function NotificationSettingsPopup({
   const [isMobile, setIsMobile] = useState(false);
   const [aviso1, setAviso1] = useState<number>(1440);
   const [aviso2, setAviso2] = useState<number>(0);
+  const [flightPushEnabled, setFlightPushEnabled] = useState(true);
+  const [ticketEmailEnabled, setTicketEmailEnabled] = useState(true);
   const [saved, setSaved] = useState(false);
 
   // Detectar mobile
@@ -232,6 +268,8 @@ export function NotificationSettingsPopup({
     if (settingsQuery.data) {
       setAviso1(settingsQuery.data.aviso1Minutes);
       setAviso2(settingsQuery.data.aviso2Minutes);
+      setFlightPushEnabled(settingsQuery.data.flightPushEnabled);
+      setTicketEmailEnabled(settingsQuery.data.ticketEmailEnabled);
     }
   }, [settingsQuery.data]);
 
@@ -259,7 +297,12 @@ export function NotificationSettingsPopup({
   };
 
   const handleSave = () => {
-    updateMutation.mutate({ aviso1Minutes: aviso1, aviso2Minutes: aviso2 });
+    updateMutation.mutate({
+      aviso1Minutes: aviso1,
+      aviso2Minutes: aviso2,
+      flightPushEnabled,
+      ticketEmailEnabled,
+    });
   };
 
   // Botão de abertura
@@ -295,6 +338,10 @@ export function NotificationSettingsPopup({
               setAviso1={setAviso1}
               aviso2={aviso2}
               setAviso2={setAviso2}
+              flightPushEnabled={flightPushEnabled}
+              setFlightPushEnabled={setFlightPushEnabled}
+              ticketEmailEnabled={ticketEmailEnabled}
+              setTicketEmailEnabled={setTicketEmailEnabled}
               onSave={handleSave}
               isPending={updateMutation.isPending}
               saved={saved}
@@ -343,6 +390,10 @@ export function NotificationSettingsPopup({
           setAviso1={setAviso1}
           aviso2={aviso2}
           setAviso2={setAviso2}
+          flightPushEnabled={flightPushEnabled}
+          setFlightPushEnabled={setFlightPushEnabled}
+          ticketEmailEnabled={ticketEmailEnabled}
+          setTicketEmailEnabled={setTicketEmailEnabled}
           onSave={handleSave}
           isPending={updateMutation.isPending}
           saved={saved}

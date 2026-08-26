@@ -37,6 +37,9 @@ import {
   removeTicketNotificationEmail,
   updateTicketNotificationEmail,
   getFlightWeeksReliabilitySummary,
+  deletePwaInstallation,
+  getRecentPwaInstallations,
+  recordPwaInstallation,
 } from "./db";
 import { ensurePlanningYearWeeks } from "./planningYears";
 import { summarizeYearPlanningProgress } from "./planningProgress";
@@ -651,7 +654,10 @@ export const appRouter = router({
 
           // Optimization: Only query DB for recipients once if we actually need to send an email
           const needsEmail = isMarkedAsIssued || isDeleted || isUpdated;
-          const recipients = needsEmail
+          const channelSettings = needsEmail
+            ? await getNotificationSettings()
+            : null;
+          const recipients = needsEmail && channelSettings?.ticketEmailEnabled
             ? await getTicketNotificationEmails()
             : [];
 
@@ -1422,15 +1428,36 @@ export const appRouter = router({
         z.object({
           aviso1Minutes: z.number().min(0).max(2880),
           aviso2Minutes: z.number().min(0).max(2880),
+          flightPushEnabled: z.boolean(),
+          ticketEmailEnabled: z.boolean(),
         })
       )
       .mutation(async ({ input }) => {
-        await updateNotificationSettings(
-          input.aviso1Minutes,
-          input.aviso2Minutes
-        );
+        await updateNotificationSettings(input);
         return { success: true };
       }),
+  }),
+
+  pwaInstallations: router({
+    record: flightProtectedProcedure
+      .input(z.object({
+        installationId: z.string().uuid(),
+        platform: z.enum(["ios", "android", "desktop", "unknown"]),
+        method: z.enum(["native", "manual"]),
+        consent: z.literal(true),
+      }))
+      .mutation(async ({ input }) => {
+        const { consent: _consent, ...installation } = input;
+        await recordPwaInstallation(installation);
+        return { success: true };
+      }),
+    deleteCurrent: flightProtectedProcedure
+      .input(z.object({ installationId: z.string().uuid() }))
+      .mutation(async ({ input }) => {
+        await deletePwaInstallation(input.installationId);
+        return { success: true };
+      }),
+    listRecent: flightAdminProcedure.query(async () => getRecentPwaInstallations()),
   }),
 
   // =====================
@@ -1453,6 +1480,37 @@ export const appRouter = router({
     getRecipients: flightAdminProcedure.query(async () => {
       return await getTicketNotificationEmails();
     }),
+
+    preview: flightAdminProcedure.query(() => ({
+      subject: "Compartilhamento de Bilhetes — Semana 24",
+      html: formatTicketShareEmail({
+        weekLabel: "Semana 24 · Exemplo de comunicação",
+        departure: {
+          date: "10/06/2026",
+          time: "08:30",
+          departureAirport: "GRU",
+          arrivalAirport: "NVT",
+          airline: "LATAM",
+          flightNumber: "LA 3124",
+          locator: "SF24IDA",
+          outlookUrl: "https://outlook.live.com/calendar/0/deeplink/compose",
+          googleUrl: "https://calendar.google.com/calendar/render?action=TEMPLATE",
+          trackingUrl: "https://www.flightradar24.com/",
+        },
+        return: {
+          date: "14/06/2026",
+          time: "18:10",
+          departureAirport: "NVT",
+          arrivalAirport: "GRU",
+          airline: "LATAM",
+          flightNumber: "LA 3125",
+          locator: "SF24VOL",
+          outlookUrl: "https://outlook.live.com/calendar/0/deeplink/compose",
+          googleUrl: "https://calendar.google.com/calendar/render?action=TEMPLATE",
+          trackingUrl: "https://www.flightradar24.com/",
+        },
+      }),
+    })),
 
     /**
      * Add a new ticket notification email recipient
