@@ -19,6 +19,8 @@ describe("PWA Viagens branding", () => {
     expect(manifest).toContain('"type": "image/webp"');
     expect(manifest).toContain('"purpose": "any maskable"');
     expect(document).toContain('/manifest.json?v=20260826');
+    expect(document).toContain('name="color-scheme" content="light dark"');
+    expect(document).toContain("@media (prefers-color-scheme: dark)");
     expect(document).toContain("smartfly-icon-512-fy4eDuGdVJBtxeYLKc2qAk.png");
     expect(document).toContain("/manus-storage/smartfly-sf-apple-touch-icon_598faae4.png?v=20260826");
     expect(document).toContain("/manus-storage/smartfly-sf-favicon-48_45731084.png?v=20260826");

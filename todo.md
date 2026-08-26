@@ -846,6 +846,7 @@
 - [x] Criar relatório executivo com geração manual de PDF/CSV e opção de agendamento seguro
 - [x] Corrigir a atualização do ícone do site, favicon e cache do PWA
 - [x] Adicionar tela de abertura personalizada e acessível ao carregamento inicial do PWA
+- [x] Adaptar a tela de abertura do PWA ao modo escuro do sistema
 
 ## Processo reutilizável
 
