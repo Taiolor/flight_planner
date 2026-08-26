@@ -24,6 +24,7 @@ const UsageTelemetryMap = lazy(() => import("./pages/UsageTelemetryMap"));
 const GeminiBudgetDashboard = lazy(() => import("./pages/GeminiBudgetDashboard"));
 const Memories = lazy(() => import("./pages/Memories"));
 const PassageManagementPage = lazy(() => import("./pages/PassageManagementPage"));
+const OperationalControl = lazy(() => import("./pages/OperationalControl"));
 
 // Fallback de carregamento para rotas com lazy loading
 function PageLoader() {
@@ -82,6 +83,11 @@ function Router() {
       <Route path={"/financeiro"}>
         <Suspense fallback={<PageLoader />}>
           <FinancialDashboard />
+        </Suspense>
+      </Route>
+      <Route path={"/controle"}>
+        <Suspense fallback={<PageLoader />}>
+          <OperationalControl />
         </Suspense>
       </Route>
       <Route path={"/memorias"}>

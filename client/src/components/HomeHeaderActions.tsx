@@ -93,6 +93,7 @@ type HeaderTransitionDestination =
   | "financial"
   | "quotes"
   | "memories"
+  | "operational"
   | "changelog"
   | "admin-notifications"
   | "telemetry"
@@ -276,6 +277,16 @@ export function HomeHeaderActions({
                   onClick={event => navigateWithTransition(event, "quotes", "/cotacoes")}
                 >
                   <span className="flex items-center gap-2"><DollarSign className="size-4 text-emerald-300" />Cotações</span>
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link
+                  href="/controle"
+                  data-view-transition-destination="operational"
+                  data-navigation-focus="home-navigation-menu-trigger"
+                  onClick={event => navigateWithTransition(event, "operational", "/controle")}
+                >
+                  <span className="flex items-center gap-2"><ShieldCheck className="size-4 text-violet-300" />Controle operacional</span>
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>

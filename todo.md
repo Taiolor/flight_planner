@@ -836,6 +836,14 @@
 - [x] Exibir resumo diário de entregas e falhas no histórico de notificações
 - [x] Permitir exportar o histórico administrativo filtrado em CSV
 - [x] Adicionar pesquisa por texto livre ao histórico de envios administrativos
+- [x] Criar painel de pendências de compra e risco de preço por semana
+- [x] Criar linha do tempo operacional e checklist pré-viagem por viagem
+- [x] Implementar gestão de créditos, vouchers e reembolsos por companhia
+- [x] Vincular anexos operacionais aos bilhetes emitidos com armazenamento seguro
+- [x] Detectar conflitos de voo e trechos de retorno ausentes
+- [x] Adicionar metas por categoria de viagens, orçamento, milhas e créditos
+- [x] Criar Centro de decisões com recomendações prioritárias e explicáveis
+- [x] Criar relatório executivo com geração manual de PDF/CSV e opção de agendamento seguro
 
 ## Processo reutilizável
 

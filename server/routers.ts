@@ -3,6 +3,7 @@ import { quotesRouter } from "./routers/quotes";
 import { financialRouter } from "./routers/financial";
 import { memoriesRouter } from "./routers/memories";
 import { additionalFlightsRouter } from "./routers/additionalFlights";
+import { operationalRouter } from "./routers/operational";
 import crypto from "crypto";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
@@ -129,6 +130,7 @@ const planningYearSchema = z.number().int().min(2020).max(2100);
 
 export const appRouter = router({
   system: systemRouter,
+  operational: operationalRouter,
   protectedAccess: router({
     record: publicProcedure
       .input(z.object({ resource: z.enum(PROTECTED_ACCESS_RESOURCES) }))

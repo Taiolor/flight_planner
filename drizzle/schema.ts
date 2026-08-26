@@ -244,6 +244,143 @@ export type FlightMemoryMedia = typeof flightMemoryMedia.$inferSelect;
 export type InsertFlightMemoryMedia = typeof flightMemoryMedia.$inferInsert;
 
 /**
+ * Checklist operacional por viagem. Cada item é isolado pelo exercício e pela
+ * semana para acompanhar check-in, documentos, bagagem e logística.
+ */
+export const operationalTravelChecklists = mysqlTable(
+  "operational_travel_checklists",
+  {
+    id: int("id").autoincrement().primaryKey(),
+    year: int("year").notNull(),
+    weekNumber: int("weekNumber").notNull(),
+    category: mysqlEnum("category", [
+      "checkin",
+      "bagagem",
+      "assento",
+      "traslado",
+      "hospedagem",
+      "documentos",
+      "outro",
+    ]).notNull(),
+    label: varchar("label", { length: 160 }).notNull(),
+    dueAt: timestamp("dueAt"),
+    completed: int("completed").default(0).notNull(),
+    completedAt: timestamp("completedAt"),
+    createdAt: timestamp("createdAt").defaultNow().notNull(),
+    updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+  },
+  table => [
+    index("idx_operational_checklists_year_week").on(table.year, table.weekNumber),
+    index("idx_operational_checklists_pending").on(table.year, table.completed),
+  ]
+);
+
+export type OperationalTravelChecklist =
+  typeof operationalTravelChecklists.$inferSelect;
+export type InsertOperationalTravelChecklist =
+  typeof operationalTravelChecklists.$inferInsert;
+
+/** Metadados de comprovantes e documentos operacionais guardados no S3. */
+export const operationalFlightAttachments = mysqlTable(
+  "operational_flight_attachments",
+  {
+    id: int("id").autoincrement().primaryKey(),
+    year: int("year").notNull(),
+    weekNumber: int("weekNumber").notNull(),
+    attachmentType: mysqlEnum("attachmentType", [
+      "comprovante",
+      "cartao_embarque",
+      "recibo",
+      "outro",
+    ]).notNull(),
+    storageKey: varchar("storageKey", { length: 512 }).notNull(),
+    storageUrl: text("storageUrl").notNull(),
+    mimeType: varchar("mimeType", { length: 100 }).notNull(),
+    fileName: varchar("fileName", { length: 255 }).notNull(),
+    fileSizeBytes: int("fileSizeBytes").notNull(),
+    description: varchar("description", { length: 240 }),
+    createdAt: timestamp("createdAt").defaultNow().notNull(),
+  },
+  table => [
+    index("idx_operational_attachments_year_week").on(table.year, table.weekNumber),
+  ]
+);
+
+export type OperationalFlightAttachment =
+  typeof operationalFlightAttachments.$inferSelect;
+export type InsertOperationalFlightAttachment =
+  typeof operationalFlightAttachments.$inferInsert;
+
+/** Créditos, vouchers e reembolsos disponíveis para reduzir o custo de viagens. */
+export const operationalTravelCredits = mysqlTable(
+  "operational_travel_credits",
+  {
+    id: int("id").autoincrement().primaryKey(),
+    year: int("year").notNull(),
+    airline: varchar("airline", { length: 80 }).notNull(),
+    creditType: mysqlEnum("creditType", ["credito", "voucher", "reembolso"]).notNull(),
+    code: varchar("code", { length: 120 }),
+    originalCents: int("originalCents").notNull(),
+    availableCents: int("availableCents").notNull(),
+    expiresAt: timestamp("expiresAt"),
+    status: mysqlEnum("status", ["ativo", "usado", "expirado"]).default("ativo").notNull(),
+    linkedWeekNumber: int("linkedWeekNumber"),
+    notes: varchar("notes", { length: 500 }),
+    createdAt: timestamp("createdAt").defaultNow().notNull(),
+    updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+  },
+  table => [
+    index("idx_operational_credits_year_status").on(table.year, table.status),
+    index("idx_operational_credits_expiration").on(table.year, table.expiresAt),
+  ]
+);
+
+export type OperationalTravelCredit = typeof operationalTravelCredits.$inferSelect;
+export type InsertOperationalTravelCredit =
+  typeof operationalTravelCredits.$inferInsert;
+
+/** Metas anuais complementares à meta de emissões existente. */
+export const operationalCategoryGoals = mysqlTable(
+  "operational_category_goals",
+  {
+    id: int("id").autoincrement().primaryKey(),
+    year: int("year").notNull(),
+    category: mysqlEnum("category", ["viagens", "orcamento", "milhas", "creditos"])
+      .notNull(),
+    targetValue: int("targetValue").notNull(),
+    createdAt: timestamp("createdAt").defaultNow().notNull(),
+    updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+  },
+  table => [
+    uniqueIndex("uq_operational_goals_year_category").on(table.year, table.category),
+  ]
+);
+
+export type OperationalCategoryGoal = typeof operationalCategoryGoals.$inferSelect;
+export type InsertOperationalCategoryGoal =
+  typeof operationalCategoryGoals.$inferInsert;
+
+/** Configuração única do relatório executivo recorrente, vinculada ao job Heartbeat. */
+export const operationalReportSchedules = mysqlTable(
+  "operational_report_schedules",
+  {
+    id: int("id").primaryKey(),
+    year: int("year").notNull(),
+    enabled: int("enabled").default(0).notNull(),
+    cronExpression: varchar("cronExpression", { length: 80 }).notNull(),
+    scheduleCronTaskUid: varchar("scheduleCronTaskUid", { length: 65 }),
+    lastSentAt: timestamp("lastSentAt"),
+    createdAt: timestamp("createdAt").defaultNow().notNull(),
+    updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+  },
+  table => [index("idx_operational_report_schedule_task").on(table.scheduleCronTaskUid)]
+);
+
+export type OperationalReportSchedule = typeof operationalReportSchedules.$inferSelect;
+export type InsertOperationalReportSchedule =
+  typeof operationalReportSchedules.$inferInsert;
+
+/**
  * Campos adicionados:
  * - departureTerminal: Terminal de embarque do voo de ida
  * - returnTerminal: Terminal de embarque do voo de volta

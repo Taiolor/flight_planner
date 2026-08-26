@@ -19,8 +19,10 @@ import { getContentSecurityPolicy } from "./contentSecurityPolicy";
 import { registerStorageProxy } from "./storageProxy";
 import { getSessionFromCookie } from "../flightAuthMiddleware";
 import { addFlightMemoryMedia, upsertFlightMemory } from "../memoriesDb";
+import { addOperationalAttachment } from "../operationalDb";
 import { storagePut } from "../storage";
 import { transcribeFlyIaVoice } from "../flyIaVoice";
+import { runScheduledOperationalReport } from "../operationalReportSchedule";
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise(resolve => {
@@ -139,6 +141,7 @@ async function startServer() {
 
   app.post("/api/scheduled/flight-notifications", runScheduledFlightNotifications);
   app.post("/api/scheduled/usage-telemetry-cleanup", runUsageTelemetryCleanup);
+  app.post("/api/scheduled/operational-executive-report", runScheduledOperationalReport);
 
   app.post(
     "/api/memories/upload",
@@ -208,6 +211,66 @@ async function startServer() {
       } catch (error) {
         console.error("[Memories] Upload failed", error);
         res.status(500).json({ error: "Não foi possível enviar a mídia." });
+      }
+    }
+  );
+
+  app.post(
+    "/api/operational/upload",
+    express.raw({ type: ["image/*", "application/pdf"], limit: "10mb" }),
+    async (req, res) => {
+      try {
+        const session = await getSessionFromCookie(req);
+        if (!session) {
+          res.status(401).json({ error: "Faça login para acessar." });
+          return;
+        }
+
+        const year = Number(req.query.year);
+        const weekNumber = Number(req.query.weekNumber);
+        const attachmentType = String(req.query.attachmentType ?? "outro");
+        const description = String(req.query.description ?? "").trim().slice(0, 240);
+        const fileName = String(req.query.fileName ?? "anexo").slice(0, 255);
+        const mimeType = String(req.headers["content-type"] ?? "").toLowerCase();
+        const validAttachmentTypes = new Set(["comprovante", "cartao_embarque", "recibo", "outro"]);
+        const validMime = mimeType === "application/pdf" || mimeType.startsWith("image/");
+
+        if (
+          !Number.isInteger(year) || year < 2020 || year > 2100 ||
+          !Number.isInteger(weekNumber) || weekNumber < 1 || weekNumber > 54 ||
+          !validAttachmentTypes.has(attachmentType) || !validMime ||
+          !Buffer.isBuffer(req.body) || req.body.length === 0
+        ) {
+          res.status(400).json({ error: "Anexo operacional inválido." });
+          return;
+        }
+
+        const sessionHash = crypto.createHash("sha256").update(session.email.toLowerCase()).digest("hex").slice(0, 16);
+        const extension = fileName.includes(".")
+          ? fileName.split(".").pop()!.replace(/[^a-z0-9]/gi, "").slice(0, 12)
+          : mimeType === "application/pdf" ? "pdf" : "jpg";
+        const storageKey = `operational/${sessionHash}/${year}/week-${weekNumber}/${crypto.randomUUID()}.${extension}`;
+        const uploaded = await storagePut(storageKey, req.body, mimeType);
+        const id = await addOperationalAttachment({
+          year,
+          weekNumber,
+          attachmentType: attachmentType as "comprovante" | "cartao_embarque" | "recibo" | "outro",
+          storageKey: uploaded.key,
+          storageUrl: uploaded.url,
+          mimeType,
+          fileName,
+          fileSizeBytes: req.body.length,
+          description: description || undefined,
+        });
+
+        if (!id) {
+          res.status(503).json({ error: "Não foi possível registrar o anexo." });
+          return;
+        }
+        res.status(201).json({ id, url: uploaded.url });
+      } catch (error) {
+        console.error("[Operational] Upload failed", error);
+        res.status(500).json({ error: "Não foi possível enviar o anexo." });
       }
     }
   );
