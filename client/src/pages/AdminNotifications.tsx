@@ -41,8 +41,10 @@ import {
   Activity,
   MapPinned,
   Download,
+  Search,
+  X,
 } from "lucide-react";
-import { useState, useMemo } from "react";
+import { useDeferredValue, useState, useMemo } from "react";
 import { toast } from "sonner";
 import { TestNextAlertButton } from "@/components/admin-notifications/TestNextAlertButton";
 import {
@@ -357,6 +359,9 @@ function AdminNotificationsContent() {
   const [panelFeedback, setPanelFeedback] = useState<AdminInteractionFeedback | null>(null);
   const [historyStatus, setHistoryStatus] =
     useState<NotificationHistoryStatusFilter>("all");
+  const [historySearch, setHistorySearch] = useState("");
+  const deferredHistorySearch = useDeferredValue(historySearch);
+  const historySearchTerm = deferredHistorySearch.trim() || undefined;
   const registerPushAction = (
     label: string,
     status: AdminFormAction["status"]
@@ -418,6 +423,7 @@ function AdminNotificationsContent() {
       year: selectedYear,
       limit: 25,
       status: historyStatus === "all" ? undefined : historyStatus,
+      search: historySearchTerm,
     },
     {
       enabled: true,
@@ -430,6 +436,7 @@ function AdminNotificationsContent() {
     {
       year: selectedYear,
       status: historyStatus === "all" ? undefined : historyStatus,
+      search: historySearchTerm,
     },
     {
       enabled: true,
@@ -441,6 +448,7 @@ function AdminNotificationsContent() {
     {
       year: selectedYear,
       status: historyStatus === "all" ? undefined : historyStatus,
+      search: historySearchTerm,
     },
     {
       enabled: false,
@@ -476,7 +484,7 @@ function AdminNotificationsContent() {
     setPanelFeedback({ kind: "success", message: "Histórico de envios atualizado." });
   };
   const handleHistoryExport = async () => {
-    setPanelFeedback({ kind: "info", message: "Preparando o CSV do histórico filtrado..." });
+    setPanelFeedback({ kind: "info", message: "Preparando o CSV do histórico filtrado e pesquisado..." });
     const result = await exportLogsQuery.refetch();
     if (result.error || !result.data) {
       setPanelFeedback({
@@ -1179,7 +1187,40 @@ function AdminNotificationsContent() {
           {expandedSections.has("history") && (
             <Card id="section-history" className="overflow-hidden mt-3">
               <div className="space-y-4 border-b border-slate-100 bg-slate-50/70 p-4">
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+                <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_13rem_auto] sm:items-end">
+                  <div className="min-w-0">
+                    <label
+                      htmlFor="notification-history-search"
+                      className="block text-xs font-semibold uppercase tracking-wide text-slate-500"
+                    >
+                      Pesquisar no histórico
+                    </label>
+                    <div className="relative mt-1">
+                      <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" aria-hidden="true" />
+                      <input
+                        id="notification-history-search"
+                        type="search"
+                        value={historySearch}
+                        onChange={event => setHistorySearch(event.target.value)}
+                        placeholder="Mensagem, voo, companhia ou erro"
+                        aria-describedby="notification-history-search-help"
+                        className="min-h-9 w-full rounded-md border border-slate-300 bg-white py-2 pl-9 pr-10 text-sm text-slate-700 shadow-sm placeholder:text-slate-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#17427e]"
+                      />
+                      {historySearch && (
+                        <button
+                          type="button"
+                          onClick={() => setHistorySearch("")}
+                          className="absolute right-2 top-1/2 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-sm text-slate-500 hover:bg-slate-100 hover:text-slate-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#17427e]"
+                          aria-label="Limpar pesquisa do histórico"
+                        >
+                          <X className="h-4 w-4" aria-hidden="true" />
+                        </button>
+                      )}
+                    </div>
+                    <p id="notification-history-search-help" className="mt-1 text-xs text-slate-500">
+                      Busca por mensagem, semana, trecho, companhia, voo, status ou detalhe de erro.
+                    </p>
+                  </div>
                   <div className="min-w-0">
                     <label
                       htmlFor="notification-history-status"
@@ -1258,9 +1299,11 @@ function AdminNotificationsContent() {
                 <div className="p-8 text-center">
                   <History className="w-10 h-10 text-gray-300 mx-auto mb-3" />
                   <p className="text-gray-500 text-sm">
-                    {historyStatus === "all"
-                      ? "Nenhum envio registrado ainda."
-                      : "Nenhum envio corresponde ao status selecionado."}
+                    {historySearchTerm
+                      ? `Nenhum envio corresponde a “${historySearchTerm}”.`
+                      : historyStatus === "all"
+                        ? "Nenhum envio registrado ainda."
+                        : "Nenhum envio corresponde ao status selecionado."}
                   </p>
                   <p className="text-gray-400 text-xs mt-1">
                     Os próximos envios automáticos e testes aparecerão aqui.

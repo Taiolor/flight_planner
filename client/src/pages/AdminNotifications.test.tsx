@@ -270,6 +270,51 @@ describe("AdminNotifications", () => {
     );
   });
 
+  it("pesquisa texto livre no histórico, resumo diário e exportação", async () => {
+    configureSharedQueries();
+    mocks.authCheck.mockReturnValue({
+      data: { authenticated: true, email: "admin@smartfly.test", isAdmin: true },
+      isLoading: false,
+    });
+    mocks.status.mockReturnValue({
+      data: emptyStatus,
+      isLoading: false,
+      error: null,
+      refetch: vi.fn(),
+      isFetching: false,
+    });
+
+    renderPage();
+    fireEvent.click(screen.getByRole("button", { name: /Histórico de Envios/ }));
+    fireEvent.change(screen.getByLabelText("Pesquisar no histórico"), {
+      target: { value: "token expirado" },
+    });
+
+    await waitFor(() => {
+      expect(mocks.logs.mock.calls.at(-1)?.[0]).toEqual({
+        year: 2026,
+        limit: 25,
+        status: undefined,
+        search: "token expirado",
+      });
+      expect(mocks.dailySummary.mock.calls.at(-1)?.[0]).toEqual({
+        year: 2026,
+        status: undefined,
+        search: "token expirado",
+      });
+      expect(mocks.exportLogs.mock.calls.at(-1)?.[0]).toEqual({
+        year: 2026,
+        status: undefined,
+        search: "token expirado",
+      });
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "Limpar pesquisa do histórico" }));
+    expect(
+      (screen.getByLabelText("Pesquisar no histórico") as HTMLInputElement).value
+    ).toBe("");
+  });
+
   it("exibe o resumo diário de sucessos, parciais e falhas", () => {
     configureSharedQueries();
     mocks.authCheck.mockReturnValue({

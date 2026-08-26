@@ -37,11 +37,19 @@ import {
   summarizeNotificationLogsByDay,
   type NotificationLogStatus,
 } from "./notificationLogAnalytics";
+import { buildNotificationLogSearchPattern } from "./notificationLogSearch";
 import {
   isFlightWeeksSchemaMismatchError,
   isTransientFlightWeeksReadError,
   retryTransientFlightWeeksRead,
 } from "./flightWeeksQueryRecovery";
+
+function getNotificationLogSearchCondition(search?: string) {
+  const searchPattern = buildNotificationLogSearchPattern(search);
+  return searchPattern
+    ? sql`CONCAT_WS(' ', ${notificationLogs.weekNumber}, ${notificationLogs.direction}, ${notificationLogs.avisoLabel}, ${notificationLogs.airline}, ${notificationLogs.flightNumber}, ${notificationLogs.status}, ${notificationLogs.errorMessage}, ${notificationLogs.deliveryKey}) LIKE ${searchPattern} ESCAPE '\\'`
+    : undefined;
+}
 
 let _db: ReturnType<typeof drizzle> | null = null;
 
@@ -738,7 +746,8 @@ export async function getNotificationLogs(
   year: number,
   limit = 25,
   cursor?: NotificationLogCursor,
-  status?: NotificationLogStatus
+  status?: NotificationLogStatus,
+  search?: string
 ) {
   const db = await getDb();
   if (!db) return { items: [], nextCursor: null };
@@ -755,6 +764,7 @@ export async function getNotificationLogs(
   const whereClause = and(
     eq(notificationLogs.year, year),
     status ? eq(notificationLogs.status, status) : undefined,
+    getNotificationLogSearchCondition(search),
     cursorCondition
   );
 
@@ -770,7 +780,8 @@ export async function getNotificationLogs(
 
 export async function getNotificationLogDailySummary(
   year: number,
-  status?: NotificationLogStatus
+  status?: NotificationLogStatus,
+  search?: string
 ) {
   const db = await getDb();
   if (!db) return [];
@@ -781,7 +792,8 @@ export async function getNotificationLogDailySummary(
     .where(
       and(
         eq(notificationLogs.year, year),
-        status ? eq(notificationLogs.status, status) : undefined
+        status ? eq(notificationLogs.status, status) : undefined,
+        getNotificationLogSearchCondition(search)
       )
     )
     .orderBy(desc(notificationLogs.sentAt), desc(notificationLogs.id));
@@ -791,7 +803,8 @@ export async function getNotificationLogDailySummary(
 
 export async function getNotificationLogsForExport(
   year: number,
-  status?: NotificationLogStatus
+  status?: NotificationLogStatus,
+  search?: string
 ) {
   const db = await getDb();
   if (!db) return [];
@@ -802,7 +815,8 @@ export async function getNotificationLogsForExport(
     .where(
       and(
         eq(notificationLogs.year, year),
-        status ? eq(notificationLogs.status, status) : undefined
+        status ? eq(notificationLogs.status, status) : undefined,
+        getNotificationLogSearchCondition(search)
       )
     )
     .orderBy(desc(notificationLogs.sentAt), desc(notificationLogs.id));

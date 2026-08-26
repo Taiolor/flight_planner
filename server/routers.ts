@@ -1364,6 +1364,7 @@ export const appRouter = router({
           year: planningYearSchema,
           limit: z.number().min(1).max(100).default(25),
           status: z.enum(["success", "partial", "failed"]).optional(),
+          search: z.string().trim().min(1).max(100).optional(),
           cursor: z
             .object({
               id: z.number().int().positive(),
@@ -1377,7 +1378,8 @@ export const appRouter = router({
           input.year,
           input.limit,
           input.cursor ?? undefined,
-          input.status
+          input.status,
+          input.search
         );
       }),
 
@@ -1386,10 +1388,11 @@ export const appRouter = router({
         z.object({
           year: planningYearSchema,
           status: z.enum(["success", "partial", "failed"]).optional(),
+          search: z.string().trim().min(1).max(100).optional(),
         })
       )
       .query(async ({ input }) => {
-        return getNotificationLogDailySummary(input.year, input.status);
+        return getNotificationLogDailySummary(input.year, input.status, input.search);
       }),
 
     exportLogs: flightAdminProcedure
@@ -1397,10 +1400,11 @@ export const appRouter = router({
         z.object({
           year: planningYearSchema,
           status: z.enum(["success", "partial", "failed"]).optional(),
+          search: z.string().trim().min(1).max(100).optional(),
         })
       )
       .query(async ({ input }) => {
-        return getNotificationLogsForExport(input.year, input.status);
+        return getNotificationLogsForExport(input.year, input.status, input.search);
       }),
   }),
 

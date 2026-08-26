@@ -835,6 +835,7 @@
 - [x] Adicionar filtro por status ao histórico de envios administrativos
 - [x] Exibir resumo diário de entregas e falhas no histórico de notificações
 - [x] Permitir exportar o histórico administrativo filtrado em CSV
+- [x] Adicionar pesquisa por texto livre ao histórico de envios administrativos
 
 ## Processo reutilizável
 
