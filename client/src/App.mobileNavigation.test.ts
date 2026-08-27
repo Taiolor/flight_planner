@@ -18,7 +18,8 @@ describe("App mobile navigation layout", () => {
 
   it("mantém destinos acessíveis para uso com uma mão", () => {
     expect(navigationSource).toContain('aria-label="Navegação principal mobile"');
-    expect(navigationSource).toContain("grid-cols-4");
+    expect(navigationSource).toContain("grid-cols-5");
+    expect(navigationSource).toContain('aria-label="Mais opções de navegação"');
     expect(navigationSource).toContain("min-h-12");
     expect(navigationSource).toContain("aria-current={isActive ? \"page\" : undefined}");
     expect(navigationSource).toContain("focus-visible:ring-2");

@@ -862,6 +862,7 @@
 - [x] Alertar sobre vento forte e baixa visibilidade na Central de Decisão
 - [x] Exibir a previsão de retorno junto ao alerta meteorológico da próxima viagem
 - [x] Permitir dispensar alertas meteorológicos por viagem com preferência persistente
+- [x] Corrigir a visibilidade de Painel de avisos, Locais de Acesso e Uso de IA no menu mobile
 
 ## Processo reutilizável
 
