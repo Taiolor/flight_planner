@@ -1,4 +1,4 @@
-export type FlyIaSuggestionTopic = "flight" | "finance" | "alert" | "city" | "distance" | "general";
+export type FlyIaSuggestionTopic = "flight" | "finance" | "alert" | "city" | "distance" | "weather" | "general";
 export type FlyIaSuggestionPreferences = Partial<Record<FlyIaSuggestionTopic, number>>;
 export type FlyIaSuggestionMode = "affinity" | "explore";
 
@@ -8,6 +8,7 @@ export const FLY_IA_SUGGESTION_TOPIC_LABELS: Record<FlyIaSuggestionTopic, string
   alert: "Alertas",
   city: "Cidades",
   distance: "Distâncias",
+  weather: "Clima",
   general: "Planejamento",
 };
 
@@ -23,6 +24,7 @@ const EXPLORE_FOLLOW_UPS = [
   "Quanto já foi gasto em passagens?",
   "Quais cidades estão no planejamento?",
   "Qual é a distância total planejada?",
+  "Como estará o tempo no destino?",
 ];
 
 function normalize(value: string) {
@@ -33,6 +35,7 @@ export function getFlyIaSuggestionTopic(prompt: string): FlyIaSuggestionTopic {
   const value = normalize(prompt);
   if (/cancelad|remarcad/.test(value)) return "alert";
   if (/r\$|gasto|investido|valor|passagem|orcamento|compras?/.test(value)) return "finance";
+  if (/clima|meteorolog|previsao|chuva|temperatura|vento|tempo.*destino|destino.*tempo/.test(value)) return "weather";
   if (/distancia|quilometr|\bkm\b/.test(value)) return "distance";
   if (/cidade|aeroporto|origem|destino/.test(value)) return "city";
   if (/voo|terminal|companhia|rota|data e hora/.test(value)) return "flight";
@@ -105,7 +108,13 @@ export function getFlyIaFollowUpPrompts(
   const normalized = normalize(response);
   let prompts: string[];
 
-  if (/proximo voo|data e hora|terminal|companhia|rota/.test(normalized)) {
+  if (/clima|meteorolog|previsao|chuva|temperatura|vento|tempo.*destino|destino.*tempo/.test(normalized)) {
+    prompts = [
+      "Vai chover quando eu chegar?",
+      "Qual será a temperatura no destino?",
+      "Como estará o vento no aeroporto?",
+    ];
+  } else if (/proximo voo|data e hora|terminal|companhia|rota/.test(normalized)) {
     prompts = [
       "Quais são os detalhes do próximo voo?",
       "Há algum voo cancelado ou remarcado?",

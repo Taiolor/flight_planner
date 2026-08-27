@@ -6,6 +6,7 @@ import { getAirportName } from "../shared/airportAddresses";
 import { getSaoPauloDate } from "../shared/flightDistance";
 import type { FlightWeek } from "../drizzle/schema";
 import { ENV } from "./_core/env";
+import { getDestinationWeather, type DestinationWeather } from "./destinationWeather";
 
 export const FLY_IA_MODEL = "gemini-3.6-flash";
 export const FLY_IA_MAX_MESSAGES = 8;
@@ -136,6 +137,7 @@ export type FlightLeg = {
 export type FlyIaDeterministicAnswer = {
   text: string;
   trackingUrl?: string;
+  weather?: Extract<DestinationWeather, { available: true }>;
 };
 
 function isNextFlightQuestion(messages: FlyIaMessage[]) {
@@ -152,6 +154,11 @@ function isNextFlightQuestion(messages: FlyIaMessage[]) {
 function isFlightTrackingQuestion(messages: FlyIaMessage[]) {
   const question = messages.filter(message => message.role === "user").at(-1)?.content ?? "";
   return /rastre(?:ar|ie)|acompanhar.*voo|voo.*(?:ao vivo|em tempo real)|flightradar/i.test(question);
+}
+
+function isWeatherQuestion(messages: FlyIaMessage[]) {
+  const question = messages.filter(message => message.role === "user").at(-1)?.content ?? "";
+  return /clima|meteorolog|previs[aã]o|chuva|temperatura|vento|tempo.*destino|destino.*tempo/i.test(question);
 }
 
 export function createFlightradarFlightUrl(flightNumber: string | null) {
@@ -294,8 +301,52 @@ export function buildNextFlightAnswerFromWeeks(
   ].join("");
 }
 
+export async function buildWeatherAnswerFromWeeks(
+  weeks: FlightWeek[],
+  messages: FlyIaMessage[],
+  today = getSaoPauloDate(),
+  getWeather = getDestinationWeather
+): Promise<FlyIaDeterministicAnswer | null> {
+  if (!isWeatherQuestion(messages)) return null;
+
+  const next = findNextIssuedFlight(weeks, today);
+  if (!next) {
+    return { text: "Não há um próximo voo emitido e ativo registrado para consultar a previsão do destino." };
+  }
+
+  const weather = await getWeather(next.flight.airportTo, next.flight.datetime.slice(0, 10));
+  if (!weather.available) {
+    return {
+      text: [
+        "**Previsão no destino**",
+        `- **Voo cadastrado:** ${next.flight.airportFrom} → ${next.flight.airportTo} em ${formatFlightDatetime(next.flight.datetime)}.`,
+        "- A previsão ainda não está disponível para essa data ou esse destino.",
+        "",
+        "A disponibilidade da previsão não altera o horário nem o status cadastrados no SmartFly.",
+      ].join("\n"),
+    };
+  }
+
+  return {
+    text: [
+      "**Previsão no destino do próximo voo**",
+      `- **Voo cadastrado:** ${next.flight.airportFrom} → ${next.flight.airportTo} em ${formatFlightDatetime(next.flight.datetime)}.`,
+      `- **Condição:** ${weather.summary}.`,
+      `- **Temperatura:** ${weather.temperatureMinC}–${weather.temperatureMaxC} °C.`,
+      `- **Chuva:** ${weather.precipitationProbability}% · **Vento:** ${weather.windSpeedKmh} km/h.`,
+      `- **Fonte:** [${weather.sourceLabel}](${weather.sourceUrl}).`,
+      "",
+      "A previsão é uma estimativa diária e não altera os dados do voo cadastrados no SmartFly.",
+    ].join("\n"),
+    weather,
+  };
+}
+
 export async function getDeterministicFlyIaAnswer(year: number, messages: FlyIaMessage[]) {
   const weeks = await getAllFlightWeeks(year);
+  const weatherAnswer = await buildWeatherAnswerFromWeeks(weeks, messages);
+  if (weatherAnswer) return weatherAnswer;
+
   const nextFlightAnswer = buildNextFlightAnswerFromWeeks(weeks, messages);
   if (nextFlightAnswer) {
     const next = findNextIssuedFlight(weeks);

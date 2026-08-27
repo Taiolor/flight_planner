@@ -50,7 +50,7 @@ vi.mock("./AIChatBox", () => ({
     isLoading,
     voiceInput,
   }: {
-    messages: Array<{ role: string; content: string }>;
+    messages: Array<{ role: string; content: string; weather?: { destinationLabel: string; summary: string } }>;
     onSendMessage: (content: string) => void;
     followUpPrompts?: (message: { role: "assistant"; content: string }) => string[];
     onFollowUpPromptSelected?: (prompt: string) => void;
@@ -82,7 +82,12 @@ vi.mock("./AIChatBox", () => ({
         )}
         <span data-testid="primeira-sugestao">{prompts[0] ?? "Sem sugestão"}</span>
         <span>{isLoading ? "Fly.IA carregando" : "Fly.IA pronta"}</span>
-        {messages.map((message, index) => <p key={index}>{message.content}</p>)}
+        {messages.map((message, index) => (
+          <React.Fragment key={index}>
+            <p>{message.content}</p>
+            {message.weather && <span data-testid="weather-destination">{message.weather.destinationLabel}: {message.weather.summary}</span>}
+          </React.Fragment>
+        ))}
       </div>
     );
   },
@@ -154,6 +159,31 @@ describe("Fly.IA response flow", () => {
 
     expect(document.body.textContent).toContain("Seu próximo voo é amanhã.");
     expect(document.body.textContent).toContain("Fly.IA pronta");
+  });
+
+  it("encaminha a previsão estruturada para o cartão visual do chat", () => {
+    mount();
+    sendQuestion();
+
+    act(() => {
+      state.options.onSuccess({
+        response: "A previsão está disponível.",
+        weather: {
+          available: true,
+          destinationLabel: "Navegantes",
+          forecastDate: "2026-04-26",
+          summary: "Chuva fraca",
+          temperatureMinC: 18,
+          temperatureMaxC: 24,
+          precipitationProbability: 60,
+          windSpeedKmh: 22,
+          sourceLabel: "Open-Meteo",
+          sourceUrl: "https://open-meteo.com/",
+        },
+      });
+    });
+
+    expect(document.querySelector("[data-testid='weather-destination']")?.textContent).toBe("Navegantes: Chuva fraca");
   });
 
   it("mostra um retorno visível no chat quando o provedor falha", () => {

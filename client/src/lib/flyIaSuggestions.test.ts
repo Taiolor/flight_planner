@@ -35,6 +35,14 @@ describe("getFlyIaFollowUpPrompts", () => {
     ]);
   });
 
+  it("sugere perguntas meteorológicas após uma resposta sobre clima", () => {
+    expect(getFlyIaFollowUpPrompts("**Previsão no destino**\nCondição: Chuva fraca.")).toEqual([
+      "Vai chover quando eu chegar?",
+      "Qual será a temperatura no destino?",
+      "Como estará o vento no aeroporto?",
+    ]);
+  });
+
   it("prioriza o tema escolhido na sessão sem retirar sugestões de outros temas", () => {
     const preferences = recordFlyIaSuggestionPreference({}, "Há algum voo cancelado ou remarcado?");
     expect(getFlyIaFollowUpPrompts("Seu próximo voo sai às 22:05.", preferences)).toEqual([

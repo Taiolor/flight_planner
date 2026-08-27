@@ -29,11 +29,25 @@ const SUGGESTED_PROMPTS = [
   "Há algum voo cancelado?",
   "Quanto já foi gasto em passagens?",
   "Quais cidades estão no planejamento?",
+  "Como estará o tempo no destino?",
+  "Vai chover quando eu chegar?",
+  "Qual será a temperatura no destino?",
 ];
 
 type FlyIaClientMessage = {
   role: "user" | "assistant";
   content: string;
+  weather?: {
+    destinationLabel: string;
+    forecastDate: string;
+    summary: string;
+    temperatureMinC: number;
+    temperatureMaxC: number;
+    precipitationProbability: number;
+    windSpeedKmh: number;
+    sourceLabel: string;
+    sourceUrl: string;
+  };
 };
 
 const MAX_VOICE_AUDIO_BYTES = 5 * 1024 * 1024;
@@ -69,11 +83,13 @@ export default function FlyIA() {
     onSuccess: result => {
       const routeUrl = "routeUrl" in result ? result.routeUrl : undefined;
       const trackingUrl = "trackingUrl" in result ? result.trackingUrl : undefined;
+      const weather = "weather" in result ? result.weather : undefined;
       setMessages(current => [
         ...current,
         {
           role: "assistant",
           content: result.response,
+          weather: weather?.available ? weather : undefined,
           action: routeUrl
             ? {
                 label: "Ver rota no mapa",

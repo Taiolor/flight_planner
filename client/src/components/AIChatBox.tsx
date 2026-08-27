@@ -3,7 +3,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
-import { ExternalLink, Loader2, MapPinned, Mic, Send, Square, User, Sparkles } from "lucide-react";
+import { Cloud, CloudLightning, CloudRain, CloudSun, Droplets, ExternalLink, Loader2, MapPinned, Mic, Send, Square, Sun, ThermometerSun, User, Wind, Sparkles } from "lucide-react";
 import React, { useState, useEffect, useRef } from "react";
 import { Streamdown } from "streamdown";
 
@@ -17,6 +17,17 @@ export type Message = {
     label: string;
     href: string;
     ariaLabel: string;
+  };
+  weather?: {
+    destinationLabel: string;
+    forecastDate: string;
+    summary: string;
+    temperatureMinC: number;
+    temperatureMaxC: number;
+    precipitationProbability: number;
+    windSpeedKmh: number;
+    sourceLabel: string;
+    sourceUrl: string;
   };
 };
 
@@ -127,6 +138,61 @@ function isFlightradarFlightUrl(href: string) {
   } catch {
     return false;
   }
+}
+
+function WeatherIcon({ summary }: { summary: string }) {
+  const normalized = summary.toLocaleLowerCase("pt-BR");
+  const className = "size-5 text-sky-700 dark:text-sky-300";
+  if (/trovo/.test(normalized)) return <CloudLightning className={className} aria-hidden="true" />;
+  if (/chuva|garoa|pancada/.test(normalized)) return <CloudRain className={className} aria-hidden="true" />;
+  if (/nublado|neblina/.test(normalized)) return <Cloud className={className} aria-hidden="true" />;
+  if (/limpo/.test(normalized)) return <Sun className={className} aria-hidden="true" />;
+  return <CloudSun className={className} aria-hidden="true" />;
+}
+
+function WeatherResponseCard({ weather }: { weather: NonNullable<Message["weather"]> }) {
+  const date = weather.forecastDate.split("-").reverse().join("/");
+  return (
+    <section
+      className="mt-2 overflow-hidden rounded-xl border border-sky-200 bg-gradient-to-br from-sky-50 to-cyan-50 text-slate-800 shadow-sm dark:border-sky-900/70 dark:from-sky-950/45 dark:to-cyan-950/20 dark:text-slate-100"
+      aria-label={`Previsão no destino ${weather.destinationLabel}`}
+      data-testid="flyia-weather-card"
+    >
+      <div className="flex items-center gap-2 border-b border-sky-200/80 px-3 py-2 dark:border-sky-900/70">
+        <WeatherIcon summary={weather.summary} />
+        <div className="min-w-0">
+          <p className="text-xs font-bold">Clima em {weather.destinationLabel}</p>
+          <p className="text-[11px] text-slate-600 dark:text-slate-300">{date} · {weather.summary}</p>
+        </div>
+      </div>
+      <div className="grid grid-cols-3 divide-x divide-sky-200/80 dark:divide-sky-900/70">
+        <div className="px-2.5 py-2" aria-label={`Temperatura entre ${weather.temperatureMinC} e ${weather.temperatureMaxC} graus Celsius`}>
+          <ThermometerSun className="size-3.5 text-amber-600 dark:text-amber-300" aria-hidden="true" />
+          <p className="mt-1 text-[10px] text-slate-600 dark:text-slate-300">Temperatura</p>
+          <p className="text-xs font-semibold">{weather.temperatureMinC}–{weather.temperatureMaxC} °C</p>
+        </div>
+        <div className="px-2.5 py-2" aria-label={`Probabilidade de chuva de ${weather.precipitationProbability} por cento`}>
+          <Droplets className="size-3.5 text-blue-600 dark:text-blue-300" aria-hidden="true" />
+          <p className="mt-1 text-[10px] text-slate-600 dark:text-slate-300">Chuva</p>
+          <p className="text-xs font-semibold">{weather.precipitationProbability}%</p>
+        </div>
+        <div className="px-2.5 py-2" aria-label={`Vento de até ${weather.windSpeedKmh} quilômetros por hora`}>
+          <Wind className="size-3.5 text-teal-600 dark:text-teal-300" aria-hidden="true" />
+          <p className="mt-1 text-[10px] text-slate-600 dark:text-slate-300">Vento</p>
+          <p className="text-xs font-semibold">{weather.windSpeedKmh} km/h</p>
+        </div>
+      </div>
+      <a
+        href={weather.sourceUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="flex items-center gap-1 px-3 py-2 text-[10px] font-semibold text-sky-800 underline underline-offset-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-700 dark:text-sky-200"
+      >
+        Fonte: {weather.sourceLabel}
+        <ExternalLink className="size-3" aria-hidden="true" />
+      </a>
+    </section>
+  );
 }
 
 /**
@@ -370,6 +436,9 @@ export function AIChatBox({
                           </p>
                         )}
                       </div>
+                      {message.role === "assistant" && message.weather && (
+                        <WeatherResponseCard weather={message.weather} />
+                      )}
                       {message.role === "assistant" && message.action && isGoogleMapsDirectionsUrl(message.action.href) && (
                         <Button asChild variant="outline" size="sm" className="mt-2 h-8 gap-1.5 border-primary/30 bg-background text-primary hover:bg-primary/5">
                           <a

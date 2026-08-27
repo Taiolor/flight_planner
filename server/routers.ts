@@ -310,7 +310,11 @@ export const appRouter = router({
           const deterministicAnswer = await getDeterministicFlyIaAnswer(input.year, input.messages);
           if (deterministicAnswer) {
             await recordMetric("deterministic");
-            return { response: deterministicAnswer.text, trackingUrl: deterministicAnswer.trackingUrl };
+            return {
+              response: deterministicAnswer.text,
+              trackingUrl: deterministicAnswer.trackingUrl,
+              weather: deterministicAnswer.weather,
+            };
           }
           const budget = await getGeminiBudgetSnapshot();
           if (budget.isAtLimit) {

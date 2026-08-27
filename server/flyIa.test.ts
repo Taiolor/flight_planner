@@ -3,6 +3,7 @@ import {
   askFlyIa,
   buildBoardingGuidanceAnswerFromWeeks,
   buildNextFlightAnswerFromWeeks,
+  buildWeatherAnswerFromWeeks,
   buildFlyIaPayload,
   createFlightradarFlightUrl,
   createFlyIaRateLimiter,
@@ -186,6 +187,30 @@ describe("Fly.IA", () => {
     expect(createFlightradarFlightUrl("G31234")).toBe("https://www.flightradar24.com/data/flights/g31234");
     expect(createFlightradarFlightUrl("https://exemplo.test")).toBeNull();
     expect(createFlightradarFlightUrl(null)).toBeNull();
+  });
+
+  it("responde clima de forma determinística a partir do destino do próximo voo", async () => {
+    const weeks = [{
+      year: 2026, weekNumber: 17, isTicketIssued: 1, isDeleted: 0,
+      departureFlightDatetime: "2026-04-26T22:05", returnFlightDatetime: null,
+      departureAirport: "GRU", returnAirport: "NVT", departureAirline: "LATAM", returnAirline: null,
+      departureFlightNumber: "LA1234", returnFlightNumber: null, departureTerminal: "2", returnTerminal: null,
+      departureCancelled: 0, returnCancelled: 0, departureRescheduled: 0, returnRescheduled: 0, ticketType: "oneway",
+    }] as never;
+    const answer = await buildWeatherAnswerFromWeeks(
+      weeks,
+      [{ role: "user", content: "Como estará o tempo no destino?" }],
+      "2026-04-01",
+      async () => ({
+        available: true, airportCode: "NVT", destinationLabel: "Navegantes", forecastDate: "2026-04-26",
+        summary: "Chuva fraca", temperatureMinC: 18, temperatureMaxC: 24, precipitationProbability: 60,
+        windSpeedKmh: 22, sourceLabel: "Open-Meteo", sourceUrl: "https://open-meteo.com/",
+      })
+    );
+
+    expect(answer?.text).toContain("GRU → NVT");
+    expect(answer?.text).toContain("**Chuva:** 60%");
+    expect(answer?.weather).toMatchObject({ destinationLabel: "Navegantes", windSpeedKmh: 22 });
   });
 
   it("repete os detalhes completos quando a pergunta seguinte pede detalhes do próximo voo", () => {

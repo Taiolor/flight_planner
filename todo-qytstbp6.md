@@ -253,3 +253,8 @@
 - [x] Tornar a consulta pública, limitada e validada por aeroporto e data, eliminando a falha sem ocultar detalhes de voo.
 - [x] Criar regressões para sessão ausente e sessão válida, validar no navegador e versionar a correção.
 - [x] Salvar checkpoint da correção de autenticação da previsão no Calendário.
+- [x] Mapear as sugestões contextuais e as respostas determinísticas disponíveis para clima no Fly.IA.
+- [x] Definir ícones, rótulos textuais e cores semânticas para condição, temperatura, chuva e vento.
+- [x] Adicionar chips de clima e um cartão visual de previsão às respostas aplicáveis do Fly.IA.
+- [x] Criar regressões de sugestões, dados, acessibilidade e responsividade; documentar e versionar a melhoria.
+- [x] Salvar checkpoint das sugestões e do cartão visual de clima do Fly.IA.
