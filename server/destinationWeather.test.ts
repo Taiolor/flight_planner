@@ -28,6 +28,8 @@ describe("getDestinationWeather", () => {
         hourly: {
           time: ["2026-08-05T14:00", "2026-08-05T15:00"],
           temperature_2m: [22.2, 21.6],
+          apparent_temperature: [21.1, 20.4],
+          visibility: [4_200, 10_000],
           precipitation_probability: [75, 30],
           precipitation: [2.4, 0],
           weather_code: [63, 2],
@@ -55,6 +57,8 @@ describe("getDestinationWeather", () => {
         time: "2026-08-05T14:00",
         summary: "Chuva moderada",
         temperatureC: 22,
+        apparentTemperatureC: 21,
+        visibilityKm: 4.2,
         precipitationProbability: 75,
         precipitationMm: 2.4,
         windSpeedKmh: 23,
@@ -65,7 +69,10 @@ describe("getDestinationWeather", () => {
       },
       sunriseTime: "06:42",
       sunsetTime: "17:54",
-      alerts: [{ type: "rain", label: "Atenção: chuva relevante prevista no horário do voo." }],
+      alerts: [
+        { type: "rain", label: "Atenção: chuva relevante prevista no horário do voo." },
+        { type: "visibility", label: "Atenção: visibilidade reduzida prevista no horário do voo." },
+      ],
     });
     const requestUrl = new URL(String(fetchMock.mock.calls[0]?.[0]));
     expect(requestUrl.hostname).toBe("api.open-meteo.com");
@@ -74,6 +81,8 @@ describe("getDestinationWeather", () => {
     expect(requestUrl.searchParams.get("forecast_days")).toBe("16");
     expect(requestUrl.searchParams.get("hourly")).toContain("wind_gusts_10m");
     expect(requestUrl.searchParams.get("hourly")).toContain("wind_direction_10m");
+    expect(requestUrl.searchParams.get("hourly")).toContain("apparent_temperature");
+    expect(requestUrl.searchParams.get("hourly")).toContain("visibility");
     expect(requestUrl.searchParams.get("daily")).toContain("sunrise");
   });
 

@@ -37,6 +37,7 @@ import { trpc } from "@/lib/trpc";
 import { readWeatherAlertsVisible, saveWeatherAlertsVisible } from "@/lib/weatherAlertPreference";
 
 function DestinationWeatherPanel({
+  originCode,
   destinationCode,
   destinationDate,
   destinationTime,
@@ -44,6 +45,7 @@ function DestinationWeatherPanel({
   showAlerts,
   onToggleAlerts,
 }: {
+  originCode: string;
   destinationCode: string;
   destinationDate: string;
   destinationTime: string;
@@ -61,7 +63,18 @@ function DestinationWeatherPanel({
       retry: 1,
     }
   );
+  const originWeatherQuery = trpc.destinationWeather.forecast.useQuery(
+    destinationTime
+      ? { airportCode: originCode, flightDate: destinationDate, flightTime: destinationTime }
+      : { airportCode: originCode, flightDate: destinationDate },
+    {
+      enabled: Boolean(destinationDate) && Boolean(originCode) && originCode !== destinationCode,
+      staleTime: 60 * 60 * 1000,
+      retry: 1,
+    }
+  );
   const weather = weatherQuery.data;
+  const originWeather = originWeatherQuery.data;
   const accentClasses = tone === "blue"
     ? "border-blue-200 bg-blue-100/70 text-blue-900"
     : "border-orange-200 bg-orange-100/70 text-orange-900";
@@ -102,8 +115,14 @@ function DestinationWeatherPanel({
           <p>{weather.temperatureMinC}–{weather.temperatureMaxC} °C · chuva {weather.precipitationProbability}% · vento {weather.windSpeedKmh} km/h</p>
           {weather.hourlyForecast && (
             <p className="mt-1 font-medium">
-              Próximo do voo ({weather.hourlyForecast.time.split("T")[1]}): {weather.hourlyForecast.summary} · {weather.hourlyForecast.temperatureC} °C · chuva {weather.hourlyForecast.precipitationProbability}% · vento {weather.hourlyForecast.windSpeedKmh} km/h {weather.hourlyForecast.windDirectionLabel} · rajadas {weather.hourlyForecast.windGustsKmh} km/h
+              Próximo do voo ({weather.hourlyForecast.time.split("T")[1]}): {weather.hourlyForecast.summary} · {weather.hourlyForecast.temperatureC} °C, sensação {weather.hourlyForecast.apparentTemperatureC} °C · chuva {weather.hourlyForecast.precipitationProbability}% · vento {weather.hourlyForecast.windSpeedKmh} km/h {weather.hourlyForecast.windDirectionLabel} · rajadas {weather.hourlyForecast.windGustsKmh} km/h · visibilidade {weather.hourlyForecast.visibilityKm} km
             </p>
+          )}
+          {weather.hourlyForecast && originWeather?.available && originWeather.hourlyForecast && (
+            <div className="mt-2 border-t border-current/20 pt-1.5 text-[10px] leading-relaxed" aria-label={`Comparação de clima entre ${originWeather.destinationLabel} e ${weather.destinationLabel}`}>
+              <p className="font-bold uppercase tracking-wide">Origem × destino no horário do voo</p>
+              <p>{originWeather.destinationLabel}: {originWeather.hourlyForecast.temperatureC} °C, sensação {originWeather.hourlyForecast.apparentTemperatureC} °C, visibilidade {originWeather.hourlyForecast.visibilityKm} km → {weather.destinationLabel}: {weather.hourlyForecast.temperatureC} °C, sensação {weather.hourlyForecast.apparentTemperatureC} °C, visibilidade {weather.hourlyForecast.visibilityKm} km</p>
+            </div>
           )}
           {(weather.sunriseTime || weather.sunsetTime) && (
             <p className="mt-1 flex flex-wrap gap-x-3 gap-y-1 text-[10px] font-medium">
@@ -115,6 +134,12 @@ function DestinationWeatherPanel({
             <p key={alert.type} className="mt-1 flex items-start gap-1 text-[10px] font-semibold" role="status">
               {alert.type === "wind" ? <Wind className="mt-0.5 size-3 shrink-0" aria-hidden="true" /> : <TriangleAlert className="mt-0.5 size-3 shrink-0" aria-hidden="true" />}
               <span>{alert.label}</span>
+            </p>
+          ))}
+          {showAlerts && originWeather?.available && originWeather.alerts.filter(alert => alert.type === "visibility").map(alert => (
+            <p key={`origin-${alert.type}`} className="mt-1 flex items-start gap-1 text-[10px] font-semibold" role="status">
+              <TriangleAlert className="mt-0.5 size-3 shrink-0" aria-hidden="true" />
+              <span>Origem {originWeather.destinationLabel}: {alert.label.replace("Atenção: ", "")}</span>
             </p>
           ))}
           <a
@@ -415,6 +440,7 @@ export default function FlightPopup({
                 </div>
               )}
               <DestinationWeatherPanel
+                originCode={depAirport}
                 destinationCode={retAirport}
                 destinationDate={depIsoDate}
                 destinationTime={depTime}
@@ -509,6 +535,7 @@ export default function FlightPopup({
                 </div>
               )}
                 <DestinationWeatherPanel
+                  originCode={retAirport}
                   destinationCode={depAirport}
                   destinationDate={retIsoDate}
                   destinationTime={retTime}
