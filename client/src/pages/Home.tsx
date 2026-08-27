@@ -2566,7 +2566,7 @@ export default function Home({ mode = "home" }: HomeProps) {
                     className="group shrink-0 rounded-xl transition-[transform,filter] duration-200 ease-out hover:-translate-y-0.5 hover:scale-[1.04] hover:drop-shadow-[0_8px_14px_rgba(14,165,233,0.32)] active:scale-[0.97] motion-reduce:transition-none motion-reduce:hover:transform-none focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-slate-800"
                   >
                     <img
-                      src="/manus-storage/smartfly-sf-apple-touch-icon_598faae4.png?v=20260827"
+                      src="/smartfly-assets/smartfly-sf-apple-touch-icon_598faae4.png?v=20260827"
                       alt=""
                       aria-hidden="true"
                       className="h-10 w-10 rounded-xl object-contain transition-transform duration-200 group-hover:rotate-[-2deg] motion-reduce:transition-none sm:h-12 sm:w-12"

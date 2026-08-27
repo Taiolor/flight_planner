@@ -7,7 +7,7 @@ const CITY_BACKDROPS = [
     id: "blumenau",
     city: "Blumenau",
     subject: "Parque Vila Germânica",
-    src: "/manus-storage/blumenau_0c5430d7.jpg",
+    src: "/smartfly-assets/blumenau_0c5430d7.jpg",
     credit: "Roberto de Vasconcelos · CC BY-SA 3.0",
     creditUrl:
       "https://commons.wikimedia.org/wiki/File:Blumenau_sc_-_panoramio_(18).jpg",
@@ -16,7 +16,7 @@ const CITY_BACKDROPS = [
     id: "sao-paulo",
     city: "São Paulo",
     subject: "Panorama do centro",
-    src: "/manus-storage/sao-paulo_da0e548a.jpg",
+    src: "/smartfly-assets/sao-paulo_da0e548a.jpg",
     credit: "Wilfredor · CC0",
     creditUrl:
       "https://commons.wikimedia.org/wiki/File:Panoramic_view_of_S%C3%A3o_Paulo_city_center.jpg",
@@ -25,7 +25,7 @@ const CITY_BACKDROPS = [
     id: "rio-de-janeiro",
     city: "Rio de Janeiro",
     subject: "Botafogo visto da Urca",
-    src: "/manus-storage/rio-de-janeiro_3f37d89b.jpg",
+    src: "/smartfly-assets/rio-de-janeiro_3f37d89b.jpg",
     credit: "Lima Andruška · CC BY-SA 2.0",
     creditUrl:
       "https://commons.wikimedia.org/wiki/File:Rio_de_Janeiro_at_night.jpg",
@@ -34,7 +34,7 @@ const CITY_BACKDROPS = [
     id: "porto-alegre",
     city: "Porto Alegre",
     subject: "Paisagem noturna",
-    src: "/manus-storage/porto-alegre_14400559.jpg",
+    src: "/smartfly-assets/porto-alegre_14400559.jpg",
     credit: "Felipe Valduga · CC BY 2.0",
     creditUrl:
       "https://commons.wikimedia.org/wiki/File:Porto_Alegre_-_Brazil_Landscape-Night.jpg",
@@ -43,7 +43,7 @@ const CITY_BACKDROPS = [
     id: "joinville",
     city: "Joinville",
     subject: "Centro e bairro América",
-    src: "/manus-storage/joinville_af0d11c7.jpg",
+    src: "/smartfly-assets/joinville_af0d11c7.jpg",
     credit: "Unmoralisch · CC BY-SA 3.0",
     creditUrl:
       "https://commons.wikimedia.org/wiki/File:Panoramicajoinvillecentroamerica_big.jpg",
@@ -52,7 +52,7 @@ const CITY_BACKDROPS = [
     id: "goiania",
     city: "Goiânia",
     subject: "Panorama urbano",
-    src: "/manus-storage/goiania_c168de7c.jpg",
+    src: "/smartfly-assets/goiania_c168de7c.jpg",
     credit: "A C Moraes · CC BY 2.0",
     creditUrl:
       "https://commons.wikimedia.org/wiki/File:Goi%C3%A2nia_Panorama.jpg",
@@ -61,7 +61,7 @@ const CITY_BACKDROPS = [
     id: "ribeirao-preto",
     city: "Ribeirão Preto",
     subject: "Panorama visto de Cravinhos",
-    src: "/manus-storage/ribeirao-preto_2765aed4.jpg",
+    src: "/smartfly-assets/ribeirao-preto_2765aed4.jpg",
     credit: "Anderson Bueno Pereira · CC BY-SA 4.0",
     creditUrl:
       "https://commons.wikimedia.org/wiki/File:Panorama_Cravinhos_Ribeir%C3%A3o_Preto.jpg",
@@ -70,7 +70,7 @@ const CITY_BACKDROPS = [
     id: "itu",
     city: "Itu",
     subject: "Vista aérea do centro",
-    src: "/manus-storage/itu_6771c3c3.jpg",
+    src: "/smartfly-assets/itu_6771c3c3.jpg",
     credit: "Victor de Andrade Lopes · CC BY-SA 4.0",
     creditUrl:
       "https://commons.wikimedia.org/wiki/File:Vista_a%C3%A9rea_de_Itu_2021_01.jpg",
@@ -79,7 +79,7 @@ const CITY_BACKDROPS = [
     id: "guarulhos",
     city: "Guarulhos",
     subject: "Vista panorâmica da cidade",
-    src: "/manus-storage/guarulhos_dab4a2d7.jpg",
+    src: "/smartfly-assets/guarulhos_dab4a2d7.jpg",
     credit: "Humanoo · domínio público",
     creditUrl:
       "https://commons.wikimedia.org/wiki/File:Vista_da_cidade_de_Guarulhos_(SP).JPG",
@@ -88,7 +88,7 @@ const CITY_BACKDROPS = [
     id: "piracicaba",
     city: "Piracicaba",
     subject: "Rio Piracicaba e a cidade",
-    src: "/manus-storage/piracicaba_9040475e.jpg",
+    src: "/smartfly-assets/piracicaba_9040475e.jpg",
     credit: "Ultimo Romântico · CC BY-SA 2.0",
     creditUrl: "https://commons.wikimedia.org/wiki/File:Piracicaba-SP.jpg",
   },
@@ -96,7 +96,7 @@ const CITY_BACKDROPS = [
     id: "novo-hamburgo",
     city: "Novo Hamburgo",
     subject: "Biblioteca Pública histórica",
-    src: "/manus-storage/novo-hamburgo_f09cf41e.jpg",
+    src: "/smartfly-assets/novo-hamburgo_f09cf41e.jpg",
     credit: "Viviane Lauck · CC BY-SA 4.0",
     creditUrl:
       "https://commons.wikimedia.org/wiki/File:Biblioteca_P%C3%BAblica_-_Novo_Hamburgo_-_20240929164508.jpg",

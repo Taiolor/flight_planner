@@ -2,6 +2,7 @@ const FORECAST_BASE_URL = "https://api.open-meteo.com/v1/forecast";
 const MAX_FORECAST_BYTES = 64_000;
 const FORECAST_WINDOW_DAYS = 16;
 const FORECAST_CACHE_TTL_MS = 10 * 60_000;
+const FORECAST_REQUEST_TIMEOUT_MS = 8_000;
 
 const weatherCache = new Map<string, { expiresAt: number; value: DestinationWeather }>();
 
@@ -99,13 +100,14 @@ export async function getDestinationWeather(airportCode: string, flightDate: str
   requestUrl.searchParams.set("longitude", String(location.longitude));
   requestUrl.searchParams.set("daily", "weather_code,temperature_2m_min,temperature_2m_max,precipitation_probability_max,wind_speed_10m_max,uv_index_max,sunrise,sunset");
   requestUrl.searchParams.set("hourly", "weather_code,temperature_2m,apparent_temperature,visibility,precipitation_probability,precipitation,wind_speed_10m,wind_gusts_10m,wind_direction_10m");
-  requestUrl.searchParams.set("forecast_days", String(FORECAST_WINDOW_DAYS));
   requestUrl.searchParams.set("timezone", "America/Sao_Paulo");
   requestUrl.searchParams.set("start_date", flightDate);
   requestUrl.searchParams.set("end_date", flightDate);
 
   try {
-    const response = await fetch(requestUrl, { signal: AbortSignal.timeout(2_500) });
+    const response = await fetch(requestUrl, {
+      signal: AbortSignal.timeout(FORECAST_REQUEST_TIMEOUT_MS),
+    });
     if (!response.ok) throw new Error(`Weather provider returned ${response.status}`);
     const rawBody = await response.text();
     if (rawBody.length > MAX_FORECAST_BYTES) throw new Error("Weather provider payload exceeded limit");

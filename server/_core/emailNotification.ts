@@ -2,7 +2,7 @@ import { Resend } from "resend";
 import { ENV } from "./env";
 
 const SMART_FLY_EMAIL_LOGO_URL =
-  "https://flightplan-hq655wm9.manus.space/manus-storage/smartfly-sf-apple-touch-icon_598faae4.png";
+  "https://flightplan-hq655wm9.manus.space/smartfly-assets/smartfly-sf-apple-touch-icon_598faae4.png";
 
 /**
  * Email notification for ticket changes

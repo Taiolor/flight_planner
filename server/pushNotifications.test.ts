@@ -275,8 +275,8 @@ describe("pushNotifications", () => {
       const expectedPayload = JSON.stringify({
         title: "✈️ 1h antes — LATAM LA1234",
         body: "Horário planejado — ida GRU → NVT: terça-feira, 10/10 às 13:00. Prepare-se! 🧳",
-        icon: "/manus-storage/smartfly-sf-pwa-icon_783c04c6.webp",
-        badge: "/manus-storage/smartfly-sf-apple-touch-icon_598faae4.png",
+        icon: "/smartfly-assets/smartfly-sf-pwa-icon_783c04c6.webp",
+        badge: "/smartfly-assets/smartfly-sf-apple-touch-icon_598faae4.png",
         tag: "departure-2023-week-1-aviso60",
         data: { year: 2023, weekNumber: "1", direction: "departure" },
       });
@@ -351,8 +351,8 @@ describe("pushNotifications", () => {
       const expectedPayload = JSON.stringify({
         title: "🏠 24h antes — Azul AD4321",
         body: "Horário planejado — volta NVT → GRU: quarta-feira, 11/10 às 12:00. Boa viagem! ✈️",
-        icon: "/manus-storage/smartfly-sf-pwa-icon_783c04c6.webp",
-        badge: "/manus-storage/smartfly-sf-apple-touch-icon_598faae4.png",
+        icon: "/smartfly-assets/smartfly-sf-pwa-icon_783c04c6.webp",
+        badge: "/smartfly-assets/smartfly-sf-apple-touch-icon_598faae4.png",
         tag: "return-2023-week-2-aviso1440",
         data: { year: 2023, weekNumber: "2", direction: "return" },
       });

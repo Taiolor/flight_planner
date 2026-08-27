@@ -220,3 +220,4 @@
 - [x] Cobrir ativos e mapa com regressões de produção e contingência
 - [ ] Corrigir a entrega de imagens, ícones e logos que falha exclusivamente no domínio publicado
 - [ ] Validar as URLs de ativos finais no domínio publicado, inclusive em navegação sem cache
+- [ ] Restaurar a consulta de previsão meteorológica que passou a falhar no Calendário publicado

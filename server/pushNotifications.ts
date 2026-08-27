@@ -19,8 +19,8 @@ import { type FlightWeek } from "../drizzle/schema";
 import { sdk } from "./_core/sdk";
 import type { Request, Response } from "express";
 
-export const SMART_FLY_PUSH_ICON = "/manus-storage/smartfly-sf-pwa-icon_783c04c6.webp";
-export const SMART_FLY_PUSH_BADGE = "/manus-storage/smartfly-sf-apple-touch-icon_598faae4.png";
+export const SMART_FLY_PUSH_ICON = "/smartfly-assets/smartfly-sf-pwa-icon_783c04c6.webp";
+export const SMART_FLY_PUSH_BADGE = "/smartfly-assets/smartfly-sf-apple-touch-icon_598faae4.png";
 
 // Configurar VAPID uma única vez ao carregar o módulo
 let vapidConfigured = false;

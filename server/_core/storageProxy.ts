@@ -27,6 +27,10 @@ const IMMUTABLE_PUBLIC_ASSET_KEYS = new Set([
   "novo-hamburgo_f09cf41e.jpg",
 ]);
 
+export function getPublicStorageAssetPath(key: string) {
+  return `/smartfly-assets/${key.split("/").map(encodeURIComponent).join("/")}`;
+}
+
 export function getStorageCacheControl(key: string) {
   return IMMUTABLE_PUBLIC_ASSET_KEYS.has(key)
     ? "public, max-age=604800, immutable"
@@ -133,5 +137,9 @@ export async function serveStorageAsset(req: Request, res: Response) {
 }
 
 export function registerStorageProxy(app: Express) {
+  // O provedor de publicação reserva /manus-storage e intercepta essa rota no
+  // domínio final. Este prefixo próprio garante que a requisição chegue ao
+  // streaming same-origin definido acima.
+  app.get("/smartfly-assets/*", serveStorageAsset);
   app.get("/manus-storage/*", serveStorageAsset);
 }

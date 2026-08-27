@@ -81,7 +81,8 @@ describe("getDestinationWeather", () => {
     expect(requestUrl.hostname).toBe("api.open-meteo.com");
     expect(requestUrl.searchParams.get("latitude")).toBe("-26.8798");
     expect(requestUrl.searchParams.get("start_date")).toBe("2026-08-05");
-    expect(requestUrl.searchParams.get("forecast_days")).toBe("16");
+    expect(requestUrl.searchParams.get("end_date")).toBe("2026-08-05");
+    expect(requestUrl.searchParams.has("forecast_days")).toBe(false);
     expect(requestUrl.searchParams.get("hourly")).toContain("wind_gusts_10m");
     expect(requestUrl.searchParams.get("hourly")).toContain("wind_direction_10m");
     expect(requestUrl.searchParams.get("hourly")).toContain("apparent_temperature");

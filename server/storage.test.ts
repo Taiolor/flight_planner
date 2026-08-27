@@ -43,7 +43,7 @@ describe("storagePut and storageGet", () => {
 
     expect(result).toEqual({
       key: "folder/test.txt",
-      url: "https://api.forge.com/v1/storage/test.txt",
+      url: "/smartfly-assets/folder/test.txt",
     });
 
     expect(mockFetch).toHaveBeenCalledTimes(1);
@@ -77,7 +77,7 @@ describe("storagePut and storageGet", () => {
 
     expect(result).toEqual({
       key: "folder/buffer.bin",
-      url: "https://api.forge.com/v1/storage/buffer.bin",
+      url: "/smartfly-assets/folder/buffer.bin",
     });
 
     expect(mockFetch).toHaveBeenCalledTimes(1);

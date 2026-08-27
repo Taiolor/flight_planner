@@ -3,9 +3,9 @@ import { AIRLINE_LOGO_ASSETS, getAirlineLogoAsset } from "./airlineAssets";
 
 describe("airlineAssets", () => {
   it("usa ativos tipados e estáveis do projeto para as companhias suportadas", () => {
-    expect(AIRLINE_LOGO_ASSETS.latam).toMatch(/^\/manus-storage\/smartfly-airline-latam_.*\.png\?v=20260827$/);
-    expect(AIRLINE_LOGO_ASSETS.gol).toMatch(/^\/manus-storage\/smartfly-airline-gol_.*\.png\?v=20260827$/);
-    expect(AIRLINE_LOGO_ASSETS.azul).toMatch(/^\/manus-storage\/smartfly-airline-azul_.*\.png\?v=20260827$/);
+    expect(AIRLINE_LOGO_ASSETS.latam).toMatch(/^\/smartfly-assets\/smartfly-airline-latam_.*\.png\?v=20260827$/);
+    expect(AIRLINE_LOGO_ASSETS.gol).toMatch(/^\/smartfly-assets\/smartfly-airline-gol_.*\.png\?v=20260827$/);
+    expect(AIRLINE_LOGO_ASSETS.azul).toMatch(/^\/smartfly-assets\/smartfly-airline-azul_.*\.png\?v=20260827$/);
     expect(Object.values(AIRLINE_LOGO_ASSETS).every(asset => asset.startsWith("/"))).toBe(true);
     expect(Object.values(AIRLINE_LOGO_ASSETS).every(asset => !asset.includes("://"))).toBe(true);
   });

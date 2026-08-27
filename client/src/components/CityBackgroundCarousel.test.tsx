@@ -20,7 +20,7 @@ describe("CityBackgroundCarousel", () => {
 
   it("usa os ativos fotográficos publicados e preserva os créditos", () => {
     expect(CITY_BACKDROPS).toHaveLength(11);
-    expect(CITY_BACKDROPS.every(backdrop => backdrop.src.startsWith("/manus-storage/"))).toBe(true);
+    expect(CITY_BACKDROPS.every(backdrop => backdrop.src.startsWith("/smartfly-assets/"))).toBe(true);
     expect(CITY_BACKDROPS.every(backdrop => backdrop.creditUrl.startsWith("https://commons.wikimedia.org/"))).toBe(true);
     expect(CITY_BACKDROPS.map(backdrop => backdrop.city)).toEqual(
       expect.arrayContaining(["Guarulhos", "Piracicaba", "Novo Hamburgo"])

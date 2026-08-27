@@ -1,11 +1,11 @@
 /**
- * Ativos de marca servidos pelo proxy do projeto. As URLs evitam depender de
- * objetos CloudFront legados que podem ter MIME inconsistente em produção.
+ * Ativos de marca entregues pelo endpoint same-origin do Smart Fly. O prefixo
+ * próprio evita a rota reservada de armazenamento no domínio publicado.
  */
 export const AIRLINE_LOGO_ASSETS = {
-  latam: "/manus-storage/smartfly-airline-latam_c982c0a8.png?v=20260827",
-  gol: "/manus-storage/smartfly-airline-gol_5f97474c.png?v=20260827",
-  azul: "/manus-storage/smartfly-airline-azul_56363add.png?v=20260827",
+  latam: "/smartfly-assets/smartfly-airline-latam_c982c0a8.png?v=20260827",
+  gol: "/smartfly-assets/smartfly-airline-gol_5f97474c.png?v=20260827",
+  azul: "/smartfly-assets/smartfly-airline-azul_56363add.png?v=20260827",
 } as const;
 
 export type StandardAirlineId = keyof typeof AIRLINE_LOGO_ASSETS;
