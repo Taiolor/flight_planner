@@ -215,3 +215,6 @@
 - [x] Destacar visibilidade reduzida como alerta operacional contextual
 - [x] Comparar as condições de clima da origem e do destino em cada trecho
 - [x] Cobrir sensação térmica, visibilidade, comparação e contingências com regressões automatizadas
+- [x] Corrigir o carregamento de ícones, imagens e marcas de companhias aéreas na versão publicada
+- [x] Corrigir a exibição visível do mapa na tela Locais de Acesso após publicação
+- [x] Cobrir ativos e mapa com regressões de produção e contingência

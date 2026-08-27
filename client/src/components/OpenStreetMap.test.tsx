@@ -4,6 +4,8 @@ import { render, screen, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { OpenStreetMap } from "./OpenStreetMap";
 
+const CARTO_POSITRON_TILE_URL = "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png";
+
 const mapMock = vi.hoisted(() => ({
   fitBounds: vi.fn(),
   setView: vi.fn(),
@@ -48,7 +50,7 @@ describe("OpenStreetMap", () => {
 
     expect(screen.getByTestId("osm-map")).toBeTruthy();
     expect(screen.getByTestId("osm-tiles").getAttribute("data-url")).toBe(
-      "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+      CARTO_POSITRON_TILE_URL
     );
     expect(screen.getAllByTestId("osm-marker")).toHaveLength(2);
 

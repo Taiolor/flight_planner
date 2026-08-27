@@ -1,8 +1,12 @@
 import "leaflet/dist/leaflet.css";
 import { latLngBounds, type LatLngLiteral } from "leaflet";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { CircleMarker, MapContainer, TileLayer, Tooltip, useMap } from "react-leaflet";
 import { cn } from "@/lib/utils";
+
+export const CARTO_POSITRON_TILE_URL = "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png";
+export const CARTO_POSITRON_ATTRIBUTION =
+  '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>';
 
 export type OpenStreetMapPoint = {
   id: string | number;
@@ -50,6 +54,9 @@ function MapViewport({
  * A atribuição é exibida pelo próprio TileLayer, conforme os requisitos do OSM.
  */
 export function OpenStreetMap({ className, initialCenter, initialZoom, points }: OpenStreetMapProps) {
+  const [tileLoaded, setTileLoaded] = useState(false);
+  const [tileLoadFailed, setTileLoadFailed] = useState(false);
+
   return (
     <div className={cn("relative h-[500px] w-full overflow-hidden", className)}>
       <MapContainer
@@ -60,8 +67,12 @@ export function OpenStreetMap({ className, initialCenter, initialZoom, points }:
         aria-label="Mapa de localização dos eventos"
       >
         <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          attribution={CARTO_POSITRON_ATTRIBUTION}
+          url={CARTO_POSITRON_TILE_URL}
+          eventHandlers={{
+            load: () => setTileLoaded(true),
+            tileerror: () => setTileLoadFailed(true),
+          }}
         />
         <MapViewport initialCenter={initialCenter} initialZoom={initialZoom} points={points} />
         {points.map(point => (
@@ -77,6 +88,11 @@ export function OpenStreetMap({ className, initialCenter, initialZoom, points }:
           </CircleMarker>
         ))}
       </MapContainer>
+      {tileLoadFailed && !tileLoaded ? (
+        <div className="pointer-events-none absolute inset-x-4 bottom-4 rounded-lg border border-amber-300/70 bg-slate-950/90 px-3 py-2 text-center text-xs text-amber-100" role="status">
+          A base cartográfica está indisponível no momento. Os pontos aproximados continuam disponíveis.
+        </div>
+      ) : null}
     </div>
   );
 }

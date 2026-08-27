@@ -22,6 +22,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { MetricCard } from "@/components/MetricCard";
+import { AIRLINE_LOGO_ASSETS } from "@/lib/airlineAssets";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -2565,7 +2566,7 @@ export default function Home({ mode = "home" }: HomeProps) {
                     className="group shrink-0 rounded-xl transition-[transform,filter] duration-200 ease-out hover:-translate-y-0.5 hover:scale-[1.04] hover:drop-shadow-[0_8px_14px_rgba(14,165,233,0.32)] active:scale-[0.97] motion-reduce:transition-none motion-reduce:hover:transform-none focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-slate-800"
                   >
                     <img
-                      src="https://d2xsxph8kpxj0f.cloudfront.net/310419663028456038/HQ655wm9a6bck22hJAwYRc/smartfly-icon-512-fy4eDuGdVJBtxeYLKc2qAk.png"
+                      src="/manus-storage/smartfly-sf-apple-touch-icon_598faae4.png?v=20260827"
                       alt=""
                       aria-hidden="true"
                       className="h-10 w-10 rounded-xl object-contain transition-transform duration-200 group-hover:rotate-[-2deg] motion-reduce:transition-none sm:h-12 sm:w-12"
@@ -4853,7 +4854,7 @@ export default function Home({ mode = "home" }: HomeProps) {
                                                       ] === "latam" && (
                                                         <span className="flex items-center gap-1.5">
                                                           <img
-                                                            src="https://d2xsxph8kpxj0f.cloudfront.net/310419663028456038/HQ655wm9a6bck22hJAwYRc/logo-latam_a13bb510.png"
+                                                            src={AIRLINE_LOGO_ASSETS.latam}
                                                             className="h-4 w-auto object-contain"
                                                             alt="LATAM"
                                                           />
@@ -4865,7 +4866,7 @@ export default function Home({ mode = "home" }: HomeProps) {
                                                       ] === "gol" && (
                                                         <span className="flex items-center gap-1.5">
                                                           <img
-                                                            src="https://d2xsxph8kpxj0f.cloudfront.net/310419663028456038/HQ655wm9a6bck22hJAwYRc/logo-gol_c86ba55a.png"
+                                                            src={AIRLINE_LOGO_ASSETS.gol}
                                                             className="h-4 w-auto object-contain"
                                                             alt="Gol"
                                                           />
@@ -4877,7 +4878,7 @@ export default function Home({ mode = "home" }: HomeProps) {
                                                       ] === "azul" && (
                                                         <span className="flex items-center gap-1.5">
                                                           <img
-                                                            src="https://d2xsxph8kpxj0f.cloudfront.net/310419663028456038/HQ655wm9a6bck22hJAwYRc/logo-azul_e89c8b63.png"
+                                                            src={AIRLINE_LOGO_ASSETS.azul}
                                                             className="h-4 w-auto object-contain"
                                                             alt="Azul"
                                                           />
@@ -4897,7 +4898,7 @@ export default function Home({ mode = "home" }: HomeProps) {
                                                     <SelectItem value="latam">
                                                       <span className="flex items-center gap-2">
                                                         <img
-                                                          src="https://d2xsxph8kpxj0f.cloudfront.net/310419663028456038/HQ655wm9a6bck22hJAwYRc/logo-latam_a13bb510.png"
+                                                          src={AIRLINE_LOGO_ASSETS.latam}
                                                           className="h-5 w-auto object-contain"
                                                           alt="LATAM"
                                                         />
@@ -4907,7 +4908,7 @@ export default function Home({ mode = "home" }: HomeProps) {
                                                     <SelectItem value="gol">
                                                       <span className="flex items-center gap-2">
                                                         <img
-                                                          src="https://d2xsxph8kpxj0f.cloudfront.net/310419663028456038/HQ655wm9a6bck22hJAwYRc/logo-gol_c86ba55a.png"
+                                                          src={AIRLINE_LOGO_ASSETS.gol}
                                                           className="h-5 w-auto object-contain"
                                                           alt="Gol"
                                                         />
@@ -4917,7 +4918,7 @@ export default function Home({ mode = "home" }: HomeProps) {
                                                     <SelectItem value="azul">
                                                       <span className="flex items-center gap-2">
                                                         <img
-                                                          src="https://d2xsxph8kpxj0f.cloudfront.net/310419663028456038/HQ655wm9a6bck22hJAwYRc/logo-azul_e89c8b63.png"
+                                                          src={AIRLINE_LOGO_ASSETS.azul}
                                                           className="h-5 w-auto object-contain"
                                                           alt="Azul"
                                                         />
@@ -5468,7 +5469,7 @@ export default function Home({ mode = "home" }: HomeProps) {
                                                         ] === "latam" && (
                                                           <span className="flex items-center gap-1.5">
                                                             <img
-                                                              src="https://d2xsxph8kpxj0f.cloudfront.net/310419663028456038/HQ655wm9a6bck22hJAwYRc/logo-latam_a13bb510.png"
+                                                              src={AIRLINE_LOGO_ASSETS.latam}
                                                               className="h-4 w-auto object-contain"
                                                               alt="LATAM"
                                                             />
@@ -5480,7 +5481,7 @@ export default function Home({ mode = "home" }: HomeProps) {
                                                         ] === "gol" && (
                                                           <span className="flex items-center gap-1.5">
                                                             <img
-                                                              src="https://d2xsxph8kpxj0f.cloudfront.net/310419663028456038/HQ655wm9a6bck22hJAwYRc/logo-gol_c86ba55a.png"
+                                                              src={AIRLINE_LOGO_ASSETS.gol}
                                                               className="h-4 w-auto object-contain"
                                                               alt="Gol"
                                                             />
@@ -5492,7 +5493,7 @@ export default function Home({ mode = "home" }: HomeProps) {
                                                         ] === "azul" && (
                                                           <span className="flex items-center gap-1.5">
                                                             <img
-                                                              src="https://d2xsxph8kpxj0f.cloudfront.net/310419663028456038/HQ655wm9a6bck22hJAwYRc/logo-azul_e89c8b63.png"
+                                                              src={AIRLINE_LOGO_ASSETS.azul}
                                                               className="h-4 w-auto object-contain"
                                                               alt="Azul"
                                                             />
@@ -5512,7 +5513,7 @@ export default function Home({ mode = "home" }: HomeProps) {
                                                       <SelectItem value="latam">
                                                         <span className="flex items-center gap-2">
                                                           <img
-                                                            src="https://d2xsxph8kpxj0f.cloudfront.net/310419663028456038/HQ655wm9a6bck22hJAwYRc/logo-latam_a13bb510.png"
+                                                            src={AIRLINE_LOGO_ASSETS.latam}
                                                             className="h-5 w-auto object-contain"
                                                             alt="LATAM"
                                                           />
@@ -5522,7 +5523,7 @@ export default function Home({ mode = "home" }: HomeProps) {
                                                       <SelectItem value="gol">
                                                         <span className="flex items-center gap-2">
                                                           <img
-                                                            src="https://d2xsxph8kpxj0f.cloudfront.net/310419663028456038/HQ655wm9a6bck22hJAwYRc/logo-gol_c86ba55a.png"
+                                                            src={AIRLINE_LOGO_ASSETS.gol}
                                                             className="h-5 w-auto object-contain"
                                                             alt="Gol"
                                                           />
@@ -5532,7 +5533,7 @@ export default function Home({ mode = "home" }: HomeProps) {
                                                       <SelectItem value="azul">
                                                         <span className="flex items-center gap-2">
                                                           <img
-                                                            src="https://d2xsxph8kpxj0f.cloudfront.net/310419663028456038/HQ655wm9a6bck22hJAwYRc/logo-azul_e89c8b63.png"
+                                                            src={AIRLINE_LOGO_ASSETS.azul}
                                                             className="h-5 w-auto object-contain"
                                                             alt="Azul"
                                                           />

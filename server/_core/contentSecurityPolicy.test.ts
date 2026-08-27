@@ -25,8 +25,14 @@ describe("contentSecurityPolicy", () => {
     expect(productionCspDirectives.connectSrc).not.toContain("wss:");
     expect(productionCspDirectives.frameSrc).not.toContain("*");
     expect(productionCspDirectives.imgSrc).not.toContain("https:");
+    expect(productionCspDirectives.imgSrc).not.toContain(
+      "https://d2xsxph8kpxj0f.cloudfront.net"
+    );
     expect(productionCspDirectives.imgSrc).toContain(
       "https://*.tile.openstreetmap.org"
+    );
+    expect(productionCspDirectives.imgSrc).toContain(
+      "https://*.basemaps.cartocdn.com"
     );
     expect(productionCspDirectives.imgSrc).toContain(
       "https://d36hbw14aib5lz.cloudfront.net"

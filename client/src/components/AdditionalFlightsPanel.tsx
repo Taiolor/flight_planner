@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { trpc } from "@/lib/trpc";
+import { AIRLINE_LOGO_ASSETS } from "@/lib/airlineAssets";
 import { formatAirlineDisplayName } from "@/lib/airlinePresentation";
 import { ChevronDown, ChevronUp, Copy, CopyPlus, Loader2, Minus, Pencil, Plane, Plus } from "lucide-react";
 import React, { useEffect, useState } from "react";
@@ -67,9 +68,9 @@ const blankDraft = (): Draft => ({
 const toDatetimeValue = (value: string | null) => value?.slice(0, 16) ?? "";
 
 const STANDARD_AIRLINES = [
-  { id: "latam", label: "LATAM", logo: "https://d2xsxph8kpxj0f.cloudfront.net/310419663028456038/HQ655wm9a6bck22hJAwYRc/logo-latam_a13bb510.png" },
-  { id: "gol", label: "GOL", logo: "https://d2xsxph8kpxj0f.cloudfront.net/310419663028456038/HQ655wm9a6bck22hJAwYRc/logo-gol_c86ba55a.png" },
-  { id: "azul", label: "AZUL", logo: "https://d2xsxph8kpxj0f.cloudfront.net/310419663028456038/HQ655wm9a6bck22hJAwYRc/logo-azul_e89c8b63.png" },
+  { id: "latam", label: "LATAM", logo: AIRLINE_LOGO_ASSETS.latam },
+  { id: "gol", label: "GOL", logo: AIRLINE_LOGO_ASSETS.gol },
+  { id: "azul", label: "AZUL", logo: AIRLINE_LOGO_ASSETS.azul },
 ] as const;
 
 const AIRPORT_OPTIONS = [

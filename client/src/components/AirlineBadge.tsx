@@ -1,11 +1,6 @@
 import React, { type CSSProperties } from "react";
+import { getAirlineLogoAsset } from "@/lib/airlineAssets";
 import { formatAirlineDisplayName } from "@/lib/airlinePresentation";
-
-const AIRLINE_LOGOS: Record<string, string> = {
-  latam: "https://d2xsxph8kpxj0f.cloudfront.net/310419663028456038/HQ655wm9a6bck22hJAwYRc/logo-latam_a13bb510.png",
-  gol: "https://d2xsxph8kpxj0f.cloudfront.net/310419663028456038/HQ655wm9a6bck22hJAwYRc/logo-gol_c86ba55a.png",
-  azul: "https://d2xsxph8kpxj0f.cloudfront.net/310419663028456038/HQ655wm9a6bck22hJAwYRc/logo-azul_e89c8b63.png",
-};
 
 export function AirlineBadge({
   airline,
@@ -19,7 +14,7 @@ export function AirlineBadge({
   style?: CSSProperties;
 }) {
   const key = airline?.trim().toLowerCase() ?? "";
-  const logo = AIRLINE_LOGOS[key];
+  const logo = getAirlineLogoAsset(key);
 
   return (
     <span
