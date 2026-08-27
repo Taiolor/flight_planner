@@ -31,7 +31,7 @@ export type Message = {
     sourceUrl: string;
     travelLeg?: "Ida" | "Volta";
     precipitationAlert?: string;
-    weatherAlerts?: Array<{ type: "rain" | "wind"; label: string }>;
+    weatherAlerts?: Array<{ type: "rain" | "wind" | "visibility"; label: string }>;
     packingGuidance?: string[];
   };
 };

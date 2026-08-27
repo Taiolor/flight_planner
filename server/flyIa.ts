@@ -140,7 +140,7 @@ export type FlyIaDeterministicAnswer = {
   weather?: Extract<DestinationWeather, { available: true }> & {
     travelLeg: "Ida" | "Volta";
     precipitationAlert?: string;
-    weatherAlerts: Array<{ type: "rain" | "wind"; label: string }>;
+    weatherAlerts: Array<{ type: "rain" | "wind" | "visibility"; label: string }>;
     packingGuidance: string[];
   };
 };
@@ -163,7 +163,7 @@ function isFlightTrackingQuestion(messages: FlyIaMessage[]) {
 
 function isWeatherQuestion(messages: FlyIaMessage[]) {
   const question = messages.filter(message => message.role === "user").at(-1)?.content ?? "";
-  return /clima|meteorolog|previs[aã]o|chuva|temperatura|vento|tempo.*destino|destino.*tempo/i.test(question);
+  return /clima|meteorolog|previs[aã]o|chuva|temperatura|vento|\btempo\b|\bsol\b|nublado|neblina|trovoada|tempestade|\bfrio\b|\bcalor\b|\buv\b|ultravioleta|rajada|visibilidade/i.test(question);
 }
 
 function requestedWeatherDirection(messages: FlyIaMessage[]): FlightLeg["direction"] | null {
@@ -368,7 +368,11 @@ export async function buildWeatherAnswerFromWeeks(
     return { text: "Não há um trecho emitido e ativo registrado para consultar a previsão do destino." };
   }
 
-  const weather = await getWeather(next.flight.airportTo, next.flight.datetime.slice(0, 10));
+  const weather = await getWeather(
+    next.flight.airportTo,
+    next.flight.datetime.slice(0, 10),
+    next.flight.datetime.match(/T(\d{2}:\d{2})/)?.[1]
+  );
   if (!weather.available) {
     return {
       text: [
@@ -566,8 +570,9 @@ export function buildFlyIaPayload(
     })),
     generationConfig: {
       temperature: 0.2,
-      maxOutputTokens: 700,
+      maxOutputTokens: 350,
       responseMimeType: "text/plain",
+      thinkingConfig: { thinkingLevel: "minimal" },
     },
   };
 }
@@ -590,7 +595,7 @@ export async function askFlyIa(
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
-        signal: AbortSignal.timeout(45_000),
+        signal: AbortSignal.timeout(20_000),
       }
     );
   } catch (error) {

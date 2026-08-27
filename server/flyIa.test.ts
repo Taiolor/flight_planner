@@ -62,6 +62,8 @@ describe("Fly.IA", () => {
     expect(systemText).toContain("Nunca revele, solicite ou infira localizadores");
     expect(systemText).not.toContain("departureLocator");
     expect(payload.contents[0]?.role).toBe("user");
+    expect(payload.generationConfig.maxOutputTokens).toBe(350);
+    expect(payload.generationConfig.thinkingConfig).toEqual({ thinkingLevel: "minimal" });
   });
 
   it("usa memória resumida e envia somente o histórico recente para reduzir contexto", () => {
@@ -235,7 +237,7 @@ describe("Fly.IA", () => {
       getWeather
     );
 
-    expect(getWeather).toHaveBeenCalledWith("GRU", "2026-04-29");
+    expect(getWeather).toHaveBeenCalledWith("GRU", "2026-04-29", "20:30");
     expect(answer?.text).toContain("**Trecho selecionado:** Volta · NVT → GRU");
     expect(answer?.weather).toMatchObject({ travelLeg: "Volta", precipitationAlert: "Atenção: há condição de chuva intensa na previsão." });
     expect(answer?.weather?.packingGuidance).toContain("guarda-chuva compacto ou capa leve");

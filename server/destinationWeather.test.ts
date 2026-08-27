@@ -1,11 +1,12 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { getDestinationWeather } from "./destinationWeather";
+import { clearDestinationWeatherCacheForTests, getDestinationWeather } from "./destinationWeather";
 
 const originalFetch = global.fetch;
 
 afterEach(() => {
   global.fetch = originalFetch;
   vi.restoreAllMocks();
+  clearDestinationWeatherCacheForTests();
 });
 
 describe("getDestinationWeather", () => {
@@ -111,5 +112,21 @@ describe("getDestinationWeather", () => {
       available: false,
       reason: "unavailable",
     });
+  });
+
+  it("reutiliza por dez minutos uma previsão válida do mesmo aeroporto, data e horário", async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      text: async () => JSON.stringify({
+        daily: { time: ["2026-08-06"], temperature_2m_min: [18], temperature_2m_max: [25], precipitation_probability_max: [20], weather_code: [1], wind_speed_10m_max: [12], uv_index_max: [6], sunrise: ["2026-08-06T06:42"], sunset: ["2026-08-06T17:54"] },
+        hourly: { time: ["2026-08-06T14:00"], temperature_2m: [24], apparent_temperature: [24], visibility: [10_000], precipitation_probability: [10], precipitation: [0], weather_code: [1], wind_speed_10m: [12], wind_gusts_10m: [18], wind_direction_10m: [90] },
+      }),
+    });
+    global.fetch = fetchMock;
+
+    await getDestinationWeather("NVT", "2026-08-06", "14:00", now);
+    await getDestinationWeather("NVT", "2026-08-06", "14:00", now);
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 });

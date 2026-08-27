@@ -4,9 +4,10 @@ import { ENV } from "./_core/env";
 import { appRouter } from "./routers";
 
 const GEMINI_MODEL = "gemini-3.6-flash";
+const runLiveGeminiTest = process.env.RUN_LIVE_GEMINI_TESTS === "true" ? it : it.skip;
 
 describe("Gemini API configuration", () => {
-  it("authenticates the server credential and receives a text candidate from the selected model", async () => {
+  runLiveGeminiTest("authenticates the server credential and receives a text candidate from the selected model", async () => {
     const apiKey = process.env.GEMINI_API_KEY;
 
     expect(apiKey, "GEMINI_API_KEY deve estar configurada no ambiente do servidor").toBeTruthy();
@@ -18,9 +19,14 @@ describe("Gemini API configuration", () => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           contents: [{ role: "user", parts: [{ text: "Responda apenas: ok" }] }],
-          generationConfig: { temperature: 0, maxOutputTokens: 128, responseMimeType: "text/plain" },
+          generationConfig: {
+            temperature: 0,
+            maxOutputTokens: 64,
+            responseMimeType: "text/plain",
+            thinkingConfig: { thinkingLevel: "minimal" },
+          },
         }),
-        signal: AbortSignal.timeout(45_000),
+        signal: AbortSignal.timeout(20_000),
       }
     );
 
@@ -32,7 +38,7 @@ describe("Gemini API configuration", () => {
     };
     expect(result.modelVersion).toContain(GEMINI_MODEL);
     expect(result.candidates?.[0]?.content?.parts?.[0]?.text?.trim()).toBeTruthy();
-  }, 60_000);
+  }, 30_000);
 
   it("conclui uma pergunta autenticada do Fly.IA pela mutation tRPC", async () => {
     expect(ENV.authEmail, "AUTH_EMAIL deve estar configurado para a reprodução autenticada").toBeTruthy();

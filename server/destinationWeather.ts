@@ -1,6 +1,13 @@
 const FORECAST_BASE_URL = "https://api.open-meteo.com/v1/forecast";
 const MAX_FORECAST_BYTES = 64_000;
 const FORECAST_WINDOW_DAYS = 16;
+const FORECAST_CACHE_TTL_MS = 10 * 60_000;
+
+const weatherCache = new Map<string, { expiresAt: number; value: DestinationWeather }>();
+
+export function clearDestinationWeatherCacheForTests() {
+  weatherCache.clear();
+}
 
 const airportWeatherLocations: Record<string, { latitude: number; longitude: number; label: string }> = {
   GRU: { latitude: -23.4356, longitude: -46.4731, label: "Guarulhos" },
@@ -83,6 +90,10 @@ export async function getDestinationWeather(airportCode: string, flightDate: str
   const dayOffset = getForecastDateOffset(flightDate, now);
   if (dayOffset === null || dayOffset < 0 || dayOffset > FORECAST_WINDOW_DAYS) return { available: false, reason: "outside_forecast_window" };
 
+  const cacheKey = `${normalizedAirportCode}:${flightDate}:${flightTime ?? "daily"}`;
+  const cached = weatherCache.get(cacheKey);
+  if (cached && cached.expiresAt > Date.now()) return cached.value;
+
   const requestUrl = new URL(FORECAST_BASE_URL);
   requestUrl.searchParams.set("latitude", String(location.latitude));
   requestUrl.searchParams.set("longitude", String(location.longitude));
@@ -94,7 +105,7 @@ export async function getDestinationWeather(airportCode: string, flightDate: str
   requestUrl.searchParams.set("end_date", flightDate);
 
   try {
-    const response = await fetch(requestUrl, { signal: AbortSignal.timeout(4_000) });
+    const response = await fetch(requestUrl, { signal: AbortSignal.timeout(2_500) });
     if (!response.ok) throw new Error(`Weather provider returned ${response.status}`);
     const rawBody = await response.text();
     if (rawBody.length > MAX_FORECAST_BYTES) throw new Error("Weather provider payload exceeded limit");
@@ -125,7 +136,9 @@ export async function getDestinationWeather(airportCode: string, flightDate: str
       return { time, temperatureC: Math.round(temperatureC), apparentTemperatureC: Math.round(apparentTemperatureC), visibilityKm: Number((visibilityMeters / 1000).toFixed(1)), precipitationProbability: Math.round(hourlyPrecipitationProbability), precipitationMm: Number(precipitationMm.toFixed(1)), windSpeedKmh: Math.round(hourlyWindSpeed), windGustsKmh: Math.round(windGustsKmh), windDirectionDegrees: Math.round(windDirectionDegrees), windDirectionLabel: getWindDirectionLabel(windDirectionDegrees), weatherCode: hourlyWeatherCode, summary: weatherCodeLabels[hourlyWeatherCode] ?? "Condições variáveis" };
     })();
 
-    return { available: true, airportCode: normalizedAirportCode, destinationLabel: location.label, forecastDate, summary: weatherCodeLabels[weatherCode] ?? "Condições variáveis", weatherCode, temperatureMinC: Math.round(temperatureMinC), temperatureMaxC: Math.round(temperatureMaxC), precipitationProbability: Math.round(precipitationProbability), windSpeedKmh: Math.round(windSpeedKmh), uvIndexMax: Number(uvIndexMax.toFixed(1)), sunriseTime: getTime(daily?.sunrise?.[0]), sunsetTime: getTime(daily?.sunset?.[0]), hourlyForecast, alerts: getAlerts(hourlyForecast), sourceLabel: "Open-Meteo", sourceUrl: "https://open-meteo.com/" };
+    const result: DestinationWeather = { available: true, airportCode: normalizedAirportCode, destinationLabel: location.label, forecastDate, summary: weatherCodeLabels[weatherCode] ?? "Condições variáveis", weatherCode, temperatureMinC: Math.round(temperatureMinC), temperatureMaxC: Math.round(temperatureMaxC), precipitationProbability: Math.round(precipitationProbability), windSpeedKmh: Math.round(windSpeedKmh), uvIndexMax: Number(uvIndexMax.toFixed(1)), sunriseTime: getTime(daily?.sunrise?.[0]), sunsetTime: getTime(daily?.sunset?.[0]), hourlyForecast, alerts: getAlerts(hourlyForecast), sourceLabel: "Open-Meteo", sourceUrl: "https://open-meteo.com/" };
+    weatherCache.set(cacheKey, { value: result, expiresAt: Date.now() + FORECAST_CACHE_TTL_MS });
+    return result;
   } catch (error) {
     console.warn("[DestinationWeather] Forecast unavailable:", error instanceof Error ? error.message : error);
     return { available: false, reason: "unavailable" };
