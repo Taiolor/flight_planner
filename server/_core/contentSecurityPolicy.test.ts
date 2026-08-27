@@ -28,13 +28,13 @@ describe("contentSecurityPolicy", () => {
     expect(productionCspDirectives.imgSrc).not.toContain(
       "https://d2xsxph8kpxj0f.cloudfront.net"
     );
-    expect(productionCspDirectives.imgSrc).toContain(
+    expect(productionCspDirectives.imgSrc).not.toContain(
       "https://*.tile.openstreetmap.org"
     );
-    expect(productionCspDirectives.imgSrc).toContain(
+    expect(productionCspDirectives.imgSrc).not.toContain(
       "https://*.basemaps.cartocdn.com"
     );
-    expect(productionCspDirectives.imgSrc).toContain(
+    expect(productionCspDirectives.imgSrc).not.toContain(
       "https://d36hbw14aib5lz.cloudfront.net"
     );
   });

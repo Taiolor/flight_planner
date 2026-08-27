@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 import { CircleMarker, MapContainer, TileLayer, Tooltip, useMap } from "react-leaflet";
 import { cn } from "@/lib/utils";
 
-export const CARTO_POSITRON_TILE_URL = "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png";
+export const CARTO_POSITRON_TILE_URL = "/map-tiles/{z}/{x}/{y}.png";
 export const CARTO_POSITRON_ATTRIBUTION =
   '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>';
 

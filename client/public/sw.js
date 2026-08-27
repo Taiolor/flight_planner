@@ -1,4 +1,4 @@
-const CACHE_NAME = "smartfly-v5";
+const CACHE_NAME = "smartfly-v6";
 const STATIC_ASSETS = ["/manifest.json?v=20260826"];
 const SMART_FLY_PUSH_ICON = "/manus-storage/smartfly-sf-pwa-icon_783c04c6.webp";
 const SMART_FLY_PUSH_BADGE = "/manus-storage/smartfly-sf-apple-touch-icon_598faae4.png";

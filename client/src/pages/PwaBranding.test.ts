@@ -12,6 +12,10 @@ describe("PWA Viagens branding", () => {
       resolve(process.cwd(), "client/index.html"),
       "utf8"
     );
+    const serviceWorker = readFileSync(
+      resolve(process.cwd(), "client/public/sw.js"),
+      "utf8"
+    );
 
     expect(manifest).toContain('"name": "Viagens"');
     expect(manifest).toContain('"short_name": "Viagens"');
@@ -27,5 +31,8 @@ describe("PWA Viagens branding", () => {
     expect(document).toContain("/manus-storage/smartfly-sf-favicon-32_fa912500.png?v=20260826");
     expect(document).toContain("/manus-storage/smartfly-sf-favicon-16_8b3260d7.png?v=20260826");
     expect(document).toContain('apple-mobile-web-app-title" content="Viagens"');
+    expect(serviceWorker).toContain('const CACHE_NAME = "smartfly-v6"');
+    expect(serviceWorker).toContain('const SMART_FLY_PUSH_ICON = "/manus-storage/smartfly-sf-pwa-icon_783c04c6.webp"');
+    expect(serviceWorker).toContain('const SMART_FLY_PUSH_BADGE = "/manus-storage/smartfly-sf-apple-touch-icon_598faae4.png"');
   });
 });

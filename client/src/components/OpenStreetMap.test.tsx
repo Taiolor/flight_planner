@@ -4,7 +4,7 @@ import { render, screen, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { OpenStreetMap } from "./OpenStreetMap";
 
-const CARTO_POSITRON_TILE_URL = "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png";
+const CARTO_POSITRON_TILE_URL = "/map-tiles/{z}/{x}/{y}.png";
 
 const mapMock = vi.hoisted(() => ({
   fitBounds: vi.fn(),

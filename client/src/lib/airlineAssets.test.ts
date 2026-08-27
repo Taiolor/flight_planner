@@ -6,6 +6,8 @@ describe("airlineAssets", () => {
     expect(AIRLINE_LOGO_ASSETS.latam).toMatch(/^\/manus-storage\/smartfly-airline-latam_.*\.png\?v=20260827$/);
     expect(AIRLINE_LOGO_ASSETS.gol).toMatch(/^\/manus-storage\/smartfly-airline-gol_.*\.png\?v=20260827$/);
     expect(AIRLINE_LOGO_ASSETS.azul).toMatch(/^\/manus-storage\/smartfly-airline-azul_.*\.png\?v=20260827$/);
+    expect(Object.values(AIRLINE_LOGO_ASSETS).every(asset => asset.startsWith("/"))).toBe(true);
+    expect(Object.values(AIRLINE_LOGO_ASSETS).every(asset => !asset.includes("://"))).toBe(true);
   });
 
   it("normaliza a companhia e preserva fallback sem imagem para valores desconhecidos", () => {

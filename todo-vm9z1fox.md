@@ -218,3 +218,5 @@
 - [x] Corrigir o carregamento de ícones, imagens e marcas de companhias aéreas na versão publicada
 - [x] Corrigir a exibição visível do mapa na tela Locais de Acesso após publicação
 - [x] Cobrir ativos e mapa com regressões de produção e contingência
+- [ ] Corrigir a entrega de imagens, ícones e logos que falha exclusivamente no domínio publicado
+- [ ] Validar as URLs de ativos finais no domínio publicado, inclusive em navegação sem cache

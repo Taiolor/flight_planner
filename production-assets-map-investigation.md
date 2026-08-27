@@ -11,6 +11,17 @@
 
 Migrar os logos de companhia para os ativos estáveis do projeto, usando referências `/manus-storage/` e fallback textual, e trocar o provedor base do Leaflet para Carto Positron com atribuição explícita. A política de conteúdo deve permitir o host Carto. O mapa deve informar claramente quando o provedor de tiles estiver indisponível.
 
+## Evidência adicional — falha persistente em produção
+
+- A estratégia anterior não corrigiu a publicação. Na Home publicada, todos os elementos `<img>` que usam `/manus-storage/` finalizaram com `complete: true`, mas `naturalWidth: 0` e `naturalHeight: 0`; o mesmo logo na pré-visualização de desenvolvimento decodificou como `180 × 180`.
+- A rota `/manus-storage/*` não entrega bytes pelo domínio da aplicação: ela responde `307` para uma URL assinada no CloudFront. Embora uma requisição de terminal consiga seguir o redirecionamento e encontre `Content-Type: image/png`, o navegador publicado reporta erro de imagem e uma leitura `fetch` com redirecionamento seguido falha por CORS.
+- O problema não é o cache do PWA: após remover o service worker da sessão de diagnóstico, os recursos redirecionados continuaram falhando. Um `data:` image de controle decodificou normalmente.
+- Um tile Carto que responde `200 image/png` em terminal também falhou no navegador publicado. Assim, a correção precisa evitar recursos visuais que dependam de origem externa ou de redirecionamento, servindo bytes e MIME pelo próprio domínio da aplicação.
+
+## Próxima decisão técnica
+
+Substituir o redirecionamento de `/manus-storage/*` usado por ativos institucionais por uma rota same-origin específica, com uma allowlist de chaves estáticas, streaming dos bytes obtidos da URL assinada e cabeçalhos de imagem e cache explícitos. As referências de logos, ícones PWA, metadados e fundos devem usar esta rota. O service worker será versionado somente para eliminar referências antigas do seu cache.
+
 ## Fontes
 
 - [OpenStreetMap Tile Usage Policy](https://operations.osmfoundation.org/policies/tiles/)

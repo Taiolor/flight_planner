@@ -17,6 +17,7 @@ import { createProxyMiddleware } from "http-proxy-middleware";
 import { createTrpcLoginRateLimiter } from "./trpcLoginRateLimit";
 import { getContentSecurityPolicy } from "./contentSecurityPolicy";
 import { registerStorageProxy } from "./storageProxy";
+import { registerMapTilesProxy } from "./mapTilesProxy";
 import { getSessionFromCookie } from "../flightAuthMiddleware";
 import { addFlightMemoryMedia, upsertFlightMemory } from "../memoriesDb";
 import { addOperationalAttachment } from "../operationalDb";
@@ -124,6 +125,8 @@ async function startServer() {
 
   // Servir ativos estáticos privados publicados para esta aplicação.
   registerStorageProxy(app);
+  // Entregar a base cartográfica no mesmo domínio para navegadores que bloqueiam imagens externas.
+  registerMapTilesProxy(app);
 
   // OAuth callback under /api/oauth/callback
   registerOAuthRoutes(app);
