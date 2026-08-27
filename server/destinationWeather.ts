@@ -122,8 +122,11 @@ export async function getDestinationWeather(airportCode: string, flightDate: str
   const location = airportWeatherLocations[normalizedAirportCode];
   if (!location) return { available: false, reason: "unsupported_destination" };
   const dayOffset = getForecastDateOffset(flightDate, now);
-  if (dayOffset === null || dayOffset < 0 || dayOffset > FORECAST_WINDOW_DAYS) return { available: false, reason: "outside_forecast_window" };
-  const dailyForecastDays = Math.min(DAILY_FORECAST_DAYS, FORECAST_WINDOW_DAYS - dayOffset + 1);
+  // O horizonte de 16 dias inclui hoje: o último dia aceito pelo provedor tem
+  // deslocamento 15. Ao solicitar mais de um dia perto do limite, o término
+  // também deve permanecer nesse horizonte.
+  if (dayOffset === null || dayOffset < 0 || dayOffset >= FORECAST_WINDOW_DAYS) return { available: false, reason: "outside_forecast_window" };
+  const dailyForecastDays = Math.min(DAILY_FORECAST_DAYS, FORECAST_WINDOW_DAYS - dayOffset);
 
   const cacheKey = `${normalizedAirportCode}:${flightDate}:${flightTime ?? "daily"}`;
   const cached = weatherCache.get(cacheKey);

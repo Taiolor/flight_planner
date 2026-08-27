@@ -108,7 +108,40 @@ describe("getDestinationWeather", () => {
       available: false,
       reason: "outside_forecast_window",
     });
+    await expect(getDestinationWeather("NVT", "2026-08-17", now)).resolves.toEqual({
+      available: false,
+      reason: "outside_forecast_window",
+    });
     expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it("limita a previsão diária ao último dia que a fonte aceita", async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      text: async () => JSON.stringify({
+        daily: {
+          time: ["2026-08-16"],
+          temperature_2m_min: [18],
+          temperature_2m_max: [26],
+          precipitation_probability_max: [10],
+          weather_code: [1],
+          wind_speed_10m_max: [15],
+          uv_index_max: [6],
+          sunrise: ["2026-08-16T06:42"],
+          sunset: ["2026-08-16T17:54"],
+        },
+      }),
+    });
+    global.fetch = fetchMock;
+
+    await expect(getDestinationWeather("NVT", "2026-08-16", "14:00", now)).resolves.toMatchObject({
+      available: true,
+      forecastDate: "2026-08-16",
+    });
+
+    const requestUrl = new URL(String(fetchMock.mock.calls[0]?.[0]));
+    expect(requestUrl.searchParams.get("start_date")).toBe("2026-08-16");
+    expect(requestUrl.searchParams.get("end_date")).toBe("2026-08-16");
   });
 
   it("falha de forma segura quando a fonte meteorológica não responde", async () => {

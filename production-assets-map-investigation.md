@@ -18,9 +18,12 @@ Migrar os logos de companhia para os ativos estáveis do projeto, usando referê
 - O problema não é o cache do PWA: após remover o service worker da sessão de diagnóstico, os recursos redirecionados continuaram falhando. Um `data:` image de controle decodificou normalmente.
 - Um tile Carto que responde `200 image/png` em terminal também falhou no navegador publicado. Assim, a correção precisa evitar recursos visuais que dependam de origem externa ou de redirecionamento, servindo bytes e MIME pelo próprio domínio da aplicação.
 
-## Próxima decisão técnica
+## Causa final e correção aplicada
 
-Substituir o redirecionamento de `/manus-storage/*` usado por ativos institucionais por uma rota same-origin específica, com uma allowlist de chaves estáticas, streaming dos bytes obtidos da URL assinada e cabeçalhos de imagem e cache explícitos. As referências de logos, ícones PWA, metadados e fundos devem usar esta rota. O service worker será versionado somente para eliminar referências antigas do seu cache.
+- O domínio publicado reserva o prefixo `/manus-storage/*`: mesmo após o servidor do projeto passar a transmitir bytes nesse caminho, a URL pública continuou respondendo `307` para o CloudFront. Por isso a correção não poderia permanecer nesse prefixo.
+- A entrega same-origin foi mantida no endpoint próprio `/smartfly-assets/*`, que não é reservado pela publicação. Logos, ícones PWA, favicons, metadados sociais, imagens de fundo, notificações push e novas mídias passam a usar essa rota.
+- A rota transmite os bytes obtidos da URL assinada, preserva `Content-Type`, tamanho, cache seguro e suporte a `Range`; assim o navegador só recebe conteúdo visual sob o domínio da aplicação.
+- Os tiles do mapa também continuam sob o domínio da aplicação em `/map-tiles/*`, removendo dependência de imagens externas no cliente.
 
 ## Fontes
 
