@@ -189,6 +189,8 @@ describe("HomeHeaderActions", () => {
     expect(source).not.toContain('<span className="ml-1.5 hidden sm:inline">Aparência</span>');
     expect(source).toContain("hidden w-full sm:flex");
     expect(source).toContain('aria-label="Ações do planejamento"');
+    expect(source).toContain("data-mobile-value-visibility");
+    expect(source).toContain("min-w-[88px]");
   });
 
   it("estrutura o mobile em exatamente dois grupos de controles sem quebra interna", () => {
@@ -227,7 +229,7 @@ describe("HomeHeaderActions", () => {
     expect(mobileLines[1]?.className).toContain("sm:hidden");
     expect(scope.getByRole("link", { name: "Calendário" }).className).toContain("h-10 w-10");
     expect(scope.queryByRole("button", { name: "Gráfico" })).toBeNull();
-    expect(scope.getByRole("button", { name: "Abrir preferências" }).className).toContain("w-full");
+    expect(scope.getByRole("button", { name: "Abrir preferências" }).className).toContain("flex-1");
   });
 
   it("agrupa os utilitários no menu móvel de preferências", () => {
@@ -261,6 +263,39 @@ describe("HomeHeaderActions", () => {
     expect(screen.getByRole("menuitem", { name: "Usar modo escuro" })).toBeTruthy();
     expect(screen.getByRole("menuitem", { name: "Ocultar valores" })).toBeTruthy();
     expect(screen.getByRole("menuitem", { name: "Ativar notificações" })).toBeTruthy();
+  });
+
+  it("expõe o controle de valores diretamente no cabeçalho móvel", () => {
+    const onToggleValues = vi.fn();
+    const { container } = render(
+      <HomeHeaderActions
+        selectedYear={2026}
+        theme="light"
+        colorPreset="ocean"
+        colorPresetOptions={{ ocean: { name: "Azul" } }}
+        hideValues={false}
+        pushStatus="default"
+        pushSubscribed={false}
+        pushLoading={false}
+        isAuthenticated={false}
+        isAdmin={false}
+        pdfExport={<button type="button">Exportar PDF</button>}
+        onShowChart={vi.fn()}
+        onToggleTheme={vi.fn()}
+        onColorPresetChange={vi.fn()}
+        onToggleValues={onToggleValues}
+        onToggleNotifications={vi.fn()}
+        onSignIn={vi.fn()}
+        onSignOut={vi.fn()}
+      />
+    );
+
+    const mobileValueControl = container.querySelector("[data-mobile-value-visibility]");
+    expect(mobileValueControl).toBeTruthy();
+    expect(mobileValueControl?.getAttribute("aria-label")).toBe("Ocultar valores");
+    expect(mobileValueControl?.className).toContain("shrink-0");
+    fireEvent.click(mobileValueControl!);
+    expect(onToggleValues).toHaveBeenCalledOnce();
   });
 
   it("permite escolher a ação prioritária persistida no menu móvel", () => {

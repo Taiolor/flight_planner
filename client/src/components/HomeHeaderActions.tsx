@@ -180,7 +180,7 @@ export function HomeHeaderActions({
       <div className="flex w-full flex-nowrap items-center gap-1 sm:gap-2 lg:w-auto lg:justify-end">
         <div className="flex min-w-0 flex-1 items-center gap-1 sm:flex-none sm:gap-2">
           <GlobalYearSelector
-            className={`${headerButtonClass} min-w-[104px] bg-slate-950/20 text-white hover:bg-white/18`}
+            className={`${headerButtonClass} min-w-[88px] bg-slate-950/20 text-white hover:bg-white/18 sm:min-w-[104px]`}
           />
           <MobileLongPressHint label={primaryMeta.label}>
             <Link
@@ -403,14 +403,27 @@ export function HomeHeaderActions({
         </div>
       </div>
 
-      <div className="flex w-full sm:hidden">
+      <div className="flex w-full items-center gap-1 sm:hidden">
+        <MobileLongPressHint label={hideValues ? "Exibir valores" : "Ocultar valores"}>
+          <Button
+            size="sm"
+            variant="outline"
+            className={`${iconButtonClass} shrink-0 ${hideValues ? "border-white/80 bg-white/25" : ""}`}
+            title={hideValues ? "Exibir valores" : "Ocultar valores"}
+            aria-label={hideValues ? "Exibir valores" : "Ocultar valores"}
+            data-mobile-value-visibility
+            onClick={onToggleValues}
+          >
+            {hideValues ? <EyeOff className="size-4" aria-hidden="true" /> : <Eye className="size-4" aria-hidden="true" />}
+          </Button>
+        </MobileLongPressHint>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <MobileLongPressHint label="Preferências">
               <Button
                 size="sm"
                 variant="outline"
-                className={`${iconButtonClass} w-full justify-center`}
+                className={`${headerButtonClass} flex-1 justify-center`}
                 aria-label="Abrir preferências"
               >
                 <SlidersHorizontal className="size-4" aria-hidden="true" />

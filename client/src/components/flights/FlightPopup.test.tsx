@@ -231,8 +231,11 @@ describe("FlightPopup", () => {
     const dialog = screen.getByRole("dialog", { name: "Semana 26" });
     const closeButton = screen.getByRole("button", { name: "Fechar calendário" });
 
-    expect(dialog.className).toContain("max-h-[calc(100dvh-1rem)]");
+    expect(dialog.className).toContain("max-h-[calc(100svh-1rem)]");
     expect(dialog.className).toContain("flex-col");
+    expect(dialog.parentElement?.className).toContain("items-start");
+    expect(dialog.parentElement?.className).toContain("overflow-y-auto");
+    expect(dialog.parentElement?.className).toContain("safe-area-inset-top");
     expect(closeButton.className).toContain("size-10");
     expect(closeButton.getAttribute("type")).toBe("button");
     expect(closeButton.getAttribute("aria-label")).toBe("Fechar calendário");

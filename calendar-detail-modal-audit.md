@@ -15,3 +15,7 @@ Após remover a preferência local e abrir um bilhete de ida e volta, os dois tr
 ## Ordem operacional — 27/08/2026
 
 Em cada trecho, a sequência passa a ser identificação do voo, status, **localizador**, **rastrear voo** e, somente então, **clima no destino**. Assim, as informações necessárias para localizar e acompanhar a passagem permanecem próximas entre si, enquanto a previsão fica disponível logo abaixo como contexto de viagem.
+
+## Auditoria móvel — 27/08/2026
+
+Em **320 px** e **375 px**, o cabeçalho mantém o controle de valores visível como ícone independente na segunda linha, ao lado de Preferências, sem comprimir o seletor de ano ou as ações primárias. O modal passa a se alinhar no início da área segura da tela, usa a altura visual segura (`svh`) e permite rolagem no contêiner externo e no corpo interno. Com isso, o cabeçalho do diálogo e seu botão de fechar de 40 px não deixam a área clicável em telas baixas ou com barras do navegador móveis.

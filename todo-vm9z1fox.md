@@ -227,3 +227,6 @@
 - [x] Validar o modal compactado no domínio publicado em uma sessão sem preferência meteorológica anterior
 - [x] Reposicionar clima e tempo abaixo do localizador e do link de rastreio nos detalhes do bilhete do Calendário
 - [ ] Validar no domínio publicado a nova ordem entre rastreamento e clima nos detalhes do bilhete
+- [x] Exibir o controle de mostrar ou ocultar valores diretamente no cabeçalho móvel da Home
+- [x] Corrigir o dimensionamento e a área clicável de fechamento do detalhe de bilhete em telas móveis
+- [ ] Validar no domínio publicado o cabeçalho móvel e o modal de bilhete em largura crítica
