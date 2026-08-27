@@ -35,8 +35,13 @@ import { getCalendarIssuedLegDates } from "@/lib/calendarIssuedLegDates";
 import { AirlineBadge } from "@/components/AirlineBadge";
 import { trpc } from "@/lib/trpc";
 import { readWeatherAlertsVisible, saveWeatherAlertsVisible } from "@/lib/weatherAlertPreference";
+import {
+  readWeatherDetailsVisibility,
+  saveWeatherDetailsVisibility,
+  type WeatherLeg,
+} from "@/lib/weatherDetailsPreference";
 
-function DestinationWeatherPanel({
+export function DestinationWeatherPanel({
   originCode,
   destinationCode,
   destinationDate,
@@ -44,6 +49,9 @@ function DestinationWeatherPanel({
   tone,
   showAlerts,
   onToggleAlerts,
+  detailsVisible,
+  onToggleDetails,
+  detailsId,
 }: {
   originCode: string;
   destinationCode: string;
@@ -52,6 +60,9 @@ function DestinationWeatherPanel({
   tone: "blue" | "orange";
   showAlerts: boolean;
   onToggleAlerts: () => void;
+  detailsVisible: boolean;
+  onToggleDetails: () => void;
+  detailsId: string;
 }) {
   const weatherQuery = trpc.destinationWeather.forecast.useQuery(
     destinationTime
@@ -98,58 +109,71 @@ function DestinationWeatherPanel({
       <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wide">
         <WeatherIcon className="size-3.5" aria-hidden="true" />
         <span>Clima no destino</span>
-        <button
-          type="button"
-          onClick={onToggleAlerts}
-          aria-pressed={showAlerts}
-          className="ml-auto min-h-6 border border-current px-1.5 text-[9px] font-semibold normal-case tracking-normal hover:bg-white/45 focus:outline-none focus-visible:ring-2 focus-visible:ring-current"
-        >
-          {showAlerts ? "Ocultar alertas" : "Ver alertas"}
-        </button>
+        <div className="ml-auto flex shrink-0 gap-1">
+          <button
+            type="button"
+            onClick={onToggleDetails}
+            aria-expanded={detailsVisible}
+            aria-controls={detailsId}
+            className="min-h-6 border border-current px-1.5 text-[9px] font-semibold normal-case tracking-normal hover:bg-white/45 focus:outline-none focus-visible:ring-2 focus-visible:ring-current"
+          >
+            {detailsVisible ? "Ocultar detalhes" : "Ver detalhes"}
+          </button>
+          <button
+            type="button"
+            onClick={onToggleAlerts}
+            aria-pressed={showAlerts}
+            className="min-h-6 border border-current px-1.5 text-[9px] font-semibold normal-case tracking-normal hover:bg-white/45 focus:outline-none focus-visible:ring-2 focus-visible:ring-current"
+          >
+            {showAlerts ? "Ocultar alertas" : "Ver alertas"}
+          </button>
+        </div>
       </div>
       {weatherQuery.isLoading ? (
         <p className="mt-1 text-[11px] text-slate-600" role="status">Carregando previsão…</p>
       ) : weather && weather.available ? (
-        <div className="mt-1 text-[11px] leading-relaxed">
+        <div id={detailsId} className="mt-1 text-[11px] leading-relaxed">
           <p className="font-semibold">{weather.destinationLabel}: {weather.summary}</p>
-          <p>{weather.temperatureMinC}–{weather.temperatureMaxC} °C · chuva {weather.precipitationProbability}% · vento {weather.windSpeedKmh} km/h · UV {weather.uvIndexMax}</p>
-          {weather.hourlyForecast && (
+          {detailsVisible ? <>
+            <p>{weather.temperatureMinC}–{weather.temperatureMaxC} °C · chuva {weather.precipitationProbability}% · vento {weather.windSpeedKmh} km/h · UV {weather.uvIndexMax}</p>
+            {weather.hourlyForecast && (
             <p className="mt-1 font-medium">
               Próximo do voo ({weather.hourlyForecast.time.split("T")[1]}): {weather.hourlyForecast.summary} · {weather.hourlyForecast.temperatureC} °C, sensação {weather.hourlyForecast.apparentTemperatureC} °C · chuva {weather.hourlyForecast.precipitationProbability}% · vento {weather.hourlyForecast.windSpeedKmh} km/h {weather.hourlyForecast.windDirectionLabel} · rajadas {weather.hourlyForecast.windGustsKmh} km/h · visibilidade {weather.hourlyForecast.visibilityKm} km
             </p>
-          )}
-          {weather.hourlyForecast && originWeather?.available && originWeather.hourlyForecast && (
+            )}
+            {weather.hourlyForecast && originWeather?.available && originWeather.hourlyForecast && (
             <div className="mt-2 border-t border-current/20 pt-1.5 text-[10px] leading-relaxed" aria-label={`Comparação de clima entre ${originWeather.destinationLabel} e ${weather.destinationLabel}`}>
               <p className="font-bold uppercase tracking-wide">Origem × destino no horário do voo</p>
               <p>{originWeather.destinationLabel}: {originWeather.hourlyForecast.temperatureC} °C, sensação {originWeather.hourlyForecast.apparentTemperatureC} °C, visibilidade {originWeather.hourlyForecast.visibilityKm} km → {weather.destinationLabel}: {weather.hourlyForecast.temperatureC} °C, sensação {weather.hourlyForecast.apparentTemperatureC} °C, visibilidade {weather.hourlyForecast.visibilityKm} km</p>
             </div>
-          )}
-          {(weather.sunriseTime || weather.sunsetTime) && (
+            )}
+            {(weather.sunriseTime || weather.sunsetTime) && (
             <p className="mt-1 flex flex-wrap gap-x-3 gap-y-1 text-[10px] font-medium">
               {weather.sunriseTime && <span className="inline-flex items-center gap-1"><Sunrise className="size-3" aria-hidden="true" />Nascer do sol {weather.sunriseTime}</span>}
               {weather.sunsetTime && <span className="inline-flex items-center gap-1"><Sunset className="size-3" aria-hidden="true" />Pôr do sol {weather.sunsetTime}</span>}
             </p>
-          )}
-          {showAlerts && weather.alerts.map(alert => (
+            )}
+            {showAlerts && weather.alerts.map(alert => (
             <p key={alert.type} className="mt-1 flex items-start gap-1 text-[10px] font-semibold" role="status">
               {alert.type === "wind" ? <Wind className="mt-0.5 size-3 shrink-0" aria-hidden="true" /> : <TriangleAlert className="mt-0.5 size-3 shrink-0" aria-hidden="true" />}
               <span>{alert.label}</span>
             </p>
-          ))}
-          {showAlerts && originWeather?.available && originWeather.alerts.filter(alert => alert.type === "visibility").map(alert => (
+            ))}
+            {showAlerts && originWeather?.available && originWeather.alerts.filter(alert => alert.type === "visibility").map(alert => (
             <p key={`origin-${alert.type}`} className="mt-1 flex items-start gap-1 text-[10px] font-semibold" role="status">
               <TriangleAlert className="mt-0.5 size-3 shrink-0" aria-hidden="true" />
               <span>Origem {originWeather.destinationLabel}: {alert.label.replace("Atenção: ", "")}</span>
             </p>
-          ))}
-          <a
+            ))}
+            <a
             href={weather.sourceUrl}
             target="_blank"
             rel="noopener noreferrer"
             className="mt-1 inline-flex text-[10px] font-semibold underline underline-offset-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-current"
           >
             Previsão para {weather.forecastDate.split("-").reverse().join("/")} · Fonte: {weather.sourceLabel}
-          </a>
+            </a>
+          </> : <p className="mt-1 text-[10px] font-medium">Detalhes da previsão ocultos.</p>}
         </div>
       ) : (
         <div className="mt-1 text-[11px] leading-relaxed text-slate-700">
@@ -202,10 +226,19 @@ export default function FlightPopup({
     w.returnRescheduled || w.returnCancelled
   );
   const [weatherAlertsVisible, setWeatherAlertsVisible] = useState(() => readWeatherAlertsVisible());
+  const [weatherDetailsVisibility, setWeatherDetailsVisibility] = useState(() => readWeatherDetailsVisibility());
 
   useEffect(() => {
     saveWeatherAlertsVisible(weatherAlertsVisible);
   }, [weatherAlertsVisible]);
+
+  useEffect(() => {
+    saveWeatherDetailsVisibility(weatherDetailsVisibility);
+  }, [weatherDetailsVisibility]);
+
+  const toggleWeatherDetails = (leg: WeatherLeg) => {
+    setWeatherDetailsVisibility(current => ({ ...current, [leg]: !current[leg] }));
+  };
 
   const depTime = extractTime(w.departureFlightDatetime);
   const retTime = extractTime(w.returnFlightDatetime);
@@ -447,6 +480,9 @@ export default function FlightPopup({
                 tone="blue"
                 showAlerts={weatherAlertsVisible}
                 onToggleAlerts={() => setWeatherAlertsVisible(current => !current)}
+                detailsVisible={weatherDetailsVisibility.departure}
+                onToggleDetails={() => toggleWeatherDetails("departure")}
+                detailsId={`weather-details-${w.weekNumber}-departure`}
               />
               {w.departureLocator && (
                 <div className="col-span-2">
@@ -542,6 +578,9 @@ export default function FlightPopup({
                   tone="orange"
                   showAlerts={weatherAlertsVisible}
                   onToggleAlerts={() => setWeatherAlertsVisible(current => !current)}
+                  detailsVisible={weatherDetailsVisibility.return}
+                  onToggleDetails={() => toggleWeatherDetails("return")}
+                  detailsId={`weather-details-${w.weekNumber}-return`}
                 />
                 {w.returnLocator && (
                   <div className="col-span-2">

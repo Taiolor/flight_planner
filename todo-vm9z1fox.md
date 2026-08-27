@@ -218,6 +218,7 @@
 - [x] Corrigir o carregamento de ícones, imagens e marcas de companhias aéreas na versão publicada
 - [x] Corrigir a exibição visível do mapa na tela Locais de Acesso após publicação
 - [x] Cobrir ativos e mapa com regressões de produção e contingência
-- [ ] Corrigir a entrega de imagens, ícones e logos que falha exclusivamente no domínio publicado
-- [ ] Validar as URLs de ativos finais no domínio publicado, inclusive em navegação sem cache
-- [ ] Restaurar a consulta de previsão meteorológica que passou a falhar no Calendário publicado
+- [x] Corrigir a entrega de imagens, ícones e logos que falha exclusivamente no domínio publicado
+- [x] Validar as URLs de ativos finais no domínio publicado, inclusive em navegação sem cache
+- [x] Restaurar a consulta de previsão meteorológica que passou a falhar no Calendário publicado
+- [ ] Corrigir o controle de ocultar detalhes da previsão nos cards de bilhetes do Calendário

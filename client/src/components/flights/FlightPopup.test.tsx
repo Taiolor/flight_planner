@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import React from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import FlightPopup from "./FlightPopup";
@@ -134,9 +134,42 @@ describe("FlightPopup", () => {
     expect(screen.getByText("Pôr do sol 17:48")).toBeTruthy();
     expect(screen.getByText(/Origem × destino no horário do voo/)).toBeTruthy();
     expect(screen.getByText(/Guarulhos: 24 °C, sensação 24 °C, visibilidade 10 km/)).toBeTruthy();
+    expect(screen.getAllByRole("button", { name: "Ocultar detalhes" })).toHaveLength(2);
     expect(screen.getAllByRole("button", { name: "Ocultar alertas" })).toHaveLength(2);
     expect(screen.getByText("Atenção: chuva relevante prevista no horário do voo.")).toBeTruthy();
     expect(screen.getByText(/Fonte: Open-Meteo/).getAttribute("href")).toBe("https://open-meteo.com/");
+  });
+
+  it("recolhe os detalhes de um trecho sem ocultar o resumo ou o outro trecho", () => {
+    weatherState.useQuery.mockReturnValue({
+      isLoading: false,
+      data: {
+        available: true,
+        destinationLabel: "Navegantes",
+        summary: "Parcialmente nublado",
+        weatherCode: 2,
+        temperatureMinC: 20,
+        temperatureMaxC: 24,
+        precipitationProbability: 20,
+        windSpeedKmh: 18,
+        uvIndexMax: 5.6,
+        forecastDate: "2026-08-23",
+        sunriseTime: null,
+        sunsetTime: null,
+        hourlyForecast: null,
+        alerts: [],
+        sourceLabel: "Open-Meteo",
+        sourceUrl: "https://open-meteo.com/",
+      },
+    });
+    render(<FlightPopup mark={makeMark()} onClose={() => {}} />);
+
+    fireEvent.click(screen.getAllByRole("button", { name: "Ocultar detalhes" })[0]!);
+
+    expect(screen.getAllByText("Detalhes da previsão ocultos.")).toHaveLength(1);
+    expect(screen.getByRole("button", { name: "Ver detalhes" }).getAttribute("aria-expanded")).toBe("false");
+    expect(screen.getAllByText("Navegantes: Parcialmente nublado")).toHaveLength(2);
+    expect(screen.getAllByText(/20–24 °C/)).toHaveLength(1);
   });
 
   it("mantém o card de clima visível e explica quando a previsão está indisponível", () => {
