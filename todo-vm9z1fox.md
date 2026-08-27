@@ -231,4 +231,4 @@
 - [x] Corrigir o dimensionamento e a área clicável de fechamento do detalhe de bilhete em telas móveis
 - [x] Validar no domínio publicado o cabeçalho móvel e o modal de bilhete em largura crítica
 - [x] Corrigir o contraste do rótulo Exportar PDF no menu suspenso móvel
-- [ ] Validar a legibilidade de Exportar PDF no menu móvel do domínio publicado
+- [x] Validar a legibilidade de Exportar PDF no menu móvel do domínio publicado
