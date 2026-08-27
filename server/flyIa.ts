@@ -389,6 +389,7 @@ export async function buildWeatherAnswerFromWeeks(
   const precipitationAlert = getPrecipitationAlert(weather);
   const weatherAlerts = getWeatherAlerts(weather);
   const packingGuidance = getPackingGuidance(weather);
+  const upcomingDailyForecast = weather.dailyForecast?.slice(1) ?? [];
   return {
     text: [
       "**Previsão no destino do próximo voo**",
@@ -397,6 +398,9 @@ export async function buildWeatherAnswerFromWeeks(
       `- **Temperatura:** ${weather.temperatureMinC}–${weather.temperatureMaxC} °C.`,
       `- **Chuva:** ${weather.precipitationProbability}% · **Vento:** ${weather.windSpeedKmh} km/h.`,
       `- **Índice UV máximo:** ${weather.uvIndexMax}.`,
+      upcomingDailyForecast.length > 0
+        ? `- **Próximos dias:** ${upcomingDailyForecast.map(day => `${day.date.slice(8, 10)}/${day.date.slice(5, 7)}: ${day.summary.toLocaleLowerCase("pt-BR")}, ${day.temperatureMinC}–${day.temperatureMaxC} °C`).join(" · ")}.`
+        : null,
       ...weatherAlerts.map(alert => `- **Atenção meteorológica:** ${alert.label}`),
       `- **Bagagem sugerida:** ${packingGuidance.join("; ")}.`,
       `- **Fonte:** [${weather.sourceLabel}](${weather.sourceUrl}).`,

@@ -17,15 +17,15 @@ describe("getDestinationWeather", () => {
       ok: true,
       text: async () => JSON.stringify({
         daily: {
-          time: ["2026-08-05"],
-          temperature_2m_min: [19.4],
-          temperature_2m_max: [23.6],
-          precipitation_probability_max: [35.4],
-          weather_code: [2],
-          wind_speed_10m_max: [16.7],
-          uv_index_max: [5.6],
-          sunrise: ["2026-08-05T06:42"],
-          sunset: ["2026-08-05T17:54"],
+          time: ["2026-08-05", "2026-08-06", "2026-08-07"],
+          temperature_2m_min: [19.4, 18.2, 17.6],
+          temperature_2m_max: [23.6, 25.4, 22.1],
+          precipitation_probability_max: [35.4, 70, 15],
+          weather_code: [2, 61, 0],
+          wind_speed_10m_max: [16.7, 21.2, 12.4],
+          uv_index_max: [5.6, 4.2, 6.1],
+          sunrise: ["2026-08-05T06:42", "2026-08-06T06:42", "2026-08-07T06:43"],
+          sunset: ["2026-08-05T17:54", "2026-08-06T17:54", "2026-08-07T17:55"],
         },
         hourly: {
           time: ["2026-08-05T14:00", "2026-08-05T15:00"],
@@ -56,6 +56,11 @@ describe("getDestinationWeather", () => {
       windSpeedKmh: 17,
       uvIndexMax: 5.6,
       weatherCode: 2,
+      dailyForecast: [
+        { date: "2026-08-05", summary: "Parcialmente nublado", weatherCode: 2, temperatureMinC: 19, temperatureMaxC: 24, precipitationProbability: 35 },
+        { date: "2026-08-06", summary: "Chuva fraca", weatherCode: 61, temperatureMinC: 18, temperatureMaxC: 25, precipitationProbability: 70 },
+        { date: "2026-08-07", summary: "Céu limpo", weatherCode: 0, temperatureMinC: 18, temperatureMaxC: 22, precipitationProbability: 15 },
+      ],
       hourlyForecast: {
         time: "2026-08-05T14:00",
         summary: "Chuva moderada",
@@ -81,7 +86,8 @@ describe("getDestinationWeather", () => {
     expect(requestUrl.hostname).toBe("api.open-meteo.com");
     expect(requestUrl.searchParams.get("latitude")).toBe("-26.8798");
     expect(requestUrl.searchParams.get("start_date")).toBe("2026-08-05");
-    expect(requestUrl.searchParams.get("forecast_days")).toBe("16");
+    expect(requestUrl.searchParams.get("forecast_days")).toBe("5");
+    expect(requestUrl.searchParams.get("end_date")).toBe("2026-08-09");
     expect(requestUrl.searchParams.get("hourly")).toContain("wind_gusts_10m");
     expect(requestUrl.searchParams.get("hourly")).toContain("wind_direction_10m");
     expect(requestUrl.searchParams.get("hourly")).toContain("apparent_temperature");
