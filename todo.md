@@ -858,6 +858,7 @@
 - [x] Atualizar a habilidade reutilizável com o processo de evolução segura aplicado ao Smart Fly
 - [x] Adicionar ícones visuais e previsão dos próximos dias nos dados meteorológicos do Fly.IA
 - [x] Adicionar autocompletar de destinos na busca do Calendário
+- [x] Adicionar alerta de chuva na Central de Decisão pela previsão dos próximos dias
 
 ## Processo reutilizável
 

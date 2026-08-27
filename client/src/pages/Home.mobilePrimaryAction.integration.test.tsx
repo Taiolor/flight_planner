@@ -122,6 +122,9 @@ vi.mock("@/lib/trpc", () => ({
     additionalFlights: {
       getYear: { useQuery: () => emptyQuery },
     },
+    destinationWeather: {
+      forecast: { useQuery: () => ({ data: undefined, isLoading: false, isFetching: false }) },
+    },
     useUtils: () => trpcUtils,
   },
 }));

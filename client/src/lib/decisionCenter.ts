@@ -12,6 +12,9 @@ export type DecisionWeek = {
   returnRescheduled?: number;
   departureCancelled?: number;
   returnCancelled?: number;
+  departureFlightDatetime?: string | null;
+  returnFlightDatetime?: string | null;
+  ticketType?: string | null;
 };
 
 export type DecisionSeverity = "critical" | "warning" | "info";
@@ -19,6 +22,7 @@ export type DecisionDestination = "management" | "calendar";
 
 export type DecisionItem = {
   id: string;
+  kind?: "weather";
   severity: DecisionSeverity;
   destination: DecisionDestination;
   weekNumber: number;

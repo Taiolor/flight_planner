@@ -9,6 +9,7 @@ import {
   ChevronUp,
   CircleCheck,
   Clock3,
+  CloudRain,
   RefreshCw,
   Ticket,
   TrendingDown,
@@ -65,6 +66,11 @@ type ItemRowProps = {
 
 function DecisionItemRow({ item, onOpen, onAdjustRelevance }: ItemRowProps) {
   const presentation = severityPresentation[item.severity];
+  const StatusIcon = item.kind === "weather"
+    ? CloudRain
+    : item.severity === "critical"
+      ? AlertTriangle
+      : Ticket;
   const variationLabel = item.priceVariationPercent === null
     ? "sem referência anual suficiente"
     : `${item.priceVariationPercent >= 0 ? "+" : ""}${item.priceVariationPercent}% vs. referência anual`;
@@ -78,7 +84,7 @@ function DecisionItemRow({ item, onOpen, onAdjustRelevance }: ItemRowProps) {
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
-            <StatusPill tone={presentation.tone} icon={item.severity === "critical" ? AlertTriangle : Ticket}>
+            <StatusPill tone={presentation.tone} icon={StatusIcon}>
               {presentation.label}
             </StatusPill>
             <p className="font-semibold text-white">{item.title}</p>

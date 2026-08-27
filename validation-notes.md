@@ -6,3 +6,4 @@
 - 2026-08-27: os controles do Calendário em 320 px e 375 px mantêm o filtro principal, alto contraste e “Mais filtros” alcançáveis sem sobreposição; a legenda de status permanece legível antes da grade anual.
 - 2026-08-27: a busca de voos do Calendário permanece legível e alcançável em 375 px; em 1280 px, ela se integra aos filtros e à legenda sem deslocar a grade anual.
 - 2026-08-27: a busca do Calendário continua alcançável em 375 px após receber sugestões nativas de destino; filtros, legenda e grade anual permanecem sem sobreposição. A rota canônica de validação é `/calendar`.
+- 2026-08-27: a Central de Decisão mantém a hierarquia, os controles e os cartões de prioridade legíveis em desktop e 390 px após a inclusão do alerta meteorológico. As ações continuam em coluna no celular, sem sobreposição.

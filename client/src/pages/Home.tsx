@@ -135,6 +135,7 @@ import { WeeklyPlanning, type WeeklyPlanningItem } from "@/components/WeeklyPlan
 import { PassageManagementFrame } from "@/components/PassageManagementFrame";
 import { DecisionCenter } from "@/components/DecisionCenter";
 import { buildDecisionItemQueue, getNextDecisionTrip, getNextDecisionTrips } from "@/lib/decisionCenter";
+import { buildRainDecisionItem, getNextDecisionWeatherTarget } from "@/lib/decisionWeatherAlert";
 import {
   adjustDecisionWeekRelevance,
   persistDecisionCenterPreferences,
@@ -1219,6 +1220,26 @@ export default function Home({ mode = "home" }: HomeProps) {
     return [];
   }, [weeksQuery.data, additionalFlightsByWeek]);
 
+  const decisionWeatherTarget = useMemo(
+    () => getNextDecisionWeatherTarget(weeksData),
+    [weeksData]
+  );
+  const decisionWeatherQueryInput = useMemo(
+    () => ({
+      airportCode: decisionWeatherTarget?.airportCode ?? "NVT",
+      flightDate: decisionWeatherTarget?.flightDate ?? `${selectedYear}-01-01`,
+      ...(decisionWeatherTarget?.flightTime ? { flightTime: decisionWeatherTarget.flightTime } : {}),
+    }),
+    [decisionWeatherTarget, selectedYear]
+  );
+  const decisionWeatherQuery = trpc.destinationWeather.forecast.useQuery(
+    decisionWeatherQueryInput,
+    {
+      ...queryCachePolicies.default,
+      enabled: decisionWeatherTarget !== null,
+    }
+  );
+
   // ⚡ Otimização: pré-computa o menor preço de cada semana em um mapa
   // Reduz operações de O(n) array allocations por chamada para O(1) lookup
   const lowestPriceMap = useMemo(() => {
@@ -2189,15 +2210,21 @@ export default function Home({ mode = "home" }: HomeProps) {
 
   const annualHasData = annualSummaryData.some(d => d.total > 0);
 
-  const decisionQueue = useMemo(
-    () => buildDecisionItemQueue(
+  const decisionWeatherItem = useMemo(
+    () => buildRainDecisionItem(decisionWeatherTarget, decisionWeatherQuery.data),
+    [decisionWeatherQuery.data, decisionWeatherTarget]
+  );
+  const decisionQueue = useMemo(() => {
+    const items = buildDecisionItemQueue(
       weeksData,
       priceMap,
       new Date(),
       decisionCenterPreferences.relevanceByWeek
-    ),
-    [weeksData, priceMap, decisionCenterPreferences.relevanceByWeek]
-  );
+    );
+    return decisionWeatherItem
+      ? [...items, decisionWeatherItem].sort((left, right) => right.score - left.score || left.weekNumber - right.weekNumber)
+      : items;
+  }, [weeksData, priceMap, decisionCenterPreferences.relevanceByWeek, decisionWeatherItem]);
   const decisionItems = decisionQueue.slice(0, 3);
   const secondaryDecisionItems = decisionQueue.slice(3);
   const nextDecisionTrip = useMemo(
