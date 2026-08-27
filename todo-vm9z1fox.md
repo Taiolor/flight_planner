@@ -221,4 +221,7 @@
 - [x] Corrigir a entrega de imagens, ícones e logos que falha exclusivamente no domínio publicado
 - [x] Validar as URLs de ativos finais no domínio publicado, inclusive em navegação sem cache
 - [x] Restaurar a consulta de previsão meteorológica que passou a falhar no Calendário publicado
-- [ ] Corrigir o controle de ocultar detalhes da previsão nos cards de bilhetes do Calendário
+- [x] Corrigir o controle de ocultar detalhes da previsão nos cards de bilhetes do Calendário
+- [x] Remover o controle redundante de ocultar alertas dos detalhes meteorológicos do bilhete
+- [x] Compactar o modal de detalhes do bilhete e manter o fechamento sempre acessível em celular e desktop
+- [ ] Validar o modal compactado no domínio publicado em uma sessão sem preferência meteorológica anterior

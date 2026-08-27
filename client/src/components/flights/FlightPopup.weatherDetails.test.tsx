@@ -56,8 +56,6 @@ describe("DestinationWeatherPanel", () => {
     destinationDate: "2026-09-07",
     destinationTime: "17:55",
     tone: "blue" as const,
-    showAlerts: true,
-    onToggleAlerts: vi.fn(),
     detailsId: "weather-details-departure",
   };
 

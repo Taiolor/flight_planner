@@ -4,6 +4,7 @@ import React from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import FlightPopup from "./FlightPopup";
 import type { DayMark } from "./types";
+import { WEATHER_DETAILS_STORAGE_KEY } from "@/lib/weatherDetailsPreference";
 
 const weatherState = vi.hoisted(() => ({
   useQuery: vi.fn(),
@@ -45,12 +46,14 @@ const makeMark = (ticketType: "roundtrip" | "oneway" = "roundtrip"): DayMark => 
 afterEach(cleanup);
 
 afterEach(() => {
+  window.localStorage.clear();
   weatherState.useQuery.mockReset();
   weatherState.useQuery.mockReturnValue({ isLoading: false, data: { available: false } });
 });
 
 describe("FlightPopup", () => {
   it("mostra a previsão do destino com fonte na área expandida", () => {
+    window.localStorage.setItem(WEATHER_DETAILS_STORAGE_KEY, '{"departure":true,"return":true}');
     weatherState.useQuery
       .mockReturnValueOnce({
         isLoading: false,
@@ -135,12 +138,13 @@ describe("FlightPopup", () => {
     expect(screen.getByText(/Origem × destino no horário do voo/)).toBeTruthy();
     expect(screen.getByText(/Guarulhos: 24 °C, sensação 24 °C, visibilidade 10 km/)).toBeTruthy();
     expect(screen.getAllByRole("button", { name: "Ocultar detalhes" })).toHaveLength(2);
-    expect(screen.getAllByRole("button", { name: "Ocultar alertas" })).toHaveLength(2);
+    expect(screen.queryByRole("button", { name: /alertas/ })).toBeNull();
     expect(screen.getByText("Atenção: chuva relevante prevista no horário do voo.")).toBeTruthy();
     expect(screen.getByText(/Fonte: Open-Meteo/).getAttribute("href")).toBe("https://open-meteo.com/");
   });
 
   it("recolhe os detalhes de um trecho sem ocultar o resumo ou o outro trecho", () => {
+    window.localStorage.setItem(WEATHER_DETAILS_STORAGE_KEY, '{"departure":true,"return":true}');
     weatherState.useQuery.mockReturnValue({
       isLoading: false,
       data: {
@@ -170,6 +174,47 @@ describe("FlightPopup", () => {
     expect(screen.getByRole("button", { name: "Ver detalhes" }).getAttribute("aria-expanded")).toBe("false");
     expect(screen.getAllByText("Navegantes: Parcialmente nublado")).toHaveLength(2);
     expect(screen.getAllByText(/20–24 °C/)).toHaveLength(1);
+  });
+
+  it("inicia o detalhe do bilhete em modo compacto quando não há preferência anterior", () => {
+    weatherState.useQuery.mockReturnValue({
+      isLoading: false,
+      data: {
+        available: true,
+        destinationLabel: "Navegantes",
+        summary: "Parcialmente nublado",
+        weatherCode: 2,
+        temperatureMinC: 20,
+        temperatureMaxC: 24,
+        precipitationProbability: 20,
+        windSpeedKmh: 18,
+        uvIndexMax: 5.6,
+        forecastDate: "2026-08-23",
+        sunriseTime: null,
+        sunsetTime: null,
+        hourlyForecast: null,
+        alerts: [],
+        sourceLabel: "Open-Meteo",
+        sourceUrl: "https://open-meteo.com/",
+      },
+    });
+    render(<FlightPopup mark={makeMark()} onClose={() => {}} />);
+
+    expect(screen.getAllByRole("button", { name: "Ver detalhes" })).toHaveLength(2);
+    expect(screen.getAllByText("Detalhes da previsão ocultos.")).toHaveLength(2);
+  });
+
+  it("mantém o botão de fechamento acessível enquanto o conteúdo do modal rola", () => {
+    render(<FlightPopup mark={makeMark()} onClose={() => {}} />);
+
+    const dialog = screen.getByRole("dialog", { name: "Semana 26" });
+    const closeButton = screen.getByRole("button", { name: "Fechar calendário" });
+
+    expect(dialog.className).toContain("max-h-[calc(100dvh-1rem)]");
+    expect(dialog.className).toContain("flex-col");
+    expect(closeButton.className).toContain("size-10");
+    expect(closeButton.getAttribute("type")).toBe("button");
+    expect(closeButton.getAttribute("aria-label")).toBe("Fechar calendário");
   });
 
   it("mantém o card de clima visível e explica quando a previsão está indisponível", () => {

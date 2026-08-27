@@ -14,18 +14,18 @@ function makeStorage(initial: Record<string, string> = {}) {
 }
 
 describe("weatherDetailsPreference", () => {
-  it("mantém os detalhes visíveis por padrão e persiste cada trecho de forma independente", () => {
+  it("mantém os detalhes recolhidos por padrão e persiste cada trecho de forma independente", () => {
     const storage = makeStorage();
-    expect(readWeatherDetailsVisibility(storage)).toEqual({ departure: true, return: true });
+    expect(readWeatherDetailsVisibility(storage)).toEqual({ departure: false, return: false });
 
-    saveWeatherDetailsVisibility({ departure: false, return: true }, storage);
+    saveWeatherDetailsVisibility({ departure: true, return: false }, storage);
 
-    expect(storage.getItem(WEATHER_DETAILS_STORAGE_KEY)).toBe('{"departure":false,"return":true}');
-    expect(readWeatherDetailsVisibility(storage)).toEqual({ departure: false, return: true });
+    expect(storage.getItem(WEATHER_DETAILS_STORAGE_KEY)).toBe('{"departure":true,"return":false}');
+    expect(readWeatherDetailsVisibility(storage)).toEqual({ departure: true, return: false });
   });
 
   it("descarta valores locais incompletos ou inválidos", () => {
-    expect(readWeatherDetailsVisibility(makeStorage({ [WEATHER_DETAILS_STORAGE_KEY]: '{"departure":false}' }))).toEqual({ departure: true, return: true });
-    expect(readWeatherDetailsVisibility(makeStorage({ [WEATHER_DETAILS_STORAGE_KEY]: 'invalido' }))).toEqual({ departure: true, return: true });
+    expect(readWeatherDetailsVisibility(makeStorage({ [WEATHER_DETAILS_STORAGE_KEY]: '{"departure":false}' }))).toEqual({ departure: false, return: false });
+    expect(readWeatherDetailsVisibility(makeStorage({ [WEATHER_DETAILS_STORAGE_KEY]: 'invalido' }))).toEqual({ departure: false, return: false });
   });
 });

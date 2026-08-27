@@ -2,11 +2,11 @@ export type WeatherLeg = "departure" | "return";
 
 export type WeatherDetailsVisibility = Record<WeatherLeg, boolean>;
 
-export const WEATHER_DETAILS_STORAGE_KEY = "smartfly.calendar.weather-details-visible.v1";
+export const WEATHER_DETAILS_STORAGE_KEY = "smartfly.calendar.weather-details-visible.v2";
 
 const DEFAULT_VISIBILITY: WeatherDetailsVisibility = {
-  departure: true,
-  return: true,
+  departure: false,
+  return: false,
 };
 
 export function readWeatherDetailsVisibility(
