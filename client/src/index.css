@@ -483,6 +483,62 @@
   .dark .management-navy-theme .dark\:text-blue-400 { color: #c8d6e9; }
   .dark .management-navy-theme .dark\:focus\:ring-blue-500:focus { --tw-ring-color: #aabed9; }
   .dark .management-navy-theme .dark\:hover\:bg-blue-900\/50:hover { background-color: rgb(16 47 97 / 0.85); }
+
+  /* Calendário: contraste reforçado opcional sem alterar os significados dos status. */
+  .calendar-high-contrast {
+    background-color: #ffffff;
+    color: #020617;
+  }
+
+  .calendar-high-contrast .calendar-filter-surface,
+  .calendar-high-contrast .calendar-status-legend,
+  .calendar-high-contrast .calendar-month-card {
+    border-color: #0f172a;
+    border-width: 2px;
+    box-shadow: none;
+  }
+
+  .calendar-high-contrast .calendar-filter-surface,
+  .calendar-high-contrast .calendar-status-legend,
+  .calendar-high-contrast .calendar-month-card {
+    background-color: #ffffff;
+  }
+
+  .calendar-high-contrast .calendar-weekdays {
+    background-color: #e0f2fe;
+    border-color: #0f172a;
+  }
+
+  .calendar-high-contrast [data-calendar-flight-interactive="true"] {
+    outline: 2px solid #0f172a;
+    outline-offset: -2px;
+  }
+
+  .calendar-high-contrast [data-calendar-flight-interactive="true"]:focus-visible {
+    outline: 3px solid #d97706;
+    outline-offset: 1px;
+  }
+
+  .dark .calendar-high-contrast {
+    background-color: #020617;
+    color: #f8fafc;
+  }
+
+  .dark .calendar-high-contrast .calendar-filter-surface,
+  .dark .calendar-high-contrast .calendar-status-legend,
+  .dark .calendar-high-contrast .calendar-month-card {
+    background-color: #0f172a;
+    border-color: #f8fafc;
+  }
+
+  .dark .calendar-high-contrast .calendar-weekdays {
+    background-color: #172554;
+    border-color: #f8fafc;
+  }
+
+  .dark .calendar-high-contrast [data-calendar-flight-interactive="true"] {
+    outline-color: #f8fafc;
+  }
 }
 
 @keyframes gradientShift {

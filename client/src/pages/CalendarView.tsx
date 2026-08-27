@@ -17,6 +17,10 @@ import {
   saveCalendarStatusLegendExpanded,
 } from "@/lib/calendarStatusLegendPreference";
 import {
+  readCalendarDisplayPreferences,
+  saveCalendarDisplayPreferences,
+} from "@/lib/calendarDisplayPreferences";
+import {
   ArrowLeft,
   Plane,
   Circle,
@@ -28,6 +32,7 @@ import {
   ChevronDown,
   ChevronUp,
   AlertCircle,
+  Contrast,
 } from "lucide-react";
 import {
   getGoogleCalendarLink,
@@ -259,6 +264,9 @@ export default function CalendarView() {
   const [isStatusLegendExpanded, setIsStatusLegendExpanded] = useState(
     () => readCalendarStatusLegendExpanded()
   );
+  const [calendarDisplayPreferences, setCalendarDisplayPreferences] = useState(
+    () => readCalendarDisplayPreferences()
+  );
   const [showCupPanel, setShowCupPanel] = useState(() => {
     // Carregar preferência do localStorage
     if (typeof window !== "undefined") {
@@ -276,6 +284,10 @@ export default function CalendarView() {
   useEffect(() => {
     saveCalendarStatusLegendExpanded(isStatusLegendExpanded);
   }, [isStatusLegendExpanded]);
+
+  useEffect(() => {
+    saveCalendarDisplayPreferences(calendarDisplayPreferences);
+  }, [calendarDisplayPreferences]);
 
   const today = useMemo(() => {
     const d = new Date();
@@ -479,7 +491,11 @@ export default function CalendarView() {
     (authCheckQuery.data?.authenticated === true && additionalFlightsQuery.isLoading);
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div
+      className={`min-h-screen bg-slate-50 ${
+        calendarDisplayPreferences.highContrast ? "calendar-high-contrast" : ""
+      }`}
+    >
       {/* Popup flutuante */}
       {selectedMark && (
         <FlightPopup
@@ -525,33 +541,12 @@ export default function CalendarView() {
             </button>
           )}
         </div>
-        <div className="hidden md:flex items-center gap-2 lg:gap-4 text-xs flex-wrap">
-          <span className="flex items-center gap-1">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 inline-block" />
-            <span className="hidden lg:inline">Emitido (futuro)</span>
-            <span className="lg:hidden">Futuro</span>
-          </span>
-          <span className="flex items-center gap-1">
-            <span className="w-2 h-2 rounded-full bg-slate-500 inline-block" />
-            <span className="hidden lg:inline">Emitido (passado)</span>
-            <span className="lg:hidden">Passado</span>
-          </span>
-          <span className="flex items-center gap-1">
-            <span className="w-2 h-2 rounded-full bg-amber-300 inline-block" />
-            Feriado
-          </span>
-          <span className="flex items-center gap-1">
-            <span className="w-2 h-2 rounded-full bg-red-500 inline-block" />
-            Remarcado
-          </span>
-          <span className="flex items-center gap-1">
-            <span className="w-2 h-2 rounded-full bg-slate-700 inline-block" />
-            Cancelado
-          </span>
-          <span className="flex items-center gap-1">
-            <span className="w-2 h-2 rounded-full bg-emerald-200 border border-emerald-400 inline-block" />
-            ⚽ Brasil
-          </span>
+        <div aria-label="Legenda compacta dos status" className="hidden md:flex items-center gap-2 lg:gap-3 text-xs flex-wrap">
+          <StatusPill tone="success" className="px-1.5 py-0 text-[10px]">Emitido</StatusPill>
+          <StatusPill tone="neutral" className="px-1.5 py-0 text-[10px]">Passado</StatusPill>
+          <StatusPill tone="warning" className="px-1.5 py-0 text-[10px]">Feriado</StatusPill>
+          <StatusPill tone="rescheduled" className="px-1.5 py-0 text-[10px]">Remarcado</StatusPill>
+          <StatusPill tone="cancelled" className="px-1.5 py-0 text-[10px]">Cancelado</StatusPill>
         </div>
       </header>
 
@@ -560,11 +555,11 @@ export default function CalendarView() {
       ) : (
         <ContentReveal>
       {/* Filtro */}
-      <div className="px-4 py-4 bg-white/80 backdrop-blur-sm border-b border-purple-200/30 sticky top-16 z-9">
+      <div className="calendar-filter-surface px-4 py-3 bg-white/80 backdrop-blur-sm border-b border-purple-200/30 sticky top-16 z-9">
         <div className="max-w-7xl mx-auto flex flex-wrap items-center gap-3">
           <label
             htmlFor="holiday-filter"
-            className="flex items-center gap-2 cursor-pointer select-none"
+            className="flex items-center gap-2 rounded-lg px-1 py-1 cursor-pointer select-none text-slate-700 transition-colors hover:bg-amber-50 focus-within:ring-2 focus-within:ring-amber-500"
           >
             <input
               id="holiday-filter"
@@ -573,13 +568,53 @@ export default function CalendarView() {
               onChange={e => setShowOnlyHolidaysAndWeekends(e.target.checked)}
               className="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-2 focus:ring-blue-500"
             />
-            <span className="text-sm font-medium text-slate-700">
-              Mostrar apenas feriados e finais de semana prolongados
-            </span>
+            <StatusPill tone="warning">Feriados</StatusPill>
+            <span className="text-sm font-medium">Mostrar apenas feriados e finais de semana prolongados</span>
           </label>
+          <button
+            type="button"
+            onClick={() =>
+              setCalendarDisplayPreferences(preferences => ({
+                ...preferences,
+                highContrast: !preferences.highContrast,
+              }))
+            }
+            aria-pressed={calendarDisplayPreferences.highContrast}
+            className="inline-flex min-h-9 items-center gap-2 rounded-lg border border-slate-300 bg-white px-2.5 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-100 dark:hover:bg-slate-800"
+          >
+            <Contrast className="size-4" aria-hidden="true" />
+            {calendarDisplayPreferences.highContrast
+              ? "Contraste normal"
+              : "Alto contraste"}
+          </button>
+          <button
+            type="button"
+            onClick={() =>
+              setCalendarDisplayPreferences(preferences => ({
+                ...preferences,
+                secondaryFiltersExpanded: !preferences.secondaryFiltersExpanded,
+              }))
+            }
+            aria-expanded={calendarDisplayPreferences.secondaryFiltersExpanded}
+            aria-controls="secondary-calendar-filters"
+            className="inline-flex min-h-9 items-center gap-1 rounded-lg px-2.5 text-sm font-semibold text-[#102f61] transition-colors hover:bg-[#e6eef8] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#315c99] md:hidden"
+          >
+            {calendarDisplayPreferences.secondaryFiltersExpanded
+              ? "Menos filtros"
+              : "Mais filtros"}
+            {calendarDisplayPreferences.secondaryFiltersExpanded ? <ChevronUp className="size-4" aria-hidden="true" /> : <ChevronDown className="size-4" aria-hidden="true" />}
+          </button>
+          <div
+            id="secondary-calendar-filters"
+            className={`w-full items-center gap-3 md:flex md:w-auto ${
+              calendarDisplayPreferences.secondaryFiltersExpanded
+                ? "flex flex-wrap"
+                : "hidden"
+            }`}
+          >
           <label
             htmlFor="cancelled-flights-filter"
-            className="flex items-center gap-2 cursor-pointer select-none"
+            className="flex items-center gap-2 rounded-lg px-1 py-1 cursor-pointer select-none text-slate-700 transition-colors hover:bg-violet-50 focus-within:ring-2 focus-within:ring-violet-600"
           >
             <input
               id="cancelled-flights-filter"
@@ -588,9 +623,8 @@ export default function CalendarView() {
               onChange={e => setShowOnlyCancelledFlights(e.target.checked)}
               className="w-4 h-4 rounded border-slate-300 text-slate-700 focus:ring-2 focus:ring-slate-500"
             />
-            <span className="text-sm font-medium text-slate-700">
-              Mostrar apenas voos cancelados
-            </span>
+            <StatusPill tone="cancelled">Cancelados</StatusPill>
+            <span className="text-sm font-medium">Mostrar apenas voos cancelados</span>
           </label>
           <label
             htmlFor="rescheduled-flights-filter"
@@ -603,10 +637,15 @@ export default function CalendarView() {
               onChange={e => setShowOnlyRescheduledFlights(e.target.checked)}
               className="w-4 h-4 rounded border-slate-300 text-rose-600 focus:ring-2 focus:ring-rose-500"
             />
-            <span className="text-sm font-medium text-slate-700">
-              Mostrar apenas voos remarcados
-            </span>
+            <StatusPill tone="rescheduled">Remarcados</StatusPill>
+            <span className="text-sm font-medium">Mostrar apenas voos remarcados</span>
           </label>
+          </div>
+          <span className="sr-only" aria-live="polite">
+            {calendarDisplayPreferences.highContrast
+              ? "Modo de alto contraste ativado"
+              : "Modo de alto contraste desativado"}
+          </span>
         </div>
       </div>
 
@@ -623,7 +662,7 @@ export default function CalendarView() {
 
       {/* Grade anual */}
       <main className="px-4 py-6 max-w-7xl mx-auto">
-        <section aria-label="Legenda persistente de status dos voos" className="mb-4 rounded-2xl border border-[#c8d6e9] bg-white/90 px-3 py-2 shadow-sm dark:border-slate-700 dark:bg-slate-900/90">
+        <section aria-label="Legenda persistente de status dos voos" className="calendar-status-legend mb-4 rounded-2xl border border-[#c8d6e9] bg-white/90 px-3 py-2 shadow-sm dark:border-slate-700 dark:bg-slate-900/90">
           <div className="flex items-center justify-between gap-3">
             <span className="text-xs font-semibold text-[#071a36] dark:text-white">Status dos voos</span>
             <button
@@ -659,7 +698,7 @@ export default function CalendarView() {
             return (
               <div
                 key={monthIdx}
-                className="bg-white rounded-2xl shadow-lg border border-[#c8d6e9] overflow-hidden hover:shadow-xl transition-shadow"
+                className="calendar-month-card bg-white rounded-2xl shadow-lg border border-[#c8d6e9] overflow-hidden hover:shadow-xl transition-shadow"
               >
                 <div className="bg-gradient-to-r from-[#0b2349] to-[#17427e] px-3 py-2 flex items-center justify-between">
                   <span className="text-white font-bold text-sm">
@@ -673,7 +712,7 @@ export default function CalendarView() {
                   )}
                 </div>
 
-                <div className="grid grid-cols-7 bg-blue-50 border-b border-blue-100">
+                <div className="calendar-weekdays grid grid-cols-7 bg-blue-50 border-b border-blue-100">
                   {WEEKDAYS.map((wd, i) => (
                     <div
                       key={i}

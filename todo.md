@@ -851,6 +851,9 @@
 - [x] Adicionar skeletons responsivos e acessíveis à Home após a splash screen
 - [x] Preparar proposta visual de cartão Apple Wallet e código de referência do botão de adição
 - [x] Remover a tag textual de remarcação sobre os dias do Calendário no celular
+- [x] Padronizar a legenda de status em todos os filtros do Calendário
+- [x] Adicionar modo de alto contraste ao Calendário
+- [x] Permitir recolher filtros secundários do Calendário no celular
 
 ## Processo reutilizável
 
