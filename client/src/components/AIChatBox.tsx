@@ -3,7 +3,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
-import { Cloud, CloudLightning, CloudRain, CloudSun, Droplets, ExternalLink, Loader2, MapPinned, Mic, Send, Square, Sun, ThermometerSun, User, Wind, Sparkles } from "lucide-react";
+import { AlertTriangle, Cloud, CloudLightning, CloudRain, CloudSun, Droplets, ExternalLink, Loader2, Luggage, MapPinned, Mic, Send, Square, Sun, ThermometerSun, User, Wind, Sparkles } from "lucide-react";
 import React, { useState, useEffect, useRef } from "react";
 import { Streamdown } from "streamdown";
 
@@ -28,6 +28,9 @@ export type Message = {
     windSpeedKmh: number;
     sourceLabel: string;
     sourceUrl: string;
+    travelLeg?: "Ida" | "Volta";
+    precipitationAlert?: string;
+    packingGuidance?: string[];
   };
 };
 
@@ -162,7 +165,7 @@ function WeatherResponseCard({ weather }: { weather: NonNullable<Message["weathe
         <WeatherIcon summary={weather.summary} />
         <div className="min-w-0">
           <p className="text-xs font-bold">Clima em {weather.destinationLabel}</p>
-          <p className="text-[11px] text-slate-600 dark:text-slate-300">{date} · {weather.summary}</p>
+          <p className="text-[11px] text-slate-600 dark:text-slate-300">{weather.travelLeg ? `${weather.travelLeg} · ` : ""}{date} · {weather.summary}</p>
         </div>
       </div>
       <div className="grid grid-cols-3 divide-x divide-sky-200/80 dark:divide-sky-900/70">
@@ -182,6 +185,18 @@ function WeatherResponseCard({ weather }: { weather: NonNullable<Message["weathe
           <p className="text-xs font-semibold">{weather.windSpeedKmh} km/h</p>
         </div>
       </div>
+      {weather.precipitationAlert && (
+        <div className="mx-3 mt-2 flex items-start gap-1.5 rounded-lg border border-amber-300 bg-amber-50 px-2.5 py-2 text-[11px] font-medium text-amber-900 dark:border-amber-700 dark:bg-amber-950/40 dark:text-amber-100" role="status" data-testid="flyia-weather-alert">
+          <AlertTriangle className="mt-0.5 size-3.5 shrink-0" aria-hidden="true" />
+          <span>{weather.precipitationAlert}</span>
+        </div>
+      )}
+      {weather.packingGuidance && weather.packingGuidance.length > 0 && (
+        <div className="mx-3 mt-2 flex items-start gap-1.5 rounded-lg bg-white/65 px-2.5 py-2 text-[11px] text-slate-700 dark:bg-slate-950/35 dark:text-slate-200" aria-label={`Bagagem sugerida: ${weather.packingGuidance.join(", ")}`} data-testid="flyia-weather-packing">
+          <Luggage className="mt-0.5 size-3.5 shrink-0 text-violet-700 dark:text-violet-300" aria-hidden="true" />
+          <span><strong>Na mala:</strong> {weather.packingGuidance.join("; ")}.</span>
+        </div>
+      )}
       <a
         href={weather.sourceUrl}
         target="_blank"

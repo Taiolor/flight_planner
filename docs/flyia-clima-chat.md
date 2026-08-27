@@ -14,6 +14,12 @@ A previsão é diária e pode ser exibida somente dentro da janela suportada pel
 
 Além da resposta textual, o chat exibe um cartão com ícone de condição, cidade, data, temperatura mínima e máxima, chuva, vento e um link seguro para a fonte. Os indicadores não dependem apenas de cor: todos os valores têm rótulos textuais e descrições para leitores de tela. O ícone acompanha o resumo meteorológico, incluindo céu limpo, nuvens, chuva e trovoadas.
 
+## Trecho, chuva e bagagem
+
+Quando a pergunta mencionar **ida**, o Fly.IA consulta o trecho de ida; quando mencionar **volta** ou **retorno**, consulta o trecho de volta. Sem essa indicação, utiliza o próximo trecho emitido. O cartão identifica o trecho selecionado para impedir que a previsão seja confundida com outro voo da mesma viagem.
+
+O cartão inclui um alerta textual com ícone quando a condição mencionar chuva intensa, pancadas fortes ou trovoadas, ou quando a probabilidade diária de chuva for alta. Ele também sugere itens de preparação de baixo risco, como guarda-chuva ou capa leve, casaco leve e roupas adequadas a calor. Essas sugestões não substituem regras de bagagem, nem informam condições operacionais de voo.
+
 > A previsão orienta o preparo da viagem. Informações operacionais do voo, como horário, terminal, portão, atraso e cancelamento, continuam tendo como fonte exclusiva a base SmartFly e os canais da companhia aérea.
 
 ## Referência

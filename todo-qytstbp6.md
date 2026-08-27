@@ -258,3 +258,9 @@
 - [x] Adicionar chips de clima e um cartão visual de previsão às respostas aplicáveis do Fly.IA.
 - [x] Criar regressões de sugestões, dados, acessibilidade e responsividade; documentar e versionar a melhoria.
 - [x] Salvar checkpoint das sugestões e do cartão visual de clima do Fly.IA.
+- [x] Mapear ida e volta emitidas para selecionar qual previsão meteorológica o Fly.IA deve consultar.
+- [x] Definir alerta acessível de chuva intensa e recomendações prudentes de bagagem por condição meteorológica.
+- [x] Permitir escolher ida ou volta nas perguntas de clima sem alterar os dados persistidos do voo.
+- [x] Exibir alerta e recomendação de bagagem no cartão visual de previsão do Fly.IA.
+- [x] Criar regressões de seleção, chuva, bagagem, acessibilidade e responsividade; documentar e versionar as três melhorias.
+- [x] Salvar checkpoint da seleção de trecho, alerta de chuva e bagagem do Fly.IA.

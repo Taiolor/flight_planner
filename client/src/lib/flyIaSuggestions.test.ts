@@ -38,8 +38,8 @@ describe("getFlyIaFollowUpPrompts", () => {
   it("sugere perguntas meteorológicas após uma resposta sobre clima", () => {
     expect(getFlyIaFollowUpPrompts("**Previsão no destino**\nCondição: Chuva fraca.")).toEqual([
       "Vai chover quando eu chegar?",
-      "Qual será a temperatura no destino?",
-      "Como estará o vento no aeroporto?",
+      "Como estará o clima da volta?",
+      "O que devo levar na mala para o destino?",
     ]);
   });
 

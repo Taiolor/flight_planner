@@ -33,7 +33,9 @@ describe("AIChatBox cartão meteorológico", () => {
       weather: {
         destinationLabel: "Navegantes", forecastDate: "2026-04-26", summary: "Chuva fraca",
         temperatureMinC: 18, temperatureMaxC: 24, precipitationProbability: 60, windSpeedKmh: 22,
-        sourceLabel: "Open-Meteo", sourceUrl: "https://open-meteo.com/",
+        sourceLabel: "Open-Meteo", sourceUrl: "https://open-meteo.com/", travelLeg: "Volta",
+        precipitationAlert: "Atenção: há condição de chuva intensa na previsão.",
+        packingGuidance: ["guarda-chuva compacto ou capa leve", "casaco leve para manhã ou noite"],
       },
     }]);
 
@@ -42,6 +44,9 @@ describe("AIChatBox cartão meteorológico", () => {
     expect(card?.textContent).toContain("18–24 °C");
     expect(card?.textContent).toContain("60%");
     expect(card?.textContent).toContain("22 km/h");
+    expect(card?.textContent).toContain("Volta · 26/04/2026");
+    expect(document.querySelector("[data-testid='flyia-weather-alert']")?.textContent).toContain("chuva intensa");
+    expect(document.querySelector("[data-testid='flyia-weather-packing']")?.textContent).toContain("guarda-chuva compacto");
     const source = card?.querySelector<HTMLAnchorElement>("a");
     expect(source?.href).toBe("https://open-meteo.com/");
     expect(source?.rel).toContain("noopener");

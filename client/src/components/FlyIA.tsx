@@ -32,6 +32,8 @@ const SUGGESTED_PROMPTS = [
   "Como estará o tempo no destino?",
   "Vai chover quando eu chegar?",
   "Qual será a temperatura no destino?",
+  "Como estará o clima da volta?",
+  "O que devo levar na mala para o destino?",
 ];
 
 type FlyIaClientMessage = {
@@ -47,6 +49,9 @@ type FlyIaClientMessage = {
     windSpeedKmh: number;
     sourceLabel: string;
     sourceUrl: string;
+    travelLeg?: "Ida" | "Volta";
+    precipitationAlert?: string;
+    packingGuidance?: string[];
   };
 };
 

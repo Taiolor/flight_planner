@@ -210,7 +210,35 @@ describe("Fly.IA", () => {
 
     expect(answer?.text).toContain("GRU → NVT");
     expect(answer?.text).toContain("**Chuva:** 60%");
-    expect(answer?.weather).toMatchObject({ destinationLabel: "Navegantes", windSpeedKmh: 22 });
+    expect(answer?.text).toContain("**Bagagem sugerida:** guarda-chuva compacto ou capa leve; casaco leve para manhã ou noite.");
+    expect(answer?.weather).toMatchObject({ destinationLabel: "Navegantes", travelLeg: "Ida", windSpeedKmh: 22 });
+  });
+
+  it("seleciona a volta quando a pergunta meteorológica indica esse trecho", async () => {
+    const weeks = [{
+      year: 2026, weekNumber: 17, isTicketIssued: 1, isDeleted: 0,
+      departureFlightDatetime: "2026-04-26T22:05", returnFlightDatetime: "2026-04-29T20:30",
+      departureAirport: "GRU", returnAirport: "NVT", departureAirline: "LATAM", returnAirline: "LATAM",
+      departureFlightNumber: "LA1234", returnFlightNumber: "LA1235", departureTerminal: "2", returnTerminal: "2",
+      departureCancelled: 0, returnCancelled: 0, departureRescheduled: 0, returnRescheduled: 0, ticketType: "roundtrip",
+    }] as never;
+    const getWeather = vi.fn(async () => ({
+      available: true, airportCode: "GRU", destinationLabel: "Guarulhos", forecastDate: "2026-04-29",
+      summary: "Chuva forte", temperatureMinC: 17, temperatureMaxC: 22, precipitationProbability: 80,
+      windSpeedKmh: 28, sourceLabel: "Open-Meteo", sourceUrl: "https://open-meteo.com/",
+    }));
+
+    const answer = await buildWeatherAnswerFromWeeks(
+      weeks,
+      [{ role: "user", content: "Como estará o clima da volta?" }],
+      "2026-04-01",
+      getWeather
+    );
+
+    expect(getWeather).toHaveBeenCalledWith("GRU", "2026-04-29");
+    expect(answer?.text).toContain("**Trecho selecionado:** Volta · NVT → GRU");
+    expect(answer?.weather).toMatchObject({ travelLeg: "Volta", precipitationAlert: "Atenção: há condição de chuva intensa na previsão." });
+    expect(answer?.weather?.packingGuidance).toContain("guarda-chuva compacto ou capa leve");
   });
 
   it("repete os detalhes completos quando a pergunta seguinte pede detalhes do próximo voo", () => {

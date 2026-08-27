@@ -137,7 +137,11 @@ export type FlightLeg = {
 export type FlyIaDeterministicAnswer = {
   text: string;
   trackingUrl?: string;
-  weather?: Extract<DestinationWeather, { available: true }>;
+  weather?: Extract<DestinationWeather, { available: true }> & {
+    travelLeg: "Ida" | "Volta";
+    precipitationAlert?: string;
+    packingGuidance: string[];
+  };
 };
 
 function isNextFlightQuestion(messages: FlyIaMessage[]) {
@@ -159,6 +163,13 @@ function isFlightTrackingQuestion(messages: FlyIaMessage[]) {
 function isWeatherQuestion(messages: FlyIaMessage[]) {
   const question = messages.filter(message => message.role === "user").at(-1)?.content ?? "";
   return /clima|meteorolog|previs[aã]o|chuva|temperatura|vento|tempo.*destino|destino.*tempo/i.test(question);
+}
+
+function requestedWeatherDirection(messages: FlyIaMessage[]): FlightLeg["direction"] | null {
+  const question = messages.filter(message => message.role === "user").at(-1)?.content ?? "";
+  if (/\b(?:volta|retorno)\b/i.test(question)) return "volta";
+  if (/\bida\b/i.test(question)) return "ida";
+  return null;
 }
 
 export function createFlightradarFlightUrl(flightNumber: string | null) {
@@ -216,6 +227,36 @@ export function findNextIssuedFlight(weeks: FlightWeek[], today = getSaoPauloDat
     .flatMap(week => getWeekLegs(week, today).map(flight => ({ week, flight })))
     .filter(({ flight }) => flight.status !== "Cancelado" && flight.datetime.slice(0, 10) >= today)
     .sort((a, b) => a.flight.datetime.localeCompare(b.flight.datetime))[0] ?? null;
+}
+
+function findWeatherFlight(weeks: FlightWeek[], messages: FlyIaMessage[], today: string): UpcomingIssuedFlight | null {
+  const direction = requestedWeatherDirection(messages);
+  return weeks
+    .filter(week => Boolean(week.isTicketIssued) && !Boolean(week.isDeleted))
+    .flatMap(week => getWeekLegs(week, today).map(flight => ({ week, flight })))
+    .filter(({ flight }) => flight.status !== "Cancelado" && flight.datetime.slice(0, 10) >= today)
+    .filter(({ flight }) => !direction || flight.direction === direction)
+    .sort((a, b) => a.flight.datetime.localeCompare(b.flight.datetime))[0] ?? null;
+}
+
+function getPackingGuidance(weather: Extract<DestinationWeather, { available: true }>) {
+  const guidance: string[] = [];
+  if (weather.precipitationProbability >= 40 || /chuva|garoa|pancada|trovo/i.test(weather.summary)) {
+    guidance.push("guarda-chuva compacto ou capa leve");
+  }
+  if (weather.temperatureMinC <= 18) guidance.push("casaco leve para manhã ou noite");
+  if (weather.temperatureMaxC >= 28) guidance.push("roupas leves e garrafa de água");
+  return guidance.length > 0 ? guidance.slice(0, 2) : ["uma camada leve para variações de temperatura"];
+}
+
+function getPrecipitationAlert(weather: Extract<DestinationWeather, { available: true }>) {
+  if (/chuva forte|pancadas fortes|trovoada/i.test(weather.summary)) {
+    return "Atenção: há condição de chuva intensa na previsão.";
+  }
+  if (weather.precipitationProbability >= 70) {
+    return `Atenção: a chance máxima de chuva é alta (${weather.precipitationProbability}%).`;
+  }
+  return undefined;
 }
 
 function isBoardingGuidanceQuestion(messages: FlyIaMessage[]) {
@@ -309,9 +350,9 @@ export async function buildWeatherAnswerFromWeeks(
 ): Promise<FlyIaDeterministicAnswer | null> {
   if (!isWeatherQuestion(messages)) return null;
 
-  const next = findNextIssuedFlight(weeks, today);
+  const next = findWeatherFlight(weeks, messages, today);
   if (!next) {
-    return { text: "Não há um próximo voo emitido e ativo registrado para consultar a previsão do destino." };
+    return { text: "Não há um trecho emitido e ativo registrado para consultar a previsão do destino." };
   }
 
   const weather = await getWeather(next.flight.airportTo, next.flight.datetime.slice(0, 10));
@@ -327,18 +368,23 @@ export async function buildWeatherAnswerFromWeeks(
     };
   }
 
+  const travelLeg = next.flight.direction === "ida" ? "Ida" : "Volta";
+  const precipitationAlert = getPrecipitationAlert(weather);
+  const packingGuidance = getPackingGuidance(weather);
   return {
     text: [
       "**Previsão no destino do próximo voo**",
-      `- **Voo cadastrado:** ${next.flight.airportFrom} → ${next.flight.airportTo} em ${formatFlightDatetime(next.flight.datetime)}.`,
+      `- **Trecho selecionado:** ${travelLeg} · ${next.flight.airportFrom} → ${next.flight.airportTo} em ${formatFlightDatetime(next.flight.datetime)}.`,
       `- **Condição:** ${weather.summary}.`,
       `- **Temperatura:** ${weather.temperatureMinC}–${weather.temperatureMaxC} °C.`,
       `- **Chuva:** ${weather.precipitationProbability}% · **Vento:** ${weather.windSpeedKmh} km/h.`,
+      precipitationAlert ? `- **Atenção meteorológica:** ${precipitationAlert}` : null,
+      `- **Bagagem sugerida:** ${packingGuidance.join("; ")}.`,
       `- **Fonte:** [${weather.sourceLabel}](${weather.sourceUrl}).`,
       "",
       "A previsão é uma estimativa diária e não altera os dados do voo cadastrados no SmartFly.",
     ].join("\n"),
-    weather,
+    weather: { ...weather, travelLeg, precipitationAlert, packingGuidance },
   };
 }
 

@@ -111,8 +111,8 @@ export function getFlyIaFollowUpPrompts(
   if (/clima|meteorolog|previsao|chuva|temperatura|vento|tempo.*destino|destino.*tempo/.test(normalized)) {
     prompts = [
       "Vai chover quando eu chegar?",
-      "Qual será a temperatura no destino?",
-      "Como estará o vento no aeroporto?",
+      "Como estará o clima da volta?",
+      "O que devo levar na mala para o destino?",
     ];
   } else if (/proximo voo|data e hora|terminal|companhia|rota/.test(normalized)) {
     prompts = [

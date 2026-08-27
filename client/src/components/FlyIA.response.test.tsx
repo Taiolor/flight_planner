@@ -50,7 +50,7 @@ vi.mock("./AIChatBox", () => ({
     isLoading,
     voiceInput,
   }: {
-    messages: Array<{ role: string; content: string; weather?: { destinationLabel: string; summary: string } }>;
+    messages: Array<{ role: string; content: string; weather?: { destinationLabel: string; summary: string; travelLeg?: string; packingGuidance?: string[]; precipitationAlert?: string } }>;
     onSendMessage: (content: string) => void;
     followUpPrompts?: (message: { role: "assistant"; content: string }) => string[];
     onFollowUpPromptSelected?: (prompt: string) => void;
@@ -179,6 +179,8 @@ describe("Fly.IA response flow", () => {
           windSpeedKmh: 22,
           sourceLabel: "Open-Meteo",
           sourceUrl: "https://open-meteo.com/",
+          travelLeg: "Ida",
+          packingGuidance: ["guarda-chuva compacto ou capa leve"],
         },
       });
     });
