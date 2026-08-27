@@ -44,5 +44,22 @@ describe("airportAddresses", () => {
     it("should return the code itself for an empty string", () => {
       expect(getAirportName("")).toBe("");
     });
+
+    it("should handle codes with leading or trailing whitespace", () => {
+      expect(getAirportName(" GRU ")).toBe(
+        "Aeroporto Internacional de São Paulo/Guarulhos"
+      );
+    });
+
+    it("should handle null or undefined gracefully if passed as any", () => {
+      expect(getAirportName(null as any)).toBe(null);
+      expect(getAirportName(undefined as any)).toBe(undefined);
+    });
+
+    it("should return the name when code has mixed cases", () => {
+      expect(getAirportName("gRu")).toBe(
+        "Aeroporto Internacional de São Paulo/Guarulhos"
+      );
+    });
   });
 });
