@@ -99,25 +99,53 @@ export type AIChatBoxProps = {
   };
 };
 
+const PROCESSING_STAGES = [
+  "Analisando sua pergunta…",
+  "Consultando informações da viagem…",
+  "Organizando uma resposta clara…",
+];
+
 function AssistantResponseSkeleton({ minHeight }: { minHeight: number }) {
+  const [stageIndex, setStageIndex] = useState(0);
+
+  useEffect(() => {
+    const interval = window.setInterval(() => {
+      setStageIndex(current => (current + 1) % PROCESSING_STAGES.length);
+    }, 2_400);
+    return () => window.clearInterval(interval);
+  }, []);
+
+  const currentStage = PROCESSING_STAGES[stageIndex];
   return (
     <div
       className="flex items-start gap-3"
       style={minHeight > 0 ? { minHeight: `${minHeight}px` } : undefined}
       role="status"
       aria-live="polite"
-      aria-label="Fly.IA está preparando a resposta"
+      aria-label={`Fly.IA está processando a resposta. ${currentStage}`}
       data-testid="assistant-response-skeleton"
     >
-      <div className="mt-1 flex size-8 shrink-0 items-center justify-center rounded-full bg-primary/10">
-        <Sparkles className="size-4 text-primary" aria-hidden="true" />
+      <div className="relative mt-1 flex size-8 shrink-0 items-center justify-center rounded-full bg-primary/10">
+        <span className="absolute inset-0 rounded-full border border-primary/35 animate-ping motion-reduce:animate-none" aria-hidden="true" />
+        <Sparkles className="relative size-4 animate-pulse text-primary motion-reduce:animate-none" aria-hidden="true" />
       </div>
-      <div className="w-[min(80%,17rem)] space-y-2 rounded-lg bg-muted px-4 py-3">
+      <div className="w-[min(80%,17rem)] rounded-lg bg-muted px-4 py-3">
+        <div className="flex items-center gap-2 text-xs font-medium text-foreground" data-testid="assistant-processing-stage">
+          <span>{currentStage}</span>
+          <span className="flex items-center gap-0.5" aria-hidden="true">
+            <i className="size-1 rounded-full bg-primary animate-bounce motion-reduce:animate-none" />
+            <i className="size-1 rounded-full bg-primary animate-bounce [animation-delay:150ms] motion-reduce:animate-none" />
+            <i className="size-1 rounded-full bg-primary animate-bounce [animation-delay:300ms] motion-reduce:animate-none" />
+          </span>
+        </div>
+        <p className="mt-1 text-[11px] text-muted-foreground">Isso pode levar alguns segundos.</p>
+        <div className="mt-3 space-y-2" aria-hidden="true">
         <Skeleton className="h-3 w-[92%] motion-reduce:animate-none" />
         <Skeleton className="h-3 w-[74%] motion-reduce:animate-none" />
         <Skeleton className="h-3 w-[48%] motion-reduce:animate-none" />
+        </div>
       </div>
-      <span className="sr-only">Fly.IA está preparando a resposta.</span>
+      <span className="sr-only">Fly.IA está processando a resposta. {currentStage}</span>
     </div>
   );
 }

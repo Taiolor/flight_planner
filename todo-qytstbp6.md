@@ -273,3 +273,8 @@
 - [x] Exibir alerta de vento e índice UV nos cartões de clima do Fly.IA e nos detalhes de voo aplicáveis.
 - [x] Criar regressões, validar visualmente, documentar e versionar os dois aprimoramentos meteorológicos.
 - [x] Salvar checkpoint da correção de desempenho e dos indicadores de vento e UV do Fly.IA.
+- [x] Mapear o skeleton e os estados pendentes do chat Fly.IA para ampliar o feedback de processamento.
+- [x] Projetar uma animação interativa com etapas de status sem representar progresso falso.
+- [x] Implementar a espera dinâmica com anúncio acessível e preferência de redução de movimento.
+- [x] Criar regressões de animação, atraso, responsividade e acessibilidade; documentar e versionar a melhoria.
+- [x] Salvar checkpoint da animação interativa de processamento do Fly.IA.

@@ -2,7 +2,7 @@
 
 import React, { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { AIChatBox } from "./AIChatBox";
 
 Reflect.set(globalThis, "IS_REACT_ACT_ENVIRONMENT", true);
@@ -10,12 +10,17 @@ Reflect.set(globalThis, "IS_REACT_ACT_ENVIRONMENT", true);
 let root: Root | null = null;
 let host: HTMLDivElement | null = null;
 
+beforeEach(() => {
+  vi.useFakeTimers();
+});
+
 afterEach(() => {
   act(() => root?.unmount());
   host?.remove();
   root = null;
   host = null;
   document.body.replaceChildren();
+  vi.useRealTimers();
 });
 
 describe("AIChatBox loading skeleton", () => {
@@ -39,8 +44,32 @@ describe("AIChatBox loading skeleton", () => {
     expect(skeleton).not.toBeNull();
     expect(skeleton?.getAttribute("role")).toBe("status");
     expect(skeleton?.getAttribute("aria-live")).toBe("polite");
-    expect(skeleton?.textContent).toContain("Fly.IA está preparando a resposta.");
+    expect(skeleton?.textContent).toContain("Analisando sua pergunta…");
+    expect(skeleton?.textContent).toContain("Isso pode levar alguns segundos.");
+    expect(skeleton?.getAttribute("aria-label")).toContain("Analisando sua pergunta…");
+    expect(skeleton?.textContent).not.toContain("%");
     expect(skeleton?.querySelectorAll('[data-slot="skeleton"]')).toHaveLength(3);
+  });
+
+  it("alterna a explicação de processamento sem prometer um percentual", () => {
+    host = document.createElement("div");
+    document.body.appendChild(host);
+    root = createRoot(host);
+
+    act(() => {
+      root?.render(
+        <AIChatBox
+          messages={[{ role: "user", content: "Como estará o clima?" }]}
+          onSendMessage={() => undefined}
+          isLoading
+          height="360px"
+        />
+      );
+    });
+
+    act(() => vi.advanceTimersByTime(2_400));
+    expect(document.body.textContent).toContain("Consultando informações da viagem…");
+    expect(document.querySelectorAll('[class*="motion-reduce:animate-none"]').length).toBeGreaterThan(3);
   });
 
   it("remove o skeleton quando não há resposta pendente", () => {
