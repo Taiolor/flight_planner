@@ -10,3 +10,6 @@
 ## 2024-05-14 - Semantic Grouping of Tab Content in Shadcn UI
 **Learning:** Custom tab implementations using styled `<button>` elements within `<div className="flex gap-1 ...">` wrappers completely break screen reader navigation if ARIA roles (`tablist`, `tab`, `tabpanel`) are omitted. Screen readers won't announce the number of tabs, which tab is selected, or associate the tab content with its trigger.
 **Action:** When refactoring or encountering custom tab interfaces, ensure full screen-reader compatibility by adding `role="tablist"` to the container, `role="tab"`, `aria-selected`, and `aria-controls` to the tab triggers, and `role="tabpanel"` with `aria-labelledby` to the corresponding content panels.
+## 2026-08-27 - Upgraded UI element for better slider accessibility
+**Learning:** Raw HTML `<input type="range">` elements when used as sliders often do not have robust design patterns, and depending on styling it is hard to accurately interact with them for fine-tuned controls. Shadcn UI Slider provides better ARIA properties by default when implemented correctly.
+**Action:** When working on form or settings screens that require sliders, always check if there is a Radix/Shadcn `Slider` available instead of falling back to `<input type="range">`. Use `onValueChange` correctly and pass the value as an array as required by the primitive.
