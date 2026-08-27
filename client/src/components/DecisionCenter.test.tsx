@@ -54,8 +54,9 @@ describe("DecisionCenter", () => {
   it("recolhe integralmente o conteúdo da Central pelo controle sanfona acessível", () => {
     const view = render(<DecisionCenter {...props} isExpanded={false} />);
 
-    const toggle = view.getByRole("button", { name: "Expandir central" });
+    const toggle = view.getByRole("button", { name: "Expandir Central de decisão" });
     expect(toggle.getAttribute("aria-expanded")).toBe("false");
+    expect(toggle.textContent).toBe("");
     expect(view.container.querySelector('[aria-label="Prioridades operacionais"]')).toBeNull();
     expect(view.container.textContent).toContain("Em foco: Emitir passagem da semana 27");
     expect(view.container.textContent).toContain("Próxima viagem: Semana 27");

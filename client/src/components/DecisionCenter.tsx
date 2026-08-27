@@ -196,10 +196,10 @@ export function DecisionCenter({
               onClick={onToggleExpanded}
               aria-expanded={isExpanded}
               aria-controls="decision-center-content"
-              className="inline-flex min-h-11 items-center gap-2 border border-white/30 bg-white/10 px-3 text-sm font-semibold text-white hover:bg-white/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
+              aria-label={isExpanded ? "Recolher Central de decisão" : "Expandir Central de decisão"}
+              className="inline-flex min-h-11 min-w-11 items-center justify-center border border-white/30 bg-white/10 text-white hover:bg-white/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
             >
-              {isExpanded ? "Recolher central" : "Expandir central"}
-              {isExpanded ? <ChevronUp className="size-4" aria-hidden="true" /> : <ChevronDown className="size-4" aria-hidden="true" />}
+              {isExpanded ? <ChevronUp className="size-5" aria-hidden="true" /> : <ChevronDown className="size-5" aria-hidden="true" />}
             </button>
           </div>
         </div>
