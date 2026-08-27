@@ -2757,11 +2757,18 @@ export default function Home({ mode = "home" }: HomeProps) {
           <DecisionCenter
             items={decisionItems}
             secondaryItems={secondaryDecisionItems}
+            isExpanded={decisionCenterPreferences.isExpanded}
             secondaryQueueOpen={decisionCenterPreferences.secondaryQueueOpen}
             nextTrip={nextDecisionTrip}
             isLoading={weeksQuery.isLoading}
             hasError={weeksQuery.isError}
             onRetry={() => void weeksQuery.refetch()}
+            onToggleExpanded={() =>
+              setDecisionCenterPreferences(previous => ({
+                ...previous,
+                isExpanded: !previous.isExpanded,
+              }))
+            }
             onToggleSecondaryQueue={() =>
               setDecisionCenterPreferences(previous => ({
                 ...previous,

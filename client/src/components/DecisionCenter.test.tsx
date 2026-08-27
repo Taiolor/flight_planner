@@ -10,11 +10,13 @@ describe("DecisionCenter", () => {
   const props = {
     items: [{ id: "pending-27", severity: "warning" as const, destination: "management" as const, weekNumber: 27, title: "Emitir passagem da semana 27", reason: "Viagem em 10 dias.", actionLabel: "Abrir Gestão", score: 900, price: 620, priceVariationPercent: 8, manualAdjustment: 0 }],
     secondaryItems: [],
+    isExpanded: true,
     secondaryQueueOpen: false,
     nextTrip: { weekNumber: 27, departureDate: "30/08/2026", returnDate: "04/09/2026", route: "GRU → NVT", airline: "GOL", status: "pending" as const },
     isLoading: false,
     hasError: false,
     onRetry: vi.fn(),
+    onToggleExpanded: vi.fn(),
     onToggleSecondaryQueue: vi.fn(),
     onAdjustRelevance: vi.fn(),
     onOpenManagementWeek: vi.fn(),
@@ -43,6 +45,16 @@ describe("DecisionCenter", () => {
     expect(toggle.getAttribute("aria-expanded")).toBe("false");
     fireEvent.click(toggle);
     expect(props.onToggleSecondaryQueue).toHaveBeenCalledTimes(1);
+  });
+
+  it("recolhe integralmente o conteúdo da Central pelo controle sanfona acessível", () => {
+    const view = render(<DecisionCenter {...props} isExpanded={false} />);
+
+    const toggle = view.getByRole("button", { name: "Expandir central" });
+    expect(toggle.getAttribute("aria-expanded")).toBe("false");
+    expect(view.container.querySelector('[aria-label="Prioridades operacionais"]')).toBeNull();
+    fireEvent.click(toggle);
+    expect(props.onToggleExpanded).toHaveBeenCalledOnce();
   });
 
   it("oferece recuperação explícita quando a Central falha", () => {

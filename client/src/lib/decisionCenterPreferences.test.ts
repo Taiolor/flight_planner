@@ -17,7 +17,7 @@ describe("decisionCenterPreferences", () => {
   it("persiste a fila recolhível e os ajustes por semana no exercício selecionado", () => {
     const storage = createStorage();
     const updated = adjustDecisionWeekRelevance(
-      { secondaryQueueOpen: true, relevanceByWeek: {} },
+      { isExpanded: true, secondaryQueueOpen: true, relevanceByWeek: {} },
       27,
       "raise"
     );
@@ -25,10 +25,12 @@ describe("decisionCenterPreferences", () => {
     persistDecisionCenterPreferences(2026, updated, storage);
 
     expect(readDecisionCenterPreferences(2026, storage)).toEqual({
+      isExpanded: true,
       secondaryQueueOpen: true,
       relevanceByWeek: { 27: 40 },
     });
     expect(readDecisionCenterPreferences(2027, storage)).toEqual({
+      isExpanded: true,
       secondaryQueueOpen: false,
       relevanceByWeek: {},
     });
@@ -38,12 +40,24 @@ describe("decisionCenterPreferences", () => {
     const storage = createStorage();
     storage.setItem(
       "viagens.home.decision-center.2026.v1",
-      JSON.stringify({ secondaryQueueOpen: "sim", relevanceByWeek: { 0: 500, 27: 999, 28: "x" } })
+      JSON.stringify({ isExpanded: "sim", secondaryQueueOpen: "sim", relevanceByWeek: { 0: 500, 27: 999, 28: "x" } })
     );
 
     expect(readDecisionCenterPreferences(2026, storage)).toEqual({
+      isExpanded: true,
       secondaryQueueOpen: false,
       relevanceByWeek: { 27: 160 },
     });
+  });
+
+  it("persiste a expansão integral da Central com valor booleano validado", () => {
+    const storage = createStorage();
+    persistDecisionCenterPreferences(2026, {
+      isExpanded: false,
+      secondaryQueueOpen: true,
+      relevanceByWeek: {},
+    }, storage);
+
+    expect(readDecisionCenterPreferences(2026, storage).isExpanded).toBe(false);
   });
 });

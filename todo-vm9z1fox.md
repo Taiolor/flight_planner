@@ -195,3 +195,5 @@
 - [x] Oferecer tela de recuperação acessível quando não houver dados locais disponíveis
 - [x] Cachear e apresentar as próximas viagens disponíveis para consulta offline
 - [x] Cobrir cache de próximas viagens com testes de validade, expiração e recuperação
+- [x] Permitir recolher ou expandir integralmente a Central de decisão com preferência persistente
+- [x] Cobrir a sanfona integral da Central com testes de acessibilidade e responsividade

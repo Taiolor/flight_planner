@@ -51,6 +51,8 @@ describe("Home mobile responsiveness", () => {
     expect(source).toContain("getNextDecisionTrip(weeksData)");
     expect(source).toContain("secondaryItems={secondaryDecisionItems}");
     expect(source).toContain("readDecisionCenterPreferences(selectedYear)");
+    expect(source).toContain("isExpanded={decisionCenterPreferences.isExpanded}");
+    expect(source).toContain("onToggleExpanded={() =>");
     expect(source).toContain("/gestao-passagens?week=${weekNumber}");
     expect(source).toContain("/calendar?week=${weekNumber}");
     expect(source.indexOf("<DecisionCenter")).toBeLessThan(source.indexOf("<WeeklyPlanning"));

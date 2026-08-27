@@ -5,11 +5,13 @@ const MAX_RELEVANCE_ADJUSTMENT = 160;
 const RELEVANCE_STEP = 40;
 
 export type DecisionCenterPreferences = {
+  isExpanded: boolean;
   secondaryQueueOpen: boolean;
   relevanceByWeek: Record<number, number>;
 };
 
 const DEFAULT_PREFERENCES: DecisionCenterPreferences = {
+  isExpanded: true,
   secondaryQueueOpen: false,
   relevanceByWeek: {},
 };
@@ -45,6 +47,10 @@ export function readDecisionCenterPreferences(
     if (!raw) return DEFAULT_PREFERENCES;
     const parsed = JSON.parse(raw) as Partial<DecisionCenterPreferences>;
     return {
+      isExpanded:
+        typeof parsed.isExpanded === "boolean"
+          ? parsed.isExpanded
+          : DEFAULT_PREFERENCES.isExpanded,
       secondaryQueueOpen:
         typeof parsed.secondaryQueueOpen === "boolean"
           ? parsed.secondaryQueueOpen
@@ -66,6 +72,7 @@ export function persistDecisionCenterPreferences(
   storage.setItem(
     storageKey(year),
     JSON.stringify({
+      isExpanded: Boolean(preferences.isExpanded),
       secondaryQueueOpen: Boolean(preferences.secondaryQueueOpen),
       relevanceByWeek: sanitizeRelevance(preferences.relevanceByWeek),
     })
