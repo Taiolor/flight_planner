@@ -4,9 +4,9 @@ import React, { useEffect, useState } from "react";
 import { CircleMarker, MapContainer, TileLayer, Tooltip, useMap } from "react-leaflet";
 import { cn } from "@/lib/utils";
 
-export const CARTO_POSITRON_TILE_URL = "/map-tiles/{z}/{x}/{y}.png";
-export const CARTO_POSITRON_ATTRIBUTION =
-  '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>';
+export const OPENSTREETMAP_TILE_URL = "/map-tiles/{z}/{x}/{y}.png";
+export const OPENSTREETMAP_ATTRIBUTION =
+  '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
 
 export type OpenStreetMapPoint = {
   id: string | number;
@@ -67,8 +67,8 @@ export function OpenStreetMap({ className, initialCenter, initialZoom, points }:
         aria-label="Mapa de localização dos eventos"
       >
         <TileLayer
-          attribution={CARTO_POSITRON_ATTRIBUTION}
-          url={CARTO_POSITRON_TILE_URL}
+          attribution={OPENSTREETMAP_ATTRIBUTION}
+          url={OPENSTREETMAP_TILE_URL}
           eventHandlers={{
             load: () => setTileLoaded(true),
             tileerror: () => setTileLoadFailed(true),

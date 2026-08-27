@@ -2,19 +2,18 @@ import type { Express, Request, Response } from "express";
 import { Readable } from "node:stream";
 import { pipeline } from "node:stream/promises";
 
-const CARTO_TILE_TIMEOUT_MS = 10_000;
+const OPENSTREETMAP_TILE_TIMEOUT_MS = 10_000;
 const MAX_TILE_ZOOM = 18;
 
-export function isValidCartoTileCoordinate(value: string, max: number) {
+export function isValidMapTileCoordinate(value: string, max: number) {
   return /^\d+$/.test(value) && Number.isSafeInteger(Number(value)) && Number(value) >= 0 && Number(value) <= max;
 }
 
-export function getCartoTileUrl(z: number, x: number, y: number) {
-  const subdomain = ["a", "b", "c"][(x + y) % 3] ?? "a";
-  return `https://${subdomain}.basemaps.cartocdn.com/light_all/${z}/${x}/${y}.png`;
+export function getOpenStreetMapTileUrl(z: number, x: number, y: number) {
+  return `https://tile.openstreetmap.org/${z}/${x}/${y}.png`;
 }
 
-export async function serveCartoTile(req: Request, res: Response) {
+export async function serveOpenStreetMapTile(req: Request, res: Response) {
   const { z: zParam, x: xParam, y: yParam } = req.params;
   const z = Number(zParam);
   const x = Number(xParam);
@@ -22,20 +21,21 @@ export async function serveCartoTile(req: Request, res: Response) {
   const tileLimit = Number.isSafeInteger(z) && z >= 0 && z <= MAX_TILE_ZOOM ? 2 ** z - 1 : -1;
 
   if (
-    !isValidCartoTileCoordinate(zParam, MAX_TILE_ZOOM) ||
-    !isValidCartoTileCoordinate(xParam, tileLimit) ||
-    !isValidCartoTileCoordinate(yParam, tileLimit)
+    !isValidMapTileCoordinate(zParam, MAX_TILE_ZOOM) ||
+    !isValidMapTileCoordinate(xParam, tileLimit) ||
+    !isValidMapTileCoordinate(yParam, tileLimit)
   ) {
     res.status(400).send("Invalid map tile coordinates");
     return;
   }
 
   try {
-    const tileResponse = await fetch(getCartoTileUrl(z, x, y), {
-      signal: AbortSignal.timeout(CARTO_TILE_TIMEOUT_MS),
+    const tileResponse = await fetch(getOpenStreetMapTileUrl(z, x, y), {
+      signal: AbortSignal.timeout(OPENSTREETMAP_TILE_TIMEOUT_MS),
+      headers: { "User-Agent": "SmartFly/1.0 (map tiles proxy)" },
     });
     if (!tileResponse.ok || !tileResponse.body || !tileResponse.headers.get("content-type")?.startsWith("image/")) {
-      throw new Error(`Carto tile responded with ${tileResponse.status}`);
+      throw new Error(`OpenStreetMap tile responded with ${tileResponse.status}`);
     }
 
     res.status(200);
@@ -62,5 +62,5 @@ export async function serveCartoTile(req: Request, res: Response) {
 }
 
 export function registerMapTilesProxy(app: Express) {
-  app.get("/map-tiles/:z/:x/:y.png", serveCartoTile);
+  app.get("/map-tiles/:z/:x/:y.png", serveOpenStreetMapTile);
 }
