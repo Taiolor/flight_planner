@@ -22,6 +22,7 @@ describe("getDestinationWeather", () => {
           precipitation_probability_max: [35.4],
           weather_code: [2],
           wind_speed_10m_max: [16.7],
+          uv_index_max: [5.6],
           sunrise: ["2026-08-05T06:42"],
           sunset: ["2026-08-05T17:54"],
         },
@@ -50,6 +51,7 @@ describe("getDestinationWeather", () => {
       temperatureMaxC: 24,
       precipitationProbability: 35,
       windSpeedKmh: 17,
+      uvIndexMax: 5.6,
       weatherCode: 2,
       hourlyForecast: {
         time: "2026-08-05T14:00",
@@ -75,6 +77,7 @@ describe("getDestinationWeather", () => {
     expect(requestUrl.searchParams.get("hourly")).toContain("wind_gusts_10m");
     expect(requestUrl.searchParams.get("hourly")).toContain("wind_direction_10m");
     expect(requestUrl.searchParams.get("daily")).toContain("sunrise");
+    expect(requestUrl.searchParams.get("daily")).toContain("uv_index_max");
   });
 
   it("não consulta a internet para aeroporto desconhecido ou fora da janela de previsão", async () => {

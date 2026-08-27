@@ -26,10 +26,12 @@ export type Message = {
     temperatureMaxC: number;
     precipitationProbability: number;
     windSpeedKmh: number;
+    uvIndexMax?: number;
     sourceLabel: string;
     sourceUrl: string;
     travelLeg?: "Ida" | "Volta";
     precipitationAlert?: string;
+    weatherAlerts?: Array<{ type: "rain" | "wind"; label: string }>;
     packingGuidance?: string[];
   };
 };
@@ -155,6 +157,7 @@ function WeatherIcon({ summary }: { summary: string }) {
 
 function WeatherResponseCard({ weather }: { weather: NonNullable<Message["weather"]> }) {
   const date = weather.forecastDate.split("-").reverse().join("/");
+  const alerts = weather.weatherAlerts ?? (weather.precipitationAlert ? [{ type: "rain" as const, label: weather.precipitationAlert }] : []);
   return (
     <section
       className="mt-2 overflow-hidden rounded-xl border border-sky-200 bg-gradient-to-br from-sky-50 to-cyan-50 text-slate-800 shadow-sm dark:border-sky-900/70 dark:from-sky-950/45 dark:to-cyan-950/20 dark:text-slate-100"
@@ -168,7 +171,7 @@ function WeatherResponseCard({ weather }: { weather: NonNullable<Message["weathe
           <p className="text-[11px] text-slate-600 dark:text-slate-300">{weather.travelLeg ? `${weather.travelLeg} · ` : ""}{date} · {weather.summary}</p>
         </div>
       </div>
-      <div className="grid grid-cols-3 divide-x divide-sky-200/80 dark:divide-sky-900/70">
+      <div className="grid grid-cols-2 divide-x divide-y divide-sky-200/80 sm:grid-cols-4 sm:divide-y-0 dark:divide-sky-900/70">
         <div className="px-2.5 py-2" aria-label={`Temperatura entre ${weather.temperatureMinC} e ${weather.temperatureMaxC} graus Celsius`}>
           <ThermometerSun className="size-3.5 text-amber-600 dark:text-amber-300" aria-hidden="true" />
           <p className="mt-1 text-[10px] text-slate-600 dark:text-slate-300">Temperatura</p>
@@ -184,13 +187,20 @@ function WeatherResponseCard({ weather }: { weather: NonNullable<Message["weathe
           <p className="mt-1 text-[10px] text-slate-600 dark:text-slate-300">Vento</p>
           <p className="text-xs font-semibold">{weather.windSpeedKmh} km/h</p>
         </div>
+        {typeof weather.uvIndexMax === "number" && (
+          <div className="px-2.5 py-2" aria-label={`Índice ultravioleta máximo de ${weather.uvIndexMax}`}>
+            <Sun className="size-3.5 text-amber-600 dark:text-amber-300" aria-hidden="true" />
+            <p className="mt-1 text-[10px] text-slate-600 dark:text-slate-300">Índice UV</p>
+            <p className="text-xs font-semibold">{weather.uvIndexMax}</p>
+          </div>
+        )}
       </div>
-      {weather.precipitationAlert && (
-        <div className="mx-3 mt-2 flex items-start gap-1.5 rounded-lg border border-amber-300 bg-amber-50 px-2.5 py-2 text-[11px] font-medium text-amber-900 dark:border-amber-700 dark:bg-amber-950/40 dark:text-amber-100" role="status" data-testid="flyia-weather-alert">
-          <AlertTriangle className="mt-0.5 size-3.5 shrink-0" aria-hidden="true" />
-          <span>{weather.precipitationAlert}</span>
+      {alerts.map(alert => (
+        <div key={`${alert.type}-${alert.label}`} className="mx-3 mt-2 flex items-start gap-1.5 rounded-lg border border-amber-300 bg-amber-50 px-2.5 py-2 text-[11px] font-medium text-amber-900 dark:border-amber-700 dark:bg-amber-950/40 dark:text-amber-100" role="status" data-testid={`flyia-weather-alert-${alert.type}`}>
+          {alert.type === "wind" ? <Wind className="mt-0.5 size-3.5 shrink-0" aria-hidden="true" /> : <AlertTriangle className="mt-0.5 size-3.5 shrink-0" aria-hidden="true" />}
+          <span>{alert.label}</span>
         </div>
-      )}
+      ))}
       {weather.packingGuidance && weather.packingGuidance.length > 0 && (
         <div className="mx-3 mt-2 flex items-start gap-1.5 rounded-lg bg-white/65 px-2.5 py-2 text-[11px] text-slate-700 dark:bg-slate-950/35 dark:text-slate-200" aria-label={`Bagagem sugerida: ${weather.packingGuidance.join(", ")}`} data-testid="flyia-weather-packing">
           <Luggage className="mt-0.5 size-3.5 shrink-0 text-violet-700 dark:text-violet-300" aria-hidden="true" />

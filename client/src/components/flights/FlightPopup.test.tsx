@@ -63,6 +63,7 @@ describe("FlightPopup", () => {
           temperatureMaxC: 24,
           precipitationProbability: 20,
           windSpeedKmh: 18,
+          uvIndexMax: 5.6,
           forecastDate: "2026-08-23",
           sunriseTime: "06:48",
           sunsetTime: "17:48",
@@ -89,7 +90,7 @@ describe("FlightPopup", () => {
 
     expect(screen.getAllByText("Clima no destino")).toHaveLength(2);
     expect(screen.getByText("Navegantes: Parcialmente nublado")).toBeTruthy();
-    expect(screen.getByText("20–24 °C · chuva 20% · vento 18 km/h")).toBeTruthy();
+    expect(screen.getByText("20–24 °C · chuva 20% · vento 18 km/h · UV 5.6")).toBeTruthy();
     expect(screen.getByText(/Próximo do voo \(14:00\): Chuva moderada/)).toBeTruthy();
     expect(screen.getByText(/vento 23 km\/h NE · rajadas 34 km\/h/)).toBeTruthy();
     expect(screen.getByText("Nascer do sol 06:48")).toBeTruthy();

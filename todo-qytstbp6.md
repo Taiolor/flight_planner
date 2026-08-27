@@ -264,3 +264,11 @@
 - [x] Exibir alerta e recomendação de bagagem no cartão visual de previsão do Fly.IA.
 - [x] Criar regressões de seleção, chuva, bagagem, acessibilidade e responsividade; documentar e versionar as três melhorias.
 - [x] Salvar checkpoint da seleção de trecho, alerta de chuva e bagagem do Fly.IA.
+- [ ] Mapear o contexto enviado à Gemini e o caminho determinístico das perguntas de clima do Fly.IA.
+- [ ] Investigar logs, métricas e tempo de resposta da previsão pública para identificar falhas e latência.
+- [ ] Corrigir chamadas desnecessárias, indisponibilidade e feedback de carregamento das respostas meteorológicas.
+- [ ] Validar desempenho e confiabilidade, documentar o fluxo de Gemini e dados públicos e versionar a correção.
+- [ ] Mapear direção, intensidade, rajadas e índice UV disponíveis na previsão meteorológica reutilizada.
+- [ ] Definir limite prudente de alerta de vento forte e rótulos acessíveis para índice UV.
+- [ ] Exibir alerta de vento e índice UV nos cartões de clima do Fly.IA e nos detalhes de voo aplicáveis.
+- [ ] Criar regressões, validar visualmente, documentar e versionar os dois aprimoramentos meteorológicos.

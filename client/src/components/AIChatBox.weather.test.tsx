@@ -45,7 +45,7 @@ describe("AIChatBox cartão meteorológico", () => {
     expect(card?.textContent).toContain("60%");
     expect(card?.textContent).toContain("22 km/h");
     expect(card?.textContent).toContain("Volta · 26/04/2026");
-    expect(document.querySelector("[data-testid='flyia-weather-alert']")?.textContent).toContain("chuva intensa");
+    expect(document.querySelector("[data-testid='flyia-weather-alert-rain']")?.textContent).toContain("chuva intensa");
     expect(document.querySelector("[data-testid='flyia-weather-packing']")?.textContent).toContain("guarda-chuva compacto");
     const source = card?.querySelector<HTMLAnchorElement>("a");
     expect(source?.href).toBe("https://open-meteo.com/");

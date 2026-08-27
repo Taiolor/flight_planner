@@ -140,6 +140,7 @@ export type FlyIaDeterministicAnswer = {
   weather?: Extract<DestinationWeather, { available: true }> & {
     travelLeg: "Ida" | "Volta";
     precipitationAlert?: string;
+    weatherAlerts: Array<{ type: "rain" | "wind"; label: string }>;
     packingGuidance: string[];
   };
 };
@@ -259,6 +260,18 @@ function getPrecipitationAlert(weather: Extract<DestinationWeather, { available:
   return undefined;
 }
 
+function getWeatherAlerts(weather: Extract<DestinationWeather, { available: true }>) {
+  const alerts = [...(weather.alerts ?? [])];
+  const precipitationAlert = getPrecipitationAlert(weather);
+  if (precipitationAlert && !alerts.some(alert => alert.type === "rain")) {
+    alerts.push({ type: "rain", label: precipitationAlert });
+  }
+  if (weather.windSpeedKmh >= 40 && !alerts.some(alert => alert.type === "wind")) {
+    alerts.push({ type: "wind", label: `Atenção: vento forte previsto, com até ${weather.windSpeedKmh} km/h.` });
+  }
+  return alerts;
+}
+
 function isBoardingGuidanceQuestion(messages: FlyIaMessage[]) {
   const question = messages.filter(message => message.role === "user").at(-1)?.content ?? "";
   return /hor[aá]rio.*embarque|embarque.*hor[aá]rio|que horas.*embarcar|quando.*embarcar|anteced[eê]ncia.*(?:aeroporto|embarque)|chegar.*(?:aeroporto|embarque)/i.test(question);
@@ -370,6 +383,7 @@ export async function buildWeatherAnswerFromWeeks(
 
   const travelLeg = next.flight.direction === "ida" ? "Ida" : "Volta";
   const precipitationAlert = getPrecipitationAlert(weather);
+  const weatherAlerts = getWeatherAlerts(weather);
   const packingGuidance = getPackingGuidance(weather);
   return {
     text: [
@@ -378,13 +392,14 @@ export async function buildWeatherAnswerFromWeeks(
       `- **Condição:** ${weather.summary}.`,
       `- **Temperatura:** ${weather.temperatureMinC}–${weather.temperatureMaxC} °C.`,
       `- **Chuva:** ${weather.precipitationProbability}% · **Vento:** ${weather.windSpeedKmh} km/h.`,
-      precipitationAlert ? `- **Atenção meteorológica:** ${precipitationAlert}` : null,
+      `- **Índice UV máximo:** ${weather.uvIndexMax}.`,
+      ...weatherAlerts.map(alert => `- **Atenção meteorológica:** ${alert.label}`),
       `- **Bagagem sugerida:** ${packingGuidance.join("; ")}.`,
       `- **Fonte:** [${weather.sourceLabel}](${weather.sourceUrl}).`,
       "",
       "A previsão é uma estimativa diária e não altera os dados do voo cadastrados no SmartFly.",
     ].join("\n"),
-    weather: { ...weather, travelLeg, precipitationAlert, packingGuidance },
+    weather: { ...weather, travelLeg, precipitationAlert, weatherAlerts, packingGuidance },
   };
 }
 

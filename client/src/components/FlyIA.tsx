@@ -47,10 +47,12 @@ type FlyIaClientMessage = {
     temperatureMaxC: number;
     precipitationProbability: number;
     windSpeedKmh: number;
+    uvIndexMax?: number;
     sourceLabel: string;
     sourceUrl: string;
     travelLeg?: "Ida" | "Volta";
     precipitationAlert?: string;
+    weatherAlerts?: Array<{ type: "rain" | "wind"; label: string }>;
     packingGuidance?: string[];
   };
 };

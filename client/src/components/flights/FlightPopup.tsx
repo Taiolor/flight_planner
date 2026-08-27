@@ -99,7 +99,7 @@ function DestinationWeatherPanel({
       ) : weather && weather.available ? (
         <div className="mt-1 text-[11px] leading-relaxed">
           <p className="font-semibold">{weather.destinationLabel}: {weather.summary}</p>
-          <p>{weather.temperatureMinC}–{weather.temperatureMaxC} °C · chuva {weather.precipitationProbability}% · vento {weather.windSpeedKmh} km/h</p>
+          <p>{weather.temperatureMinC}–{weather.temperatureMaxC} °C · chuva {weather.precipitationProbability}% · vento {weather.windSpeedKmh} km/h · UV {weather.uvIndexMax}</p>
           {weather.hourlyForecast && (
             <p className="mt-1 font-medium">
               Próximo do voo ({weather.hourlyForecast.time.split("T")[1]}): {weather.hourlyForecast.summary} · {weather.hourlyForecast.temperatureC} °C · chuva {weather.hourlyForecast.precipitationProbability}% · vento {weather.hourlyForecast.windSpeedKmh} km/h {weather.hourlyForecast.windDirectionLabel} · rajadas {weather.hourlyForecast.windGustsKmh} km/h
