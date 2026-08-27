@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { toast } from "sonner";
 import { FileDown, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -9,6 +9,9 @@ type PdfModule = Pick<typeof import("./FlightPdfExport"), "exportFlightPdf">;
 export type PdfModuleLoader = () => Promise<PdfModule>;
 
 const defaultLoadPdfModule: PdfModuleLoader = () => import("./FlightPdfExport");
+
+export const PDF_EXPORT_MENU_BUTTON_CLASS =
+  "group h-10 w-full justify-start rounded-lg border border-white/25 bg-white/10 px-2 !text-white shadow-none hover:bg-white/18 hover:!text-white focus-visible:ring-2 focus-visible:ring-white disabled:border-white/15 disabled:bg-white/5 disabled:!text-slate-300 disabled:opacity-100";
 
 interface DeferredPdfExportButtonProps extends FlightPdfExportProps {
   loadPdfModule?: PdfModuleLoader;
@@ -69,15 +72,15 @@ export function DeferredPdfExportButton({
       aria-label={
         isGenerating ? "Gerando relatório em PDF" : "Exportar relatório em PDF"
       }
-      className={`h-10 w-full justify-start rounded-lg border-0 bg-transparent px-2 text-white shadow-none hover:bg-white/10 hover:text-white ${className ?? ""}`}
+      className={`${PDF_EXPORT_MENU_BUTTON_CLASS} ${className ?? ""}`}
     >
       {isGenerating ? (
         <Loader2 className="w-4 h-4 animate-spin" />
       ) : (
         <FileDown className="w-4 h-4" />
       )}
-      <span className="hidden sm:inline ml-1">
-        {isGenerating ? "Gerando..." : "PDF"}
+      <span className="ml-1 text-sm font-semibold !text-white group-disabled:!text-slate-300">
+        {isGenerating ? "Gerando PDF..." : "Exportar PDF"}
       </span>
     </Button>
   );
