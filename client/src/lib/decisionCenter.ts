@@ -190,21 +190,38 @@ export function buildDecisionItems(
   return buildDecisionItemQueue(weeks, pricesByWeek, now, relevanceByWeek).slice(0, 3);
 }
 
-export function getNextDecisionTrip(weeks: DecisionWeek[], now: Date = new Date()): DecisionTrip | null {
+export function getNextDecisionTrips(
+  weeks: DecisionWeek[],
+  count = 3,
+  now: Date = new Date()
+): DecisionTrip[] {
   const candidates = weeks
     .filter(week => !week.isDeleted)
     .map(week => ({ week, daysUntil: getDaysUntil(week.departureDate, now) }))
     .filter((candidate): candidate is { week: DecisionWeek; daysUntil: number } => candidate.daysUntil !== null)
     .filter(candidate => candidate.daysUntil >= -1)
-    .sort((a, b) => a.daysUntil - b.daysUntil);
-  const next = candidates[0]?.week;
-  if (!next) return null;
-  const status: DecisionTrip["status"] = next.departureCancelled || next.returnCancelled
-    ? "cancelled"
-    : next.departureRescheduled || next.returnRescheduled
-      ? "rescheduled"
-      : next.isTicketIssued
-        ? "issued"
-        : "pending";
-  return { weekNumber: next.weekNumber, departureDate: next.departureDate, returnDate: next.returnDate, route: formatRoute(next), airline: next.departureAirline || next.returnAirline || null, status };
+    .sort((a, b) => a.daysUntil - b.daysUntil)
+    .slice(0, Math.max(1, count));
+
+  return candidates.map(({ week }) => {
+    const status: DecisionTrip["status"] = week.departureCancelled || week.returnCancelled
+      ? "cancelled"
+      : week.departureRescheduled || week.returnRescheduled
+        ? "rescheduled"
+        : week.isTicketIssued
+          ? "issued"
+          : "pending";
+    return {
+      weekNumber: week.weekNumber,
+      departureDate: week.departureDate,
+      returnDate: week.returnDate,
+      route: formatRoute(week),
+      airline: week.departureAirline || week.returnAirline || null,
+      status,
+    };
+  });
+}
+
+export function getNextDecisionTrip(weeks: DecisionWeek[], now: Date = new Date()): DecisionTrip | null {
+  return getNextDecisionTrips(weeks, 1, now)[0] ?? null;
 }

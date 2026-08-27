@@ -133,7 +133,7 @@ import { HomeDashboardControls } from "@/components/HomeDashboardControls";
 import { WeeklyPlanning, type WeeklyPlanningItem } from "@/components/WeeklyPlanning";
 import { PassageManagementFrame } from "@/components/PassageManagementFrame";
 import { DecisionCenter } from "@/components/DecisionCenter";
-import { buildDecisionItemQueue, getNextDecisionTrip } from "@/lib/decisionCenter";
+import { buildDecisionItemQueue, getNextDecisionTrip, getNextDecisionTrips } from "@/lib/decisionCenter";
 import {
   adjustDecisionWeekRelevance,
   persistDecisionCenterPreferences,
@@ -191,6 +191,7 @@ import {
   readPlanningSyncTimestamp,
   savePlanningSyncTimestamp,
 } from "@/lib/offlinePlanningSync";
+import { readOfflineNextTrips, saveOfflineNextTrips } from "@/lib/offlineNextTrips";
 
 const AnnualSpendChart = lazy(() =>
   import("@/components/HomeCharts").then(module => ({
@@ -850,9 +851,13 @@ export default function Home({ mode = "home" }: HomeProps) {
   const [lastPlanningSyncAt, setLastPlanningSyncAt] = useState(() =>
     readPlanningSyncTimestamp(selectedYear)
   );
+  const [offlineNextTrips, setOfflineNextTrips] = useState(() =>
+    readOfflineNextTrips(selectedYear)
+  );
 
   useEffect(() => {
     setLastPlanningSyncAt(readPlanningSyncTimestamp(selectedYear));
+    setOfflineNextTrips(readOfflineNextTrips(selectedYear));
   }, [selectedYear]);
 
   useEffect(() => {
@@ -2184,6 +2189,15 @@ export default function Home({ mode = "home" }: HomeProps) {
     () => getNextDecisionTrip(weeksData),
     [weeksData]
   );
+  const nextDecisionTrips = useMemo(
+    () => getNextDecisionTrips(weeksData),
+    [weeksData]
+  );
+  useEffect(() => {
+    if (!weeksQuery.data?.length || !nextDecisionTrips.length) return;
+    saveOfflineNextTrips(selectedYear, nextDecisionTrips);
+    setOfflineNextTrips(readOfflineNextTrips(selectedYear));
+  }, [nextDecisionTrips, selectedYear, weeksQuery.data]);
   const pendingDecisionWeeks = useMemo(
     () => weeksData.filter(week => !week.isDeleted && !week.isTicketIssued).length,
     [weeksData]
@@ -2626,6 +2640,7 @@ export default function Home({ mode = "home" }: HomeProps) {
             <HomeOfflineRecovery
               year={selectedYear}
               lastSyncedAt={lastPlanningSyncAt}
+              cachedTrips={offlineNextTrips}
               isRetrying={weeksQuery.isFetching}
               onRetry={() => void weeksQuery.refetch()}
             />

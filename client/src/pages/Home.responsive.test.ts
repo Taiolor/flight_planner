@@ -41,6 +41,8 @@ describe("Home mobile responsiveness", () => {
     expect(source).toContain("data-offline-status=\"true\"");
     expect(source).toContain("shouldShowOfflineRecovery");
     expect(source).toContain("<HomeOfflineRecovery");
+    expect(source).toContain("readOfflineNextTrips(selectedYear)");
+    expect(source).toContain("saveOfflineNextTrips(selectedYear, nextDecisionTrips)");
   });
 
   it("posiciona a Central de decisão após o Resumo Anual e preserva CTAs contextuais", () => {

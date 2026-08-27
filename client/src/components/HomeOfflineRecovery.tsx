@@ -3,10 +3,12 @@ import { RefreshCw, WifiOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { formatPlanningSyncTimestamp } from "@/lib/offlinePlanningSync";
+import type { OfflineNextTripsSnapshot } from "@/lib/offlineNextTrips";
 
 type HomeOfflineRecoveryProps = {
   year: number;
   lastSyncedAt: number | null;
+  cachedTrips?: OfflineNextTripsSnapshot | null;
   isRetrying?: boolean;
   onRetry: () => void;
 };
@@ -15,6 +17,7 @@ type HomeOfflineRecoveryProps = {
 export function HomeOfflineRecovery({
   year,
   lastSyncedAt,
+  cachedTrips = null,
   isRetrying = false,
   onRetry,
 }: HomeOfflineRecoveryProps) {
@@ -42,6 +45,23 @@ export function HomeOfflineRecovery({
               ? `Última sincronização conhecida: ${lastSyncLabel}.`
               : "Este dispositivo ainda não possui uma sincronização local registrada."}
           </p>
+          {cachedTrips && (
+            <section className="mt-5" aria-label="Próximas viagens disponíveis offline">
+              <p className="text-sm font-semibold text-white">Próximas viagens disponíveis neste dispositivo</p>
+              <ol className="mt-3 space-y-2" aria-label="Lista de próximas viagens armazenadas">
+                {cachedTrips.trips.map(trip => (
+                  <li key={`${trip.weekNumber}-${trip.departureDate}`} className="rounded-xl border border-white/15 bg-white/5 px-3 py-2 text-sm text-slate-100">
+                    <span className="font-semibold">Semana {trip.weekNumber}</span>
+                    <span className="mx-1 text-sky-200">·</span>
+                    <span>{trip.route}</span>
+                    <span className="mx-1 text-sky-200">·</span>
+                    <span>{trip.departureDate} → {trip.returnDate}</span>
+                  </li>
+                ))}
+              </ol>
+              <p className="mt-2 text-xs text-sky-100">Agenda salva em {formatPlanningSyncTimestamp(cachedTrips.cachedAt)}. Localizadores e valores não são armazenados offline.</p>
+            </section>
+          )}
         </div>
       </div>
       <Button

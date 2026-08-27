@@ -193,3 +193,5 @@
 - [x] Aplicar variação sazonal sutil e automática à identidade visual da splash
 - [x] Exibir a última sincronização conhecida quando o aplicativo abrir offline
 - [x] Oferecer tela de recuperação acessível quando não houver dados locais disponíveis
+- [x] Cachear e apresentar as próximas viagens disponíveis para consulta offline
+- [x] Cobrir cache de próximas viagens com testes de validade, expiração e recuperação
