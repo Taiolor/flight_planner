@@ -201,3 +201,5 @@
 - [x] Permitir fixar a Central no topo da Home com preferência persistente e reversível
 - [x] Exibir resumo útil das prioridades enquanto a Central estiver recolhida
 - [x] Cobrir atalho, fixação, resumo, persistência e responsividade com regressões automatizadas
+- [x] Corrigir a exibição dos dados de clima e tempo nos cards do Calendário
+- [x] Cobrir a previsão meteorológica do Calendário com regressões de sucesso e contingência

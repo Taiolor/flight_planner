@@ -47,14 +47,19 @@ function DestinationWeatherPanel({
     ? "border-blue-200 bg-blue-100/70 text-blue-900"
     : "border-orange-200 bg-orange-100/70 text-orange-900";
 
-  if (!destinationDate || (!weatherQuery.isLoading && (!weather || !weather.available))) {
-    return null;
-  }
+  const unavailableMessage = !destinationDate
+    ? "A data do voo ainda não foi definida."
+    : weather?.available === false && weather.reason === "outside_forecast_window"
+      ? "A previsão detalhada é liberada até 16 dias antes do voo."
+      : weather?.available === false && weather.reason === "unsupported_destination"
+        ? "A previsão ainda não está disponível para este aeroporto."
+        : "Não foi possível consultar a previsão agora.";
 
   return (
     <section
       aria-live="polite"
       aria-label={`Previsão no destino ${destinationCode}`}
+      data-weather-state={weatherQuery.isLoading ? "loading" : weather?.available ? "available" : "unavailable"}
       className={`col-span-2 rounded-lg border px-2.5 py-2 ${accentClasses}`}
     >
       <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wide">
@@ -76,7 +81,20 @@ function DestinationWeatherPanel({
             Previsão para {weather.forecastDate.split("-").reverse().join("/")} · Fonte: {weather.sourceLabel}
           </a>
         </div>
-      ) : null}
+      ) : (
+        <div className="mt-1 text-[11px] leading-relaxed text-slate-700">
+          <p>{unavailableMessage}</p>
+          {(weatherQuery.isError || weather?.reason === "unavailable") && destinationDate && (
+            <button
+              type="button"
+              onClick={() => void weatherQuery.refetch()}
+              className="mt-2 inline-flex min-h-8 items-center border border-current px-2 text-[10px] font-semibold hover:bg-white/45 focus:outline-none focus-visible:ring-2 focus-visible:ring-current"
+            >
+              Tentar previsão novamente
+            </button>
+          )}
+        </div>
+      )}
     </section>
   );
 }

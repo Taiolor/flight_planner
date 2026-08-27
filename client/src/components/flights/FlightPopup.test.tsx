@@ -69,18 +69,29 @@ describe("FlightPopup", () => {
 
     render(<FlightPopup mark={makeMark()} onClose={() => {}} />);
 
-    expect(screen.getByText("Clima no destino")).toBeTruthy();
+    expect(screen.getAllByText("Clima no destino")).toHaveLength(2);
     expect(screen.getByText("Navegantes: Parcialmente nublado")).toBeTruthy();
     expect(screen.getByText("20–24 °C · chuva 20% · vento 18 km/h")).toBeTruthy();
     expect(screen.getByText(/Fonte: Open-Meteo/).getAttribute("href")).toBe("https://open-meteo.com/");
   });
 
-  it("mantém os detalhes do voo legíveis quando a previsão está indisponível", () => {
+  it("mantém o card de clima visível e explica quando a previsão está indisponível", () => {
     weatherState.useQuery.mockReturnValue({ isLoading: false, data: { available: false } });
     render(<FlightPopup mark={makeMark()} onClose={() => {}} />);
 
-    expect(screen.queryByText("Clima no destino")).toBeNull();
+    expect(screen.getAllByText("Clima no destino")).toHaveLength(2);
+    expect(screen.getAllByText("Não foi possível consultar a previsão agora.")).toHaveLength(2);
     expect(screen.getAllByText("Terminal")).toHaveLength(2);
+  });
+
+  it("informa a janela de 16 dias quando a previsão ainda não pode ser disponibilizada", () => {
+    weatherState.useQuery.mockReturnValue({
+      isLoading: false,
+      data: { available: false, reason: "outside_forecast_window" },
+    });
+    render(<FlightPopup mark={makeMark()} onClose={() => {}} />);
+
+    expect(screen.getAllByText("A previsão detalhada é liberada até 16 dias antes do voo.")).toHaveLength(2);
   });
   it("exibe os terminais de ida e volta nos detalhes do bilhete", () => {
     const view = render(<FlightPopup mark={makeMark()} onClose={() => {}} />);
