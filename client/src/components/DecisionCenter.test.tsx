@@ -23,6 +23,8 @@ describe("DecisionCenter", () => {
     onAdjustRelevance: vi.fn(),
     onOpenManagementWeek: vi.fn(),
     onOpenCalendarWeek: vi.fn(),
+    onDismissWeather: vi.fn(),
+    onRestoreWeatherAlerts: vi.fn(),
     metrics: { issuedCount: 2, pendingCount: 3, annualTotal: "R$ 1.240,00", averageTrip: "R$ 620,00" },
   };
 
@@ -76,5 +78,31 @@ describe("DecisionCenter", () => {
     expect(screen.getByRole("alert").textContent).toContain("não conseguiu atualizar as prioridades");
     fireEvent.click(screen.getByRole("button", { name: "Tentar novamente" }));
     expect(props.onRetry).toHaveBeenCalledTimes(1);
+  });
+
+  it("distingue risco operacional do clima e permite dispensá-lo por viagem", () => {
+    const weather = {
+      id: "weather-27-2026-08-30",
+      kind: "weather" as const,
+      weatherRisks: ["wind", "visibility"] as Array<"rain" | "wind" | "visibility">,
+      weatherReturnSummary: "NVT → GRU em 5 dias: vento forte.",
+      severity: "critical" as const,
+      destination: "calendar" as const,
+      weekNumber: 27,
+      title: "Condições meteorológicas na semana 27",
+      reason: "Ida GRU → NVT em 1 dia: vento forte, visibilidade reduzida.",
+      actionLabel: "Ver no Calendário",
+      score: 950,
+      price: null,
+      priceVariationPercent: null,
+      manualAdjustment: 0,
+    };
+    render(<DecisionCenter {...props} items={[weather]} dismissedWeatherAlertCount={1} />);
+
+    expect(screen.getByText(/condições: vento forte · visibilidade reduzida/i)).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Dispensar alerta meteorológico da semana 27" }));
+    expect(props.onDismissWeather).toHaveBeenCalledWith("weather-27-2026-08-30");
+    fireEvent.click(screen.getByRole("button", { name: /reativar alertas do clima/i }));
+    expect(props.onRestoreWeatherAlerts).toHaveBeenCalledOnce();
   });
 });

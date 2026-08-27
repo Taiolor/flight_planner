@@ -135,7 +135,12 @@ import { WeeklyPlanning, type WeeklyPlanningItem } from "@/components/WeeklyPlan
 import { PassageManagementFrame } from "@/components/PassageManagementFrame";
 import { DecisionCenter } from "@/components/DecisionCenter";
 import { buildDecisionItemQueue, getNextDecisionTrip, getNextDecisionTrips } from "@/lib/decisionCenter";
-import { buildRainDecisionItem, getNextDecisionWeatherTarget } from "@/lib/decisionWeatherAlert";
+import { buildTravelWeatherDecisionItem, getDecisionWeatherTripTargets } from "@/lib/decisionWeatherAlert";
+import {
+  dismissDecisionWeatherAlert,
+  readDecisionWeatherDismissals,
+  saveDecisionWeatherDismissals,
+} from "@/lib/decisionWeatherDismissals";
 import {
   adjustDecisionWeekRelevance,
   persistDecisionCenterPreferences,
@@ -784,12 +789,19 @@ export default function Home({ mode = "home" }: HomeProps) {
   const [decisionCenterPreferences, setDecisionCenterPreferences] = useState(() =>
     readDecisionCenterPreferences(selectedYear)
   );
+  const [dismissedDecisionWeatherAlerts, setDismissedDecisionWeatherAlerts] = useState(() =>
+    readDecisionWeatherDismissals(selectedYear)
+  );
   useEffect(() => {
     setDecisionCenterPreferences(readDecisionCenterPreferences(selectedYear));
+    setDismissedDecisionWeatherAlerts(readDecisionWeatherDismissals(selectedYear));
   }, [selectedYear]);
   useEffect(() => {
     persistDecisionCenterPreferences(selectedYear, decisionCenterPreferences);
   }, [selectedYear, decisionCenterPreferences]);
+  useEffect(() => {
+    saveDecisionWeatherDismissals(selectedYear, dismissedDecisionWeatherAlerts);
+  }, [selectedYear, dismissedDecisionWeatherAlerts]);
 
   // tRPC queries
   const weeksQuery = trpc.flights.getWeeks.useQuery(
@@ -1220,10 +1232,12 @@ export default function Home({ mode = "home" }: HomeProps) {
     return [];
   }, [weeksQuery.data, additionalFlightsByWeek]);
 
-  const decisionWeatherTarget = useMemo(
-    () => getNextDecisionWeatherTarget(weeksData),
+  const decisionWeatherTargets = useMemo(
+    () => getDecisionWeatherTripTargets(weeksData),
     [weeksData]
   );
+  const decisionWeatherTarget = decisionWeatherTargets.primary;
+  const decisionReturnWeatherTarget = decisionWeatherTargets.returnTarget;
   const decisionWeatherQueryInput = useMemo(
     () => ({
       airportCode: decisionWeatherTarget?.airportCode ?? "NVT",
@@ -1237,6 +1251,21 @@ export default function Home({ mode = "home" }: HomeProps) {
     {
       ...queryCachePolicies.default,
       enabled: decisionWeatherTarget !== null,
+    }
+  );
+  const decisionReturnWeatherQueryInput = useMemo(
+    () => ({
+      airportCode: decisionReturnWeatherTarget?.airportCode ?? "GRU",
+      flightDate: decisionReturnWeatherTarget?.flightDate ?? `${selectedYear}-01-01`,
+      ...(decisionReturnWeatherTarget?.flightTime ? { flightTime: decisionReturnWeatherTarget.flightTime } : {}),
+    }),
+    [decisionReturnWeatherTarget, selectedYear]
+  );
+  const decisionReturnWeatherQuery = trpc.destinationWeather.forecast.useQuery(
+    decisionReturnWeatherQueryInput,
+    {
+      ...queryCachePolicies.default,
+      enabled: decisionReturnWeatherTarget !== null,
     }
   );
 
@@ -2211,8 +2240,13 @@ export default function Home({ mode = "home" }: HomeProps) {
   const annualHasData = annualSummaryData.some(d => d.total > 0);
 
   const decisionWeatherItem = useMemo(
-    () => buildRainDecisionItem(decisionWeatherTarget, decisionWeatherQuery.data),
-    [decisionWeatherQuery.data, decisionWeatherTarget]
+    () => buildTravelWeatherDecisionItem(
+      decisionWeatherTarget,
+      decisionWeatherQuery.data,
+      decisionReturnWeatherTarget,
+      decisionReturnWeatherQuery.data
+    ),
+    [decisionReturnWeatherQuery.data, decisionReturnWeatherTarget, decisionWeatherQuery.data, decisionWeatherTarget]
   );
   const decisionQueue = useMemo(() => {
     const items = buildDecisionItemQueue(
@@ -2221,10 +2255,13 @@ export default function Home({ mode = "home" }: HomeProps) {
       new Date(),
       decisionCenterPreferences.relevanceByWeek
     );
-    return decisionWeatherItem
-      ? [...items, decisionWeatherItem].sort((left, right) => right.score - left.score || left.weekNumber - right.weekNumber)
+    const visibleWeatherItem = decisionWeatherItem && !dismissedDecisionWeatherAlerts.includes(decisionWeatherItem.id)
+      ? decisionWeatherItem
+      : null;
+    return visibleWeatherItem
+      ? [...items, visibleWeatherItem].sort((left, right) => right.score - left.score || left.weekNumber - right.weekNumber)
       : items;
-  }, [weeksData, priceMap, decisionCenterPreferences.relevanceByWeek, decisionWeatherItem]);
+  }, [weeksData, priceMap, decisionCenterPreferences.relevanceByWeek, decisionWeatherItem, dismissedDecisionWeatherAlerts]);
   const decisionItems = decisionQueue.slice(0, 3);
   const secondaryDecisionItems = decisionQueue.slice(3);
   const nextDecisionTrip = useMemo(
@@ -2261,6 +2298,12 @@ export default function Home({ mode = "home" }: HomeProps) {
     },
     []
   );
+  const dismissDecisionWeather = useCallback((alertId: string) => {
+    setDismissedDecisionWeatherAlerts(previous => dismissDecisionWeatherAlert(previous, alertId));
+  }, []);
+  const restoreDecisionWeatherAlerts = useCallback(() => {
+    setDismissedDecisionWeatherAlerts([]);
+  }, []);
 
   // Handlers
   const handleToggleSelect = (weekNumber: number, current: number) => {
@@ -2451,6 +2494,9 @@ export default function Home({ mode = "home" }: HomeProps) {
       onAdjustRelevance={adjustDecisionRelevance}
       onOpenManagementWeek={openDecisionManagementWeek}
       onOpenCalendarWeek={openDecisionCalendarWeek}
+      onDismissWeather={dismissDecisionWeather}
+      onRestoreWeatherAlerts={restoreDecisionWeatherAlerts}
+      dismissedWeatherAlertCount={dismissedDecisionWeatherAlerts.length}
       metrics={{
         issuedCount: annualIssuedCount,
         pendingCount: pendingDecisionWeeks,

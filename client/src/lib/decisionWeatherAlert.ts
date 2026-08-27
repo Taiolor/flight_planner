@@ -10,6 +10,16 @@ type WeatherDailyForecast = {
   precipitationProbability: number;
 };
 
+type WeatherRiskType = "rain" | "wind" | "visibility";
+
+type WeatherAlert = { type: WeatherRiskType; label: string };
+
+type WeatherHourlyForecast = {
+  visibilityKm: number;
+  windSpeedKmh: number;
+  windGustsKmh: number;
+};
+
 export type DecisionWeatherTarget = {
   weekNumber: number;
   direction: "departure" | "return";
@@ -23,7 +33,12 @@ export type DecisionWeatherTarget = {
 export type DecisionWeatherForecast = {
   available: boolean;
   forecastDate?: string;
+  summary?: string;
+  precipitationProbability?: number;
+  windSpeedKmh?: number;
+  hourlyForecast?: WeatherHourlyForecast | null;
   dailyForecast?: WeatherDailyForecast[];
+  alerts?: WeatherAlert[];
 };
 
 function parseBrazilianDate(value: string): Date | null {
@@ -60,10 +75,10 @@ function airportCode(value: string | null | undefined): string | null {
 }
 
 /** Localiza o próximo trecho elegível para previsão dentro da janela da fonte meteorológica. */
-export function getNextDecisionWeatherTarget(
+function getDecisionWeatherTargets(
   weeks: DecisionWeek[],
   now: Date = new Date()
-): DecisionWeatherTarget | null {
+): DecisionWeatherTarget[] {
   const candidates: DecisionWeatherTarget[] = [];
 
   for (const week of weeks) {
@@ -99,7 +114,28 @@ export function getNextDecisionWeatherTarget(
 
   return candidates
     .filter(candidate => candidate.daysUntil >= 0 && candidate.daysUntil <= WEATHER_HORIZON_DAYS)
-    .sort((left, right) => left.daysUntil - right.daysUntil || left.weekNumber - right.weekNumber)[0] ?? null;
+    .sort((left, right) => left.daysUntil - right.daysUntil || left.weekNumber - right.weekNumber);
+}
+
+export function getNextDecisionWeatherTarget(
+  weeks: DecisionWeek[],
+  now: Date = new Date()
+): DecisionWeatherTarget | null {
+  return getDecisionWeatherTargets(weeks, now)[0] ?? null;
+}
+
+/** Retorna a previsão da ida e, quando ainda estiver na janela, a previsão de volta da mesma viagem. */
+export function getDecisionWeatherTripTargets(
+  weeks: DecisionWeek[],
+  now: Date = new Date()
+): { primary: DecisionWeatherTarget | null; returnTarget: DecisionWeatherTarget | null } {
+  const targets = getDecisionWeatherTargets(weeks, now);
+  const primary = targets[0] ?? null;
+  if (!primary || primary.direction !== "departure") return { primary, returnTarget: null };
+  return {
+    primary,
+    returnTarget: targets.find(target => target.weekNumber === primary.weekNumber && target.direction === "return") ?? null,
+  };
 }
 
 /** Transforma probabilidade de chuva relevante em uma prioridade explicável da Central. */
@@ -130,6 +166,96 @@ export function buildRainDecisionItem(
     reason: `${target.routeLabel} ${when}: ${precipitationProbability}% de chance de chuva${forecast?.summary ? ` · ${forecast.summary.toLocaleLowerCase("pt-BR")}` : ""}. Planeje deslocamento e embarque com antecedência.`,
     actionLabel: "Ver no Calendário",
     score: (severity === "critical" ? 875 : 700) + precipitationProbability + Math.max(0, WEATHER_HORIZON_DAYS - target.daysUntil),
+    price: null,
+    priceVariationPercent: null,
+    manualAdjustment: 0,
+  };
+}
+
+function getForecastForTarget(
+  target: DecisionWeatherTarget,
+  weather: DecisionWeatherForecast | undefined
+): WeatherDailyForecast | null {
+  if (!weather?.available) return null;
+  return weather.dailyForecast?.find(day => day.date === target.flightDate)
+    ?? (weather.forecastDate === target.flightDate
+      ? {
+          date: target.flightDate,
+          summary: weather.summary ?? weather.dailyForecast?.[0]?.summary ?? "Condições variáveis",
+          precipitationProbability: weather.precipitationProbability ?? weather.dailyForecast?.[0]?.precipitationProbability ?? 0,
+        }
+      : weather.dailyForecast?.[0] ?? null);
+}
+
+function getWeatherRisks(
+  target: DecisionWeatherTarget,
+  weather: DecisionWeatherForecast | undefined
+): WeatherRiskType[] {
+  const forecast = getForecastForTarget(target, weather);
+  if (!forecast) return [];
+  const alertTypes = new Set(weather?.alerts?.map(alert => alert.type) ?? []);
+  const risks: WeatherRiskType[] = [];
+  if (forecast.precipitationProbability >= RAIN_ALERT_THRESHOLD || alertTypes.has("rain")) risks.push("rain");
+  if (alertTypes.has("wind")) risks.push("wind");
+  if (alertTypes.has("visibility")) risks.push("visibility");
+  return risks;
+}
+
+function formatRiskLabel(risks: WeatherRiskType[], precipitationProbability: number) {
+  const labels = [
+    ...(risks.includes("rain") ? [`chuva (${precipitationProbability}%)`] : []),
+    ...(risks.includes("wind") ? ["vento forte"] : []),
+    ...(risks.includes("visibility") ? ["visibilidade reduzida"] : []),
+  ];
+  return labels.join(", ");
+}
+
+/** Une as condições de ida e volta em uma única prioridade acionável da viagem. */
+export function buildTravelWeatherDecisionItem(
+  primaryTarget: DecisionWeatherTarget | null,
+  primaryWeather: DecisionWeatherForecast | undefined,
+  returnTarget: DecisionWeatherTarget | null,
+  returnWeather: DecisionWeatherForecast | undefined
+): DecisionItem | null {
+  if (!primaryTarget) return null;
+  const primaryForecast = getForecastForTarget(primaryTarget, primaryWeather);
+  const primaryRisks = getWeatherRisks(primaryTarget, primaryWeather);
+  const returnForecast = returnTarget ? getForecastForTarget(returnTarget, returnWeather) : null;
+  const returnRisks = returnTarget ? getWeatherRisks(returnTarget, returnWeather) : [];
+  const risks = [...new Set([...primaryRisks, ...returnRisks])];
+  if (!risks.length) return null;
+
+  const hasOperationalRisk = risks.includes("wind") || risks.includes("visibility");
+  const severity: DecisionSeverity = primaryTarget.daysUntil <= 2
+    && (hasOperationalRisk || (primaryForecast?.precipitationProbability ?? 0) >= 70)
+    ? "critical"
+    : "warning";
+  const when = primaryTarget.daysUntil === 0
+    ? "hoje"
+    : `em ${primaryTarget.daysUntil} dia${primaryTarget.daysUntil === 1 ? "" : "s"}`;
+  const primaryRiskText = formatRiskLabel(primaryRisks, primaryForecast?.precipitationProbability ?? 0);
+  const returnRiskText = formatRiskLabel(returnRisks, returnForecast?.precipitationProbability ?? 0);
+  const primaryContext = primaryRiskText
+    ? `${primaryTarget.direction === "departure" ? "Ida" : "Trecho"} ${primaryTarget.routeLabel} ${when}: ${primaryRiskText}`
+    : `${primaryTarget.direction === "departure" ? "Ida" : "Trecho"} ${primaryTarget.routeLabel} ${when}: ${primaryForecast?.summary?.toLocaleLowerCase("pt-BR") ?? "condições variáveis"}`;
+  const returnSummary = returnTarget && returnForecast
+    ? `${returnTarget.routeLabel} ${returnTarget.daysUntil === 0 ? "hoje" : `em ${returnTarget.daysUntil} dia${returnTarget.daysUntil === 1 ? "" : "s"}`}: ${returnRiskText || `${returnForecast.summary.toLocaleLowerCase("pt-BR")} · ${returnForecast.precipitationProbability}% chuva`}`
+    : undefined;
+
+  return {
+    id: `weather-${primaryTarget.weekNumber}-${primaryTarget.flightDate}`,
+    kind: "weather",
+    weatherRisks: risks,
+    weatherReturnSummary: returnSummary,
+    severity,
+    destination: "calendar",
+    weekNumber: primaryTarget.weekNumber,
+    title: hasOperationalRisk
+      ? `Condições meteorológicas na semana ${primaryTarget.weekNumber}`
+      : `Chuva prevista para a semana ${primaryTarget.weekNumber}`,
+    reason: `${primaryContext}.${returnSummary ? ` Previsão da volta: ${returnSummary}.` : ""} Planeje deslocamento e embarque com antecedência.`,
+    actionLabel: "Ver no Calendário",
+    score: (severity === "critical" ? 875 : 700) + risks.length * 25 + Math.max(0, WEATHER_HORIZON_DAYS - primaryTarget.daysUntil),
     price: null,
     priceVariationPercent: null,
     manualAdjustment: 0,

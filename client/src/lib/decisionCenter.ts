@@ -23,6 +23,8 @@ export type DecisionDestination = "management" | "calendar";
 export type DecisionItem = {
   id: string;
   kind?: "weather";
+  weatherRisks?: ("rain" | "wind" | "visibility")[];
+  weatherReturnSummary?: string;
   severity: DecisionSeverity;
   destination: DecisionDestination;
   weekNumber: number;

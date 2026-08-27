@@ -859,6 +859,9 @@
 - [x] Adicionar ícones visuais e previsão dos próximos dias nos dados meteorológicos do Fly.IA
 - [x] Adicionar autocompletar de destinos na busca do Calendário
 - [x] Adicionar alerta de chuva na Central de Decisão pela previsão dos próximos dias
+- [x] Alertar sobre vento forte e baixa visibilidade na Central de Decisão
+- [x] Exibir a previsão de retorno junto ao alerta meteorológico da próxima viagem
+- [x] Permitir dispensar alertas meteorológicos por viagem com preferência persistente
 
 ## Processo reutilizável
 
