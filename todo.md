@@ -849,6 +849,8 @@
 - [x] Adaptar a tela de abertura do PWA ao modo escuro do sistema
 - [x] Refinar o fade out entre a splash screen e a tela principal do PWA
 - [x] Adicionar skeletons responsivos e acessíveis à Home após a splash screen
+- [x] Preparar proposta visual de cartão Apple Wallet e código de referência do botão de adição
+- [x] Remover a tag textual de remarcação sobre os dias do Calendário no celular
 
 ## Processo reutilizável
 

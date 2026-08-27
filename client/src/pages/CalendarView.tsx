@@ -705,12 +705,13 @@ export default function CalendarView() {
                         const isSaturday = di === 6;
 
                         let cellBg = "";
-                        let textColor = isSunday
-                          ? "text-red-500"
-                          : isSaturday
-                            ? "text-blue-500"
-                            : "text-slate-700";
-                        const isClickable = !!mark;
+	                        let textColor = isSunday
+	                          ? "text-red-500"
+	                          : isSaturday
+	                            ? "text-blue-500"
+	                            : "text-slate-700";
+	                        let flightStatusHint = "";
+	                        const isClickable = !!mark;
                         const isExtendedWeekend = extendedWeekends.has(key);
 
                         // Determinar cor do indicador de feriado baseado no tipo
@@ -750,18 +751,22 @@ export default function CalendarView() {
                               mark.departureRescheduled &&
                               mark.return &&
                               mark.returnRescheduled);
-                          if (allCancelled) {
-                            cellBg = "bg-[#4B0082]";
-                            textColor = "text-white";
-                          } else if (anyCancelled) {
-                            cellBg = "bg-[#4B0082]";
-                            textColor = "text-white";
-                          } else if (allRescheduled) {
-                            cellBg = "bg-red-500";
-                            textColor = "text-white";
-                          } else if (anyRescheduled) {
-                            cellBg = "bg-red-400";
-                            textColor = "text-white";
+	                          if (allCancelled) {
+	                            cellBg = "bg-[#4B0082]";
+	                            textColor = "text-white";
+	                            flightStatusHint = " • voo cancelado";
+	                          } else if (anyCancelled) {
+	                            cellBg = "bg-[#4B0082]";
+	                            textColor = "text-white";
+	                            flightStatusHint = " • voo cancelado";
+	                          } else if (allRescheduled) {
+	                            cellBg = "bg-red-500";
+	                            textColor = "text-white";
+	                            flightStatusHint = " • voo remarcado";
+	                          } else if (anyRescheduled) {
+	                            cellBg = "bg-red-400";
+	                            textColor = "text-white";
+	                            flightStatusHint = " • voo remarcado";
                           } else {
                             cellBg = mark.isPast
                               ? "bg-slate-500"
@@ -801,7 +806,7 @@ export default function CalendarView() {
                           const additionalLabel = mark.additionalFlights?.length
                             ? ` • ${mark.additionalFlights.length} trecho${mark.additionalFlights.length > 1 ? "s" : ""} adicional${mark.additionalFlights.length > 1 ? "is" : ""}`
                             : "";
-                          tooltipText = `Semana ${mark.week.weekNumber}${additionalLabel} — clique para detalhes`;
+	                          tooltipText = `Semana ${mark.week.weekNumber}${additionalLabel}${flightStatusHint} — clique para detalhes`;
                         } else if (cupMatch) {
                           const isBrazilHome =
                             cupMatch.homeTeam === "Brasil" ||
@@ -858,13 +863,8 @@ export default function CalendarView() {
                               ${isClickable ? "cursor-pointer shadow-sm hover:z-10 hover:brightness-110 hover:shadow-md motion-safe:hover:scale-105 active:scale-95 focus:outline-none focus-visible:z-10 focus-visible:ring-2 focus-visible:ring-blue-500 motion-reduce:transition-none motion-reduce:hover:scale-100" : "cursor-default"}
                             `}
                           >
-                            <span>{day}</span>
-                            {mark && (anyCancelled || anyRescheduled) && (
-                              <span className={`absolute right-0.5 top-0.5 rounded-full bg-white/90 px-1 py-px text-[6px] font-bold uppercase tracking-wide shadow-sm dark:bg-slate-950/90 ${anyCancelled ? "text-violet-800 dark:text-violet-200" : "text-red-700 dark:text-red-300"}`} aria-label={anyCancelled ? "Voo cancelado" : "Voo remarcado"}>
-                                {anyCancelled ? "Canc." : "Rem."}
-                              </span>
-                            )}
-                            {cupMatch && !mark && (
+	                            <span className="leading-none">{day}</span>
+	                            {cupMatch && !mark && (
                               <span className="absolute bottom-0.5 left-1/2 -translate-x-1/2 text-[6px] leading-none">
                                 {cupMatch.status === "finished"
                                   ? cupMatch.brazilResult === "win"
@@ -880,24 +880,7 @@ export default function CalendarView() {
                                 className={`absolute bottom-0.5 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full ${holidayDotColor}`}
                               />
                             )}
-                            {mark && (
-                              <span className="absolute bottom-0.5 left-1/2 -translate-x-1/2 flex gap-0.5">
-                                {mark.departure && (
-                                  <span
-                                    className={`w-1 h-1 rounded-full ${mark.isPast ? "bg-slate-300" : "bg-white"}`}
-                                  />
-                                )}
-                                {mark.return && (
-                                  <span
-                                    className={`w-1 h-1 rounded-full ${mark.isPast ? "bg-slate-300" : "bg-emerald-200"}`}
-                                  />
-                                )}
-                                {!!mark.additionalFlights?.length && (
-                                  <span className="w-1 h-1 rounded-full bg-violet-200" />
-                                )}
-                              </span>
-                            )}
-                          </div>
+	                          </div>
                         );
                       })}
                     </div>
