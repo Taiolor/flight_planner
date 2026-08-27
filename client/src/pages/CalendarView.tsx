@@ -25,6 +25,7 @@ import {
   dayMarkMatchesFlightSearch,
   normalizeCalendarFlightSearch,
 } from "@/lib/calendarFlightSearch";
+import { getCalendarDestinationSuggestions } from "@/lib/calendarDestinationSuggestions";
 import {
   ArrowLeft,
   Plane,
@@ -501,6 +502,10 @@ export default function CalendarView() {
   const normalizedFlightSearchTerm = normalizeCalendarFlightSearch(
     deferredFlightSearchTerm
   );
+  const destinationSuggestions = useMemo(
+    () => getCalendarDestinationSuggestions(flightSearchTerm),
+    [flightSearchTerm]
+  );
   const matchingFlightDayCount = useMemo(
     () =>
       normalizedFlightSearchTerm
@@ -592,9 +597,21 @@ export default function CalendarView() {
                 if (event.key === "Escape") setFlightSearchTerm("");
               }}
               placeholder="Buscar voo, destino ou localizador"
-              aria-describedby="calendar-flight-search-hint"
+              list="calendar-destination-suggestions"
+              aria-autocomplete="list"
+              aria-controls="calendar-destination-suggestions"
+              aria-describedby="calendar-flight-search-hint calendar-destination-suggestions-hint"
               className="min-h-10 w-full rounded-xl border border-slate-300 bg-white py-2 pl-9 pr-9 text-sm text-slate-900 placeholder:text-slate-500 focus:border-[#315c99] focus:outline-none focus:ring-2 focus:ring-[#315c99] dark:border-slate-600 dark:bg-slate-900 dark:text-white"
             />
+            <datalist id="calendar-destination-suggestions">
+              {destinationSuggestions.map(suggestion => (
+                <option
+                  key={suggestion.airportCode}
+                  value={suggestion.destination}
+                  label={`${suggestion.airportCode} · aeroporto`}
+                />
+              ))}
+            </datalist>
             {flightSearchTerm && (
               <button
                 type="button"
@@ -607,6 +624,11 @@ export default function CalendarView() {
             )}
             <span id="calendar-flight-search-hint" className="sr-only">
               Pesquise por número do voo, aeroporto, destino, companhia, localizador ou terminal. Pressione Escape para limpar.
+            </span>
+            <span id="calendar-destination-suggestions-hint" className="sr-only">
+              {destinationSuggestions.length > 0
+                ? `${destinationSuggestions.length} sugestões de destino disponíveis.`
+                : "Digite ao menos duas letras para receber sugestões de destino."}
             </span>
           </div>
           <label

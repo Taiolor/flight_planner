@@ -855,6 +855,9 @@
 - [x] Adicionar modo de alto contraste ao Calendário
 - [x] Permitir recolher filtros secundários do Calendário no celular
 - [x] Adicionar busca por número ou destino de voo no Calendário
+- [x] Atualizar a habilidade reutilizável com o processo de evolução segura aplicado ao Smart Fly
+- [x] Adicionar ícones visuais e previsão dos próximos dias nos dados meteorológicos do Fly.IA
+- [x] Adicionar autocompletar de destinos na busca do Calendário
 
 ## Processo reutilizável
 

@@ -54,6 +54,14 @@ type FlyIaClientMessage = {
     precipitationAlert?: string;
     weatherAlerts?: Array<{ type: "rain" | "wind" | "visibility"; label: string }>;
     packingGuidance?: string[];
+    dailyForecast?: Array<{
+      date: string;
+      summary: string;
+      weatherCode: number;
+      temperatureMinC: number;
+      temperatureMaxC: number;
+      precipitationProbability: number;
+    }>;
   };
 };
 

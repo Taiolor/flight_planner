@@ -95,15 +95,23 @@ describe("Calendar mobile responsiveness", () => {
 	  expect(calendarSource).toContain("md:hidden");
 	});
 
-	it("oferece busca acessível por número, destino e dados de bilhete", () => {
+		it("oferece busca acessível por número, destino e dados de bilhete", () => {
 	  expect(calendarSource).toContain('id="calendar-flight-search"');
 	  expect(calendarSource).toContain('type="search"');
 	  expect(calendarSource).toContain("Buscar voo, destino ou localizador");
 	  expect(calendarSource).toContain("dayMarkMatchesFlightSearch");
 	  expect(calendarSource).toContain("normalizeCalendarFlightSearch");
 	  expect(calendarSource).toContain('aria-label="Limpar busca de voos"');
-	  expect(calendarSource).toContain("Nenhum dia de voo encontrado");
-	});
+		  expect(calendarSource).toContain("Nenhum dia de voo encontrado");
+		});
+
+		it("oferece autocompletar de destinos sem substituir a busca livre", () => {
+		  expect(calendarSource).toContain("getCalendarDestinationSuggestions");
+		  expect(calendarSource).toContain('list="calendar-destination-suggestions"');
+		  expect(calendarSource).toContain('aria-autocomplete="list"');
+		  expect(calendarSource).toContain('id="calendar-destination-suggestions"');
+		  expect(calendarSource).toContain("sugestões de destino disponíveis");
+		});
 
 	it("keeps long World Cup opponent names visible instead of truncating them", () => {
     expect(cupSource).toContain("min-w-0 break-words text-right");

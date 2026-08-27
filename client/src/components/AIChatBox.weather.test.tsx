@@ -36,6 +36,11 @@ describe("AIChatBox cartão meteorológico", () => {
         sourceLabel: "Open-Meteo", sourceUrl: "https://open-meteo.com/", travelLeg: "Volta",
         precipitationAlert: "Atenção: há condição de chuva intensa na previsão.",
         packingGuidance: ["guarda-chuva compacto ou capa leve", "casaco leve para manhã ou noite"],
+        dailyForecast: [
+          { date: "2026-04-26", summary: "Chuva fraca", weatherCode: 61, temperatureMinC: 18, temperatureMaxC: 24, precipitationProbability: 60 },
+          { date: "2026-04-27", summary: "Parcialmente nublado", weatherCode: 2, temperatureMinC: 17, temperatureMaxC: 25, precipitationProbability: 25 },
+          { date: "2026-04-28", summary: "Céu limpo", weatherCode: 0, temperatureMinC: 16, temperatureMaxC: 26, precipitationProbability: 5 },
+        ],
       },
     }]);
 
@@ -47,6 +52,10 @@ describe("AIChatBox cartão meteorológico", () => {
     expect(card?.textContent).toContain("Volta · 26/04/2026");
     expect(document.querySelector("[data-testid='flyia-weather-alert-rain']")?.textContent).toContain("chuva intensa");
     expect(document.querySelector("[data-testid='flyia-weather-packing']")?.textContent).toContain("guarda-chuva compacto");
+    const nextDays = document.querySelector("[data-testid='flyia-weather-next-days']");
+    expect(nextDays?.textContent).toContain("Próximos dias");
+    expect(nextDays?.textContent).toContain("Parcialmente nublado");
+    expect(nextDays?.querySelectorAll("[data-testid='flyia-weather-next-day']")).toHaveLength(2);
     const source = card?.querySelector<HTMLAnchorElement>("a");
     expect(source?.href).toBe("https://open-meteo.com/");
     expect(source?.rel).toContain("noopener");

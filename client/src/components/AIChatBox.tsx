@@ -33,6 +33,14 @@ export type Message = {
     precipitationAlert?: string;
     weatherAlerts?: Array<{ type: "rain" | "wind" | "visibility"; label: string }>;
     packingGuidance?: string[];
+    dailyForecast?: Array<{
+      date: string;
+      summary: string;
+      weatherCode: number;
+      temperatureMinC: number;
+      temperatureMaxC: number;
+      precipitationProbability: number;
+    }>;
   };
 };
 
@@ -173,14 +181,21 @@ function isFlightradarFlightUrl(href: string) {
   }
 }
 
-function WeatherIcon({ summary }: { summary: string }) {
+function WeatherIcon({ summary, className = "size-5 text-sky-700 dark:text-sky-300" }: { summary: string; className?: string }) {
   const normalized = summary.toLocaleLowerCase("pt-BR");
-  const className = "size-5 text-sky-700 dark:text-sky-300";
   if (/trovo/.test(normalized)) return <CloudLightning className={className} aria-hidden="true" />;
   if (/chuva|garoa|pancada/.test(normalized)) return <CloudRain className={className} aria-hidden="true" />;
   if (/nublado|neblina/.test(normalized)) return <Cloud className={className} aria-hidden="true" />;
   if (/limpo/.test(normalized)) return <Sun className={className} aria-hidden="true" />;
   return <CloudSun className={className} aria-hidden="true" />;
+}
+
+function formatForecastDay(date: string) {
+  const parsed = new Date(`${date}T12:00:00`);
+  if (Number.isNaN(parsed.getTime())) return date;
+  return new Intl.DateTimeFormat("pt-BR", { weekday: "short", day: "2-digit" })
+    .format(parsed)
+    .replace(".", "");
 }
 
 function WeatherResponseCard({ weather }: { weather: NonNullable<Message["weather"]> }) {
@@ -223,6 +238,39 @@ function WeatherResponseCard({ weather }: { weather: NonNullable<Message["weathe
           </div>
         )}
       </div>
+      {weather.dailyForecast && weather.dailyForecast.length > 1 && (
+        <section
+          className="border-t border-sky-200/80 px-3 py-2.5 dark:border-sky-900/70"
+          aria-label="Previsão dos próximos dias"
+          data-testid="flyia-weather-next-days"
+        >
+          <p className="mb-2 text-[10px] font-bold uppercase tracking-wide text-sky-800 dark:text-sky-200">
+            Próximos dias
+          </p>
+          <div className="grid grid-cols-2 gap-1.5 min-[380px]:grid-cols-4">
+            {weather.dailyForecast.slice(1, 5).map(day => (
+              <div
+                key={day.date}
+                className="rounded-lg border border-sky-200/80 bg-white/70 px-2 py-1.5 dark:border-sky-900/70 dark:bg-slate-950/25"
+                aria-label={`${formatForecastDay(day.date)}: ${day.summary}, mínima de ${day.temperatureMinC} e máxima de ${day.temperatureMaxC} graus Celsius, ${day.precipitationProbability} por cento de chance de chuva`}
+                data-testid="flyia-weather-next-day"
+              >
+                <div className="flex items-center justify-between gap-1">
+                  <span className="text-[10px] font-semibold capitalize text-slate-600 dark:text-slate-300">
+                    {formatForecastDay(day.date)}
+                  </span>
+                  <WeatherIcon summary={day.summary} className="size-3.5 text-sky-700 dark:text-sky-300" />
+                </div>
+                <p className="mt-1 truncate text-[10px] font-medium text-slate-700 dark:text-slate-200" title={day.summary}>
+                  {day.summary}
+                </p>
+                <p className="text-[11px] font-bold text-slate-900 dark:text-white">{day.temperatureMinC}–{day.temperatureMaxC}°</p>
+                <p className="text-[10px] text-slate-600 dark:text-slate-300">{day.precipitationProbability}% chuva</p>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
       {alerts.map(alert => (
         <div key={`${alert.type}-${alert.label}`} className="mx-3 mt-2 flex items-start gap-1.5 rounded-lg border border-amber-300 bg-amber-50 px-2.5 py-2 text-[11px] font-medium text-amber-900 dark:border-amber-700 dark:bg-amber-950/40 dark:text-amber-100" role="status" data-testid={`flyia-weather-alert-${alert.type}`}>
           {alert.type === "wind" ? <Wind className="mt-0.5 size-3.5 shrink-0" aria-hidden="true" /> : <AlertTriangle className="mt-0.5 size-3.5 shrink-0" aria-hidden="true" />}

@@ -1,6 +1,7 @@
 const FORECAST_BASE_URL = "https://api.open-meteo.com/v1/forecast";
 const MAX_FORECAST_BYTES = 64_000;
 const FORECAST_WINDOW_DAYS = 16;
+const DAILY_FORECAST_DAYS = 5;
 const FORECAST_CACHE_TTL_MS = 10 * 60_000;
 const FORECAST_REQUEST_TIMEOUT_MS = 8_000;
 
@@ -31,9 +32,10 @@ type OpenMeteoResponse = {
 
 type WeatherAlert = { type: "rain" | "wind" | "visibility"; label: string };
 type HourlyForecast = { time: string; temperatureC: number; apparentTemperatureC: number; visibilityKm: number; precipitationProbability: number; precipitationMm: number; windSpeedKmh: number; windGustsKmh: number; windDirectionDegrees: number; windDirectionLabel: string; weatherCode: number; summary: string };
+export type DailyWeatherForecast = { date: string; summary: string; weatherCode: number; temperatureMinC: number; temperatureMaxC: number; precipitationProbability: number };
 
 export type DestinationWeather =
-  | { available: true; airportCode: string; destinationLabel: string; forecastDate: string; summary: string; weatherCode: number; temperatureMinC: number; temperatureMaxC: number; precipitationProbability: number; windSpeedKmh: number; uvIndexMax: number; sunriseTime: string | null; sunsetTime: string | null; hourlyForecast: HourlyForecast | null; alerts: WeatherAlert[]; sourceLabel: string; sourceUrl: string }
+  | { available: true; airportCode: string; destinationLabel: string; forecastDate: string; summary: string; weatherCode: number; temperatureMinC: number; temperatureMaxC: number; precipitationProbability: number; windSpeedKmh: number; uvIndexMax: number; sunriseTime: string | null; sunsetTime: string | null; hourlyForecast: HourlyForecast | null; dailyForecast: DailyWeatherForecast[]; alerts: WeatherAlert[]; sourceLabel: string; sourceUrl: string }
   | { available: false; reason: "unsupported_destination" | "outside_forecast_window" | "unavailable" };
 
 function toUtcDay(date: string): number | null {
@@ -73,6 +75,37 @@ function getWindDirectionLabel(degrees: number) {
 
 function getTime(value?: string) { return value?.split("T")[1]?.slice(0, 5) ?? null; }
 
+function addUtcDays(date: string, days: number) {
+  const timestamp = toUtcDay(date);
+  if (timestamp === null) return date;
+  return new Date(timestamp + days * 86_400_000).toISOString().slice(0, 10);
+}
+
+function getDailyForecast(daily: OpenMeteoResponse["daily"]): DailyWeatherForecast[] {
+  return (daily?.time ?? []).flatMap((date, index) => {
+    const temperatureMinC = daily?.temperature_2m_min?.[index];
+    const temperatureMaxC = daily?.temperature_2m_max?.[index];
+    const precipitationProbability = daily?.precipitation_probability_max?.[index];
+    const weatherCode = daily?.weather_code?.[index];
+    if (
+      typeof temperatureMinC !== "number" ||
+      typeof temperatureMaxC !== "number" ||
+      typeof precipitationProbability !== "number" ||
+      typeof weatherCode !== "number"
+    ) {
+      return [];
+    }
+    return [{
+      date,
+      summary: weatherCodeLabels[weatherCode] ?? "Condições variáveis",
+      weatherCode,
+      temperatureMinC: Math.round(temperatureMinC),
+      temperatureMaxC: Math.round(temperatureMaxC),
+      precipitationProbability: Math.round(precipitationProbability),
+    }];
+  });
+}
+
 function getAlerts(hourly: Pick<HourlyForecast, "precipitationProbability" | "precipitationMm" | "windSpeedKmh" | "windGustsKmh" | "visibilityKm"> | null): WeatherAlert[] {
   if (!hourly) return [];
   const alerts: WeatherAlert[] = [];
@@ -90,6 +123,7 @@ export async function getDestinationWeather(airportCode: string, flightDate: str
   if (!location) return { available: false, reason: "unsupported_destination" };
   const dayOffset = getForecastDateOffset(flightDate, now);
   if (dayOffset === null || dayOffset < 0 || dayOffset > FORECAST_WINDOW_DAYS) return { available: false, reason: "outside_forecast_window" };
+  const dailyForecastDays = Math.min(DAILY_FORECAST_DAYS, FORECAST_WINDOW_DAYS - dayOffset + 1);
 
   const cacheKey = `${normalizedAirportCode}:${flightDate}:${flightTime ?? "daily"}`;
   const cached = weatherCache.get(cacheKey);
@@ -102,7 +136,7 @@ export async function getDestinationWeather(airportCode: string, flightDate: str
   requestUrl.searchParams.set("hourly", "weather_code,temperature_2m,apparent_temperature,visibility,precipitation_probability,precipitation,wind_speed_10m,wind_gusts_10m,wind_direction_10m");
   requestUrl.searchParams.set("timezone", "America/Sao_Paulo");
   requestUrl.searchParams.set("start_date", flightDate);
-  requestUrl.searchParams.set("end_date", flightDate);
+  requestUrl.searchParams.set("end_date", addUtcDays(flightDate, dailyForecastDays - 1));
 
   try {
     const response = await fetch(requestUrl, {
@@ -113,11 +147,13 @@ export async function getDestinationWeather(airportCode: string, flightDate: str
     if (rawBody.length > MAX_FORECAST_BYTES) throw new Error("Weather provider payload exceeded limit");
     const payload = JSON.parse(rawBody) as OpenMeteoResponse;
     const daily = payload.daily;
-    const forecastDate = daily?.time?.[0];
-    const temperatureMinC = daily?.temperature_2m_min?.[0];
-    const temperatureMaxC = daily?.temperature_2m_max?.[0];
-    const precipitationProbability = daily?.precipitation_probability_max?.[0];
-    const weatherCode = daily?.weather_code?.[0];
+    const dailyForecast = getDailyForecast(daily);
+    const forecast = dailyForecast[0];
+    const forecastDate = forecast?.date;
+    const temperatureMinC = forecast?.temperatureMinC;
+    const temperatureMaxC = forecast?.temperatureMaxC;
+    const precipitationProbability = forecast?.precipitationProbability;
+    const weatherCode = forecast?.weatherCode;
     const windSpeedKmh = daily?.wind_speed_10m_max?.[0];
     const uvIndexMax = daily?.uv_index_max?.[0];
     if (!forecastDate || typeof temperatureMinC !== "number" || typeof temperatureMaxC !== "number" || typeof precipitationProbability !== "number" || typeof weatherCode !== "number" || typeof windSpeedKmh !== "number" || typeof uvIndexMax !== "number") throw new Error("Weather provider response is incomplete");
@@ -138,7 +174,7 @@ export async function getDestinationWeather(airportCode: string, flightDate: str
       return { time, temperatureC: Math.round(temperatureC), apparentTemperatureC: Math.round(apparentTemperatureC), visibilityKm: Number((visibilityMeters / 1000).toFixed(1)), precipitationProbability: Math.round(hourlyPrecipitationProbability), precipitationMm: Number(precipitationMm.toFixed(1)), windSpeedKmh: Math.round(hourlyWindSpeed), windGustsKmh: Math.round(windGustsKmh), windDirectionDegrees: Math.round(windDirectionDegrees), windDirectionLabel: getWindDirectionLabel(windDirectionDegrees), weatherCode: hourlyWeatherCode, summary: weatherCodeLabels[hourlyWeatherCode] ?? "Condições variáveis" };
     })();
 
-    const result: DestinationWeather = { available: true, airportCode: normalizedAirportCode, destinationLabel: location.label, forecastDate, summary: weatherCodeLabels[weatherCode] ?? "Condições variáveis", weatherCode, temperatureMinC: Math.round(temperatureMinC), temperatureMaxC: Math.round(temperatureMaxC), precipitationProbability: Math.round(precipitationProbability), windSpeedKmh: Math.round(windSpeedKmh), uvIndexMax: Number(uvIndexMax.toFixed(1)), sunriseTime: getTime(daily?.sunrise?.[0]), sunsetTime: getTime(daily?.sunset?.[0]), hourlyForecast, alerts: getAlerts(hourlyForecast), sourceLabel: "Open-Meteo", sourceUrl: "https://open-meteo.com/" };
+    const result: DestinationWeather = { available: true, airportCode: normalizedAirportCode, destinationLabel: location.label, forecastDate, summary: forecast.summary, weatherCode, temperatureMinC, temperatureMaxC, precipitationProbability, windSpeedKmh: Math.round(windSpeedKmh), uvIndexMax: Number(uvIndexMax.toFixed(1)), sunriseTime: getTime(daily?.sunrise?.[0]), sunsetTime: getTime(daily?.sunset?.[0]), hourlyForecast, dailyForecast, alerts: getAlerts(hourlyForecast), sourceLabel: "Open-Meteo", sourceUrl: "https://open-meteo.com/" };
     weatherCache.set(cacheKey, { value: result, expiresAt: Date.now() + FORECAST_CACHE_TTL_MS });
     return result;
   } catch (error) {
