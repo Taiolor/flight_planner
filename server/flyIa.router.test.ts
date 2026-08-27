@@ -299,13 +299,19 @@ describe("flyIaTelemetry router", () => {
 describe("destinationWeather router", () => {
   const weatherInput = { airportCode: "NVT", flightDate: "2026-08-28" };
 
-  it("impede consulta meteorológica sem sessão interna", async () => {
+  it("permite a previsão pública limitada sem sessão interna", async () => {
+    state.getDestinationWeather.mockResolvedValue({
+      available: true,
+      airportCode: "NVT",
+      destinationLabel: "Navegantes",
+    });
     const caller = createCaller(false);
 
-    await expect(caller.destinationWeather.forecast(weatherInput)).rejects.toMatchObject({
-      code: "UNAUTHORIZED",
+    await expect(caller.destinationWeather.forecast(weatherInput)).resolves.toMatchObject({
+      available: true,
+      airportCode: "NVT",
     });
-    expect(state.getDestinationWeather).not.toHaveBeenCalled();
+    expect(state.getDestinationWeather).toHaveBeenCalledWith("NVT", "2026-08-28");
   });
 
   it("encaminha somente código de aeroporto e data do voo para a fonte de previsão", async () => {

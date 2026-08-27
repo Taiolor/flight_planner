@@ -133,7 +133,7 @@ export const appRouter = router({
   system: systemRouter,
   operational: operationalRouter,
   destinationWeather: router({
-    forecast: flightProtectedProcedure
+    forecast: publicProcedure
       .input(
         z.object({
           airportCode: z.string().trim().regex(/^[A-Za-z]{3}$/),

@@ -249,3 +249,7 @@
 - [x] Exibir previsão do destino somente nos detalhes expandidos, com fonte, atualização e estados de carregamento ou falha.
 - [x] Criar testes de dados, privacidade, interface e responsividade; documentar e versionar a integração de clima.
 - [x] Salvar checkpoint da previsão meteorológica do destino nos detalhes de voo.
+- [x] Diagnosticar a consulta de clima que gera erro de autenticação ao abrir o Calendário sem sessão interna.
+- [x] Tornar a consulta pública, limitada e validada por aeroporto e data, eliminando a falha sem ocultar detalhes de voo.
+- [x] Criar regressões para sessão ausente e sessão válida, validar no navegador e versionar a correção.
+- [x] Salvar checkpoint da correção de autenticação da previsão no Calendário.
