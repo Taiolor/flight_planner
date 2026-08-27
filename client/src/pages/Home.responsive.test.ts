@@ -45,17 +45,22 @@ describe("Home mobile responsiveness", () => {
     expect(source).toContain("saveOfflineNextTrips(selectedYear, nextDecisionTrips)");
   });
 
-  it("posiciona a Central de decisão após o Resumo Anual e preserva CTAs contextuais", () => {
+  it("permite fixar a Central no topo e preserva seus CTAs contextuais", () => {
     expect(source).toContain('import { DecisionCenter } from "@/components/DecisionCenter"');
     expect(source).toContain("buildDecisionItemQueue(");
     expect(source).toContain("getNextDecisionTrip(weeksData)");
     expect(source).toContain("secondaryItems={secondaryDecisionItems}");
     expect(source).toContain("readDecisionCenterPreferences(selectedYear)");
     expect(source).toContain("isExpanded={decisionCenterPreferences.isExpanded}");
-    expect(source).toContain("onToggleExpanded={() =>");
+    expect(source).toContain("isPinned={decisionCenterPreferences.isPinned}");
+    expect(source).toContain("onToggleExpanded={toggleDecisionCenterExpansion}");
+    expect(source).toContain("onTogglePinned={toggleDecisionCenterPin}");
+    expect(source).toContain("decisionCenterPreferences.isPinned && decisionCenterSection");
+    expect(source).toContain("!decisionCenterPreferences.isPinned && decisionCenterSection");
+    expect(source).toContain("useDecisionCenterToggleShortcut(toggleDecisionCenterExpansion, !isManagementView)");
     expect(source).toContain("/gestao-passagens?week=${weekNumber}");
     expect(source).toContain("/calendar?week=${weekNumber}");
-    expect(source.indexOf("<DecisionCenter")).toBeLessThan(source.indexOf("<WeeklyPlanning"));
+    expect(source.indexOf("const decisionCenterSection")).toBeLessThan(source.indexOf("<WeeklyPlanning"));
   });
 
   it("allows graph actions and empty-state buttons to wrap on small screens", () => {

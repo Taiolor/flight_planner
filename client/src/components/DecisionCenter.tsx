@@ -23,12 +23,14 @@ type DecisionCenterProps = {
   items: DecisionItem[];
   secondaryItems: DecisionItem[];
   isExpanded: boolean;
+  isPinned: boolean;
   secondaryQueueOpen: boolean;
   nextTrip: DecisionTrip | null;
   isLoading: boolean;
   hasError: boolean;
   onRetry: () => void;
   onToggleExpanded: () => void;
+  onTogglePinned: () => void;
   onToggleSecondaryQueue: () => void;
   onAdjustRelevance: (weekNumber: number, direction: "raise" | "lower") => void;
   onOpenManagementWeek: (weekNumber: number) => void;
@@ -113,6 +115,8 @@ export function DecisionCenter({
   hasError,
   onRetry,
   onToggleExpanded,
+  isPinned,
+  onTogglePinned,
   onToggleSecondaryQueue,
   onAdjustRelevance,
   onOpenManagementWeek,
@@ -138,6 +142,15 @@ export function DecisionCenter({
             <StatusPill tone="navy" icon={Clock3} className="border-sky-200/40 bg-sky-300/10 text-sky-100">{priorityLabel}</StatusPill>
             <button
               type="button"
+              onClick={onTogglePinned}
+              aria-pressed={isPinned}
+              title={isPinned ? "Remover Central do topo da Home" : "Fixar Central no topo da Home"}
+              className="inline-flex min-h-11 items-center gap-2 border border-white/30 bg-white/10 px-3 text-sm font-semibold text-white hover:bg-white/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
+            >
+              {isPinned ? "Desafixar do topo" : "Fixar no topo"}
+            </button>
+            <button
+              type="button"
               onClick={onToggleExpanded}
               aria-expanded={isExpanded}
               aria-controls="decision-center-content"
@@ -148,7 +161,18 @@ export function DecisionCenter({
             </button>
           </div>
         </div>
-        {!isExpanded && <p className="mt-3 text-sm text-sky-100">Central recolhida. {priorityLabel} aguardam sua revisão.</p>}
+        {!isExpanded && (
+          <div className="mt-3 border-t border-white/15 pt-3 text-sm text-sky-100">
+            <p>Central recolhida. {priorityLabel} aguardam sua revisão.</p>
+            {items.length > 0 && (
+              <p className="mt-1 text-slate-200">
+                Em foco: {items.slice(0, 2).map(item => item.title).join(" · ")}
+                {items.length > 2 ? " · …" : ""}
+              </p>
+            )}
+            {nextTrip && <p className="mt-1 text-slate-200">Próxima viagem: Semana {nextTrip.weekNumber} · {nextTrip.departureDate} → {nextTrip.returnDate}</p>}
+          </div>
+        )}
       </div>
 
       {isExpanded && (

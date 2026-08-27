@@ -197,3 +197,7 @@
 - [x] Cobrir cache de próximas viagens com testes de validade, expiração e recuperação
 - [x] Permitir recolher ou expandir integralmente a Central de decisão com preferência persistente
 - [x] Cobrir a sanfona integral da Central com testes de acessibilidade e responsividade
+- [x] Adicionar atalho de teclado acessível para expandir ou recolher a Central de decisão
+- [x] Permitir fixar a Central no topo da Home com preferência persistente e reversível
+- [x] Exibir resumo útil das prioridades enquanto a Central estiver recolhida
+- [x] Cobrir atalho, fixação, resumo, persistência e responsividade com regressões automatizadas

@@ -139,6 +139,7 @@ import {
   persistDecisionCenterPreferences,
   readDecisionCenterPreferences,
 } from "@/lib/decisionCenterPreferences";
+import { useDecisionCenterToggleShortcut } from "@/lib/decisionCenterShortcuts";
 import {
   persistWeeklyPlanningFavorites,
   readWeeklyPlanningFavorites,
@@ -1471,6 +1472,19 @@ export default function Home({ mode = "home" }: HomeProps) {
     });
   };
   useHomePanelToggleShortcut(toggleAllHomePanels, LAYOUT_CONTROLS_ENABLED);
+  const toggleDecisionCenterExpansion = useCallback(() => {
+    setDecisionCenterPreferences(previous => ({
+      ...previous,
+      isExpanded: !previous.isExpanded,
+    }));
+  }, []);
+  const toggleDecisionCenterPin = useCallback(() => {
+    setDecisionCenterPreferences(previous => ({
+      ...previous,
+      isPinned: !previous.isPinned,
+    }));
+  }, []);
+  useDecisionCenterToggleShortcut(toggleDecisionCenterExpansion, !isManagementView);
   const handleSaveAnnualGoal = (goal: number) => {
     const savedGoal = saveAnnualEmissionGoal(
       selectedYear,
@@ -2387,6 +2401,42 @@ export default function Home({ mode = "home" }: HomeProps) {
   const hasLocalPlanningData = (weeksQuery.data?.length ?? 0) > 0;
   const shouldShowOfflineRecovery =
     !isManagementView && !isOnline && !hasLocalPlanningData;
+  const decisionCenterSection = !weeksQuery.isLoading ? (
+    <DecisionCenter
+      items={decisionItems}
+      secondaryItems={secondaryDecisionItems}
+      isExpanded={decisionCenterPreferences.isExpanded}
+      isPinned={decisionCenterPreferences.isPinned}
+      secondaryQueueOpen={decisionCenterPreferences.secondaryQueueOpen}
+      nextTrip={nextDecisionTrip}
+      isLoading={weeksQuery.isLoading}
+      hasError={weeksQuery.isError}
+      onRetry={() => void weeksQuery.refetch()}
+      onToggleExpanded={toggleDecisionCenterExpansion}
+      onTogglePinned={toggleDecisionCenterPin}
+      onToggleSecondaryQueue={() =>
+        setDecisionCenterPreferences(previous => ({
+          ...previous,
+          secondaryQueueOpen: !previous.secondaryQueueOpen,
+        }))
+      }
+      onAdjustRelevance={adjustDecisionRelevance}
+      onOpenManagementWeek={openDecisionManagementWeek}
+      onOpenCalendarWeek={openDecisionCalendarWeek}
+      metrics={{
+        issuedCount: annualIssuedCount,
+        pendingCount: pendingDecisionWeeks,
+        annualTotal: hideValues
+          ? "••••"
+          : `R$ ${annualTotalIssued.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+        averageTrip: hideValues
+          ? "••••"
+          : decisionAverageTrip === null
+            ? "—"
+            : `R$ ${decisionAverageTrip.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+      }}
+    />
+  ) : null;
 
   return (
     <div
@@ -2666,6 +2716,7 @@ export default function Home({ mode = "home" }: HomeProps) {
                 onDeletePrioritySet={deletePrioritySet}
               />
             )}
+        {decisionCenterPreferences.isPinned && decisionCenterSection}
         {/* Resumo Anual com Accordion */}
         {weeksQuery.isLoading ? (
           <SkeletonChart />
@@ -2753,45 +2804,7 @@ export default function Home({ mode = "home" }: HomeProps) {
           </div>
         )}
 
-        {!weeksQuery.isLoading && (
-          <DecisionCenter
-            items={decisionItems}
-            secondaryItems={secondaryDecisionItems}
-            isExpanded={decisionCenterPreferences.isExpanded}
-            secondaryQueueOpen={decisionCenterPreferences.secondaryQueueOpen}
-            nextTrip={nextDecisionTrip}
-            isLoading={weeksQuery.isLoading}
-            hasError={weeksQuery.isError}
-            onRetry={() => void weeksQuery.refetch()}
-            onToggleExpanded={() =>
-              setDecisionCenterPreferences(previous => ({
-                ...previous,
-                isExpanded: !previous.isExpanded,
-              }))
-            }
-            onToggleSecondaryQueue={() =>
-              setDecisionCenterPreferences(previous => ({
-                ...previous,
-                secondaryQueueOpen: !previous.secondaryQueueOpen,
-              }))
-            }
-            onAdjustRelevance={adjustDecisionRelevance}
-            onOpenManagementWeek={openDecisionManagementWeek}
-            onOpenCalendarWeek={openDecisionCalendarWeek}
-            metrics={{
-              issuedCount: annualIssuedCount,
-              pendingCount: pendingDecisionWeeks,
-              annualTotal: hideValues
-                ? "••••"
-                : `R$ ${annualTotalIssued.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
-              averageTrip: hideValues
-                ? "••••"
-                : decisionAverageTrip === null
-                  ? "—"
-                  : `R$ ${decisionAverageTrip.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
-            }}
-          />
-        )}
+        {!decisionCenterPreferences.isPinned && decisionCenterSection}
 
         {!weeksQuery.isLoading && (
           <WeeklyPlanning

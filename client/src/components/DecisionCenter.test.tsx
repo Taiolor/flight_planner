@@ -11,12 +11,14 @@ describe("DecisionCenter", () => {
     items: [{ id: "pending-27", severity: "warning" as const, destination: "management" as const, weekNumber: 27, title: "Emitir passagem da semana 27", reason: "Viagem em 10 dias.", actionLabel: "Abrir Gestão", score: 900, price: 620, priceVariationPercent: 8, manualAdjustment: 0 }],
     secondaryItems: [],
     isExpanded: true,
+    isPinned: false,
     secondaryQueueOpen: false,
     nextTrip: { weekNumber: 27, departureDate: "30/08/2026", returnDate: "04/09/2026", route: "GRU → NVT", airline: "GOL", status: "pending" as const },
     isLoading: false,
     hasError: false,
     onRetry: vi.fn(),
     onToggleExpanded: vi.fn(),
+    onTogglePinned: vi.fn(),
     onToggleSecondaryQueue: vi.fn(),
     onAdjustRelevance: vi.fn(),
     onOpenManagementWeek: vi.fn(),
@@ -53,8 +55,20 @@ describe("DecisionCenter", () => {
     const toggle = view.getByRole("button", { name: "Expandir central" });
     expect(toggle.getAttribute("aria-expanded")).toBe("false");
     expect(view.container.querySelector('[aria-label="Prioridades operacionais"]')).toBeNull();
+    expect(view.container.textContent).toContain("Em foco: Emitir passagem da semana 27");
+    expect(view.container.textContent).toContain("Próxima viagem: Semana 27");
     fireEvent.click(toggle);
     expect(props.onToggleExpanded).toHaveBeenCalledOnce();
+  });
+
+  it("permite fixar a Central no topo com estado reversível", () => {
+    const view = render(<DecisionCenter {...props} isPinned={false} />);
+
+    const toggle = view.container.querySelector('button[aria-pressed="false"]') as HTMLButtonElement;
+    expect(toggle.textContent).toContain("Fixar no topo");
+    expect(toggle.getAttribute("aria-pressed")).toBe("false");
+    fireEvent.click(toggle);
+    expect(props.onTogglePinned).toHaveBeenCalledOnce();
   });
 
   it("oferece recuperação explícita quando a Central falha", () => {

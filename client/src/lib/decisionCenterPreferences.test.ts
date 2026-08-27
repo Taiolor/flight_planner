@@ -17,7 +17,7 @@ describe("decisionCenterPreferences", () => {
   it("persiste a fila recolhível e os ajustes por semana no exercício selecionado", () => {
     const storage = createStorage();
     const updated = adjustDecisionWeekRelevance(
-      { isExpanded: true, secondaryQueueOpen: true, relevanceByWeek: {} },
+      { isExpanded: true, isPinned: false, secondaryQueueOpen: true, relevanceByWeek: {} },
       27,
       "raise"
     );
@@ -26,11 +26,13 @@ describe("decisionCenterPreferences", () => {
 
     expect(readDecisionCenterPreferences(2026, storage)).toEqual({
       isExpanded: true,
+      isPinned: false,
       secondaryQueueOpen: true,
       relevanceByWeek: { 27: 40 },
     });
     expect(readDecisionCenterPreferences(2027, storage)).toEqual({
       isExpanded: true,
+      isPinned: false,
       secondaryQueueOpen: false,
       relevanceByWeek: {},
     });
@@ -40,24 +42,29 @@ describe("decisionCenterPreferences", () => {
     const storage = createStorage();
     storage.setItem(
       "viagens.home.decision-center.2026.v1",
-      JSON.stringify({ isExpanded: "sim", secondaryQueueOpen: "sim", relevanceByWeek: { 0: 500, 27: 999, 28: "x" } })
+      JSON.stringify({ isExpanded: "sim", isPinned: "sim", secondaryQueueOpen: "sim", relevanceByWeek: { 0: 500, 27: 999, 28: "x" } })
     );
 
     expect(readDecisionCenterPreferences(2026, storage)).toEqual({
       isExpanded: true,
+      isPinned: false,
       secondaryQueueOpen: false,
       relevanceByWeek: { 27: 160 },
     });
   });
 
-  it("persiste a expansão integral da Central com valor booleano validado", () => {
+  it("persiste expansão e fixação da Central apenas com valores booleanos válidos", () => {
     const storage = createStorage();
     persistDecisionCenterPreferences(2026, {
       isExpanded: false,
+      isPinned: true,
       secondaryQueueOpen: true,
       relevanceByWeek: {},
     }, storage);
 
-    expect(readDecisionCenterPreferences(2026, storage).isExpanded).toBe(false);
+    expect(readDecisionCenterPreferences(2026, storage)).toMatchObject({
+      isExpanded: false,
+      isPinned: true,
+    });
   });
 });
