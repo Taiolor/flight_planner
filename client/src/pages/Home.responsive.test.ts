@@ -34,6 +34,15 @@ describe("Home mobile responsiveness", () => {
     expect(source).toContain("weeksQuery.refetch()");
   });
 
+  it("informa a última sincronização offline e separa a recuperação sem dados locais", () => {
+    expect(source).toContain('import { HomeOfflineRecovery } from "@/components/HomeOfflineRecovery"');
+    expect(source).toContain("readPlanningSyncTimestamp(selectedYear)");
+    expect(source).toContain("savePlanningSyncTimestamp(selectedYear, now.getTime())");
+    expect(source).toContain("data-offline-status=\"true\"");
+    expect(source).toContain("shouldShowOfflineRecovery");
+    expect(source).toContain("<HomeOfflineRecovery");
+  });
+
   it("posiciona a Central de decisão após o Resumo Anual e preserva CTAs contextuais", () => {
     expect(source).toContain('import { DecisionCenter } from "@/components/DecisionCenter"');
     expect(source).toContain("buildDecisionItemQueue(");

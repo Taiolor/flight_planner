@@ -91,6 +91,7 @@ import {
   DollarSign,
   MapPin,
   BarChart2,
+  WifiOff,
 } from "lucide-react";
 import { Link } from "wouter";
 import { ShareByEmailButton } from "@/components/ShareByEmailButton";
@@ -184,6 +185,12 @@ import {
 } from "@/lib/homeDashboardPreferences";
 import { useHomePanelToggleShortcut } from "@/lib/homePanelShortcuts";
 import { getActiveManagementFilterCount } from "@/lib/managementFilterSummary";
+import { HomeOfflineRecovery } from "@/components/HomeOfflineRecovery";
+import {
+  formatPlanningSyncTimestamp,
+  readPlanningSyncTimestamp,
+  savePlanningSyncTimestamp,
+} from "@/lib/offlinePlanningSync";
 
 const AnnualSpendChart = lazy(() =>
   import("@/components/HomeCharts").then(module => ({
@@ -837,6 +844,26 @@ export default function Home({ mode = "home" }: HomeProps) {
 
   // Estado para rastrear última atualização
   const [lastUpdateTime, setLastUpdateTime] = useState<Date | null>(null);
+  const [isOnline, setIsOnline] = useState(() =>
+    typeof navigator === "undefined" ? true : navigator.onLine
+  );
+  const [lastPlanningSyncAt, setLastPlanningSyncAt] = useState(() =>
+    readPlanningSyncTimestamp(selectedYear)
+  );
+
+  useEffect(() => {
+    setLastPlanningSyncAt(readPlanningSyncTimestamp(selectedYear));
+  }, [selectedYear]);
+
+  useEffect(() => {
+    const updateOnlineState = () => setIsOnline(navigator.onLine);
+    window.addEventListener("online", updateOnlineState);
+    window.addEventListener("offline", updateOnlineState);
+    return () => {
+      window.removeEventListener("online", updateOnlineState);
+      window.removeEventListener("offline", updateOnlineState);
+    };
+  }, []);
 
   // Escutar evento global de requer login (disparado pelo main.tsx quando query protegida falha)
   // Garante que o modal de login proprietário seja aberto em vez do Manus OAuth externo
@@ -850,9 +877,12 @@ export default function Home({ mode = "home" }: HomeProps) {
   // Atualizar timestamp quando os dados forem atualizados
   useEffect(() => {
     if (weeksQuery.data && weeksQuery.data.length > 0) {
-      setLastUpdateTime(new Date());
+      const now = new Date();
+      setLastUpdateTime(now);
+      savePlanningSyncTimestamp(selectedYear, now.getTime());
+      setLastPlanningSyncAt(now.getTime());
     }
-  }, [weeksQuery.data]);
+  }, [selectedYear, weeksQuery.data]);
 
   // Formatar data/hora da última atualização
   const formatLastUpdate = (date: Date | null) => {
@@ -2340,6 +2370,9 @@ export default function Home({ mode = "home" }: HomeProps) {
       pricesQuery.isFetching ||
       publicPricesQuery.isFetching ||
       additionalFlightsQuery.isFetching);
+  const hasLocalPlanningData = (weeksQuery.data?.length ?? 0) > 0;
+  const shouldShowOfflineRecovery =
+    !isManagementView && !isOnline && !hasLocalPlanningData;
 
   return (
     <div
@@ -2401,6 +2434,13 @@ export default function Home({ mode = "home" }: HomeProps) {
           <div key="loading" className="fade-in flex items-center gap-2">
             <Loader2 className="w-3 h-3 animate-spin motion-reduce:animate-none" />
             <span>Atualizando dados...</span>
+          </div>
+        ) : !isOnline ? (
+          <div key="offline" className="fade-in flex items-center gap-2" role="status" aria-live="polite" data-offline-status="true">
+            <WifiOff className="size-3" aria-hidden="true" />
+            <span>
+              Modo offline{lastPlanningSyncAt ? ` · Última sincronização: ${formatPlanningSyncTimestamp(lastPlanningSyncAt)}` : " · Sem sincronização local"}
+            </span>
           </div>
         ) : isRefreshingFlightData ? (
           <div
@@ -2555,7 +2595,7 @@ export default function Home({ mode = "home" }: HomeProps) {
       </header>
 
       <main className="container py-4 sm:py-8">
-        {weeksQuery.isError && (
+        {weeksQuery.isError && !shouldShowOfflineRecovery && (
           <Card
             role="alert"
             className="mb-4 flex flex-col gap-3 border-amber-300 bg-amber-50 p-4 text-amber-950 shadow-sm dark:border-amber-700 dark:bg-amber-950/30 dark:text-amber-50 sm:mb-6 sm:flex-row sm:items-center sm:justify-between"
@@ -2582,7 +2622,14 @@ export default function Home({ mode = "home" }: HomeProps) {
           </Card>
         )}
         {!isManagementView && (
-          isHomeInitialLoading ? (
+          shouldShowOfflineRecovery ? (
+            <HomeOfflineRecovery
+              year={selectedYear}
+              lastSyncedAt={lastPlanningSyncAt}
+              isRetrying={weeksQuery.isFetching}
+              onRetry={() => void weeksQuery.refetch()}
+            />
+          ) : isHomeInitialLoading ? (
             <HomeInitialLoadingSkeleton year={selectedYear} />
           ) : (
           <ContentReveal className="space-y-5 sm:space-y-7">

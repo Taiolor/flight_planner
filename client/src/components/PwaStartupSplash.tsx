@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { formatPlanningSyncTimestamp, readLatestPlanningSyncTimestamp } from "@/lib/offlinePlanningSync";
 
 const splashId = "pwa-startup-splash";
 const splashFadeOutMs = 420;
@@ -41,8 +42,11 @@ export function preparePwaStartupSplash(date: Date = new Date()) {
   const offline = typeof navigator !== "undefined" && navigator.onLine === false;
   splash.dataset.connection = offline ? "offline" : "online";
   if (status) {
+    const lastSync = formatPlanningSyncTimestamp(readLatestPlanningSyncTimestamp());
     status.textContent = offline
-      ? "Sem conexão — abrindo dados disponíveis neste dispositivo"
+      ? lastSync
+        ? `Sem conexão — última sincronização: ${lastSync}`
+        : "Sem conexão — nenhuma sincronização local disponível"
       : "Verificando a inicialização";
   }
 }

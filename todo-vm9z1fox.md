@@ -191,3 +191,5 @@
 - [x] Exibir percentual somente quando o progresso real de inicialização estiver disponível
 - [x] Exibir mensagem contextual e acessível quando a abertura detectar modo offline
 - [x] Aplicar variação sazonal sutil e automática à identidade visual da splash
+- [x] Exibir a última sincronização conhecida quando o aplicativo abrir offline
+- [x] Oferecer tela de recuperação acessível quando não houver dados locais disponíveis
