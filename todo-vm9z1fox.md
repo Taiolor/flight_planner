@@ -207,3 +207,7 @@
 - [x] Mostrar a previsão horária mais próxima do horário de cada voo
 - [x] Destacar alerta operacional de chuva intensa ou vento forte
 - [x] Cobrir ícones, previsão horária, alertas e contingências com regressões automatizadas
+- [x] Exibir direção e intensidade do vento no horário mais próximo do voo
+- [x] Mostrar nascer e pôr do sol previstos na data do voo
+- [x] Permitir ocultar alertas meteorológicos com preferência local persistente e validada
+- [x] Cobrir dados meteorológicos, preferência e acessibilidade com regressões automatizadas

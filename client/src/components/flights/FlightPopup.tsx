@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   Plane,
   X,
@@ -13,7 +13,10 @@ import {
   CloudSun,
   Snowflake,
   Sun,
+  Sunrise,
+  Sunset,
   TriangleAlert,
+  Wind,
 } from "lucide-react";
 import {
   getGoogleCalendarLink,
@@ -31,17 +34,22 @@ import { extractTime, toIsoDate } from "@/lib/utils";
 import { getCalendarIssuedLegDates } from "@/lib/calendarIssuedLegDates";
 import { AirlineBadge } from "@/components/AirlineBadge";
 import { trpc } from "@/lib/trpc";
+import { readWeatherAlertsVisible, saveWeatherAlertsVisible } from "@/lib/weatherAlertPreference";
 
 function DestinationWeatherPanel({
   destinationCode,
   destinationDate,
   destinationTime,
   tone,
+  showAlerts,
+  onToggleAlerts,
 }: {
   destinationCode: string;
   destinationDate: string;
   destinationTime: string;
   tone: "blue" | "orange";
+  showAlerts: boolean;
+  onToggleAlerts: () => void;
 }) {
   const weatherQuery = trpc.destinationWeather.forecast.useQuery(
     destinationTime
@@ -77,6 +85,14 @@ function DestinationWeatherPanel({
       <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wide">
         <WeatherIcon className="size-3.5" aria-hidden="true" />
         <span>Clima no destino</span>
+        <button
+          type="button"
+          onClick={onToggleAlerts}
+          aria-pressed={showAlerts}
+          className="ml-auto min-h-6 border border-current px-1.5 text-[9px] font-semibold normal-case tracking-normal hover:bg-white/45 focus:outline-none focus-visible:ring-2 focus-visible:ring-current"
+        >
+          {showAlerts ? "Ocultar alertas" : "Ver alertas"}
+        </button>
       </div>
       {weatherQuery.isLoading ? (
         <p className="mt-1 text-[11px] text-slate-600" role="status">Carregando previsão…</p>
@@ -86,12 +102,18 @@ function DestinationWeatherPanel({
           <p>{weather.temperatureMinC}–{weather.temperatureMaxC} °C · chuva {weather.precipitationProbability}% · vento {weather.windSpeedKmh} km/h</p>
           {weather.hourlyForecast && (
             <p className="mt-1 font-medium">
-              Próximo do voo ({weather.hourlyForecast.time.split("T")[1]}): {weather.hourlyForecast.summary} · {weather.hourlyForecast.temperatureC} °C · chuva {weather.hourlyForecast.precipitationProbability}% · vento {weather.hourlyForecast.windSpeedKmh} km/h
+              Próximo do voo ({weather.hourlyForecast.time.split("T")[1]}): {weather.hourlyForecast.summary} · {weather.hourlyForecast.temperatureC} °C · chuva {weather.hourlyForecast.precipitationProbability}% · vento {weather.hourlyForecast.windSpeedKmh} km/h {weather.hourlyForecast.windDirectionLabel} · rajadas {weather.hourlyForecast.windGustsKmh} km/h
             </p>
           )}
-          {weather.alerts.map(alert => (
+          {(weather.sunriseTime || weather.sunsetTime) && (
+            <p className="mt-1 flex flex-wrap gap-x-3 gap-y-1 text-[10px] font-medium">
+              {weather.sunriseTime && <span className="inline-flex items-center gap-1"><Sunrise className="size-3" aria-hidden="true" />Nascer do sol {weather.sunriseTime}</span>}
+              {weather.sunsetTime && <span className="inline-flex items-center gap-1"><Sunset className="size-3" aria-hidden="true" />Pôr do sol {weather.sunsetTime}</span>}
+            </p>
+          )}
+          {showAlerts && weather.alerts.map(alert => (
             <p key={alert.type} className="mt-1 flex items-start gap-1 text-[10px] font-semibold" role="status">
-              <TriangleAlert className="mt-0.5 size-3 shrink-0" aria-hidden="true" />
+              {alert.type === "wind" ? <Wind className="mt-0.5 size-3 shrink-0" aria-hidden="true" /> : <TriangleAlert className="mt-0.5 size-3 shrink-0" aria-hidden="true" />}
               <span>{alert.label}</span>
             </p>
           ))}
@@ -154,6 +176,11 @@ export default function FlightPopup({
   const hasReturnStatus = Boolean(
     w.returnRescheduled || w.returnCancelled
   );
+  const [weatherAlertsVisible, setWeatherAlertsVisible] = useState(() => readWeatherAlertsVisible());
+
+  useEffect(() => {
+    saveWeatherAlertsVisible(weatherAlertsVisible);
+  }, [weatherAlertsVisible]);
 
   const depTime = extractTime(w.departureFlightDatetime);
   const retTime = extractTime(w.returnFlightDatetime);
@@ -392,6 +419,8 @@ export default function FlightPopup({
                 destinationDate={depIsoDate}
                 destinationTime={depTime}
                 tone="blue"
+                showAlerts={weatherAlertsVisible}
+                onToggleAlerts={() => setWeatherAlertsVisible(current => !current)}
               />
               {w.departureLocator && (
                 <div className="col-span-2">
@@ -484,6 +513,8 @@ export default function FlightPopup({
                   destinationDate={retIsoDate}
                   destinationTime={retTime}
                   tone="orange"
+                  showAlerts={weatherAlertsVisible}
+                  onToggleAlerts={() => setWeatherAlertsVisible(current => !current)}
                 />
                 {w.returnLocator && (
                   <div className="col-span-2">

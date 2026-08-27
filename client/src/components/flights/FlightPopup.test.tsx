@@ -64,6 +64,8 @@ describe("FlightPopup", () => {
           precipitationProbability: 20,
           windSpeedKmh: 18,
           forecastDate: "2026-08-23",
+          sunriseTime: "06:48",
+          sunsetTime: "17:48",
           hourlyForecast: {
             time: "2026-08-23T14:00",
             summary: "Chuva moderada",
@@ -72,6 +74,8 @@ describe("FlightPopup", () => {
             precipitationMm: 2.4,
             windSpeedKmh: 23,
             windGustsKmh: 34,
+            windDirectionDegrees: 67,
+            windDirectionLabel: "NE",
             weatherCode: 63,
           },
           alerts: [{ type: "rain", label: "Atenção: chuva relevante prevista no horário do voo." }],
@@ -87,6 +91,10 @@ describe("FlightPopup", () => {
     expect(screen.getByText("Navegantes: Parcialmente nublado")).toBeTruthy();
     expect(screen.getByText("20–24 °C · chuva 20% · vento 18 km/h")).toBeTruthy();
     expect(screen.getByText(/Próximo do voo \(14:00\): Chuva moderada/)).toBeTruthy();
+    expect(screen.getByText(/vento 23 km\/h NE · rajadas 34 km\/h/)).toBeTruthy();
+    expect(screen.getByText("Nascer do sol 06:48")).toBeTruthy();
+    expect(screen.getByText("Pôr do sol 17:48")).toBeTruthy();
+    expect(screen.getAllByRole("button", { name: "Ocultar alertas" })).toHaveLength(2);
     expect(screen.getByText("Atenção: chuva relevante prevista no horário do voo.")).toBeTruthy();
     expect(screen.getByText(/Fonte: Open-Meteo/).getAttribute("href")).toBe("https://open-meteo.com/");
   });
