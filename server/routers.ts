@@ -107,6 +107,7 @@ import {
 } from "./geminiBudget";
 import { getFlyIaTelemetryTimeline, getFlyIaVoiceDashboard } from "./flyIaVoiceTelemetry";
 import { getFlyIaTravelGuidanceAnswer } from "./flyIaTravelGuidance";
+import { getDestinationWeather } from "./destinationWeather";
 import { PROTECTED_ACCESS_RESOURCES } from "../shared/protectedAccess";
 import {
   getProtectedAccessAttemptSummary,
@@ -131,6 +132,16 @@ const planningYearSchema = z.number().int().min(2020).max(2100);
 export const appRouter = router({
   system: systemRouter,
   operational: operationalRouter,
+  destinationWeather: router({
+    forecast: flightProtectedProcedure
+      .input(
+        z.object({
+          airportCode: z.string().trim().regex(/^[A-Za-z]{3}$/),
+          flightDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+        })
+      )
+      .query(({ input }) => getDestinationWeather(input.airportCode, input.flightDate)),
+  }),
   protectedAccess: router({
     record: publicProcedure
       .input(z.object({ resource: z.enum(PROTECTED_ACCESS_RESOURCES) }))

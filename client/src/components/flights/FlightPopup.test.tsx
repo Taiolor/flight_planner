@@ -1,9 +1,23 @@
 // @vitest-environment jsdom
 import { cleanup, render, screen } from "@testing-library/react";
 import React from "react";
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import FlightPopup from "./FlightPopup";
 import type { DayMark } from "./types";
+
+const weatherState = vi.hoisted(() => ({
+  useQuery: vi.fn(),
+}));
+
+vi.mock("@/lib/trpc", () => ({
+  trpc: {
+    destinationWeather: {
+      forecast: {
+        useQuery: weatherState.useQuery,
+      },
+    },
+  },
+}));
 
 const makeMark = (ticketType: "roundtrip" | "oneway" = "roundtrip"): DayMark => ({
   departure: true,
@@ -28,7 +42,46 @@ const makeMark = (ticketType: "roundtrip" | "oneway" = "roundtrip"): DayMark => 
 
 afterEach(cleanup);
 
+afterEach(() => {
+  weatherState.useQuery.mockReset();
+  weatherState.useQuery.mockReturnValue({ isLoading: false, data: { available: false } });
+});
+
 describe("FlightPopup", () => {
+  it("mostra a previsão do destino com fonte na área expandida", () => {
+    weatherState.useQuery
+      .mockReturnValueOnce({
+        isLoading: false,
+        data: {
+          available: true,
+          destinationLabel: "Navegantes",
+          summary: "Parcialmente nublado",
+          temperatureMinC: 20,
+          temperatureMaxC: 24,
+          precipitationProbability: 20,
+          windSpeedKmh: 18,
+          forecastDate: "2026-08-23",
+          sourceLabel: "Open-Meteo",
+          sourceUrl: "https://open-meteo.com/",
+        },
+      })
+      .mockReturnValueOnce({ isLoading: false, data: { available: false } });
+
+    render(<FlightPopup mark={makeMark()} onClose={() => {}} />);
+
+    expect(screen.getByText("Clima no destino")).toBeTruthy();
+    expect(screen.getByText("Navegantes: Parcialmente nublado")).toBeTruthy();
+    expect(screen.getByText("20–24 °C · chuva 20% · vento 18 km/h")).toBeTruthy();
+    expect(screen.getByText(/Fonte: Open-Meteo/).getAttribute("href")).toBe("https://open-meteo.com/");
+  });
+
+  it("mantém os detalhes do voo legíveis quando a previsão está indisponível", () => {
+    weatherState.useQuery.mockReturnValue({ isLoading: false, data: { available: false } });
+    render(<FlightPopup mark={makeMark()} onClose={() => {}} />);
+
+    expect(screen.queryByText("Clima no destino")).toBeNull();
+    expect(screen.getAllByText("Terminal")).toHaveLength(2);
+  });
   it("exibe os terminais de ida e volta nos detalhes do bilhete", () => {
     const view = render(<FlightPopup mark={makeMark()} onClose={() => {}} />);
 

@@ -244,3 +244,8 @@
 - [x] Adicionar rótulo textual de cancelamento sem depender apenas da cor.
 - [x] Criar regressões, validar em desktop e celular, documentar e versionar os três aprimoramentos.
 - [x] Salvar checkpoint da legenda, dos filtros e dos rótulos de status do Calendário.
+- [x] Mapear os detalhes expandidos de voo, o aeroporto de destino e a antecedência de previsão disponível.
+- [x] Selecionar uma fonte meteorológica confiável e definir consulta, cache, limites e contingência.
+- [x] Exibir previsão do destino somente nos detalhes expandidos, com fonte, atualização e estados de carregamento ou falha.
+- [x] Criar testes de dados, privacidade, interface e responsividade; documentar e versionar a integração de clima.
+- [x] Salvar checkpoint da previsão meteorológica do destino nos detalhes de voo.

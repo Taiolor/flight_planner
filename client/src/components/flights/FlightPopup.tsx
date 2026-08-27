@@ -6,6 +6,7 @@ import {
   CalendarPlus,
   Download,
   ExternalLink,
+  CloudSun,
 } from "lucide-react";
 import {
   getGoogleCalendarLink,
@@ -22,6 +23,63 @@ import { WeekRow, DayMark } from "./types";
 import { extractTime, toIsoDate } from "@/lib/utils";
 import { getCalendarIssuedLegDates } from "@/lib/calendarIssuedLegDates";
 import { AirlineBadge } from "@/components/AirlineBadge";
+import { trpc } from "@/lib/trpc";
+
+function DestinationWeatherPanel({
+  destinationCode,
+  destinationDate,
+  tone,
+}: {
+  destinationCode: string;
+  destinationDate: string;
+  tone: "blue" | "orange";
+}) {
+  const weatherQuery = trpc.destinationWeather.forecast.useQuery(
+    { airportCode: destinationCode, flightDate: destinationDate },
+    {
+      enabled: Boolean(destinationDate),
+      staleTime: 60 * 60 * 1000,
+      retry: 1,
+    }
+  );
+  const weather = weatherQuery.data;
+  const accentClasses = tone === "blue"
+    ? "border-blue-200 bg-blue-100/70 text-blue-900"
+    : "border-orange-200 bg-orange-100/70 text-orange-900";
+
+  if (!destinationDate || (!weatherQuery.isLoading && (!weather || !weather.available))) {
+    return null;
+  }
+
+  return (
+    <section
+      aria-live="polite"
+      aria-label={`Previsão no destino ${destinationCode}`}
+      className={`col-span-2 rounded-lg border px-2.5 py-2 ${accentClasses}`}
+    >
+      <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wide">
+        <CloudSun className="size-3.5" aria-hidden="true" />
+        <span>Clima no destino</span>
+      </div>
+      {weatherQuery.isLoading ? (
+        <p className="mt-1 text-[11px] text-slate-600" role="status">Carregando previsão…</p>
+      ) : weather && weather.available ? (
+        <div className="mt-1 text-[11px] leading-relaxed">
+          <p className="font-semibold">{weather.destinationLabel}: {weather.summary}</p>
+          <p>{weather.temperatureMinC}–{weather.temperatureMaxC} °C · chuva {weather.precipitationProbability}% · vento {weather.windSpeedKmh} km/h</p>
+          <a
+            href={weather.sourceUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-1 inline-flex text-[10px] font-semibold underline underline-offset-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-current"
+          >
+            Previsão para {weather.forecastDate.split("-").reverse().join("/")} · Fonte: {weather.sourceLabel}
+          </a>
+        </div>
+      ) : null}
+    </section>
+  );
+}
 
 export default function FlightPopup({
   mark,
@@ -278,6 +336,11 @@ export default function FlightPopup({
                   </span>
                 </div>
               )}
+              <DestinationWeatherPanel
+                destinationCode={retAirport}
+                destinationDate={depIsoDate}
+                tone="blue"
+              />
               {w.departureLocator && (
                 <div className="col-span-2">
                   <span className="text-[9px] font-semibold text-blue-400 uppercase tracking-wide block">
@@ -364,6 +427,11 @@ export default function FlightPopup({
                   </span>
                 </div>
               )}
+                <DestinationWeatherPanel
+                  destinationCode={depAirport}
+                  destinationDate={retIsoDate}
+                  tone="orange"
+                />
                 {w.returnLocator && (
                   <div className="col-span-2">
                     <span className="text-[9px] font-semibold text-orange-400 uppercase tracking-wide block">

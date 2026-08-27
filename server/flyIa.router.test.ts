@@ -31,6 +31,7 @@ const state = vi.hoisted(() => {
     getFlyIaMemoryDashboard: vi.fn(),
     getFlyIaTelemetryTimeline: vi.fn(),
     getFlyIaTravelGuidanceAnswer: vi.fn(),
+    getDestinationWeather: vi.fn(),
     getFlyIaSessionMemory: vi.fn(),
     getFlyIaPromptStats: vi.fn(() => ({ contextChars: 150, historyChars: 80, payloadHistoryChars: 40, memoryChars: 32 })),
     recordFlyIaContextMetric: vi.fn(),
@@ -82,6 +83,10 @@ vi.mock("./flyIaTravelGuidance", () => ({
   getFlyIaTravelGuidanceAnswer: state.getFlyIaTravelGuidanceAnswer,
 }));
 
+vi.mock("./destinationWeather", () => ({
+  getDestinationWeather: state.getDestinationWeather,
+}));
+
 
 import { appRouter } from "./routers";
 
@@ -116,6 +121,7 @@ afterEach(() => {
   state.getFlyIaMemoryDashboard.mockReset();
   state.getFlyIaTelemetryTimeline.mockReset();
   state.getFlyIaTravelGuidanceAnswer.mockReset();
+  state.getDestinationWeather.mockReset();
   state.getFlyIaSessionMemory.mockReset();
   state.getFlyIaSessionMemory.mockResolvedValue(null);
   state.getFlyIaPromptStats.mockClear();
@@ -287,5 +293,33 @@ describe("flyIaTelemetry router", () => {
     const caller = appRouter.createCaller({ user: null, req: { headers: { cookie: "flight_session=admin-session" } }, res: {} } as any);
 
     await expect(caller.flyIaTelemetry.timeline()).resolves.toEqual([{ date: "2026-08-21", label: "21/08", totalTokens: 1200, audioDurationMs: 3000 }]);
+  });
+});
+
+describe("destinationWeather router", () => {
+  const weatherInput = { airportCode: "NVT", flightDate: "2026-08-28" };
+
+  it("impede consulta meteorológica sem sessão interna", async () => {
+    const caller = createCaller(false);
+
+    await expect(caller.destinationWeather.forecast(weatherInput)).rejects.toMatchObject({
+      code: "UNAUTHORIZED",
+    });
+    expect(state.getDestinationWeather).not.toHaveBeenCalled();
+  });
+
+  it("encaminha somente código de aeroporto e data do voo para a fonte de previsão", async () => {
+    state.getDestinationWeather.mockResolvedValue({
+      available: true,
+      airportCode: "NVT",
+      destinationLabel: "Navegantes",
+    });
+    const caller = createCaller(true);
+
+    await expect(caller.destinationWeather.forecast(weatherInput)).resolves.toMatchObject({
+      available: true,
+      airportCode: "NVT",
+    });
+    expect(state.getDestinationWeather).toHaveBeenCalledWith("NVT", "2026-08-28");
   });
 });
