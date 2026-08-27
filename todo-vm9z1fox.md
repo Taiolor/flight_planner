@@ -224,4 +224,6 @@
 - [x] Corrigir o controle de ocultar detalhes da previsão nos cards de bilhetes do Calendário
 - [x] Remover o controle redundante de ocultar alertas dos detalhes meteorológicos do bilhete
 - [x] Compactar o modal de detalhes do bilhete e manter o fechamento sempre acessível em celular e desktop
-- [ ] Validar o modal compactado no domínio publicado em uma sessão sem preferência meteorológica anterior
+- [x] Validar o modal compactado no domínio publicado em uma sessão sem preferência meteorológica anterior
+- [x] Reposicionar clima e tempo abaixo do localizador e do link de rastreio nos detalhes do bilhete do Calendário
+- [ ] Validar no domínio publicado a nova ordem entre rastreamento e clima nos detalhes do bilhete

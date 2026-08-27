@@ -11,3 +11,7 @@ O botão **Ocultar alertas / Ver alertas** apenas alterna a renderização dos a
 O card agora apresenta somente **Ocultar detalhes / Ver detalhes**. A ação conserva o resumo da condição e alterna apenas o conteúdo complementar do respectivo trecho; alertas relevantes aparecem junto ao conteúdo detalhado quando este estiver aberto. O modal usa altura máxima baseada no viewport e corpo com rolagem interna. Seu cabeçalho não participa da rolagem e contém um botão de fechar de 40 px, preservando acesso por toque, foco e teclado.
 
 Após remover a preferência local e abrir um bilhete de ida e volta, os dois trechos iniciaram compactos, com resumo e ação **Ver detalhes**. Não houve controle de alertas no modal. O botão de fechar permaneceu visível no canto superior do cabeçalho enquanto todo o conteúdo essencial e os atalhos de agenda permaneceram disponíveis no corpo.
+
+## Ordem operacional — 27/08/2026
+
+Em cada trecho, a sequência passa a ser identificação do voo, status, **localizador**, **rastrear voo** e, somente então, **clima no destino**. Assim, as informações necessárias para localizar e acompanhar a passagem permanecem próximas entre si, enquanto a previsão fica disponível logo abaixo como contexto de viagem.

@@ -458,16 +458,6 @@ export default function FlightPopup({
                   </span>
                 </div>
               )}
-              <DestinationWeatherPanel
-                originCode={depAirport}
-                destinationCode={retAirport}
-                destinationDate={depIsoDate}
-                destinationTime={depTime}
-                tone="blue"
-                detailsVisible={weatherDetailsVisibility.departure}
-                onToggleDetails={() => toggleWeatherDetails("departure")}
-                detailsId={`weather-details-${w.weekNumber}-departure`}
-              />
               {w.departureLocator && (
                 <div className="col-span-2">
                   <span className="text-[9px] font-semibold text-blue-400 uppercase tracking-wide block">
@@ -490,6 +480,16 @@ export default function FlightPopup({
                   </a>
                 </div>
               )}
+              <DestinationWeatherPanel
+                originCode={depAirport}
+                destinationCode={retAirport}
+                destinationDate={depIsoDate}
+                destinationTime={depTime}
+                tone="blue"
+                detailsVisible={weatherDetailsVisibility.departure}
+                onToggleDetails={() => toggleWeatherDetails("departure")}
+                detailsId={`weather-details-${w.weekNumber}-departure`}
+              />
             </div>
           </div>
 
@@ -554,16 +554,6 @@ export default function FlightPopup({
                   </span>
                 </div>
               )}
-                <DestinationWeatherPanel
-                  originCode={retAirport}
-                  destinationCode={depAirport}
-                  destinationDate={retIsoDate}
-                  destinationTime={retTime}
-                  tone="orange"
-                  detailsVisible={weatherDetailsVisibility.return}
-                  onToggleDetails={() => toggleWeatherDetails("return")}
-                  detailsId={`weather-details-${w.weekNumber}-return`}
-                />
                 {w.returnLocator && (
                   <div className="col-span-2">
                     <span className="text-[9px] font-semibold text-orange-400 uppercase tracking-wide block">
@@ -586,6 +576,16 @@ export default function FlightPopup({
                     </a>
                   </div>
                 )}
+                <DestinationWeatherPanel
+                  originCode={retAirport}
+                  destinationCode={depAirport}
+                  destinationDate={retIsoDate}
+                  destinationTime={retTime}
+                  tone="orange"
+                  detailsVisible={weatherDetailsVisibility.return}
+                  onToggleDetails={() => toggleWeatherDetails("return")}
+                  detailsId={`weather-details-${w.weekNumber}-return`}
+                />
               </div>
             </div>
           )}

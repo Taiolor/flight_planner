@@ -143,6 +143,27 @@ describe("FlightPopup", () => {
     expect(screen.getByText(/Fonte: Open-Meteo/).getAttribute("href")).toBe("https://open-meteo.com/");
   });
 
+  it("posiciona o clima depois do localizador e do rastreamento em cada trecho", () => {
+    const mark = makeMark();
+    mark.week.departureLocator = "IDA123";
+    mark.week.returnLocator = "VOLTA456";
+    render(<FlightPopup mark={mark} onClose={() => {}} />);
+
+    const departureGrid = screen.getByLabelText("Previsão no destino NVT").parentElement;
+    const returnGrid = screen.getByLabelText("Previsão no destino GRU").parentElement;
+    expect(departureGrid).toBeTruthy();
+    expect(returnGrid).toBeTruthy();
+
+    for (const grid of [departureGrid!, returnGrid!]) {
+      const children = Array.from(grid.children);
+      const weatherIndex = children.findIndex(child => child.tagName === "SECTION");
+      const locatorIndex = children.findIndex(child => child.textContent?.includes("Localizador"));
+      const trackingIndex = children.findIndex(child => child.textContent?.includes("Rastrear voo"));
+      expect(weatherIndex).toBeGreaterThan(locatorIndex);
+      expect(weatherIndex).toBeGreaterThan(trackingIndex);
+    }
+  });
+
   it("recolhe os detalhes de um trecho sem ocultar o resumo ou o outro trecho", () => {
     window.localStorage.setItem(WEATHER_DETAILS_STORAGE_KEY, '{"departure":true,"return":true}');
     weatherState.useQuery.mockReturnValue({
