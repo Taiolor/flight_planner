@@ -881,3 +881,4 @@
 
 - [x] Persistir os estados aberto e fechado do Resumo Anual e de Filtros e Controles
 - [x] Simplificar o botão da Central de decisão para exibir somente o ícone de expandir ou recolher
+- [x] Alinhar a Central de decisão ao padrão do Resumo Anual, com controle sem borda e hover com fade suave

@@ -57,6 +57,9 @@ describe("DecisionCenter", () => {
     const toggle = view.getByRole("button", { name: "Expandir Central de decisão" });
     expect(toggle.getAttribute("aria-expanded")).toBe("false");
     expect(toggle.textContent).toBe("");
+    expect(toggle.className).not.toContain("border");
+    expect(toggle.className).toContain("transition-colors");
+    expect(view.container.querySelector('section[aria-labelledby="decision-center-title"]')?.className).toContain("bg-gradient-to-br");
     expect(view.container.querySelector('[aria-label="Prioridades operacionais"]')).toBeNull();
     expect(view.container.textContent).toContain("Em foco: Emitir passagem da semana 27");
     expect(view.container.textContent).toContain("Próxima viagem: Semana 27");

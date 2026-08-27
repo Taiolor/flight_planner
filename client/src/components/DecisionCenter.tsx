@@ -167,8 +167,8 @@ export function DecisionCenter({
   const priorityLabel = `${items.length} ${items.length === 1 ? "prioridade" : "prioridades"}`;
 
   return (
-    <section aria-labelledby="decision-center-title" className="mb-6 overflow-hidden rounded-3xl border border-[#315c99] bg-[#071a36] text-white shadow-xl sm:mb-8">
-      <div className="border-b border-white/15 px-4 py-4 sm:px-6 sm:py-5">
+    <section aria-labelledby="decision-center-title" className="mb-4 animate-in fade-in overflow-hidden rounded-3xl bg-gradient-to-br from-[#071a36] via-[#102f61] to-[#17427e] text-white shadow-2xl duration-500 motion-reduce:animate-none sm:mb-8">
+      <div className="bg-gradient-to-r from-slate-900 via-[#071a36] to-slate-900 px-4 py-4 transition-colors duration-300 hover:from-slate-800 hover:via-[#0b2349] hover:to-slate-800 motion-reduce:transition-none sm:px-6 sm:py-5">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.15em] text-sky-200">Camada operacional</p>
@@ -197,7 +197,7 @@ export function DecisionCenter({
               aria-expanded={isExpanded}
               aria-controls="decision-center-content"
               aria-label={isExpanded ? "Recolher Central de decisão" : "Expandir Central de decisão"}
-              className="inline-flex min-h-11 min-w-11 items-center justify-center border border-white/30 bg-white/10 text-white hover:bg-white/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
+              className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-full bg-transparent text-white transition-colors duration-200 hover:bg-white/15 hover:text-sky-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-white motion-reduce:transition-none"
             >
               {isExpanded ? <ChevronUp className="size-5" aria-hidden="true" /> : <ChevronDown className="size-5" aria-hidden="true" />}
             </button>
