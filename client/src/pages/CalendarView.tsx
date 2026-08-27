@@ -1,5 +1,6 @@
 import { useMemo, useState, useEffect, useRef } from "react";
 import BrazilWorldCupPanel from "@/components/BrazilWorldCupPanel";
+import { useDeferredValue } from "react";
 import { brazilMatchByDate } from "@/lib/worldCup2026";
 import { Link, useLocation } from "wouter";
 import { extractTime, toIsoDate } from "@/lib/utils";
@@ -21,6 +22,10 @@ import {
   saveCalendarDisplayPreferences,
 } from "@/lib/calendarDisplayPreferences";
 import {
+  dayMarkMatchesFlightSearch,
+  normalizeCalendarFlightSearch,
+} from "@/lib/calendarFlightSearch";
+import {
   ArrowLeft,
   Plane,
   Circle,
@@ -33,6 +38,7 @@ import {
   ChevronUp,
   AlertCircle,
   Contrast,
+  Search,
 } from "lucide-react";
 import {
   getGoogleCalendarLink,
@@ -261,6 +267,8 @@ export default function CalendarView() {
     useState(false);
   const [showOnlyRescheduledFlights, setShowOnlyRescheduledFlights] =
     useState(false);
+  const [flightSearchTerm, setFlightSearchTerm] = useState("");
+  const deferredFlightSearchTerm = useDeferredValue(flightSearchTerm);
   const [isStatusLegendExpanded, setIsStatusLegendExpanded] = useState(
     () => readCalendarStatusLegendExpanded()
   );
@@ -490,6 +498,19 @@ export default function CalendarView() {
     authCheckQuery.isLoading ||
     (authCheckQuery.data?.authenticated === true && additionalFlightsQuery.isLoading);
 
+  const normalizedFlightSearchTerm = normalizeCalendarFlightSearch(
+    deferredFlightSearchTerm
+  );
+  const matchingFlightDayCount = useMemo(
+    () =>
+      normalizedFlightSearchTerm
+        ? Object.values(markedDays).filter(mark =>
+            dayMarkMatchesFlightSearch(mark, normalizedFlightSearchTerm)
+          ).length
+        : 0,
+    [markedDays, normalizedFlightSearchTerm]
+  );
+
   return (
     <div
       className={`min-h-screen bg-slate-50 ${
@@ -557,6 +578,37 @@ export default function CalendarView() {
       {/* Filtro */}
       <div className="calendar-filter-surface px-4 py-3 bg-white/80 backdrop-blur-sm border-b border-purple-200/30 sticky top-16 z-9">
         <div className="max-w-7xl mx-auto flex flex-wrap items-center gap-3">
+          <div className="relative w-full sm:w-80">
+            <Search
+              className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-slate-500"
+              aria-hidden="true"
+            />
+            <input
+              id="calendar-flight-search"
+              type="search"
+              value={flightSearchTerm}
+              onChange={event => setFlightSearchTerm(event.target.value)}
+              onKeyDown={event => {
+                if (event.key === "Escape") setFlightSearchTerm("");
+              }}
+              placeholder="Buscar voo, destino ou localizador"
+              aria-describedby="calendar-flight-search-hint"
+              className="min-h-10 w-full rounded-xl border border-slate-300 bg-white py-2 pl-9 pr-9 text-sm text-slate-900 placeholder:text-slate-500 focus:border-[#315c99] focus:outline-none focus:ring-2 focus:ring-[#315c99] dark:border-slate-600 dark:bg-slate-900 dark:text-white"
+            />
+            {flightSearchTerm && (
+              <button
+                type="button"
+                onClick={() => setFlightSearchTerm("")}
+                aria-label="Limpar busca de voos"
+                className="absolute right-1.5 top-1/2 inline-flex size-7 -translate-y-1/2 items-center justify-center rounded-lg text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#315c99] dark:hover:bg-slate-800 dark:hover:text-white"
+              >
+                <X className="size-4" aria-hidden="true" />
+              </button>
+            )}
+            <span id="calendar-flight-search-hint" className="sr-only">
+              Pesquise por número do voo, aeroporto, destino, companhia, localizador ou terminal. Pressione Escape para limpar.
+            </span>
+          </div>
           <label
             htmlFor="holiday-filter"
             className="flex items-center gap-2 rounded-lg px-1 py-1 cursor-pointer select-none text-slate-700 transition-colors hover:bg-amber-50 focus-within:ring-2 focus-within:ring-amber-500"
@@ -647,6 +699,13 @@ export default function CalendarView() {
               : "Modo de alto contraste desativado"}
           </span>
         </div>
+        {normalizedFlightSearchTerm && (
+          <p className="mx-auto mt-2 max-w-7xl text-xs font-medium text-slate-600 dark:text-slate-300" aria-live="polite">
+            {matchingFlightDayCount === 0
+              ? `Nenhum dia de voo encontrado para “${flightSearchTerm.trim()}”.`
+              : `${matchingFlightDayCount} ${matchingFlightDayCount === 1 ? "dia de voo encontrado" : "dias de voo encontrados"} para “${flightSearchTerm.trim()}”.`}
+          </p>
+        )}
       </div>
 
       {/* Painel Copa Brasil - Sanfona Discreto */}
@@ -870,7 +929,12 @@ export default function CalendarView() {
                             !holiday &&
                             !isExtendedWeekend) ||
                           (showOnlyCancelledFlights && !anyCancelled) ||
-                          (showOnlyRescheduledFlights && !hasRescheduledFlight(mark))
+                          (showOnlyRescheduledFlights && !hasRescheduledFlight(mark)) ||
+                          (normalizedFlightSearchTerm &&
+                            !dayMarkMatchesFlightSearch(
+                              mark,
+                              normalizedFlightSearchTerm
+                            ))
                         ) {
                           return <div key={di} className="aspect-square" />;
                         }

@@ -211,3 +211,7 @@
 - [x] Mostrar nascer e pôr do sol previstos na data do voo
 - [x] Permitir ocultar alertas meteorológicos com preferência local persistente e validada
 - [x] Cobrir dados meteorológicos, preferência e acessibilidade com regressões automatizadas
+- [x] Exibir sensação térmica no horário mais próximo do voo
+- [x] Destacar visibilidade reduzida como alerta operacional contextual
+- [x] Comparar as condições de clima da origem e do destino em cada trecho
+- [x] Cobrir sensação térmica, visibilidade, comparação e contingências com regressões automatizadas

@@ -71,6 +71,8 @@ describe("FlightPopup", () => {
             time: "2026-08-23T14:00",
             summary: "Chuva moderada",
             temperatureC: 22,
+            apparentTemperatureC: 21,
+            visibilityKm: 4.2,
             precipitationProbability: 75,
             precipitationMm: 2.4,
             windSpeedKmh: 23,
@@ -84,6 +86,40 @@ describe("FlightPopup", () => {
           sourceUrl: "https://open-meteo.com/",
         },
       })
+      .mockReturnValueOnce({
+        isLoading: false,
+        data: {
+          available: true,
+          destinationLabel: "Guarulhos",
+          summary: "Céu limpo",
+          weatherCode: 0,
+          temperatureMinC: 18,
+          temperatureMaxC: 25,
+          precipitationProbability: 0,
+          windSpeedKmh: 12,
+          forecastDate: "2026-08-23",
+          sunriseTime: "06:47",
+          sunsetTime: "17:47",
+          hourlyForecast: {
+            time: "2026-08-23T14:00",
+            summary: "Céu limpo",
+            temperatureC: 24,
+            apparentTemperatureC: 24,
+            visibilityKm: 10,
+            precipitationProbability: 0,
+            precipitationMm: 0,
+            windSpeedKmh: 10,
+            windGustsKmh: 16,
+            windDirectionDegrees: 0,
+            windDirectionLabel: "N",
+            weatherCode: 0,
+          },
+          alerts: [],
+          sourceLabel: "Open-Meteo",
+          sourceUrl: "https://open-meteo.com/",
+        },
+      })
+      .mockReturnValueOnce({ isLoading: false, data: { available: false } })
       .mockReturnValueOnce({ isLoading: false, data: { available: false } });
 
     render(<FlightPopup mark={makeMark()} onClose={() => {}} />);
@@ -92,9 +128,12 @@ describe("FlightPopup", () => {
     expect(screen.getByText("Navegantes: Parcialmente nublado")).toBeTruthy();
     expect(screen.getByText("20–24 °C · chuva 20% · vento 18 km/h · UV 5.6")).toBeTruthy();
     expect(screen.getByText(/Próximo do voo \(14:00\): Chuva moderada/)).toBeTruthy();
-    expect(screen.getByText(/vento 23 km\/h NE · rajadas 34 km\/h/)).toBeTruthy();
+    expect(screen.getByText(/Próximo do voo \(14:00\).*sensação 21 °C/)).toBeTruthy();
+    expect(screen.getByText(/vento 23 km\/h NE · rajadas 34 km\/h · visibilidade 4.2 km/)).toBeTruthy();
     expect(screen.getByText("Nascer do sol 06:48")).toBeTruthy();
     expect(screen.getByText("Pôr do sol 17:48")).toBeTruthy();
+    expect(screen.getByText(/Origem × destino no horário do voo/)).toBeTruthy();
+    expect(screen.getByText(/Guarulhos: 24 °C, sensação 24 °C, visibilidade 10 km/)).toBeTruthy();
     expect(screen.getAllByRole("button", { name: "Ocultar alertas" })).toHaveLength(2);
     expect(screen.getByText("Atenção: chuva relevante prevista no horário do voo.")).toBeTruthy();
     expect(screen.getByText(/Fonte: Open-Meteo/).getAttribute("href")).toBe("https://open-meteo.com/");

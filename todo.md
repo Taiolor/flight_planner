@@ -854,6 +854,7 @@
 - [x] Padronizar a legenda de status em todos os filtros do Calendário
 - [x] Adicionar modo de alto contraste ao Calendário
 - [x] Permitir recolher filtros secundários do Calendário no celular
+- [x] Adicionar busca por número ou destino de voo no Calendário
 
 ## Processo reutilizável
 
