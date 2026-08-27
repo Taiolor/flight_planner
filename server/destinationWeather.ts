@@ -4,40 +4,24 @@ const FORECAST_WINDOW_DAYS = 16;
 
 const airportWeatherLocations: Record<string, { latitude: number; longitude: number; label: string }> = {
   GRU: { latitude: -23.4356, longitude: -46.4731, label: "Guarulhos" },
-  CGH: { latitude: -23.6261, longitude: -46.6566, label: "São Paulo" },
+  CGH: { latitude: -23.6261, longitude: -46.6333, label: "São Paulo" },
   VCP: { latitude: -23.0074, longitude: -47.1345, label: "Campinas" },
   NVT: { latitude: -26.8798, longitude: -48.6514, label: "Navegantes" },
 };
 
 const weatherCodeLabels: Record<number, string> = {
-  0: "Céu limpo",
-  1: "Predominantemente limpo",
-  2: "Parcialmente nublado",
-  3: "Nublado",
-  45: "Neblina",
-  48: "Neblina com geada",
-  51: "Garoa leve",
-  53: "Garoa moderada",
-  55: "Garoa intensa",
-  61: "Chuva fraca",
-  63: "Chuva moderada",
-  65: "Chuva forte",
-  80: "Pancadas leves",
-  81: "Pancadas moderadas",
-  82: "Pancadas fortes",
-  95: "Trovoadas",
+  0: "Céu limpo", 1: "Predominantemente limpo", 2: "Parcialmente nublado", 3: "Nublado",
+  45: "Neblina", 48: "Neblina com geada", 51: "Garoa leve", 53: "Garoa moderada",
+  55: "Garoa intensa", 61: "Chuva fraca", 63: "Chuva moderada", 65: "Chuva forte",
+  80: "Pancadas leves", 81: "Pancadas moderadas", 82: "Pancadas fortes", 95: "Trovoadas",
 };
 
 type OpenMeteoResponse = {
-  daily?: {
-    time?: string[];
-    temperature_2m_min?: number[];
-    temperature_2m_max?: number[];
-    precipitation_probability_max?: number[];
-    weather_code?: number[];
-    wind_speed_10m_max?: number[];
-  };
+  daily?: { time?: string[]; temperature_2m_min?: number[]; temperature_2m_max?: number[]; precipitation_probability_max?: number[]; weather_code?: number[]; wind_speed_10m_max?: number[] };
+  hourly?: { time?: string[]; temperature_2m?: number[]; precipitation_probability?: number[]; precipitation?: number[]; weather_code?: number[]; wind_speed_10m?: number[]; wind_gusts_10m?: number[] };
 };
+
+type WeatherAlert = { type: "rain" | "wind"; label: string };
 
 export type DestinationWeather =
   | {
@@ -46,17 +30,17 @@ export type DestinationWeather =
       destinationLabel: string;
       forecastDate: string;
       summary: string;
+      weatherCode: number;
       temperatureMinC: number;
       temperatureMaxC: number;
       precipitationProbability: number;
       windSpeedKmh: number;
+      hourlyForecast: { time: string; temperatureC: number; precipitationProbability: number; precipitationMm: number; windSpeedKmh: number; windGustsKmh: number; weatherCode: number; summary: string } | null;
+      alerts: WeatherAlert[];
       sourceLabel: string;
       sourceUrl: string;
     }
-  | {
-      available: false;
-      reason: "unsupported_destination" | "outside_forecast_window" | "unavailable";
-    };
+  | { available: false; reason: "unsupported_destination" | "outside_forecast_window" | "unavailable" };
 
 function toUtcDay(date: string): number | null {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return null;
@@ -71,11 +55,46 @@ function getForecastDateOffset(flightDate: string, now: Date): number | null {
   return Math.round((flightDay - today) / 86_400_000);
 }
 
+function getHourlyIndex(times: string[] | undefined, flightDate: string, flightTime?: string): number | null {
+  if (!times?.length || !/^\d{2}:\d{2}$/.test(flightTime ?? "")) return null;
+  const exact = `${flightDate}T${flightTime}`;
+  const exactIndex = times.indexOf(exact);
+  if (exactIndex >= 0) return exactIndex;
+  const target = Date.parse(exact);
+  if (Number.isNaN(target)) return null;
+  let closestIndex = -1;
+  let closestDifference = Number.POSITIVE_INFINITY;
+  times.forEach((time, index) => {
+    const candidate = Date.parse(time);
+    const difference = Math.abs(candidate - target);
+    if (!Number.isNaN(candidate) && difference < closestDifference) {
+      closestIndex = index;
+      closestDifference = difference;
+    }
+  });
+  return closestIndex >= 0 ? closestIndex : null;
+}
+
+function getAlerts(hourly: { precipitationProbability: number; precipitationMm: number; windSpeedKmh: number; windGustsKmh: number } | null): WeatherAlert[] {
+  if (!hourly) return [];
+  const alerts: WeatherAlert[] = [];
+  if (hourly.precipitationProbability >= 70 || hourly.precipitationMm >= 2) {
+    alerts.push({ type: "rain", label: "Atenção: chuva relevante prevista no horário do voo." });
+  }
+  if (hourly.windSpeedKmh >= 40 || hourly.windGustsKmh >= 45) {
+    alerts.push({ type: "wind", label: "Atenção: vento forte previsto no horário do voo." });
+  }
+  return alerts;
+}
+
 export async function getDestinationWeather(
   airportCode: string,
   flightDate: string,
-  now = new Date()
+  flightTimeOrNow?: string | Date,
+  currentNow = new Date()
 ): Promise<DestinationWeather> {
+  const flightTime = typeof flightTimeOrNow === "string" ? flightTimeOrNow : undefined;
+  const now = flightTimeOrNow instanceof Date ? flightTimeOrNow : currentNow;
   const normalizedAirportCode = airportCode.trim().toUpperCase();
   const location = airportWeatherLocations[normalizedAirportCode];
   if (!location) return { available: false, reason: "unsupported_destination" };
@@ -89,6 +108,8 @@ export async function getDestinationWeather(
   requestUrl.searchParams.set("latitude", String(location.latitude));
   requestUrl.searchParams.set("longitude", String(location.longitude));
   requestUrl.searchParams.set("daily", "weather_code,temperature_2m_min,temperature_2m_max,precipitation_probability_max,wind_speed_10m_max");
+  requestUrl.searchParams.set("hourly", "weather_code,temperature_2m,precipitation_probability,precipitation,wind_speed_10m,wind_gusts_10m");
+  requestUrl.searchParams.set("forecast_days", String(FORECAST_WINDOW_DAYS));
   requestUrl.searchParams.set("timezone", "America/Sao_Paulo");
   requestUrl.searchParams.set("start_date", flightDate);
   requestUrl.searchParams.set("end_date", flightDate);
@@ -106,31 +127,24 @@ export async function getDestinationWeather(
     const precipitationProbability = daily?.precipitation_probability_max?.[0];
     const weatherCode = daily?.weather_code?.[0];
     const windSpeedKmh = daily?.wind_speed_10m_max?.[0];
-
-    if (
-      !forecastDate ||
-      typeof temperatureMinC !== "number" ||
-      typeof temperatureMaxC !== "number" ||
-      typeof precipitationProbability !== "number" ||
-      typeof weatherCode !== "number" ||
-      typeof windSpeedKmh !== "number"
-    ) {
+    if (!forecastDate || typeof temperatureMinC !== "number" || typeof temperatureMaxC !== "number" || typeof precipitationProbability !== "number" || typeof weatherCode !== "number" || typeof windSpeedKmh !== "number") {
       throw new Error("Weather provider response is incomplete");
     }
 
-    return {
-      available: true,
-      airportCode: normalizedAirportCode,
-      destinationLabel: location.label,
-      forecastDate,
-      summary: weatherCodeLabels[weatherCode] ?? "Condições variáveis",
-      temperatureMinC: Math.round(temperatureMinC),
-      temperatureMaxC: Math.round(temperatureMaxC),
-      precipitationProbability: Math.round(precipitationProbability),
-      windSpeedKmh: Math.round(windSpeedKmh),
-      sourceLabel: "Open-Meteo",
-      sourceUrl: "https://open-meteo.com/",
-    };
+    const hourlyIndex = getHourlyIndex(payload.hourly?.time, flightDate, flightTime);
+    const hourlyForecast = hourlyIndex === null ? null : (() => {
+      const temperatureC = payload.hourly?.temperature_2m?.[hourlyIndex];
+      const hourlyPrecipitationProbability = payload.hourly?.precipitation_probability?.[hourlyIndex];
+      const precipitationMm = payload.hourly?.precipitation?.[hourlyIndex];
+      const hourlyWeatherCode = payload.hourly?.weather_code?.[hourlyIndex];
+      const hourlyWindSpeed = payload.hourly?.wind_speed_10m?.[hourlyIndex];
+      const windGustsKmh = payload.hourly?.wind_gusts_10m?.[hourlyIndex];
+      const time = payload.hourly?.time?.[hourlyIndex];
+      if (!time || typeof temperatureC !== "number" || typeof hourlyPrecipitationProbability !== "number" || typeof precipitationMm !== "number" || typeof hourlyWeatherCode !== "number" || typeof hourlyWindSpeed !== "number" || typeof windGustsKmh !== "number") return null;
+      return { time, temperatureC: Math.round(temperatureC), precipitationProbability: Math.round(hourlyPrecipitationProbability), precipitationMm: Number(precipitationMm.toFixed(1)), windSpeedKmh: Math.round(hourlyWindSpeed), windGustsKmh: Math.round(windGustsKmh), weatherCode: hourlyWeatherCode, summary: weatherCodeLabels[hourlyWeatherCode] ?? "Condições variáveis" };
+    })();
+
+    return { available: true, airportCode: normalizedAirportCode, destinationLabel: location.label, forecastDate, summary: weatherCodeLabels[weatherCode] ?? "Condições variáveis", weatherCode, temperatureMinC: Math.round(temperatureMinC), temperatureMaxC: Math.round(temperatureMaxC), precipitationProbability: Math.round(precipitationProbability), windSpeedKmh: Math.round(windSpeedKmh), hourlyForecast, alerts: getAlerts(hourlyForecast), sourceLabel: "Open-Meteo", sourceUrl: "https://open-meteo.com/" };
   } catch (error) {
     console.warn("[DestinationWeather] Forecast unavailable:", error instanceof Error ? error.message : error);
     return { available: false, reason: "unavailable" };

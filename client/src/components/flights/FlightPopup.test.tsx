@@ -34,6 +34,8 @@ const makeMark = (ticketType: "roundtrip" | "oneway" = "roundtrip"): DayMark => 
     returnAirline: "gol",
     departureFlightNumber: "LA3000",
     returnFlightNumber: "G31234",
+    departureFlightDatetime: "2026-08-23T14:30:00",
+    returnFlightDatetime: "2026-08-28T10:00:00",
     departureTerminal: "2",
     returnTerminal: "1",
     ticketType,
@@ -56,11 +58,23 @@ describe("FlightPopup", () => {
           available: true,
           destinationLabel: "Navegantes",
           summary: "Parcialmente nublado",
+          weatherCode: 63,
           temperatureMinC: 20,
           temperatureMaxC: 24,
           precipitationProbability: 20,
           windSpeedKmh: 18,
           forecastDate: "2026-08-23",
+          hourlyForecast: {
+            time: "2026-08-23T14:00",
+            summary: "Chuva moderada",
+            temperatureC: 22,
+            precipitationProbability: 75,
+            precipitationMm: 2.4,
+            windSpeedKmh: 23,
+            windGustsKmh: 34,
+            weatherCode: 63,
+          },
+          alerts: [{ type: "rain", label: "Atenção: chuva relevante prevista no horário do voo." }],
           sourceLabel: "Open-Meteo",
           sourceUrl: "https://open-meteo.com/",
         },
@@ -72,6 +86,8 @@ describe("FlightPopup", () => {
     expect(screen.getAllByText("Clima no destino")).toHaveLength(2);
     expect(screen.getByText("Navegantes: Parcialmente nublado")).toBeTruthy();
     expect(screen.getByText("20–24 °C · chuva 20% · vento 18 km/h")).toBeTruthy();
+    expect(screen.getByText(/Próximo do voo \(14:00\): Chuva moderada/)).toBeTruthy();
+    expect(screen.getByText("Atenção: chuva relevante prevista no horário do voo.")).toBeTruthy();
     expect(screen.getByText(/Fonte: Open-Meteo/).getAttribute("href")).toBe("https://open-meteo.com/");
   });
 

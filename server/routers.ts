@@ -138,9 +138,12 @@ export const appRouter = router({
         z.object({
           airportCode: z.string().trim().regex(/^[A-Za-z]{3}$/),
           flightDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+          flightTime: z.string().regex(/^\d{2}:\d{2}$/).optional(),
         })
       )
-      .query(({ input }) => getDestinationWeather(input.airportCode, input.flightDate)),
+      .query(({ input }) => input.flightTime
+        ? getDestinationWeather(input.airportCode, input.flightDate, input.flightTime)
+        : getDestinationWeather(input.airportCode, input.flightDate)),
   }),
   protectedAccess: router({
     record: publicProcedure

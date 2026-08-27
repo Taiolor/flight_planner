@@ -203,3 +203,7 @@
 - [x] Cobrir atalho, fixação, resumo, persistência e responsividade com regressões automatizadas
 - [x] Corrigir a exibição dos dados de clima e tempo nos cards do Calendário
 - [x] Cobrir a previsão meteorológica do Calendário com regressões de sucesso e contingência
+- [x] Exibir ícone meteorológico coerente com a condição prevista em cada card
+- [x] Mostrar a previsão horária mais próxima do horário de cada voo
+- [x] Destacar alerta operacional de chuva intensa ou vento forte
+- [x] Cobrir ícones, previsão horária, alertas e contingências com regressões automatizadas

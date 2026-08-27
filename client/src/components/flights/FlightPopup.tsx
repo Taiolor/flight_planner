@@ -6,7 +6,14 @@ import {
   CalendarPlus,
   Download,
   ExternalLink,
+  Cloud,
+  CloudFog,
+  CloudLightning,
+  CloudRain,
   CloudSun,
+  Snowflake,
+  Sun,
+  TriangleAlert,
 } from "lucide-react";
 import {
   getGoogleCalendarLink,
@@ -28,14 +35,18 @@ import { trpc } from "@/lib/trpc";
 function DestinationWeatherPanel({
   destinationCode,
   destinationDate,
+  destinationTime,
   tone,
 }: {
   destinationCode: string;
   destinationDate: string;
+  destinationTime: string;
   tone: "blue" | "orange";
 }) {
   const weatherQuery = trpc.destinationWeather.forecast.useQuery(
-    { airportCode: destinationCode, flightDate: destinationDate },
+    destinationTime
+      ? { airportCode: destinationCode, flightDate: destinationDate, flightTime: destinationTime }
+      : { airportCode: destinationCode, flightDate: destinationDate },
     {
       enabled: Boolean(destinationDate),
       staleTime: 60 * 60 * 1000,
@@ -46,6 +57,7 @@ function DestinationWeatherPanel({
   const accentClasses = tone === "blue"
     ? "border-blue-200 bg-blue-100/70 text-blue-900"
     : "border-orange-200 bg-orange-100/70 text-orange-900";
+  const WeatherIcon = getWeatherIcon(weather?.available ? weather.weatherCode : undefined);
 
   const unavailableMessage = !destinationDate
     ? "A data do voo ainda não foi definida."
@@ -63,7 +75,7 @@ function DestinationWeatherPanel({
       className={`col-span-2 rounded-lg border px-2.5 py-2 ${accentClasses}`}
     >
       <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wide">
-        <CloudSun className="size-3.5" aria-hidden="true" />
+        <WeatherIcon className="size-3.5" aria-hidden="true" />
         <span>Clima no destino</span>
       </div>
       {weatherQuery.isLoading ? (
@@ -72,6 +84,17 @@ function DestinationWeatherPanel({
         <div className="mt-1 text-[11px] leading-relaxed">
           <p className="font-semibold">{weather.destinationLabel}: {weather.summary}</p>
           <p>{weather.temperatureMinC}–{weather.temperatureMaxC} °C · chuva {weather.precipitationProbability}% · vento {weather.windSpeedKmh} km/h</p>
+          {weather.hourlyForecast && (
+            <p className="mt-1 font-medium">
+              Próximo do voo ({weather.hourlyForecast.time.split("T")[1]}): {weather.hourlyForecast.summary} · {weather.hourlyForecast.temperatureC} °C · chuva {weather.hourlyForecast.precipitationProbability}% · vento {weather.hourlyForecast.windSpeedKmh} km/h
+            </p>
+          )}
+          {weather.alerts.map(alert => (
+            <p key={alert.type} className="mt-1 flex items-start gap-1 text-[10px] font-semibold" role="status">
+              <TriangleAlert className="mt-0.5 size-3 shrink-0" aria-hidden="true" />
+              <span>{alert.label}</span>
+            </p>
+          ))}
           <a
             href={weather.sourceUrl}
             target="_blank"
@@ -97,6 +120,16 @@ function DestinationWeatherPanel({
       )}
     </section>
   );
+}
+
+function getWeatherIcon(weatherCode?: number) {
+  if (weatherCode === 0 || weatherCode === 1) return Sun;
+  if (weatherCode === 2 || weatherCode === 3) return Cloud;
+  if (weatherCode === 45 || weatherCode === 48) return CloudFog;
+  if ([71, 73, 75, 77, 85, 86].includes(weatherCode ?? -1)) return Snowflake;
+  if ([95, 96, 99].includes(weatherCode ?? -1)) return CloudLightning;
+  if ([51, 53, 55, 56, 57, 61, 63, 65, 66, 67, 80, 81, 82].includes(weatherCode ?? -1)) return CloudRain;
+  return CloudSun;
 }
 
 export default function FlightPopup({
@@ -357,6 +390,7 @@ export default function FlightPopup({
               <DestinationWeatherPanel
                 destinationCode={retAirport}
                 destinationDate={depIsoDate}
+                destinationTime={depTime}
                 tone="blue"
               />
               {w.departureLocator && (
@@ -448,6 +482,7 @@ export default function FlightPopup({
                 <DestinationWeatherPanel
                   destinationCode={depAirport}
                   destinationDate={retIsoDate}
+                  destinationTime={retTime}
                   tone="orange"
                 />
                 {w.returnLocator && (
