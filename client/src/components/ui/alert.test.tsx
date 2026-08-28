@@ -14,8 +14,11 @@ describe("Alert", () => {
     );
 
     const alert = view.getByRole("alert");
+    expect(alert.className).toContain("rounded-xl");
+    expect(alert.className).toContain("border-l-4");
     expect(alert.className).toContain("dark:bg-rose-950/70");
     expect(alert.className).toContain("dark:text-rose-50");
+    expect(alert.className).toContain("dark:border-l-rose-300");
     expect(view.getByText("Revise os dados antes de continuar.").className).toContain("dark:text-slate-200");
   });
 });

@@ -25,9 +25,9 @@ type WeeklyPlanningProps = {
 };
 
 const statusCopy = {
-  issued: { label: "Emitido", className: "border-emerald-200 bg-emerald-50 text-emerald-700" },
-  watch: { label: "Acompanhar preço", className: "border-amber-200 bg-amber-50 text-amber-700" },
-  pending: { label: "Pendente", className: "border-slate-200 bg-slate-100 text-slate-600" },
+  issued: { label: "Emitido", className: "border-emerald-200/50 bg-emerald-300/15 text-emerald-100" },
+  watch: { label: "Acompanhar preço", className: "border-amber-200/50 bg-amber-300/15 text-amber-100" },
+  pending: { label: "Pendente", className: "border-white/30 bg-white/10 text-sky-100" },
 } as const;
 
 const temporalCopy: Record<WeeklyWindowPosition, string> = {
@@ -65,18 +65,18 @@ function MonthPreview({ departureDate, returnDate }: Pick<WeeklyPlanningItem, "d
 
   return (
     <div
-      className="w-[104px] shrink-0 rounded-lg bg-slate-50 p-2 dark:bg-slate-800"
+      className="w-[104px] shrink-0 rounded-lg border border-white/15 bg-white/10 p-2"
       aria-label={`Prévia de ${departure.toLocaleDateString("pt-BR", { month: "long" })}`}
     >
-      <div className="mb-1 text-center text-[9px] font-bold capitalize text-slate-500 dark:text-slate-400">
+      <div className="mb-1 text-center text-[9px] font-bold capitalize text-sky-100">
         {departure.toLocaleDateString("pt-BR", { month: "short" })}
       </div>
-      <div className="grid grid-cols-7 gap-px text-center text-[8px] leading-3 text-slate-400">
+      <div className="grid grid-cols-7 gap-px text-center text-[8px] leading-3 text-slate-300">
         {Array.from({ length: firstWeekday }, (_, index) => <span key={`empty-${index}`} />)}
         {Array.from({ length: daysInMonth }, (_, index) => {
           const day = index + 1;
           return (
-            <span key={day} className={highlighted.has(day) ? "rounded-sm bg-blue-600 font-bold text-white" : ""}>
+            <span key={day} className={highlighted.has(day) ? "rounded-sm bg-sky-300 font-bold text-slate-950" : ""}>
               {day}
             </span>
           );
@@ -110,34 +110,34 @@ export function WeeklyPlanning({ year, items, hideValues, onToggleFavorite = () 
               <article
                 key={item.weekNumber}
                 data-flight-card="weekly"
-                className="group relative rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition-[transform,border-color,box-shadow] duration-200 hover:border-blue-400 hover:shadow-lg hover:shadow-blue-950/10 motion-safe:hover:-translate-y-1 motion-reduce:transition-none dark:border-slate-800 dark:bg-slate-900 dark:hover:border-blue-500 dark:hover:shadow-blue-950/30"
+                className="group relative overflow-hidden rounded-3xl border border-white/15 bg-gradient-to-br from-[#071a36] via-[#102f61] to-[#17427e] p-4 text-white shadow-xl shadow-blue-950/20 transition-[transform,border-color,box-shadow] duration-200 hover:border-sky-200/50 hover:shadow-2xl hover:shadow-blue-950/30 motion-safe:hover:-translate-y-1 motion-reduce:transition-none"
               >
                 <button
                   type="button"
                   aria-pressed={item.favorite}
                   aria-label={item.favorite ? `Remover semana ${item.weekNumber} dos favoritos` : `Favoritar semana ${item.weekNumber}`}
                   onClick={() => onToggleFavorite(item.weekNumber)}
-                  className={`absolute right-3 top-3 flex size-8 items-center justify-center rounded-lg transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 ${item.favorite ? "bg-amber-100 text-amber-600 dark:bg-amber-900/40 dark:text-amber-300" : "text-slate-400 hover:bg-slate-100 hover:text-amber-500 dark:hover:bg-slate-800"}`}
+                  className={`absolute right-3 top-3 flex min-h-11 min-w-11 items-center justify-center rounded-full transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-white ${item.favorite ? "bg-amber-300/20 text-amber-100" : "text-sky-100 hover:bg-white/15 hover:text-amber-100"}`}
                 >
                   <Star className={`size-4 ${item.favorite ? "fill-current" : ""}`} aria-hidden="true" />
                 </button>
-                <Link href={`/calendar?week=${item.weekNumber}`} aria-label={`Abrir semana ${item.weekNumber} no Calendário`} className="block rounded-xl focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500">
+                <Link href={`/calendar?week=${item.weekNumber}`} aria-label={`Abrir semana ${item.weekNumber} no Calendário`} className="block rounded-xl focus:outline-none focus-visible:ring-2 focus-visible:ring-white">
                   <div className="flex items-start justify-between gap-3 pr-10">
                     <div>
-                      <span className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500 dark:text-slate-400">{temporalCopy[item.temporalPosition]}</span>
-                      <span className="mt-1 block text-xs font-medium text-blue-600 dark:text-blue-300">Semana {item.weekNumber}</span>
-                      <p className="mt-2 flex items-center gap-2 text-lg font-bold text-slate-900 transition-colors duration-200 group-hover:text-blue-700 motion-reduce:transition-none dark:text-white dark:group-hover:text-blue-200"><Plane className="size-4 text-blue-600 dark:text-blue-300" aria-hidden="true" />{item.route}</p>
+                      <span className="text-xs font-semibold uppercase tracking-[0.12em] text-sky-100">{temporalCopy[item.temporalPosition]}</span>
+                      <span className="mt-1 block text-xs font-medium text-sky-200">Semana {item.weekNumber}</span>
+                      <p className="mt-2 flex items-center gap-2 text-lg font-bold text-white transition-colors duration-200 group-hover:text-sky-100 motion-reduce:transition-none"><Plane className="size-4 text-sky-200" aria-hidden="true" />{item.route}</p>
                     </div>
                     <Badge variant="outline" className={status.className}>{status.label}</Badge>
                   </div>
-                  <p className="mt-3 text-sm font-medium text-slate-600 dark:text-slate-300">{formatDateRange(item.departureDate, item.returnDate)}</p>
-                  <div className="mt-4 flex items-end justify-between gap-3 border-t border-slate-100 pt-3 text-sm dark:border-slate-800">
+                  <p className="mt-3 text-sm font-medium text-slate-200">{formatDateRange(item.departureDate, item.returnDate)}</p>
+                  <div className="mt-4 flex items-end justify-between gap-3 border-t border-white/15 pt-3 text-sm">
                     <div className="min-w-0">
                       <AirlineBadge airline={item.airline} fallback="COMPANHIA A DEFINIR" className="max-w-full" />
-                      <span className="mt-1 flex items-center gap-1 font-semibold text-slate-800 dark:text-slate-100">
-                        <Ticket className="size-3.5 text-blue-600 dark:text-blue-300" aria-hidden="true" />
+                      <span className="mt-1 flex items-center gap-1 font-semibold text-sky-50">
+                        <Ticket className="size-3.5 text-sky-200" aria-hidden="true" />
                         {hideValues ? "••••" : item.lowestPrice !== null ? `R$ ${item.lowestPrice.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}` : "Sem cotação"}
-                        <ChevronRight className="size-4 text-slate-400 transition-transform duration-200 motion-safe:group-hover:translate-x-1 motion-reduce:transition-none" aria-hidden="true" />
+                        <ChevronRight className="size-4 text-sky-100 transition-transform duration-200 motion-safe:group-hover:translate-x-1 motion-reduce:transition-none" aria-hidden="true" />
                       </span>
                     </div>
                     <MonthPreview departureDate={item.departureDate} returnDate={item.returnDate} />

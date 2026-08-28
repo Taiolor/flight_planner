@@ -37,7 +37,9 @@ describe("WeeklyPlanning", () => {
     const card = screen
       .getByLabelText("Abrir semana 18 no Calendário")
       .closest("[data-flight-card='weekly']");
-    expect(card?.className).toContain("hover:shadow-lg");
+    expect(card?.className).toContain("bg-gradient-to-br");
+    expect(card?.className).toContain("rounded-3xl");
+    expect(card?.className).toContain("hover:shadow-2xl");
     expect(card?.className).toContain("motion-safe:hover:-translate-y-1");
     expect(card?.className).toContain("motion-reduce:transition-none");
   });
@@ -93,5 +95,6 @@ describe("WeeklyPlanning", () => {
     expect(source).toContain("w-[104px] shrink-0");
     expect(source).toContain("data-flight-card=\"weekly\"");
     expect(source).toContain("motion-safe:group-hover:translate-x-1");
+    expect(source).toContain("border-white/15 bg-white/10");
   });
 });

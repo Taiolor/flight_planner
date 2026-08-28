@@ -4,13 +4,13 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 const alertVariants = cva(
-  "relative w-full rounded-lg border px-4 py-3 text-sm grid has-[>svg]:grid-cols-[calc(var(--spacing)*4)_1fr] grid-cols-[0_1fr] has-[>svg]:gap-x-3 gap-y-0.5 items-start [&>svg]:size-4 [&>svg]:translate-y-0.5 [&>svg]:text-current",
+  "relative w-full rounded-xl border border-l-4 px-4 py-3 text-sm grid has-[>svg]:grid-cols-[calc(var(--spacing)*4)_1fr] grid-cols-[0_1fr] has-[>svg]:gap-x-3 gap-y-0.5 items-start sm:px-5 sm:py-4 [&>svg]:size-4 [&>svg]:translate-y-0.5 [&>svg]:text-current",
   {
     variants: {
       variant: {
         default: "bg-card text-card-foreground",
         destructive:
-          "border-destructive/55 bg-destructive/10 text-destructive-foreground [&>svg]:text-destructive *:data-[slot=alert-description]:text-destructive-foreground/90 dark:border-rose-300/55 dark:bg-rose-950/70 dark:text-rose-50 dark:[&>svg]:text-rose-200",
+          "border-destructive/55 border-l-destructive bg-destructive/10 text-destructive-foreground [&>svg]:text-destructive *:data-[slot=alert-description]:text-destructive-foreground/90 dark:border-rose-300/55 dark:border-l-rose-300 dark:bg-rose-950/70 dark:text-rose-50 dark:[&>svg]:text-rose-200",
       },
     },
     defaultVariants: {

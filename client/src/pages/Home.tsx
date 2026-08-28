@@ -160,6 +160,7 @@ import {
   saveAnnualEmissionGoal,
 } from "@/lib/annualEmissionGoal";
 import type { MonthlyChartData } from "@/components/HomeCharts";
+import { getPriceChartCoverage } from "@/lib/priceChartCoverage";
 import { getAnnualProgress } from "@/lib/annualProgress";
 import { shouldRenderDeferredCharts } from "@/lib/chartLoading";
 import { queryCachePolicies } from "@/lib/queryCache";
@@ -2101,6 +2102,10 @@ export default function Home({ mode = "home" }: HomeProps) {
   }, [weeksData, priceMap, getLowestPrice]);
 
   const hasChartData = chartData.some(d => Object.keys(d).length > 1);
+  const priceChartCoverage = useMemo(
+    () => getPriceChartCoverage(chartData, chartSelectedAirlines),
+    [chartData, chartSelectedAirlines]
+  );
 
   // ⚡ Bolt Optimization: Pre-calculate and group holidays per week once when weeksData changes.
   // This prevents executing getFeriadosPorIntervalo (which iterates over all holidays)
@@ -6831,6 +6836,21 @@ export default function Home({ mode = "home" }: HomeProps) {
               })}
             </div>
           </div>
+
+          <dl aria-label="Cobertura dos dados do gráfico" className="mb-6 grid gap-2 border border-white/15 bg-white/5 p-3 sm:grid-cols-3 sm:p-4">
+            <div>
+              <dt className="text-[11px] font-semibold uppercase tracking-wide text-sky-100">Empresas ativas</dt>
+              <dd className="mt-1 text-xl font-bold text-white">{priceChartCoverage.selectedAirlines}</dd>
+            </div>
+            <div>
+              <dt className="text-[11px] font-semibold uppercase tracking-wide text-sky-100">Meses com dados</dt>
+              <dd className="mt-1 text-xl font-bold text-white">{priceChartCoverage.populatedMonths}</dd>
+            </div>
+            <div>
+              <dt className="text-[11px] font-semibold uppercase tracking-wide text-sky-100">Referências mensais</dt>
+              <dd className="mt-1 text-xl font-bold text-white">{priceChartCoverage.monthlyReferences}</dd>
+            </div>
+          </dl>
 
           {!hasChartData ? (
             <div className="flex flex-col items-center justify-center py-12 text-center">

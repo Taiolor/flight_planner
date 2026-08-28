@@ -886,3 +886,6 @@
 - [x] Padronizar a seção Variação de Preços com o acabamento das Centrais
 - [x] Reforçar o contraste dos alertas e controles em modo escuro
 - [x] Consolidar checkpoint revisado e pronto para publicação
+- [x] Aprimorar a leitura da Variação de Preços com metadados derivados dos dados reais
+- [x] Padronizar os cards de semanas da Home com o acabamento das Centrais
+- [x] Preparar e validar visualmente os alertas para uso móvel, com roteiro de teste em dispositivo físico
