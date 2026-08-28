@@ -6746,99 +6746,61 @@ export default function Home({ mode = "home" }: HomeProps) {
         {!isManagementView && (
           <>
         {/* Gráfico de Variação de Preços */}
-        <Card
+        <section
           id="price-chart-section"
-          className={`mt-8 p-6 border rounded-3xl scroll-mt-4 transition-colors duration-300 ${
-            theme === "dark"
-              ? "border-slate-700/60 shadow-xl shadow-slate-900/40 bg-slate-800"
-              : "border-slate-200/60 shadow-xl shadow-slate-200/40 bg-white"
-          }`}
+          className="mt-8 scroll-mt-4 animate-in fade-in overflow-hidden rounded-3xl bg-gradient-to-br from-[#071a36] via-[#102f61] to-[#17427e] text-white shadow-2xl duration-500 motion-reduce:animate-none"
         >
-          <button
-            type="button"
-            onClick={() => updateExpandablePanel("priceVariation")}
-            aria-expanded={expandablePanels.priceVariation}
-            aria-controls="price-variation-content"
-            className="flex w-full items-start justify-between gap-3 rounded-2xl text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 sm:items-center sm:gap-4"
-          >
-            <span className="flex min-w-0 items-center gap-3">
-              <span
-                className={`shrink-0 p-2 rounded-lg transition-colors duration-300 ${
-                  theme === "dark" ? "bg-blue-900/40" : "bg-blue-100"
-                }`}
-              >
-                <TrendingUp
-                  className={`w-5 h-5 transition-colors duration-300 ${
-                    theme === "dark" ? "text-blue-400" : "text-blue-600"
-                  }`}
-                />
-              </span>
-              <span className="min-w-0">
-                <span
-                  role="heading"
-                  aria-level={2}
-                  className={`block text-xl font-bold transition-colors duration-300 ${
-                    theme === "dark" ? "text-slate-100" : "text-slate-900"
-                  }`}
+          <div className="bg-gradient-to-r from-slate-900 via-[#071a36] to-slate-900 px-4 py-4 transition-colors duration-300 hover:from-slate-800 hover:via-[#0b2349] hover:to-slate-800 motion-reduce:transition-none sm:px-6 sm:py-5">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.15em] text-sky-200">Camada financeira</p>
+                <h2 className="mt-1 text-2xl font-bold tracking-tight sm:text-3xl">Variação de Preços</h2>
+                <p className="mt-1 max-w-2xl text-sm text-slate-200">Média mensal dos preços registrados por empresas e buscadores.</p>
+              </div>
+              <div className="flex items-center gap-2 self-start">
+                <span className="rounded-full border border-sky-200/40 bg-sky-300/10 px-2.5 py-1 text-xs font-semibold text-sky-100">Análise mensal</span>
+                <button
+                  type="button"
+                  onClick={() => updateExpandablePanel("priceVariation")}
+                  aria-expanded={expandablePanels.priceVariation}
+                  aria-controls="price-variation-content"
+                  aria-label={expandablePanels.priceVariation ? "Recolher Variação de Preços" : "Expandir Variação de Preços"}
+                  className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-full bg-transparent text-white transition-colors duration-200 hover:bg-white/15 hover:text-sky-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-white motion-reduce:transition-none"
                 >
-                  Variação de Preços por Mês
-                </span>
-                <span
-                  className={`block text-sm transition-colors duration-300 ${
-                    theme === "dark" ? "text-slate-400" : "text-slate-500"
-                  }`}
-                >
-                  Média dos preços registrados por todas as empresas e buscadores em cada mês
-                </span>
-              </span>
-            </span>
-            <span
-              className={`flex shrink-0 items-center gap-1.5 text-sm font-semibold ${
-                theme === "dark" ? "text-slate-300" : "text-slate-600"
-              }`}
-            >
-              <span className="hidden sm:inline">
-                {expandablePanels.priceVariation ? "Recolher" : "Expandir"}
-              </span>
-              {expandablePanels.priceVariation ? (
-                <ChevronUp className="w-5 h-5" aria-hidden="true" />
-              ) : (
-                <ChevronDown className="w-5 h-5" aria-hidden="true" />
-              )}
-            </span>
-          </button>
+                  {expandablePanels.priceVariation ? <ChevronUp className="size-5" aria-hidden="true" /> : <ChevronDown className="size-5" aria-hidden="true" />}
+                </button>
+              </div>
+            </div>
+            {!expandablePanels.priceVariation && (
+              <div className="mt-3 border-t border-white/15 pt-3 text-sm text-sky-100">
+                <p>Análise recolhida. Abra para filtrar as empresas e consultar os gráficos mensais.</p>
+              </div>
+            )}
+          </div>
 
           {expandablePanels.priceVariation && (
-            <div id="price-variation-content" className="mt-6">
+            <div id="price-variation-content" className="px-4 py-4 sm:px-6 sm:py-6">
           {/* Filtro de empresas do gráfico */}
           <div
-            className={`mb-6 max-w-full overflow-hidden p-4 rounded-xl border transition-colors duration-300 ${
-              theme === "dark"
-                ? "bg-slate-700/50 border-slate-600"
-                : "bg-slate-50 border-slate-200"
-            }`}
+            className="mb-6 max-w-full overflow-hidden border border-white/15 bg-white/5 p-4"
           >
             <div className="mb-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-              <span
-                className={`text-sm font-semibold transition-colors duration-300 ${
-                  theme === "dark" ? "text-slate-300" : "text-slate-700"
-                }`}
-              >
+              <span className="text-sm font-semibold text-sky-100">
                 Filtrar Empresas no Gráfico
               </span>
               <div className="flex flex-wrap gap-1 sm:gap-2">
                 <button
                   onClick={selectAllChartAirlines}
-                  className="rounded px-2 py-1 text-xs font-medium text-[#0b2349] transition-colors hover:bg-[#e7edf6] hover:text-[#071a36] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#315c99]"
+                  className="rounded px-2 py-1 text-xs font-medium text-sky-100 transition-colors hover:bg-white/10 hover:text-sky-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
                   title="Selecionar todas as empresas"
                   aria-label="Selecionar todas as empresas"
                 >
                   Selecionar todas
                 </button>
-                <span className="text-slate-300">|</span>
+                <span className="text-white/30">|</span>
                 <button
                   onClick={clearChartAirlines}
-                  className="rounded px-2 py-1 text-xs font-medium text-slate-600 transition-colors hover:bg-slate-100 hover:text-[#071a36] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#315c99]"
+                  className="rounded px-2 py-1 text-xs font-medium text-sky-100 transition-colors hover:bg-white/10 hover:text-sky-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
                   title="Limpar seleção de empresas"
                   aria-label="Limpar seleção de empresas"
                 >
@@ -6857,8 +6819,8 @@ export default function Home({ mode = "home" }: HomeProps) {
                     aria-pressed={isSelected}
                     className={`flex items-center gap-2 rounded-full border-2 px-3 py-1.5 text-sm font-medium transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-[#315c99] focus-visible:ring-offset-2 ${
                       isSelected
-                        ? "border-[#315c99] bg-[#071a36] text-white shadow-sm"
-                        : "border-[#c8d6e9] bg-white text-[#0b2349] hover:border-[#315c99] hover:bg-[#f4f7fb] dark:border-slate-600 dark:bg-slate-900 dark:text-slate-100 dark:hover:border-[#315c99]"
+                        ? "border-sky-200/50 bg-sky-300/20 text-white shadow-sm"
+                        : "border-white/30 bg-white/10 text-sky-50 hover:border-sky-200/50 hover:bg-white/15"
                     }`}
                   >
                     <span>{airline.icon}</span>
@@ -6872,11 +6834,11 @@ export default function Home({ mode = "home" }: HomeProps) {
 
           {!hasChartData ? (
             <div className="flex flex-col items-center justify-center py-12 text-center">
-              <TrendingUp className="w-12 h-12 text-slate-200 mb-3" />
-              <p className="text-slate-400 font-medium">
+              <TrendingUp className="mb-3 h-12 w-12 text-sky-200" />
+              <p className="font-medium text-sky-100">
                 Nenhum preço registrado ainda
               </p>
-              <p className="text-slate-400 text-sm mt-1">
+              <p className="mt-1 text-sm text-slate-200">
                 Preencha os preços nas semanas acima para visualizar o gráfico
               </p>
             </div>
@@ -6885,7 +6847,7 @@ export default function Home({ mode = "home" }: HomeProps) {
               <Suspense fallback={<SkeletonChart />}>
                 <PriceVariationCharts
                   data={chartData}
-                  theme={theme}
+                  theme="dark"
                   hideValues={hideValues}
                   selectedAirlines={chartSelectedAirlines}
                 />
@@ -6894,13 +6856,9 @@ export default function Home({ mode = "home" }: HomeProps) {
               <button
                 type="button"
                 onClick={() => setIsPriceChartVisible(true)}
-                className={`w-full flex flex-col items-center justify-center py-12 text-center rounded-xl border border-dashed transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 ${
-                  theme === "dark"
-                    ? "border-slate-600 text-slate-300 hover:bg-slate-700/50"
-                    : "border-slate-300 text-slate-600 hover:bg-slate-50"
-                }`}
+                className="flex w-full flex-col items-center justify-center border border-dashed border-white/30 bg-white/5 py-12 text-center text-sky-100 transition-colors hover:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
               >
-                <TrendingUp className="w-10 h-10 mb-3 text-blue-500" />
+                <TrendingUp className="mb-3 h-10 w-10 text-sky-200" />
                 <span className="font-medium">Carregar gráficos de preços</span>
                 <span className="mt-1 text-sm opacity-80">
                   Os gráficos são carregados somente quando solicitados
@@ -6910,7 +6868,7 @@ export default function Home({ mode = "home" }: HomeProps) {
           )}
             </div>
           )}
-        </Card>
+        </section>
           </>
         )}
 

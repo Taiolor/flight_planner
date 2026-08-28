@@ -16,9 +16,16 @@ describe("quadro de variação de preços da Home", () => {
   });
 
   it("mantém o cabeçalho e o conteúdo seguros em telas estreitas", () => {
-    expect(source).toContain("flex w-full items-start justify-between gap-3");
-    expect(source).toContain("sm:items-center sm:gap-4");
-    expect(source).toContain('<span className="hidden sm:inline">');
+    expect(source).toContain("bg-gradient-to-br from-[#071a36] via-[#102f61] to-[#17427e]");
+    expect(source).toContain("Camada financeira");
+    expect(source).toContain('aria-label={expandablePanels.priceVariation ? "Recolher Variação de Preços"');
+    expect(source).toContain("motion-reduce:transition-none");
     expect(source).toContain("max-w-full overflow-hidden");
+  });
+
+  it("mantém controles e gráficos legíveis sobre a superfície azul", () => {
+    expect(source).toContain("border-white/30 bg-white/10 text-sky-50");
+    expect(source).toContain('theme="dark"');
+    expect(source).toContain("border border-white/15 bg-white/5");
   });
 });

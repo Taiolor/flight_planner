@@ -8,8 +8,8 @@ describe("filtro de empresas do gráfico", () => {
     source.indexOf("{!hasChartData ?")
   );
 
-  it("usa uma escala azul-marinho uniforme para os itens selecionados", () => {
-    expect(filterSource).toContain('border-[#315c99] bg-[#071a36] text-white shadow-sm');
+  it("usa uma sinalização azul uniforme para os itens selecionados", () => {
+    expect(filterSource).toContain('border-sky-200/50 bg-sky-300/20 text-white shadow-sm');
     expect(filterSource).toContain('focus-visible:ring-[#315c99]');
     expect(filterSource).not.toContain('kayak: "bg-red-500"');
     expect(filterSource).not.toContain("backgroundColor:");

@@ -883,3 +883,6 @@
 - [x] Simplificar o botão da Central de decisão para exibir somente o ícone de expandir ou recolher
 - [x] Alinhar a Central de decisão ao padrão do Resumo Anual, com controle sem borda e hover com fade suave
 - [x] Equalizar o design da Central de Atenção com a Central de Decisão
+- [x] Padronizar a seção Variação de Preços com o acabamento das Centrais
+- [x] Reforçar o contraste dos alertas e controles em modo escuro
+- [x] Consolidar checkpoint revisado e pronto para publicação
