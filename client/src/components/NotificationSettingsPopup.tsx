@@ -316,7 +316,6 @@ export function NotificationSettingsPopup({
       className={triggerClassName ?? "flex items-center gap-1.5 text-xs h-8 px-2.5 text-slate-300 hover:text-white hover:bg-white/10"}
     >
       <Settings2 className="w-4 h-4" />
-      <span className="hidden sm:inline">Avisos</span>
     </Button>
   );
 
@@ -373,7 +372,6 @@ export function NotificationSettingsPopup({
           className={triggerClassName ?? "flex items-center gap-1.5 text-xs h-8 px-2.5 text-slate-300 hover:text-white hover:bg-white/10"}
         >
           <Settings2 className="w-4 h-4" />
-          <span className="hidden sm:inline">Avisos</span>
         </Button>
       </PopoverTrigger>
       <PopoverContent

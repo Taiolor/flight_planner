@@ -232,3 +232,4 @@
 - [x] Validar no domínio publicado o cabeçalho móvel e o modal de bilhete em largura crítica
 - [x] Corrigir o contraste do rótulo Exportar PDF no menu suspenso móvel
 - [x] Validar a legibilidade de Exportar PDF no menu móvel do domínio publicado
+- [x] Remover o rótulo visual Avisos da ação de notificações no cabeçalho desktop
