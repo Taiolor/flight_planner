@@ -24,6 +24,7 @@ import {
   FeriadoInfo,
 } from "@/lib/flightData";
 import { Button } from "@/components/ui/button";
+import { Slider } from "@/components/ui/slider";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import {
@@ -1435,14 +1436,20 @@ export default function Home() {
 
       const jogosDosBrasil: typeof todosJogosParsed = [];
       for (const jogo of todosJogosParsed) {
-        if (jogo.dataMs >= semanaInicioMs && jogo.dataMs <= semanaFimEfetivoMs) {
+        if (
+          jogo.dataMs >= semanaInicioMs &&
+          jogo.dataMs <= semanaFimEfetivoMs
+        ) {
           jogosDosBrasil.push(jogo);
         }
       }
 
       const fasesEliminatorias: typeof todasFasesParsed = [];
       for (const fase of todasFasesParsed) {
-        if (fase.inicioMs <= semanaFimEfetivoMs && fase.fimMs >= semanaInicioMs) {
+        if (
+          fase.inicioMs <= semanaFimEfetivoMs &&
+          fase.fimMs >= semanaInicioMs
+        ) {
           fasesEliminatorias.push(fase);
         }
       }
@@ -1474,7 +1481,11 @@ export default function Home() {
       { mes: string; total: number; count: number }
     > = {};
     for (let i = 0; i < CHART_MONTHS.length; i++) {
-      summaryMap[CHART_MONTHS[i].num] = { mes: CHART_MONTHS[i].label, total: 0, count: 0 };
+      summaryMap[CHART_MONTHS[i].num] = {
+        mes: CHART_MONTHS[i].label,
+        total: 0,
+        count: 0,
+      };
     }
 
     let totalIssued = 0;
@@ -2431,16 +2442,13 @@ export default function Home() {
                         voos
                       </span>
                     </div>
-                    <input
+                    <Slider
                       id="departureTimeFilter"
-                      type="range"
-                      min="0"
-                      max="1439"
-                      step="15"
-                      value={departureTimeFilter}
-                      onChange={e =>
-                        setDepartureTimeFilter(parseInt(e.target.value))
-                      }
+                      min={0}
+                      max={1439}
+                      step={15}
+                      value={[departureTimeFilter]}
+                      onValueChange={val => setDepartureTimeFilter(val[0])}
                       className="w-full"
                       aria-label="Filtro de Horário de Ida"
                     />
@@ -2474,16 +2482,13 @@ export default function Home() {
                         voos
                       </span>
                     </div>
-                    <input
+                    <Slider
                       id="returnTimeFilter"
-                      type="range"
-                      min="0"
-                      max="1439"
-                      step="15"
-                      value={returnTimeFilter}
-                      onChange={e =>
-                        setReturnTimeFilter(parseInt(e.target.value))
-                      }
+                      min={0}
+                      max={1439}
+                      step={15}
+                      value={[returnTimeFilter]}
+                      onValueChange={val => setReturnTimeFilter(val[0])}
                       className="w-full"
                       aria-label="Filtro de Horário de Volta"
                     />
@@ -2533,16 +2538,13 @@ export default function Home() {
                     >
                       Percentil de Preço: {pricePercentile}%
                     </label>
-                    <input
+                    <Slider
                       id="pricePercentile"
-                      type="range"
-                      min="5"
-                      max="50"
-                      step="5"
-                      value={pricePercentile}
-                      onChange={e =>
-                        setPricePercentile(parseInt(e.target.value))
-                      }
+                      min={5}
+                      max={50}
+                      step={5}
+                      value={[pricePercentile]}
+                      onValueChange={val => setPricePercentile(val[0])}
                       className="w-full"
                       aria-label="Filtro de Percentil de Preço"
                     />
