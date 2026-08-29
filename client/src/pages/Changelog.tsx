@@ -47,6 +47,76 @@ interface Release {
 export const releases: Release[] = [
   // Agosto 2026
   {
+    version: "v2.0.0",
+    date: "29/08/2026",
+    month: "Agosto 2026",
+    status: "released",
+    highlights:
+      "Operação diária mais resiliente: decisão, clima, modo offline, navegação móvel e entrega publicada refinados",
+    features: [
+      {
+        icon: <TrendingUp className="w-5 h-5" />,
+        category: "Central de Decisão e Planejamento Diário",
+        items: [
+          "Central de Decisão ampliada com ranking explicável, próxima viagem, fila secundária, métricas reais e atalhos contextuais para Gestão e Calendário",
+          "Sanfona integral da Central, atalho Alt + Shift + D, opção de fixar no topo e síntese operacional enquanto o conteúdo está recolhido",
+          "Ajuste manual e reversível de relevância por semana, com preferência validada por exercício",
+          "Resumo semanal mantém sempre as referências de semana anterior, atual e próxima, calculadas pela data real de acesso",
+        ],
+      },
+      {
+        icon: <Calendar className="w-5 h-5" />,
+        category: "Clima e Detalhes de Bilhetes",
+        items: [
+          "Previsão por trecho enriquecida com condição, horário mais próximo do voo, sensação térmica, visibilidade, vento, rajadas, nascer e pôr do sol",
+          "Alertas de chuva, vento e baixa visibilidade apresentados como contexto operacional, com contingência clara quando a fonte não estiver disponível",
+          "Detalhes meteorológicos iniciam compactos e podem ser exibidos por trecho, preservando ida e volta independentes",
+          "No detalhe do bilhete, localizador e rastreamento agora antecedem o clima; o modal ganhou rolagem interna e fechamento sempre acessível",
+        ],
+      },
+      {
+        icon: <Rocket className="w-5 h-5" />,
+        category: "PWA, Offline e Disponibilidade",
+        items: [
+          "Splash de abertura com marcos reais de inicialização, indicador discreto de progresso, aviso de modo offline e respeito à redução de movimento",
+          "Cache explícito e validado de próximas viagens, limitado a dados operacionais essenciais e com expiração de 14 dias",
+          "Última sincronização exibida quando o dispositivo está offline e recuperação orientada quando não há dados locais para o exercício",
+          "Entrega de logos, ícones, imagens institucionais e tiles de mapa reforçada para funcionar no domínio publicado, sem depender de redirecionamentos incompatíveis",
+        ],
+      },
+      {
+        icon: <Accessibility className="w-5 h-5" />,
+        category: "Experiência Móvel e Cabeçalho",
+        items: [
+          "Cabeçalho reorganizado em grupos objetivos para desktop e celular, com alvos de toque preservados em larguras de 320 px, 375 px e 390 px",
+          "Controle de mostrar ou ocultar valores disponível diretamente no cabeçalho móvel, além do menu de preferências",
+          "Menu de recursos passa a manter Exportar PDF legível no fundo escuro, inclusive no estado indisponível",
+          "Ações de aparência, avisos e navegação foram reduzidas a ícones quando apropriado, mantendo rótulos acessíveis e dicas descritivas",
+        ],
+      },
+      {
+        icon: <Sparkles className="w-5 h-5" />,
+        category: "Design System Operacional",
+        items: [
+          "Central de Decisão, Central de Atenção, Variação de Preços e cards semanais alinhados ao acabamento azul-marinho: gradiente, cabeçalho escuro, superfícies translúcidas e contraste reforçado",
+          "Controles de expandir ou recolher foram simplificados para ícones consistentes, com foco visível, hover sutil e preferência de redução de movimento respeitada",
+          "Filtros, alertas e indicadores de status receberam contrastes mais robustos, sem depender somente de cor para comunicar prioridade",
+          "Navegação inferior móvel recebeu ação Mais e atalhos condicionais, preservando a hierarquia da operação diária",
+        ],
+      },
+      {
+        icon: <Shield className="w-5 h-5" />,
+        category: "Confiabilidade e Qualidade",
+        items: [
+          "Consulta meteorológica corrigida para respeitar a janela inclusiva da fonte e evitar parâmetros incompatíveis em ida e volta",
+          "Regressões adicionadas para ativos publicados, mapas, clima, modais, cabeçalho, navegação e contraste de ações críticas",
+          "772 testes automatizados aprovados neste ciclo, acompanhados por checagem de TypeScript e build de produção",
+          "Duas integrações externas permanecem intencionalmente ignoradas na suíte, sem bloquear a validação local das funcionalidades cobertas",
+        ],
+      },
+    ],
+  },
+  {
     version: "v1.9.0",
     date: "22/08/2026",
     month: "Agosto 2026",
@@ -824,7 +894,7 @@ const sortedMonths = Object.keys(releasesByMonth).sort((a, b) => {
 export default function Changelog() {
   const [location, setLocation] = useLocation();
   const [expandedReleases, setExpandedReleases] = useState<Set<string>>(
-    new Set(["v1.9.0"])
+    new Set(["v2.0.0"])
   );
 
   const navigateHome = (event: MouseEvent<HTMLAnchorElement>) => {
@@ -897,13 +967,13 @@ export default function Changelog() {
             </div>
           </Card>
           <Card className="p-4 text-center">
-            <div className="text-3xl font-bold text-green-600">600+</div>
+            <div className="text-3xl font-bold text-green-600">772</div>
             <div className="text-sm text-slate-600 dark:text-slate-400">
               Testes
             </div>
           </Card>
           <Card className="p-4 text-center">
-            <div className="text-3xl font-bold text-purple-600">50+</div>
+            <div className="text-3xl font-bold text-purple-600">90+</div>
             <div className="text-sm text-slate-600 dark:text-slate-400">
               Commits
             </div>
