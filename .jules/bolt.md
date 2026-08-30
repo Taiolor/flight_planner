@@ -5,3 +5,6 @@
 ## 2024-05-18 - Optimize getFinancialYearSummary queries
 **Learning:** Functions aggregating data by year (`getFinancialYearSummary`) often call smaller aggregation functions (`getFinancialSummaryByMonth`). If both functions independently fetch the same large dataset (e.g., all `weekData` for the year), it results in redundant N+1-style DB queries for the same data.
 **Action:** When a parent function fetches data that a child aggregation function also needs, update the child function to accept an optional `prefetchedData?` parameter. This allows the parent to pass down the data it already fetched, preventing duplicate database hits while keeping the child function backward-compatible for other callers.
+## 2026-08-30 - Optimize Date parsing in array sorting
+**Learning:** Frequent array sorting with expensive operations inside the comparison function (like instantiating `Date` objects from parsed strings) causes severe O(N log N) performance overhead, especially on the client side.
+**Action:** When sorting arrays based on calculated values, implement a Schwartzian transform (map-sort-map pattern) to pre-calculate the values once per item in O(N) time before sorting, rather than repeatedly calculating them inside the O(N log N) sort comparator.
