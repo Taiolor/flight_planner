@@ -234,3 +234,4 @@
 - [x] Validar a legibilidade de Exportar PDF no menu móvel do domínio publicado
 - [x] Remover o rótulo visual Avisos da ação de notificações no cabeçalho desktop
 - [x] Atualizar a página de Novidades com as evoluções verificáveis do último mês
+- [x] Auditar tooltips dos botões funcionais e completar descrições nos controles sem orientação suficiente

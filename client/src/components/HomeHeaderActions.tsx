@@ -186,6 +186,7 @@ export function HomeHeaderActions({
             <Link
               href={primaryMeta.href}
               aria-label={primaryMeta.label}
+              title={primaryMeta.label}
               data-mobile-primary-action={mobilePrimaryAction}
               data-calendar-navigation={mobilePrimaryAction === "calendar" || undefined}
               data-navigation-focus="home-primary-navigation"
@@ -208,6 +209,7 @@ export function HomeHeaderActions({
             <Link
               href={mobilePrimaryAction === "calendar" ? "/gestao-passagens" : "/calendar"}
               aria-label={mobilePrimaryAction === "calendar" ? "Abrir Gestão de Passagens" : "Calendário"}
+              title={mobilePrimaryAction === "calendar" ? "Gestão de Passagens" : "Calendário"}
               data-calendar-navigation={mobilePrimaryAction === "passages" || undefined}
               data-navigation-focus="home-secondary-navigation"
               data-view-transition-destination={mobilePrimaryAction === "calendar" ? "passages" : "calendar"}
@@ -236,6 +238,7 @@ export function HomeHeaderActions({
                 variant="outline"
                 className={iconButtonClass}
                 aria-label="Abrir navegação"
+                title="Mais opções"
                 data-navigation-focus="home-navigation-menu-trigger"
               >
                 <MoreHorizontal className="size-5" aria-hidden="true" />
@@ -373,6 +376,7 @@ export function HomeHeaderActions({
                   variant="outline"
                   className={iconButtonClass}
                   aria-label="Abrir conta"
+                  title="Abrir conta"
                 >
                   <CircleUserRound className="size-5" aria-hidden="true" />
                 </Button>
@@ -394,6 +398,7 @@ export function HomeHeaderActions({
                 variant="outline"
                 className={`${iconButtonClass} shrink-0 sm:w-auto sm:px-3`}
                 onClick={onSignIn}
+                title="Entrar"
               >
                 <LogIn className="size-4" aria-hidden="true" />
                 <span className="ml-1.5 hidden sm:inline">Entrar</span>
@@ -425,6 +430,7 @@ export function HomeHeaderActions({
                 variant="outline"
                 className={`${headerButtonClass} flex-1 justify-center`}
                 aria-label="Abrir preferências"
+                title="Abrir preferências"
               >
                 <SlidersHorizontal className="size-4" aria-hidden="true" />
                 <span className="ml-1.5 text-sm">Preferências</span>

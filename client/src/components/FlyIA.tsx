@@ -416,6 +416,7 @@ export default function FlyIA() {
               size="icon"
               className="h-8 w-8 shrink-0 text-slate-500"
               aria-label="Fechar Fly.IA"
+              title="Fechar Fly.IA"
             >
               <X className="h-4 w-4" />
             </Button>

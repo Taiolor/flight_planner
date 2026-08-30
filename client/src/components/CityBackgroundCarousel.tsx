@@ -251,6 +251,7 @@ export function CityBackgroundCarousel() {
               className="h-8 w-8 rounded-full text-white hover:bg-white/15 hover:text-white"
               onClick={() => goTo(activeIndex - 1)}
               aria-label="Ver cidade anterior"
+              title="Ver cidade anterior"
             >
               <ChevronLeft className="h-4 w-4" />
             </Button>
@@ -299,6 +300,7 @@ export function CityBackgroundCarousel() {
               className="h-8 w-8 rounded-full text-white hover:bg-white/15 hover:text-white"
               onClick={() => goTo(activeIndex + 1)}
               aria-label="Ver próxima cidade"
+              title="Ver próxima cidade"
             >
               <ChevronRight className="h-4 w-4" />
             </Button>

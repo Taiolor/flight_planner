@@ -15,6 +15,11 @@ describe("Fly.IA widget", () => {
     expect(source).toContain("Entre para consultar o seu planejamento com o Fly.IA.");
   });
 
+  it("describes the dialog close action for mouse and assistive technology", () => {
+    expect(source).toContain('aria-label="Fechar Fly.IA"');
+    expect(source).toContain('title="Fechar Fly.IA"');
+  });
+
   it("keeps the trigger discreet and the dialog responsive", () => {
     expect(source).toContain("fixed bottom-4 right-4 z-40");
     expect(source).toContain("sm:w-[430px]");

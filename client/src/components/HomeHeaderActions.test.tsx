@@ -51,6 +51,9 @@ describe("HomeHeaderActions", () => {
       screen.getByRole("link", { name: "Abrir Gestão de Passagens" }).getAttribute("href")
     ).toBe("/gestao-passagens");
     expect(screen.getByRole("button", { name: "Abrir navegação" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Abrir navegação" }).getAttribute("title")).toBe("Mais opções");
+    expect(screen.getByRole("link", { name: "Calendário" }).getAttribute("title")).toBe("Calendário");
+    expect(screen.getByRole("link", { name: "Abrir Gestão de Passagens" }).getAttribute("title")).toBe("Gestão de Passagens");
     expect(
       screen.getByRole("button", { name: "Abrir preferências de aparência" })
     ).toBeTruthy();
@@ -157,6 +160,9 @@ describe("HomeHeaderActions", () => {
 
     expect(geminiLink.getAttribute("data-view-transition-destination")).toBe("gemini");
     expect(startViewTransition).toHaveBeenCalledTimes(9);
+    const headerSource = readFileSync("client/src/components/HomeHeaderActions.tsx", "utf8");
+    expect(headerSource).toContain('aria-label="Abrir conta"');
+    expect(headerSource).toContain('title="Abrir conta"');
 
     Object.defineProperty(viewTransitionDocument, "startViewTransition", {
       configurable: true,
