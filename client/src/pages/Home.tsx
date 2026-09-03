@@ -3236,7 +3236,7 @@ export default function Home() {
                                           title={`Excluir semana ${week.weekNumber}`}
                                           aria-label={`Excluir semana ${week.weekNumber}`}
                                         >
-                                          <Trash2 className="w-4 h-4" />
+                                          <Trash2 className="w-4 h-4" aria-hidden="true" />
                                         </Button>
                                       </AlertDialogTrigger>
                                       <AlertDialogContent>
