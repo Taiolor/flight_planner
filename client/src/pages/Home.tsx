@@ -1063,15 +1063,17 @@ export default function Home() {
   }, [filteredWeeks, departureTimeFilter, returnTimeFilter]);
 
   const sortedWeeks = useMemo(() => {
-    const sorted = [...filteredWeeks];
-    if (sortBy === "price") {
-      sorted.sort((a, b) => {
-        const pa = getLowestPrice(a.weekNumber) ?? Infinity;
-        const pb = getLowestPrice(b.weekNumber) ?? Infinity;
-        return pa - pb;
-      });
-    }
-    return sorted;
+    if (sortBy !== "price") return [...filteredWeeks];
+    // Otimização (Schwartzian transform): pré-calcula o preço uma única vez
+    // por elemento (O(N)) em vez de O(N log N) vezes dentro da função sort().
+    // Isso evita recomputar getLowestPrice redundante e alocações excessivas.
+    return filteredWeeks
+      .map(week => ({
+        week,
+        price: getLowestPrice(week.weekNumber) ?? Infinity,
+      }))
+      .sort((a, b) => a.price - b.price)
+      .map(item => item.week);
   }, [filteredWeeks, sortBy, getLowestPrice]);
 
   const deletedWeeks = useMemo(
