@@ -145,9 +145,9 @@ export function ShareByEmailButton({
       size="sm"
     >
       {isLoading ? (
-        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+        <Loader2 className="w-4 h-4 mr-2 animate-spin" aria-hidden="true" />
       ) : (
-        <Mail className="w-4 h-4 mr-2" />
+        <Mail className="w-4 h-4 mr-2" aria-hidden="true" />
       )}
       {isLoading ? "Enviando..." : "📧 Compartilhar por E-Mail"}
     </Button>
