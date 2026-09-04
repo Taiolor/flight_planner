@@ -1045,6 +1045,23 @@ export default function Home() {
     getLowestPrice,
   ]);
 
+  // ⚡ Bolt Optimization: Combine counts in a single O(N) pass to prevent redundant array traversals
+  const { departureFlightCount, returnFlightCount } = useMemo(() => {
+    let depCount = 0;
+    let retCount = 0;
+    for (let i = 0; i < filteredWeeks.length; i++) {
+      const depMin = getFlightMinutes(filteredWeeks[i].departureFlightDatetime);
+      if (depMin >= 0 && depMin >= departureTimeFilter && depMin <= 1439) {
+        depCount++;
+      }
+      const retMin = getFlightMinutes(filteredWeeks[i].returnFlightDatetime);
+      if (retMin >= 0 && retMin >= returnTimeFilter && retMin <= 1439) {
+        retCount++;
+      }
+    }
+    return { departureFlightCount: depCount, returnFlightCount: retCount };
+  }, [filteredWeeks, departureTimeFilter, returnTimeFilter]);
+
   const sortedWeeks = useMemo(() => {
     const sorted = [...filteredWeeks];
     if (sortBy === "price") {
@@ -2423,22 +2440,7 @@ export default function Home() {
                         Horário de Ida: {minutesToTime(departureTimeFilter)}
                       </label>
                       <span className="text-xs bg-blue-100 dark:bg-blue-900 text-blue-900 dark:text-blue-100 px-2 py-1 rounded">
-                        {(() => {
-                          let count = 0;
-                          for (let i = 0; i < filteredWeeks.length; i++) {
-                            const depMin = getFlightMinutes(
-                              filteredWeeks[i].departureFlightDatetime
-                            );
-                            if (
-                              depMin >= 0 &&
-                              depMin >= departureTimeFilter &&
-                              depMin <= 1439
-                            ) {
-                              count++;
-                            }
-                          }
-                          return count;
-                        })()}{" "}
+                        {departureFlightCount}{" "}
                         voos
                       </span>
                     </div>
@@ -2463,22 +2465,7 @@ export default function Home() {
                         Horário de Volta: {minutesToTime(returnTimeFilter)}
                       </label>
                       <span className="text-xs bg-blue-100 dark:bg-blue-900 text-blue-900 dark:text-blue-100 px-2 py-1 rounded">
-                        {(() => {
-                          let count = 0;
-                          for (let i = 0; i < filteredWeeks.length; i++) {
-                            const retMin = getFlightMinutes(
-                              filteredWeeks[i].returnFlightDatetime
-                            );
-                            if (
-                              retMin >= 0 &&
-                              retMin >= returnTimeFilter &&
-                              retMin <= 1439
-                            ) {
-                              count++;
-                            }
-                          }
-                          return count;
-                        })()}{" "}
+                        {returnFlightCount}{" "}
                         voos
                       </span>
                     </div>
