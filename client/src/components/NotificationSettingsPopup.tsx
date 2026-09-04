@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Bell, Settings2, Clock, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { TooltipLabel } from "@/components/ui/tooltip-label";
 import {
   Select,
   SelectContent,
@@ -311,7 +312,6 @@ export function NotificationSettingsPopup({
       variant="ghost"
       size="sm"
       onClick={isMobile ? handleOpen : undefined}
-      title="Configurar agendamentos de notificação"
       aria-label="Configurar agendamentos de notificação"
       className={triggerClassName ?? "flex items-center gap-1.5 text-xs h-8 px-2.5 text-slate-300 hover:text-white hover:bg-white/10"}
     >
@@ -323,7 +323,9 @@ export function NotificationSettingsPopup({
   if (isMobile) {
     return (
       <>
-        {TriggerButton}
+        <TooltipLabel label="Configurar agendamentos de notificação">
+          {TriggerButton}
+        </TooltipLabel>
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogContent className="bg-slate-900 border border-white/10 text-white max-w-sm w-[calc(100vw-2rem)] rounded-2xl p-4">
             <DialogHeader>
@@ -363,17 +365,18 @@ export function NotificationSettingsPopup({
         handleOpen();
       }}
     >
+      <TooltipLabel label="Configurar agendamentos de notificação">
       <PopoverTrigger asChild>
         <Button
           variant="ghost"
           size="sm"
-          title="Configurar agendamentos de notificação"
           aria-label="Configurar agendamentos de notificação"
           className={triggerClassName ?? "flex items-center gap-1.5 text-xs h-8 px-2.5 text-slate-300 hover:text-white hover:bg-white/10"}
         >
           <Settings2 className="w-4 h-4" />
         </Button>
       </PopoverTrigger>
+      </TooltipLabel>
       <PopoverContent
         align="end"
         className="w-80 bg-slate-900 border border-white/10 text-white rounded-xl p-4 shadow-2xl"

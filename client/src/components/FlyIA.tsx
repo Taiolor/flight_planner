@@ -1,5 +1,6 @@
 import { AIChatBox } from "@/components/AIChatBox";
 import { Button } from "@/components/ui/button";
+import { TooltipLabel } from "@/components/ui/tooltip-label";
 import {
   Dialog,
   DialogClose,
@@ -274,16 +275,17 @@ export default function FlyIA() {
   return (
     <>
       <Dialog open={open} onOpenChange={setOpen}>
+      <TooltipLabel label="Abrir Fly.IA">
       <Button
         type="button"
         onClick={openFlyIa}
         className="fixed bottom-4 right-4 z-40 h-11 rounded-full bg-slate-900 px-3.5 text-white shadow-lg shadow-slate-900/20 transition-transform duration-150 hover:bg-slate-800 active:scale-[0.97] dark:bg-blue-600 dark:hover:bg-blue-500"
         aria-label="Abrir Fly.IA"
-        title="Abrir Fly.IA"
       >
         <Bot className="h-4 w-4" aria-hidden="true" />
         <span className="ml-2 text-sm font-semibold">Fly.IA</span>
       </Button>
+      </TooltipLabel>
 
       {isInternalSessionAuthenticated && <DialogContent
         showCloseButton={false}
@@ -315,7 +317,6 @@ export default function FlyIA() {
                 onClick={() => setPersonalizedSuggestionsEnabled(current => !current)}
                 aria-pressed={personalizedSuggestionsEnabled}
                 aria-label={personalizedSuggestionsEnabled ? "Desativar sugestões personalizadas" : "Ativar sugestões personalizadas"}
-                title={personalizedSuggestionsEnabled ? "Desativar sugestões personalizadas" : "Ativar sugestões personalizadas"}
               >
                 <SlidersHorizontal className="mr-1 h-3 w-3" aria-hidden="true" />
                 {personalizedSuggestionsEnabled ? "Personalizar" : "Personalização pausada"}
@@ -328,7 +329,6 @@ export default function FlyIA() {
                 onClick={() => setSuggestionMode(current => current === "affinity" ? "explore" : "affinity")}
                 aria-pressed={suggestionMode === "explore"}
                 aria-label={suggestionMode === "explore" ? "Ativar modo afinidade" : "Ativar modo explorar"}
-                title={suggestionMode === "explore" ? "Voltar ao modo afinidade" : "Explorar temas variados"}
               >
                 <Compass className="mr-1 h-3 w-3" aria-hidden="true" />
                 {suggestionMode === "explore" ? "Explorar" : "Afinidade"}
@@ -346,6 +346,7 @@ export default function FlyIA() {
                   <option value={3}>3</option>
                 </select>
               </label>
+              <TooltipLabel label="Como funcionam as sugestões">
               <Button
                 type="button"
                 variant="ghost"
@@ -355,10 +356,10 @@ export default function FlyIA() {
                 aria-expanded={showSuggestionHelp}
                 aria-controls="flyia-suggestion-help"
                 aria-label="Como funcionam as sugestões"
-                title="Como funcionam as sugestões"
               >
                 <Info className="h-3.5 w-3.5" aria-hidden="true" />
               </Button>
+              </TooltipLabel>
               {dominantSuggestionTopic && (
                 <Button
                   type="button"
@@ -367,7 +368,6 @@ export default function FlyIA() {
                   className="h-6 px-1.5 text-[10px] text-slate-500 hover:text-slate-900 dark:hover:text-slate-100"
                   onClick={() => setSuggestionPreferences(current => clearFlyIaSuggestionTopic(current, dominantSuggestionTopic))}
                   aria-label={`Redefinir tema preferido: ${FLY_IA_SUGGESTION_TOPIC_LABELS[dominantSuggestionTopic]}`}
-                  title={`Redefinir tema: ${FLY_IA_SUGGESTION_TOPIC_LABELS[dominantSuggestionTopic]}`}
                 >
                   <RotateCcw className="mr-1 h-3 w-3" aria-hidden="true" />
                   Tema
@@ -381,7 +381,6 @@ export default function FlyIA() {
                   className="h-6 px-1.5 text-[10px] text-slate-500 hover:text-slate-900 dark:hover:text-slate-100"
                   onClick={() => setSuggestionPreferences({})}
                   aria-label="Redefinir todas as sugestões personalizadas"
-                  title="Redefinir todas as sugestões personalizadas"
                 >
                   Limpar sugestões
                 </Button>
@@ -394,6 +393,7 @@ export default function FlyIA() {
             )}
           </div>
           {messages.length > 0 && (
+            <TooltipLabel label="Limpar conversa">
             <Button
               type="button"
               variant="ghost"
@@ -404,11 +404,12 @@ export default function FlyIA() {
                 setSuggestionPreferences({});
               }}
               aria-label="Limpar conversa"
-              title="Limpar conversa"
             >
               <Trash2 className="h-4 w-4" />
             </Button>
+            </TooltipLabel>
           )}
+          <TooltipLabel label="Fechar Fly.IA">
           <DialogClose asChild>
             <Button
               type="button"
@@ -416,11 +417,11 @@ export default function FlyIA() {
               size="icon"
               className="h-8 w-8 shrink-0 text-slate-500"
               aria-label="Fechar Fly.IA"
-              title="Fechar Fly.IA"
             >
               <X className="h-4 w-4" />
             </Button>
           </DialogClose>
+          </TooltipLabel>
         </DialogHeader>
 
         <div className="min-h-0 flex-1">
@@ -469,7 +470,6 @@ export default function FlyIA() {
         open={showLoginRequiredMessage}
         onOpenChange={setShowLoginRequiredMessage}
         onLogin={() => window.dispatchEvent(new Event("flight:require-login"))}
-        title="Planejamento protegido"
         description="Entre para consultar o seu planejamento com o Fly.IA. Suas perguntas usam apenas os dados do exercício selecionado."
         loginLabel="Entrar para usar o Fly.IA"
         resource="fly-ia"

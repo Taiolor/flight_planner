@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { ChevronLeft, ChevronRight, Heart, Pause, Play } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { TooltipLabel } from "@/components/ui/tooltip-label";
 
 const CITY_BACKDROPS = [
   {
@@ -208,6 +209,7 @@ export function CityBackgroundCarousel() {
             : "w-[min(22rem,calc(100vw-2rem))] p-2.5"
         }`}
       >
+        <TooltipLabel label={isPanelCollapsed ? "Expandir seletor de fotos" : "Recolher seletor de fotos"}>
         <Button
           type="button"
           variant="ghost"
@@ -222,10 +224,10 @@ export function CityBackgroundCarousel() {
               : "Recolher seletor de fotos para a lateral direita"
           }
           aria-expanded={!isPanelCollapsed}
-          title={isPanelCollapsed ? "Expandir seletor de fotos" : "Recolher seletor de fotos"}
         >
           {isPanelCollapsed ? <ChevronLeft className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
         </Button>
+        </TooltipLabel>
         <div
           className={`transition-[opacity,transform] duration-200 motion-reduce:transition-none ${
             isPanelCollapsed
@@ -244,6 +246,7 @@ export function CityBackgroundCarousel() {
             </p>
           </div>
           <div className="flex shrink-0 items-center gap-1">
+            <TooltipLabel label="Ver cidade anterior">
             <Button
               type="button"
               variant="ghost"
@@ -251,10 +254,11 @@ export function CityBackgroundCarousel() {
               className="h-8 w-8 rounded-full text-white hover:bg-white/15 hover:text-white"
               onClick={() => goTo(activeIndex - 1)}
               aria-label="Ver cidade anterior"
-              title="Ver cidade anterior"
             >
               <ChevronLeft className="h-4 w-4" />
             </Button>
+            </TooltipLabel>
+            <TooltipLabel label={isPlaying ? "Pausar transição automática" : "Retomar transição automática"}>
             <Button
               type="button"
               variant="ghost"
@@ -263,11 +267,12 @@ export function CityBackgroundCarousel() {
               onClick={() => setIsPlaying(playing => !playing)}
               aria-label={isPlaying ? "Pausar carrossel de cidades" : "Reproduzir carrossel de cidades"}
               aria-pressed={isPlaying}
-              title={isPlaying ? "Pausar transição automática" : "Retomar transição automática"}
             >
               {isPlaying ? <Pause className="h-3.5 w-3.5" /> : <Play className="h-3.5 w-3.5" />}
               <span className="text-xs font-bold">{isPlaying ? "Pausar" : "Retomar"}</span>
             </Button>
+            </TooltipLabel>
+            <TooltipLabel label={favoriteBackdropId === activeBackdrop.id ? "Remover foto favorita" : "Usar esta foto como favorita"}>
             <Button
               type="button"
               variant="ghost"
@@ -282,17 +287,14 @@ export function CityBackgroundCarousel() {
                   : `Favoritar foto de ${activeBackdrop.city}`
               }
               aria-pressed={favoriteBackdropId === activeBackdrop.id}
-              title={
-                favoriteBackdropId === activeBackdrop.id
-                  ? "Remover foto favorita"
-                  : "Usar esta foto como favorita"
-              }
             >
               <Heart
                 className="h-4 w-4"
                 fill={favoriteBackdropId === activeBackdrop.id ? "currentColor" : "none"}
               />
             </Button>
+            </TooltipLabel>
+            <TooltipLabel label="Ver próxima cidade">
             <Button
               type="button"
               variant="ghost"
@@ -300,10 +302,10 @@ export function CityBackgroundCarousel() {
               className="h-8 w-8 rounded-full text-white hover:bg-white/15 hover:text-white"
               onClick={() => goTo(activeIndex + 1)}
               aria-label="Ver próxima cidade"
-              title="Ver próxima cidade"
             >
               <ChevronRight className="h-4 w-4" />
             </Button>
+            </TooltipLabel>
           </div>
         </div>
         <div className="mt-2 flex items-center justify-between gap-2 border-t border-white/10 pt-2">

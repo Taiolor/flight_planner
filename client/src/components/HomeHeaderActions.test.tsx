@@ -51,15 +51,15 @@ describe("HomeHeaderActions", () => {
       screen.getByRole("link", { name: "Abrir Gestão de Passagens" }).getAttribute("href")
     ).toBe("/gestao-passagens");
     expect(screen.getByRole("button", { name: "Abrir navegação" })).toBeTruthy();
-    expect(screen.getByRole("button", { name: "Abrir navegação" }).getAttribute("title")).toBe("Mais opções");
-    expect(screen.getByRole("link", { name: "Calendário" }).getAttribute("title")).toBe("Calendário");
-    expect(screen.getByRole("link", { name: "Abrir Gestão de Passagens" }).getAttribute("title")).toBe("Gestão de Passagens");
+    expect(screen.getByRole("button", { name: "Abrir navegação" }).getAttribute("title")).toBeNull();
+    expect(screen.getByRole("link", { name: "Calendário" }).getAttribute("title")).toBeNull();
+    expect(screen.getByRole("link", { name: "Abrir Gestão de Passagens" }).getAttribute("title")).toBeNull();
     expect(
       screen.getByRole("button", { name: "Abrir preferências de aparência" })
     ).toBeTruthy();
     expect(
       screen.getByRole("button", { name: "Abrir preferências de aparência" }).getAttribute("title")
-    ).toBe("Aparência");
+    ).toBeNull();
     expect(screen.getByRole("button", { name: "Entrar" })).toBeTruthy();
   });
 
@@ -162,7 +162,8 @@ describe("HomeHeaderActions", () => {
     expect(startViewTransition).toHaveBeenCalledTimes(9);
     const headerSource = readFileSync("client/src/components/HomeHeaderActions.tsx", "utf8");
     expect(headerSource).toContain('aria-label="Abrir conta"');
-    expect(headerSource).toContain('title="Abrir conta"');
+    expect(headerSource).toContain("TooltipLabel");
+    expect(headerSource).not.toContain("title=");
 
     Object.defineProperty(viewTransitionDocument, "startViewTransition", {
       configurable: true,
@@ -191,7 +192,8 @@ describe("HomeHeaderActions", () => {
     expect(source).toContain("navigateWithTransition");
     expect(source).toContain("startViewTransition");
     expect(source).toContain("SlidersHorizontal");
-    expect(source).toContain('title="Aparência"');
+    expect(source).toContain('label="Aparência"');
+    expect(source).not.toContain("title=");
     expect(source).not.toContain('<span className="ml-1.5 hidden sm:inline">Aparência</span>');
     expect(source).toContain("hidden w-full sm:flex");
     expect(source).toContain('aria-label="Ações do planejamento"');

@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { GlobalYearSelector } from "@/components/GlobalYearSelector";
 import { MobileLongPressHint } from "@/components/MobileLongPressHint";
+import { TooltipLabel } from "@/components/ui/tooltip-label";
 import { triggerHaptic } from "@/lib/haptics";
 import { rememberNavigationFocus } from "@/lib/navigationFocus";
 import { getMobilePrimaryActionMeta, type MobilePrimaryAction } from "@/lib/mobileExperience";
@@ -183,10 +184,10 @@ export function HomeHeaderActions({
             className={`${headerButtonClass} min-w-[88px] bg-slate-950/20 text-white hover:bg-white/18 sm:min-w-[104px]`}
           />
           <MobileLongPressHint label={primaryMeta.label}>
+            <TooltipLabel label={primaryMeta.label}>
             <Link
               href={primaryMeta.href}
               aria-label={primaryMeta.label}
-              title={primaryMeta.label}
               data-mobile-primary-action={mobilePrimaryAction}
               data-calendar-navigation={mobilePrimaryAction === "calendar" || undefined}
               data-navigation-focus="home-primary-navigation"
@@ -204,12 +205,13 @@ export function HomeHeaderActions({
               {mobilePrimaryAction === "calendar" ? <CalendarDays className="size-4" aria-hidden="true" /> : <Ticket className="size-4" aria-hidden="true" />}
               <span className="ml-1.5 hidden whitespace-nowrap sm:inline">{mobilePrimaryAction === "calendar" ? "Calendário" : "Gestão"}</span>
             </Link>
+            </TooltipLabel>
           </MobileLongPressHint>
           <MobileLongPressHint label={mobilePrimaryAction === "calendar" ? "Gestão de Passagens" : "Calendário"}>
+            <TooltipLabel label={mobilePrimaryAction === "calendar" ? "Gestão de Passagens" : "Calendário"}>
             <Link
               href={mobilePrimaryAction === "calendar" ? "/gestao-passagens" : "/calendar"}
               aria-label={mobilePrimaryAction === "calendar" ? "Abrir Gestão de Passagens" : "Calendário"}
-              title={mobilePrimaryAction === "calendar" ? "Gestão de Passagens" : "Calendário"}
               data-calendar-navigation={mobilePrimaryAction === "passages" || undefined}
               data-navigation-focus="home-secondary-navigation"
               data-view-transition-destination={mobilePrimaryAction === "calendar" ? "passages" : "calendar"}
@@ -226,25 +228,27 @@ export function HomeHeaderActions({
               {mobilePrimaryAction === "calendar" ? <Ticket className="size-4" aria-hidden="true" /> : <CalendarDays className="size-4" aria-hidden="true" />}
               <span className="ml-1.5 hidden whitespace-nowrap sm:inline">{mobilePrimaryAction === "calendar" ? "Gestão" : "Calendário"}</span>
             </Link>
+            </TooltipLabel>
           </MobileLongPressHint>
         </div>
 
         <div className="flex shrink-0 items-center gap-1 sm:gap-2">
           <MobileLongPressHint label="Mais opções">
           <DropdownMenu>
+            <TooltipLabel label="Mais opções">
             <DropdownMenuTrigger asChild>
               <Button
                 size="sm"
                 variant="outline"
                 className={iconButtonClass}
                 aria-label="Abrir navegação"
-                title="Mais opções"
                 data-navigation-focus="home-navigation-menu-trigger"
               >
                 <MoreHorizontal className="size-5" aria-hidden="true" />
                 <span className="sr-only">Abrir navegação</span>
               </Button>
             </DropdownMenuTrigger>
+            </TooltipLabel>
             <DropdownMenuContent align="end" className={menuContentClass}>
               <DropdownMenuLabel className="px-2 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-slate-400">
                 Planejamento
@@ -370,17 +374,18 @@ export function HomeHeaderActions({
 
           {isAuthenticated ? (
             <DropdownMenu>
+              <TooltipLabel label="Abrir conta">
               <DropdownMenuTrigger asChild>
                 <Button
                   size="sm"
                   variant="outline"
                   className={iconButtonClass}
                   aria-label="Abrir conta"
-                  title="Abrir conta"
                 >
                   <CircleUserRound className="size-5" aria-hidden="true" />
                 </Button>
               </DropdownMenuTrigger>
+              </TooltipLabel>
               <DropdownMenuContent align="end" className={menuContentClass}>
                 <DropdownMenuLabel className="max-w-[16rem] truncate px-2 py-2 text-sm font-medium text-slate-200">
                   {accountEmail || "Conta conectada"}
@@ -393,16 +398,17 @@ export function HomeHeaderActions({
             </DropdownMenu>
           ) : (
             <MobileLongPressHint label="Entrar">
+              <TooltipLabel label="Entrar">
               <Button
                 size="sm"
                 variant="outline"
                 className={`${iconButtonClass} shrink-0 sm:w-auto sm:px-3`}
                 onClick={onSignIn}
-                title="Entrar"
               >
                 <LogIn className="size-4" aria-hidden="true" />
                 <span className="ml-1.5 hidden sm:inline">Entrar</span>
               </Button>
+              </TooltipLabel>
             </MobileLongPressHint>
           )}
         </div>
@@ -410,19 +416,21 @@ export function HomeHeaderActions({
 
       <div className="flex w-full items-center gap-1 sm:hidden">
         <MobileLongPressHint label={hideValues ? "Exibir valores" : "Ocultar valores"}>
+          <TooltipLabel label={hideValues ? "Exibir valores" : "Ocultar valores"}>
           <Button
             size="sm"
             variant="outline"
             className={`${iconButtonClass} shrink-0 ${hideValues ? "border-white/80 bg-white/25" : ""}`}
-            title={hideValues ? "Exibir valores" : "Ocultar valores"}
             aria-label={hideValues ? "Exibir valores" : "Ocultar valores"}
             data-mobile-value-visibility
             onClick={onToggleValues}
           >
             {hideValues ? <EyeOff className="size-4" aria-hidden="true" /> : <Eye className="size-4" aria-hidden="true" />}
           </Button>
+          </TooltipLabel>
         </MobileLongPressHint>
         <DropdownMenu>
+          <TooltipLabel label="Preferências">
           <DropdownMenuTrigger asChild>
             <MobileLongPressHint label="Preferências">
               <Button
@@ -430,13 +438,13 @@ export function HomeHeaderActions({
                 variant="outline"
                 className={`${headerButtonClass} flex-1 justify-center`}
                 aria-label="Abrir preferências"
-                title="Abrir preferências"
               >
                 <SlidersHorizontal className="size-4" aria-hidden="true" />
                 <span className="ml-1.5 text-sm">Preferências</span>
               </Button>
             </MobileLongPressHint>
           </DropdownMenuTrigger>
+          </TooltipLabel>
           <DropdownMenuContent align="end" className={menuContentClass}>
             <DropdownMenuLabel className="px-2 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-slate-400">
               Ação prioritária
@@ -491,17 +499,18 @@ export function HomeHeaderActions({
 
       <div className="hidden w-full sm:flex sm:flex-nowrap sm:items-center sm:gap-2 lg:w-auto lg:justify-end">
         <DropdownMenu>
+          <TooltipLabel label="Aparência">
           <DropdownMenuTrigger asChild>
             <Button
               size="sm"
               variant="outline"
               className={iconButtonClass}
               aria-label="Abrir preferências de aparência"
-              title="Aparência"
             >
               <Palette className="size-4" aria-hidden="true" />
             </Button>
           </DropdownMenuTrigger>
+          </TooltipLabel>
           <DropdownMenuContent align="end" className={menuContentClass}>
             <DropdownMenuItem onSelect={onToggleTheme}>
               {theme === "dark" ? <Sun className="size-4" /> : <Moon className="size-4" />}
@@ -529,23 +538,24 @@ export function HomeHeaderActions({
           </DropdownMenuContent>
         </DropdownMenu>
 
+        <TooltipLabel label={hideValues ? "Exibir valores" : "Ocultar valores"}>
         <Button
           size="sm"
           variant="outline"
           className={`${iconButtonClass} ${hideValues ? "border-white/80 bg-white/25" : ""}`}
-          title={hideValues ? "Exibir valores" : "Ocultar valores"}
           aria-label={hideValues ? "Exibir valores" : "Ocultar valores"}
           onClick={onToggleValues}
         >
           {hideValues ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
         </Button>
+        </TooltipLabel>
 
         {notificationsAvailable && (
+          <TooltipLabel label={notificationLabel}>
           <Button
             size="sm"
             variant="outline"
             className={`${iconButtonClass} ${pushSubscribed ? "border-emerald-200 bg-emerald-500/25" : ""} ${notificationsBlocked ? "border-red-300 bg-red-500/20 opacity-60" : ""}`}
-            title={notificationLabel}
             aria-label={notificationLabel}
             disabled={pushLoading || notificationsBlocked}
             onClick={onToggleNotifications}
@@ -560,6 +570,7 @@ export function HomeHeaderActions({
               <Bell className="size-4" />
             )}
           </Button>
+          </TooltipLabel>
         )}
 
         {pushSubscribed && notificationSettings}

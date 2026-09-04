@@ -32,8 +32,8 @@ describe("CityBackgroundCarousel", () => {
 
     expect(screen.getByText("Blumenau")).toBeTruthy();
     const nextButton = screen.getByRole("button", { name: "Ver próxima cidade" });
-    expect(nextButton.getAttribute("title")).toBe("Ver próxima cidade");
-    expect(screen.getByRole("button", { name: "Ver cidade anterior" }).getAttribute("title")).toBe("Ver cidade anterior");
+    expect(nextButton.getAttribute("title")).toBeNull();
+    expect(screen.getByRole("button", { name: "Ver cidade anterior" }).getAttribute("title")).toBeNull();
     fireEvent.click(nextButton);
     expect(screen.getByText("São Paulo")).toBeTruthy();
 

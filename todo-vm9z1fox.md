@@ -235,3 +235,4 @@
 - [x] Remover o rótulo visual Avisos da ação de notificações no cabeçalho desktop
 - [x] Atualizar a página de Novidades com as evoluções verificáveis do último mês
 - [x] Auditar tooltips dos botões funcionais e completar descrições nos controles sem orientação suficiente
+- [x] Substituir títulos nativos por tooltips padronizados do Radix UI nos controles iconográficos auditados

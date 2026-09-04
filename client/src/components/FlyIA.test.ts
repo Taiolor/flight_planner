@@ -17,7 +17,8 @@ describe("Fly.IA widget", () => {
 
   it("describes the dialog close action for mouse and assistive technology", () => {
     expect(source).toContain('aria-label="Fechar Fly.IA"');
-    expect(source).toContain('title="Fechar Fly.IA"');
+    expect(source).toContain('<TooltipLabel label="Fechar Fly.IA">');
+    expect(source).not.toContain('title="Fechar Fly.IA"');
   });
 
   it("keeps the trigger discreet and the dialog responsive", () => {
