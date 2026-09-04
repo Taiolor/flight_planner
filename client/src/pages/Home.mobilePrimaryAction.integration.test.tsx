@@ -212,7 +212,7 @@ describe("Home mobile primary action", () => {
     expect(navyScopes.length).toBeGreaterThan(1);
     expect(screen.getByText("Gestão de Passagens")).toBeTruthy();
     expect(
-      container.querySelector('.management-navy-theme input[type="range"]')
+      container.querySelector('.management-navy-theme [role="slider"]')
     ).toBeTruthy();
 
     fireEvent.click(

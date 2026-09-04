@@ -20,6 +20,7 @@ import {
   FeriadoInfo,
 } from "@/lib/flightData";
 import { Button } from "@/components/ui/button";
+import { Slider } from "@/components/ui/slider";
 import { Card } from "@/components/ui/card";
 import { MetricCard } from "@/components/MetricCard";
 import { AIRLINE_LOGO_ASSETS } from "@/lib/airlineAssets";
@@ -1697,6 +1698,23 @@ export default function Home({ mode = "home" }: HomeProps) {
     getLowestPrice,
   ]);
 
+  // ⚡ Bolt Optimization: Combine counts in a single O(N) pass to prevent redundant array traversals
+  const { departureFlightCount, returnFlightCount } = useMemo(() => {
+    let depCount = 0;
+    let retCount = 0;
+    for (let i = 0; i < filteredWeeks.length; i++) {
+      const depMin = getFlightMinutes(filteredWeeks[i].departureFlightDatetime);
+      if (depMin >= 0 && depMin >= departureTimeFilter && depMin <= 1439) {
+        depCount++;
+      }
+      const retMin = getFlightMinutes(filteredWeeks[i].returnFlightDatetime);
+      if (retMin >= 0 && retMin >= returnTimeFilter && retMin <= 1439) {
+        retCount++;
+      }
+    }
+    return { departureFlightCount: depCount, returnFlightCount: retCount };
+  }, [filteredWeeks, departureTimeFilter, returnTimeFilter]);
+
   const sortedWeeks = useMemo(() => {
     const sorted = [...filteredWeeks];
     if (sortBy === "price") {
@@ -2156,14 +2174,20 @@ export default function Home({ mode = "home" }: HomeProps) {
 
       const jogosDosBrasil: typeof todosJogosParsed = [];
       for (const jogo of todosJogosParsed) {
-        if (jogo.dataMs >= semanaInicioMs && jogo.dataMs <= semanaFimEfetivoMs) {
+        if (
+          jogo.dataMs >= semanaInicioMs &&
+          jogo.dataMs <= semanaFimEfetivoMs
+        ) {
           jogosDosBrasil.push(jogo);
         }
       }
 
       const fasesEliminatorias: typeof todasFasesParsed = [];
       for (const fase of todasFasesParsed) {
-        if (fase.inicioMs <= semanaFimEfetivoMs && fase.fimMs >= semanaInicioMs) {
+        if (
+          fase.inicioMs <= semanaFimEfetivoMs &&
+          fase.fimMs >= semanaInicioMs
+        ) {
           fasesEliminatorias.push(fase);
         }
       }
@@ -2195,7 +2219,11 @@ export default function Home({ mode = "home" }: HomeProps) {
       { mes: string; total: number; count: number }
     > = {};
     for (let i = 0; i < CHART_MONTHS.length; i++) {
-      summaryMap[CHART_MONTHS[i].num] = { mes: CHART_MONTHS[i].label, total: 0, count: 0 };
+      summaryMap[CHART_MONTHS[i].num] = {
+        mes: CHART_MONTHS[i].label,
+        total: 0,
+        count: 0,
+      };
     }
 
     let totalIssued = 0;
@@ -3162,35 +3190,17 @@ export default function Home({ mode = "home" }: HomeProps) {
                         Horário de Ida: {minutesToTime(departureTimeFilter)}
                       </label>
                       <span className="text-xs bg-blue-100 dark:bg-blue-900 text-blue-900 dark:text-blue-100 px-2 py-1 rounded">
-                        {(() => {
-                          let count = 0;
-                          for (let i = 0; i < filteredWeeks.length; i++) {
-                            const depMin = getFlightMinutes(
-                              filteredWeeks[i].departureFlightDatetime
-                            );
-                            if (
-                              depMin >= 0 &&
-                              depMin >= departureTimeFilter &&
-                              depMin <= 1439
-                            ) {
-                              count++;
-                            }
-                          }
-                          return count;
-                        })()}{" "}
+                        {departureFlightCount}{" "}
                         voos
                       </span>
                     </div>
-                    <input
+                    <Slider
                       id="departureTimeFilter"
-                      type="range"
-                      min="0"
-                      max="1439"
-                      step="15"
-                      value={departureTimeFilter}
-                      onChange={e =>
-                        setDepartureTimeFilter(parseInt(e.target.value))
-                      }
+                      min={0}
+                      max={1439}
+                      step={15}
+                      value={[departureTimeFilter]}
+                      onValueChange={val => setDepartureTimeFilter(val[0])}
                       className="w-full"
                       aria-label="Filtro de Horário de Ida"
                     />
@@ -3205,35 +3215,17 @@ export default function Home({ mode = "home" }: HomeProps) {
                         Horário de Volta: {minutesToTime(returnTimeFilter)}
                       </label>
                       <span className="text-xs bg-blue-100 dark:bg-blue-900 text-blue-900 dark:text-blue-100 px-2 py-1 rounded">
-                        {(() => {
-                          let count = 0;
-                          for (let i = 0; i < filteredWeeks.length; i++) {
-                            const retMin = getFlightMinutes(
-                              filteredWeeks[i].returnFlightDatetime
-                            );
-                            if (
-                              retMin >= 0 &&
-                              retMin >= returnTimeFilter &&
-                              retMin <= 1439
-                            ) {
-                              count++;
-                            }
-                          }
-                          return count;
-                        })()}{" "}
+                        {returnFlightCount}{" "}
                         voos
                       </span>
                     </div>
-                    <input
+                    <Slider
                       id="returnTimeFilter"
-                      type="range"
-                      min="0"
-                      max="1439"
-                      step="15"
-                      value={returnTimeFilter}
-                      onChange={e =>
-                        setReturnTimeFilter(parseInt(e.target.value))
-                      }
+                      min={0}
+                      max={1439}
+                      step={15}
+                      value={[returnTimeFilter]}
+                      onValueChange={val => setReturnTimeFilter(val[0])}
                       className="w-full"
                       aria-label="Filtro de Horário de Volta"
                     />
@@ -3283,16 +3275,13 @@ export default function Home({ mode = "home" }: HomeProps) {
                     >
                       Percentil de Preço: {pricePercentile}%
                     </label>
-                    <input
+                    <Slider
                       id="pricePercentile"
-                      type="range"
-                      min="5"
-                      max="50"
-                      step="5"
-                      value={pricePercentile}
-                      onChange={e =>
-                        setPricePercentile(parseInt(e.target.value))
-                      }
+                      min={5}
+                      max={50}
+                      step={5}
+                      value={[pricePercentile]}
+                      onValueChange={val => setPricePercentile(val[0])}
                       className="w-full"
                       aria-label="Filtro de Percentil de Preço"
                     />
@@ -4070,7 +4059,7 @@ export default function Home({ mode = "home" }: HomeProps) {
                                           title={`Excluir semana ${week.weekNumber}`}
                                           aria-label={`Excluir semana ${week.weekNumber}`}
                                         >
-                                          <Trash2 className="w-4 h-4" />
+                                          <Trash2 className="w-4 h-4" aria-hidden="true" />
                                         </Button>
                                       </AlertDialogTrigger>
                                       <AlertDialogContent>

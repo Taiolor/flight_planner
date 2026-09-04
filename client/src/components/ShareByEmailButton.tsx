@@ -137,13 +137,18 @@ export function ShareByEmailButton({
     <Button
       onClick={handleShareByEmail}
       disabled={isDisabled}
+      aria-label={
+        isLoading
+          ? "Enviando..."
+          : `📧 Compartilhar bilhetes da semana ${weekNumber} por e-mail`
+      }
       className="w-full bg-blue-600 hover:bg-blue-700 text-white"
       size="sm"
     >
       {isLoading ? (
-        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+        <Loader2 className="w-4 h-4 mr-2 animate-spin" aria-hidden="true" />
       ) : (
-        <Mail className="w-4 h-4 mr-2" />
+        <Mail className="w-4 h-4 mr-2" aria-hidden="true" />
       )}
       {isLoading ? "Enviando..." : "📧 Compartilhar por E-Mail"}
     </Button>
