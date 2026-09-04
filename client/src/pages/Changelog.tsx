@@ -567,22 +567,33 @@ const releasesByMonth: Record<string, Release[]> = releases.reduce(
   {} as Record<string, Release[]>
 );
 
-Object.values(releasesByMonth).forEach(monthReleases => {
-  monthReleases.sort((a, b) => {
-    const dateA = new Date(a.date.split("/").reverse().join("-")).getTime();
-    const dateB = new Date(b.date.split("/").reverse().join("-")).getTime();
-    return dateB - dateA;
-  });
+// ⚡ Bolt Optimization: Implement a Schwartzian transform (map-sort-map) on the release arrays
+// to pre-calculate Date parsing once in O(N) time instead of redundantly during O(N log N) sorting.
+Object.keys(releasesByMonth).forEach(month => {
+  releasesByMonth[month] = releasesByMonth[month]
+    .map(release => ({
+      release,
+      time: new Date(release.date.split("/").reverse().join("-")).getTime(),
+    }))
+    .sort((a, b) => b.time - a.time)
+    .map(item => item.release);
 });
 
-const sortedMonths = Object.keys(releasesByMonth).sort((a, b) => {
-  const [monthA, yearA] = a.split(" ");
-  const [monthB, yearB] = b.split(" ");
-  return (
-    new Date(Number(yearB), (monthOrder[monthB] ?? 1) - 1).getTime() -
-    new Date(Number(yearA), (monthOrder[monthA] ?? 1) - 1).getTime()
-  );
-});
+// ⚡ Bolt Optimization: Implement a Schwartzian transform (map-sort-map) on the month keys
+// to pre-calculate Date object creation once in O(N) time instead of redundantly during O(N log N) sorting.
+const sortedMonths = Object.keys(releasesByMonth)
+  .map(month => {
+    const [monthName, yearName] = month.split(" ");
+    return {
+      month,
+      time: new Date(
+        Number(yearName),
+        (monthOrder[monthName] ?? 1) - 1
+      ).getTime(),
+    };
+  })
+  .sort((a, b) => b.time - a.time)
+  .map(item => item.month);
 
 export default function Changelog() {
   const [expandedReleases, setExpandedReleases] = useState<Set<string>>(
