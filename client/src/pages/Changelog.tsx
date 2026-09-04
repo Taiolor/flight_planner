@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState, type MouseEvent } from "react";
 import {
   ChevronDown,
   Sparkles,
@@ -21,7 +21,15 @@ import {
   ArrowLeft,
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
-import { Link } from "wouter";
+import { triggerHaptic } from "@/lib/haptics";
+import { rememberNavigationFocus } from "@/lib/navigationFocus";
+import { Link, useLocation } from "wouter";
+
+type ViewTransitionDocument = Document & {
+  startViewTransition?: (callback: () => void) => {
+    finished?: Promise<unknown>;
+  };
+};
 
 interface Release {
   version: string;
@@ -36,7 +44,306 @@ interface Release {
   }>;
 }
 
-const releases: Release[] = [
+export const releases: Release[] = [
+  // Agosto 2026
+  {
+    version: "v2.0.0",
+    date: "29/08/2026",
+    month: "Agosto 2026",
+    status: "released",
+    highlights:
+      "Operação diária mais resiliente: decisão, clima, modo offline, navegação móvel e entrega publicada refinados",
+    features: [
+      {
+        icon: <TrendingUp className="w-5 h-5" />,
+        category: "Central de Decisão e Planejamento Diário",
+        items: [
+          "Central de Decisão ampliada com ranking explicável, próxima viagem, fila secundária, métricas reais e atalhos contextuais para Gestão e Calendário",
+          "Sanfona integral da Central, atalho Alt + Shift + D, opção de fixar no topo e síntese operacional enquanto o conteúdo está recolhido",
+          "Ajuste manual e reversível de relevância por semana, com preferência validada por exercício",
+          "Resumo semanal mantém sempre as referências de semana anterior, atual e próxima, calculadas pela data real de acesso",
+        ],
+      },
+      {
+        icon: <Calendar className="w-5 h-5" />,
+        category: "Clima e Detalhes de Bilhetes",
+        items: [
+          "Previsão por trecho enriquecida com condição, horário mais próximo do voo, sensação térmica, visibilidade, vento, rajadas, nascer e pôr do sol",
+          "Alertas de chuva, vento e baixa visibilidade apresentados como contexto operacional, com contingência clara quando a fonte não estiver disponível",
+          "Detalhes meteorológicos iniciam compactos e podem ser exibidos por trecho, preservando ida e volta independentes",
+          "No detalhe do bilhete, localizador e rastreamento agora antecedem o clima; o modal ganhou rolagem interna e fechamento sempre acessível",
+        ],
+      },
+      {
+        icon: <Rocket className="w-5 h-5" />,
+        category: "PWA, Offline e Disponibilidade",
+        items: [
+          "Splash de abertura com marcos reais de inicialização, indicador discreto de progresso, aviso de modo offline e respeito à redução de movimento",
+          "Cache explícito e validado de próximas viagens, limitado a dados operacionais essenciais e com expiração de 14 dias",
+          "Última sincronização exibida quando o dispositivo está offline e recuperação orientada quando não há dados locais para o exercício",
+          "Entrega de logos, ícones, imagens institucionais e tiles de mapa reforçada para funcionar no domínio publicado, sem depender de redirecionamentos incompatíveis",
+        ],
+      },
+      {
+        icon: <Accessibility className="w-5 h-5" />,
+        category: "Experiência Móvel e Cabeçalho",
+        items: [
+          "Cabeçalho reorganizado em grupos objetivos para desktop e celular, com alvos de toque preservados em larguras de 320 px, 375 px e 390 px",
+          "Controle de mostrar ou ocultar valores disponível diretamente no cabeçalho móvel, além do menu de preferências",
+          "Menu de recursos passa a manter Exportar PDF legível no fundo escuro, inclusive no estado indisponível",
+          "Ações de aparência, avisos e navegação foram reduzidas a ícones quando apropriado, mantendo rótulos acessíveis e dicas descritivas",
+        ],
+      },
+      {
+        icon: <Sparkles className="w-5 h-5" />,
+        category: "Design System Operacional",
+        items: [
+          "Central de Decisão, Central de Atenção, Variação de Preços e cards semanais alinhados ao acabamento azul-marinho: gradiente, cabeçalho escuro, superfícies translúcidas e contraste reforçado",
+          "Controles de expandir ou recolher foram simplificados para ícones consistentes, com foco visível, hover sutil e preferência de redução de movimento respeitada",
+          "Filtros, alertas e indicadores de status receberam contrastes mais robustos, sem depender somente de cor para comunicar prioridade",
+          "Navegação inferior móvel recebeu ação Mais e atalhos condicionais, preservando a hierarquia da operação diária",
+        ],
+      },
+      {
+        icon: <Shield className="w-5 h-5" />,
+        category: "Confiabilidade e Qualidade",
+        items: [
+          "Consulta meteorológica corrigida para respeitar a janela inclusiva da fonte e evitar parâmetros incompatíveis em ida e volta",
+          "Regressões adicionadas para ativos publicados, mapas, clima, modais, cabeçalho, navegação e contraste de ações críticas",
+          "772 testes automatizados aprovados neste ciclo, acompanhados por checagem de TypeScript e build de produção",
+          "Duas integrações externas permanecem intencionalmente ignoradas na suíte, sem bloquear a validação local das funcionalidades cobertas",
+        ],
+      },
+    ],
+  },
+  {
+    version: "v1.9.0",
+    date: "22/08/2026",
+    month: "Agosto 2026",
+    status: "released",
+    highlights:
+      "Gestão de passagens, calendário, metas e experiência diária mais precisos, consistentes e acessíveis",
+    features: [
+      {
+        icon: <Plane className="w-5 h-5" />,
+        category: "Gestão de Passagens e Bilhetes",
+        items: [
+          "Nova área dedicada de Gestão de Passagens, com expansão global ou individual dos meses, animações suaves e entrada escalonada dos cards semanais",
+          "Confirmação visual acessível após salvar dados do bilhete, com reidratação dos campos de Terminal para ida, volta e somente ida",
+          "Terminais, localizadores, remarcações, cancelamentos e logos compactos das companhias agora aparecem nos resumos e detalhes dos bilhetes",
+          "Nomes de companhias padronizados em CAIXA ALTA em Planejamento, Calendário, Cotações, Financeiro, Memórias, notificações e compartilhamentos",
+        ],
+      },
+      {
+        icon: <Calendar className="w-5 h-5" />,
+        category: "Calendário com Datas Efetivas",
+        items: [
+          "Dias emitidos, popup de bilhete, rastreamento, WhatsApp, Google Agenda, Outlook e arquivo .ics passam a usar a data efetiva do voo emitido",
+          "Correção de bilhetes somente ida e de remarcações: o Calendário não marca mais a data planejada quando a passagem foi emitida em outro dia",
+          "Resumo de semanas sem passagem alinhado aos trechos realmente emitidos, evitando pendências falsas para semanas com ida ou volta registrada",
+          "Legenda para voos cancelados em roxo-escuro e melhorias de contraste, responsividade e detalhes do Calendário",
+        ],
+      },
+      {
+        icon: <TrendingUp className="w-5 h-5" />,
+        category: "Planejamento, Metas e Financeiro",
+        items: [
+          "Cards da Home calculados pela data real de acesso: semana anterior, atual e próxima, sem referência fixa de calendário",
+          "Central de atenção priorizada por escore de urgência e adiamento configurável de alertas por 8 horas, 24 horas ou 3 dias",
+          "Meta anual de emissões editável por exercício, agora usada corretamente no percentual e na barra de progresso em vez do divisor fixo de semanas",
+          "Orçamentos mensais com realizado, projeção, cópia para o próximo ano com ajuste percentual e alertas ao atingir 90% ou ultrapassar o limite",
+        ],
+      },
+      {
+        icon: <Sparkles className="w-5 h-5" />,
+        category: "Experiência e Acessibilidade",
+        items: [
+          "Skeletons completos e responsivos para Calendário e Cotações, com revelação gradual do conteúdo após o carregamento",
+          "Fade-in acessível padronizado entre estados de carregamento e conteúdo nas telas principais, respeitando redução de movimento",
+          "Logo Smart Fly com microinteração, tooltip de retorno à Home e navegação de cabeçalho refinada para desktop e celular",
+          "Refinamento visual azul-marinho nos módulos operacionais, preferência de aparência persistida e controles compactos sem perda de acessibilidade",
+        ],
+      },
+      {
+        icon: <Gauge className="w-5 h-5" />,
+        category: "Telemetria e Fly.IA",
+        items: [
+          "Mapa administrativo com filtros combináveis de período e tipo de evento, totais por período e persistência da última seleção",
+          "Fly.IA ampliado com contexto factual de voo, orientações de embarque e ação segura para abrir direções no Google Maps quando houver origem informada",
+          "Painel administrativo de consumo do Gemini com estimativa de uso, orçamento, bloqueio preventivo e alertas operacionais",
+        ],
+      },
+      {
+        icon: <Shield className="w-5 h-5" />,
+        category: "Confiabilidade e Qualidade",
+        items: [
+          "Proteções de acesso, mensagens centralizadas de autenticação e isolamento por exercício preservados nas novas funcionalidades",
+          "Cobertura automatizada ampliada continuamente para calendário, gestão, metas, telemetria, interações de cabeçalho e interface responsiva",
+          "Mais de 600 testes automatizados no ciclo, com validações recorrentes de TypeScript e build de produção",
+        ],
+      },
+    ],
+  },
+  {
+    version: "v1.8.0",
+    date: "18/08/2026",
+    month: "Agosto 2026",
+    status: "released",
+    highlights:
+      "Viagens: novos voos, Memórias, desempenho avançado e identidade renovada",
+    features: [
+      {
+        icon: <Plane className="w-5 h-5" />,
+        category: "Mais Opções para Cada Semana",
+        items: [
+          "Inclusão, edição e exclusão de múltiplos voos adicionais por semana, em ida e volta ou somente ida",
+          "Validação das datas dentro da semana planejada, confirmação de exclusão e notificações de emissão por trecho",
+          "Voos adicionais integrados ao Calendário, PDF, indicadores financeiros e cálculos de milhas",
+        ],
+      },
+      {
+        icon: <Sparkles className="w-5 h-5" />,
+        category: "Memórias de Viagem",
+        items: [
+          "Nova área Memórias para acompanhar quilômetros realizados e futuros por trecho de voo",
+          "Linha do tempo anual de passagens emitidas e espaço para fotos, vídeos e mídias de cada experiência",
+          "Cálculo geodésico entre aeroportos para consolidar os quilômetros percorridos",
+        ],
+      },
+      {
+        icon: <Gauge className="w-5 h-5" />,
+        category: "Performance e Confiabilidade",
+        items: [
+          "PDF, gráficos e gráficos financeiros carregados sob demanda, reduzindo o peso inicial das páginas",
+          "Políticas de cache tRPC por domínio, paginação do histórico de notificações e métricas de Web Vitals",
+          "Cotações protegidas por reserva atômica da franquia, limite específico, timeout e tamanho máximo de resposta",
+        ],
+      },
+      {
+        icon: <Shield className="w-5 h-5" />,
+        category: "Segurança e Administração",
+        items: [
+          "Content Security Policy restrita, permissões administrativas persistidas e templates de e-mail com escaping contextual",
+          "Telemetria de uso opcional com consentimento, retenção de 30 dias e mapa administrativo com OpenStreetMap",
+          "Auditoria de dependências de produção sem vulnerabilidades conhecidas e suíte expandida de testes",
+        ],
+      },
+      {
+        icon: <Rocket className="w-5 h-5" />,
+        category: "Identidade Viagens",
+        items: [
+          "Cabeçalho principal simplificado com o rótulo Viagens",
+          "Atalho instalável do PWA renomeado para Viagens, com novo ícone de avião e trajetória em V",
+          "Navegação administrativa e cabeçalhos padronizados para uma experiência mais consistente",
+        ],
+      },
+    ],
+  },
+  {
+    version: "v1.7.0",
+    date: "18/08/2026",
+    month: "Agosto 2026",
+    status: "released",
+    highlights:
+      "Planejamento Anual Completo, Cancelamentos por Trecho e Operação Mais Confiável",
+    features: [
+      {
+        icon: <Calendar className="w-5 h-5" />,
+        category: "Planejamento Multi-Ano",
+        items: [
+          "Seletor global de ano conectado à Home, Calendário, Cotações e Financeiro",
+          "Semanas geradas de forma idempotente para cada exercício, com ida aos domingos e retorno às sextas-feiras",
+          "Dados de semanas, preços, cotações, indicadores e notificações isolados por ano, sem fallback para 2026",
+        ],
+      },
+      {
+        icon: <Database className="w-5 h-5" />,
+        category: "Cotações, Financeiro e Documentos",
+        items: [
+          "Cotações e histórico de preços agora acompanham o exercício selecionado no cabeçalho",
+          "Indicadores, tabelas, gráficos e projeções financeiras passam a exigir o ano selecionado",
+          "Exportação PDF identifica o ano na capa e no nome do arquivo, preservando o contexto anual",
+        ],
+      },
+      {
+        icon: <Bell className="w-5 h-5" />,
+        category: "Notificações Operacionais",
+        items: [
+          "Callback anual e idempotente de notificações publicado com execução horária",
+          "Histórico e status de alertas filtrados pelo exercício selecionado",
+          "Validação controlada do alerta de cancelamento concluída exclusivamente pelo serviço Resend",
+        ],
+      },
+      {
+        icon: <Plane className="w-5 h-5" />,
+        category: "Cancelamentos por Trecho",
+        items: [
+          "Novos checkboxes independentes de cancelamento para ida e volta, persistidos por ano",
+          "Status de cancelamento destacado na Home, no Calendário, nos detalhes do bilhete e no PDF",
+          "Filtro exclusivo de voos cancelados no Calendário e e-mail automático quando um trecho é cancelado",
+        ],
+      },
+      {
+        icon: <Shield className="w-5 h-5" />,
+        category: "Qualidade, Performance e Segurança",
+        items: [
+          "259 testes automatizados aprovados e TypeScript sem erros nas entregas do ciclo",
+          "Auditorias integrais de performance e segurança concluídas, incluindo SAST, DAST não invasivo, APIs e OWASP",
+          "Plano de execução priorizado criado: otimizações de performance primeiro e remediações de segurança em seguida",
+        ],
+      },
+    ],
+  },
+  {
+    version: "v1.6.0",
+    date: "16/08/2026",
+    month: "Agosto 2026",
+    status: "released",
+    highlights:
+      "Calendário Mais Confiável, PDF Detalhado e Segurança Reforçada",
+    features: [
+      {
+        icon: <Calendar className="w-5 h-5" />,
+        category: "Calendário e Planejamento",
+        items: [
+          "Correção de timezone para preservar a data exata dos voos no calendário",
+          "Voos somente ida agora aparecem como emitidos e abrem os detalhes do bilhete",
+          "Badge visual para bilhetes remarcados e identificação atualizada dos jogos da Copa",
+          "Resumo de semanas sem passagem com número da semana, datas de ida/volta, ícones e alerta vermelho para compras nos próximos 15 dias",
+          "Cabeçalho do calendário aprimorado para telas menores",
+        ],
+      },
+      {
+        icon: <Plane className="w-5 h-5" />,
+        category: "Exportação PDF de Bilhetes",
+        items: [
+          "Status de remarcação exibido separadamente para ida, volta ou somente ida",
+          "Localizador individual apresentado em cada trecho do bilhete",
+          "Quebras de página preservam o cartão completo do bilhete",
+          "Companhias aéreas em maiúsculas e centralizadas nas células do PDF",
+        ],
+      },
+      {
+        icon: <Shield className="w-5 h-5" />,
+        category: "Segurança e Confiabilidade",
+        items: [
+          "Rate limiting do login tRPC consolidado para evitar consumo duplicado de tentativas",
+          "Content Security Policy de produção endurecida, sem unsafe-inline e unsafe-eval para scripts",
+          "Migração preparada para pnpm 11, com configurações de patches, overrides e builds no pnpm-workspace.yaml",
+          "Pipeline de validação preparada com instalação determinística, TypeScript e Vitest",
+        ],
+      },
+      {
+        icon: <Gauge className="w-5 h-5" />,
+        category: "Qualidade",
+        items: [
+          "225 testes automatizados aprovados após as integrações de segurança e dependências",
+          "Novos testes unitários para rate limiting de login e Content Security Policy",
+          "Validação isolada de atualizações de nanoid e do grupo de dependências de produção",
+        ],
+      },
+    ],
+  },
   // Julho 2026 (Semana 3)
   {
     version: "v1.5.0",
@@ -567,34 +874,56 @@ const releasesByMonth: Record<string, Release[]> = releases.reduce(
   {} as Record<string, Release[]>
 );
 
+// ⚡ Bolt Optimization: Implement a Schwartzian transform (map-sort-map) on the release arrays
+// to pre-calculate Date parsing once in O(N) time instead of redundantly during O(N log N) sorting.
 Object.keys(releasesByMonth).forEach(month => {
-  const monthReleases = releasesByMonth[month];
-  releasesByMonth[month] = monthReleases
+  releasesByMonth[month] = releasesByMonth[month]
     .map(release => ({
       release,
-      timestamp: new Date(
-        release.date.split("/").reverse().join("-")
-      ).getTime(),
+      time: new Date(release.date.split("/").reverse().join("-")).getTime(),
     }))
-    .sort((a, b) => b.timestamp - a.timestamp)
+    .sort((a, b) => b.time - a.time)
     .map(item => item.release);
 });
 
+// ⚡ Bolt Optimization: Implement a Schwartzian transform (map-sort-map) on the month keys
+// to pre-calculate Date object creation once in O(N) time instead of redundantly during O(N log N) sorting.
 const sortedMonths = Object.keys(releasesByMonth)
-  .map(key => {
-    const [month, year] = key.split(" ");
+  .map(month => {
+    const [monthName, yearName] = month.split(" ");
     return {
-      key,
-      val: Number(year) * 12 + (monthOrder[month] ?? 1),
+      month,
+      time: new Date(
+        Number(yearName),
+        (monthOrder[monthName] ?? 1) - 1
+      ).getTime(),
     };
   })
-  .sort((a, b) => b.val - a.val)
-  .map(item => item.key);
+  .sort((a, b) => b.time - a.time)
+  .map(item => item.month);
 
 export default function Changelog() {
+  const [location, setLocation] = useLocation();
   const [expandedReleases, setExpandedReleases] = useState<Set<string>>(
-    new Set(["v1.3.0"])
+    new Set(["v2.0.0"])
   );
+
+  const navigateHome = (event: MouseEvent<HTMLAnchorElement>) => {
+    event.preventDefault();
+    rememberNavigationFocus(location, "changelog-back");
+    triggerHaptic();
+
+    const navigate = () => setLocation("/");
+    const shouldReduceMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches;
+    const transitionDocument = document as ViewTransitionDocument;
+
+    if (shouldReduceMotion || !transitionDocument.startViewTransition) {
+      navigate();
+      return;
+    }
+
+    transitionDocument.startViewTransition(navigate);
+  };
 
   const toggleRelease = (version: string) => {
     const newExpanded = new Set(expandedReleases);
@@ -609,15 +938,16 @@ export default function Changelog() {
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
       {/* Header */}
-      <header className="bg-gradient-to-r from-blue-600 via-purple-600 to-cyan-500 text-white px-4 py-3 flex items-center gap-3 shadow-lg sticky top-0 z-10">
-        <Link href="/">
-          <button
-            aria-label="Voltar para a página inicial"
-            className="flex items-center gap-1.5 text-white/80 hover:text-white transition-colors text-sm font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-blue-700 rounded-sm"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Voltar
-          </button>
+      <header className="bg-gradient-to-r from-[#071a36] via-[#102f61] to-[#17427e] text-white px-4 py-3 flex items-center gap-3 shadow-lg sticky top-0 z-10">
+        <Link
+          href="/"
+          aria-label="Voltar para a página inicial"
+          data-navigation-focus="changelog-back"
+          onClick={navigateHome}
+          className="flex items-center gap-1.5 rounded-sm text-sm font-medium text-white/80 transition-colors hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-blue-700"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          Voltar
         </Link>
         <div className="flex items-center gap-2 ml-2">
           <Sparkles className="w-5 h-5" />
@@ -648,13 +978,13 @@ export default function Changelog() {
             </div>
           </Card>
           <Card className="p-4 text-center">
-            <div className="text-3xl font-bold text-green-600">159</div>
+            <div className="text-3xl font-bold text-green-600">772</div>
             <div className="text-sm text-slate-600 dark:text-slate-400">
               Testes
             </div>
           </Card>
           <Card className="p-4 text-center">
-            <div className="text-3xl font-bold text-purple-600">50+</div>
+            <div className="text-3xl font-bold text-purple-600">90+</div>
             <div className="text-sm text-slate-600 dark:text-slate-400">
               Commits
             </div>
@@ -677,78 +1007,78 @@ export default function Changelog() {
               </h2>
               <div className="space-y-4 ml-4">
                 {releasesByMonth[month].map((release, index) => (
-                  <div key={release.version} className="relative">
-                    {/* Release Card */}
-                    <Card
-                      className={`relative p-6 cursor-pointer transition-all hover:shadow-lg ${
-                        expandedReleases.has(release.version)
-                          ? "bg-blue-50 dark:bg-slate-800 border-blue-200 dark:border-blue-900"
-                          : "bg-white dark:bg-slate-800"
-                      }`}
-                      onClick={() => toggleRelease(release.version)}
-                    >
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-3 mb-2">
-                            <span className="text-sm font-semibold text-blue-600 bg-blue-100 dark:bg-blue-900 px-3 py-1 rounded-full">
-                              {release.version}
-                            </span>
-                            <span className="text-sm text-slate-500 dark:text-slate-400">
-                              {release.date}
-                            </span>
-                          </div>
-                          <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">
-                            {release.highlights}
-                          </h3>
-                        </div>
-                        <ChevronDown
-                          className={`w-6 h-6 text-slate-400 transition-transform ${
-                            expandedReleases.has(release.version)
-                              ? "rotate-180"
-                              : ""
-                          }`}
-                        />
-                      </div>
-
-                      {/* Expanded Content */}
-                      {expandedReleases.has(release.version) && (
-                        <div className="mt-6 pt-6 border-t border-slate-200 dark:border-slate-700 space-y-4">
-                          {release.features.map((feature, idx) => (
-                            <div key={idx}>
-                              <div className="flex items-center gap-2 mb-2">
-                                <div className="text-slate-600 dark:text-slate-400">
-                                  {feature.icon}
-                                </div>
-                                <h4 className="font-semibold text-slate-900 dark:text-white">
-                                  {feature.category}
-                                </h4>
-                              </div>
-                              <ul className="space-y-1 ml-8">
-                                {feature.items.map((item, itemIdx) => (
-                                  <li
-                                    key={itemIdx}
-                                    className="text-sm text-slate-600 dark:text-slate-400 flex items-start gap-2"
-                                  >
-                                    <span className="text-blue-600 mt-1">
-                                      •
-                                    </span>
-                                    <span>{item}</span>
-                                  </li>
-                                ))}
-                              </ul>
+                    <div key={release.version} className="relative">
+                      {/* Release Card */}
+                      <Card
+                        className={`relative p-6 cursor-pointer transition-all hover:shadow-lg ${
+                          expandedReleases.has(release.version)
+                            ? "bg-blue-50 dark:bg-slate-800 border-blue-200 dark:border-blue-900"
+                            : "bg-white dark:bg-slate-800"
+                        }`}
+                        onClick={() => toggleRelease(release.version)}
+                      >
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-3 mb-2">
+                              <span className="text-sm font-semibold text-blue-600 bg-blue-100 dark:bg-blue-900 px-3 py-1 rounded-full">
+                                {release.version}
+                              </span>
+                              <span className="text-sm text-slate-500 dark:text-slate-400">
+                                {release.date}
+                              </span>
                             </div>
-                          ))}
+                            <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">
+                              {release.highlights}
+                            </h3>
+                          </div>
+                          <ChevronDown
+                            className={`w-6 h-6 text-slate-400 transition-transform ${
+                              expandedReleases.has(release.version)
+                                ? "rotate-180"
+                                : ""
+                            }`}
+                          />
                         </div>
-                      )}
-                    </Card>
 
-                    {/* Timeline Dot */}
-                    <div className="absolute left-0 top-8 -ml-8 w-4 h-4 bg-blue-600 rounded-full border-4 border-slate-50 dark:border-slate-950" />
-                    {index < releasesByMonth[month].length - 1 && (
-                      <div className="absolute left-0 top-12 -ml-7 w-0.5 h-12 bg-slate-200 dark:bg-slate-700" />
-                    )}
-                  </div>
-                ))}
+                        {/* Expanded Content */}
+                        {expandedReleases.has(release.version) && (
+                          <div className="mt-6 pt-6 border-t border-slate-200 dark:border-slate-700 space-y-4">
+                            {release.features.map((feature, idx) => (
+                              <div key={idx}>
+                                <div className="flex items-center gap-2 mb-2">
+                                  <div className="text-slate-600 dark:text-slate-400">
+                                    {feature.icon}
+                                  </div>
+                                  <h4 className="font-semibold text-slate-900 dark:text-white">
+                                    {feature.category}
+                                  </h4>
+                                </div>
+                                <ul className="space-y-1 ml-8">
+                                  {feature.items.map((item, itemIdx) => (
+                                    <li
+                                      key={itemIdx}
+                                      className="text-sm text-slate-600 dark:text-slate-400 flex items-start gap-2"
+                                    >
+                                      <span className="text-blue-600 mt-1">
+                                        •
+                                      </span>
+                                      <span>{item}</span>
+                                    </li>
+                                  ))}
+                                </ul>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </Card>
+
+                      {/* Timeline Dot */}
+                      <div className="absolute left-0 top-8 -ml-8 w-4 h-4 bg-blue-600 rounded-full border-4 border-slate-50 dark:border-slate-950" />
+                      {index < releasesByMonth[month].length - 1 && (
+                        <div className="absolute left-0 top-12 -ml-7 w-0.5 h-12 bg-slate-200 dark:bg-slate-700" />
+                      )}
+                    </div>
+                  ))}
               </div>
             </div>
           ))}
