@@ -901,3 +901,4 @@
 ## PR #350
 
 - [x] Resolver conflitos do PR #350, validar a otimização de ordenação por preço e atualizar o PR
+- [x] Fazer merge do PR #350 após confirmação de checks e mergeabilidade
