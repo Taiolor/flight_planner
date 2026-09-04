@@ -897,3 +897,7 @@
 ## Operação de merges
 
 - [x] Mesclar PRs abertos elegíveis, individualmente, sem conflitos e sem duplicidades
+
+## PR #350
+
+- [x] Resolver conflitos do PR #350, validar a otimização de ordenação por preço e atualizar o PR
