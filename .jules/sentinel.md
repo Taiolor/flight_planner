@@ -32,3 +32,9 @@
 **Vulnerability:** Insecure direct access to environment variables.
 **Learning:** Reading sensitive secrets (like API keys and passwords) directly from `process.env` in scattered application files (e.g., `process.env.AUTH_PASSWORD`) increases the risk of secret leakage, makes it difficult to audit secret usage, and complicates validation/type-checking at application startup.
 **Prevention:** Always consolidate environment variable access within a single module (e.g., `server/_core/env.ts`) that exports an `ENV` object. All other modules must import this object. Tests should mock or mutate this `ENV` object rather than relying on `vi.stubEnv` or `process.env`.
+
+## 2024-10-30 - HTML Injection in Email Templates
+
+**Vulnerability:** String interpolation in HTML templates without escaping.
+**Learning:** Constructing HTML emails using template literals (e.g., in `server/routers.ts` or `server/_core/emailNotification.ts`) and directly interpolating user-controlled inputs (like flight numbers or locators) exposes the application to HTML Injection and potential Cross-Site Scripting (XSS) if viewed in a vulnerable client.
+**Prevention:** Always sanitize user-provided variables using a strict `escapeHtml` helper function before inserting them into HTML string templates. Furthermore, ensure the `escapeHtml` function handles null checks correctly (`if (unsafe == null)`) so it does not incorrectly strip out the number zero (`0`).
