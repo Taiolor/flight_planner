@@ -17,6 +17,20 @@ describe("airportAddresses", () => {
       );
     });
 
+    it("should return the formatted address for another valid code (SDU)", () => {
+      const address = getAirportAddress("SDU");
+      expect(address).toBe(
+        "Aeroporto Santos Dumont - Praça Senador Salgado Filho, s/n, Rio de Janeiro, RJ 20040-020, Brasil"
+      );
+    });
+
+    it("should return the formatted address for another valid code (VCP)", () => {
+      const address = getAirportAddress("VCP");
+      expect(address).toBe(
+        "Aeroporto de Campinas/Viracopos - Rodovia SP-332, km 72, Campinas, SP 13100-000, Brasil"
+      );
+    });
+
     it("should return the code itself for an unknown code", () => {
       expect(getAirportAddress("XYZ")).toBe("XYZ");
     });
@@ -35,6 +49,16 @@ describe("airportAddresses", () => {
     it("should return the name for a valid lowercase code", () => {
       const name = getAirportName("nvt");
       expect(name).toBe("Aeroporto de Navegantes");
+    });
+
+    it("should return the name for another valid code (BSB)", () => {
+      const name = getAirportName("BSB");
+      expect(name).toBe("Aeroporto Internacional de Brasília");
+    });
+
+    it("should return the name for another valid code (CWB)", () => {
+      const name = getAirportName("CWB");
+      expect(name).toBe("Aeroporto Internacional de Curitiba");
     });
 
     it("should return the code itself for an unknown code", () => {
