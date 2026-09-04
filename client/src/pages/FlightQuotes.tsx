@@ -228,7 +228,7 @@ const QuoteRow = ({
                     size="icon"
                     type="button"
                     className="h-6 w-6 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:text-red-400 dark:hover:bg-red-950/30 transition-colors focus-visible:ring-2 focus-visible:ring-red-500"
-                    aria-label={`Excluir cotação ${quote.id}`}
+                    aria-label={`Excluir cotação de ${formatCurrency(quote.lowestPrice)}`}
                   >
                     <Trash2 className="w-3.5 h-3.5" aria-hidden="true" />
                   </Button>
@@ -983,13 +983,13 @@ export default function FlightQuotes() {
       {/* Cabeçalho com botão voltar */}
       <header className="bg-gradient-to-r from-blue-600 via-purple-600 to-cyan-500 text-white px-4 py-3 flex items-center gap-3 shadow-lg sticky top-0 z-10">
         <Link href="/">
-          <button
+          <a
             aria-label="Voltar para a página inicial"
             className="flex items-center gap-1.5 text-white/80 hover:text-white transition-colors text-sm font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-blue-700 rounded-sm"
           >
-            <ArrowLeft className="w-4 h-4" />
+            <ArrowLeft className="w-4 h-4" aria-hidden="true" />
             Voltar
-          </button>
+          </a>
         </Link>
         <div className="flex items-center gap-2 ml-2">
           <Plane className="w-5 h-5" />

@@ -93,15 +93,16 @@ export default function AdminNotifications() {
           <AlertCircle className="w-12 h-12 text-red-400 mx-auto" />
           <p className="text-gray-700 font-medium">Acesso negado</p>
           <p className="text-gray-500 text-sm">{error.message}</p>
-          <Link href="/">
-            <Button
-              variant="outline"
-              aria-label="Voltar para a página inicial"
-              className="gap-2"
-            >
-              <ArrowLeft className="w-4 h-4" /> Voltar
-            </Button>
-          </Link>
+          <Button
+            variant="outline"
+            aria-label="Voltar para a página inicial"
+            className="gap-2"
+            asChild
+          >
+            <Link href="/">
+              <ArrowLeft className="w-4 h-4" aria-hidden="true" /> Voltar
+            </Link>
+          </Button>
         </div>
       </div>
     );
@@ -133,17 +134,18 @@ export default function AdminNotifications() {
       <div className="bg-white border-b border-gray-200 sticky top-0 z-10">
         <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <Link href="/">
-              <Button
-                variant="ghost"
-                size="sm"
-                aria-label="Voltar para a página inicial"
-                className="gap-2 text-gray-600"
-              >
-                <ArrowLeft className="w-4 h-4" />
+            <Button
+              variant="ghost"
+              size="sm"
+              aria-label="Voltar para a página inicial"
+              className="gap-2 text-gray-600"
+              asChild
+            >
+              <Link href="/">
+                <ArrowLeft className="w-4 h-4" aria-hidden="true" />
                 <span className="hidden sm:inline">Voltar</span>
-              </Button>
-            </Link>
+              </Link>
+            </Button>
             <div className="h-5 w-px bg-gray-200" />
             <div className="flex items-center gap-2">
               <Bell className="w-5 h-5 text-blue-600" />
@@ -814,13 +816,13 @@ function TicketNotificationEmailsSection() {
                   }
                   disabled={removeRecipientMutation.isPending}
                   className="text-red-600 hover:text-red-700 hover:bg-red-50 ml-2 flex-shrink-0"
-                  aria-label="Remover destinatário"
+                  aria-label={`Remover destinatário ${recipient.email}`}
                   title="Remover destinatário"
                 >
                   {removeRecipientMutation.isPending ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <Loader2 className="w-4 h-4 animate-spin" aria-hidden="true" />
                   ) : (
-                    <XCircle className="w-4 h-4" />
+                    <XCircle className="w-4 h-4" aria-hidden="true" />
                   )}
                 </Button>
               </div>
