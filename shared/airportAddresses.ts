@@ -71,7 +71,8 @@ export const airportAddresses: Record<
  * Get airport address by code
  */
 export function getAirportAddress(code: string): string {
-  const airport = airportAddresses[code.toUpperCase()];
+  if (!code) return code;
+  const airport = airportAddresses[code.trim().toUpperCase()];
   if (!airport) {
     return code; // Return code if address not found
   }
@@ -82,6 +83,7 @@ export function getAirportAddress(code: string): string {
  * Get airport name by code
  */
 export function getAirportName(code: string): string {
-  const airport = airportAddresses[code.toUpperCase()];
+  if (!code) return code;
+  const airport = airportAddresses[code.trim().toUpperCase()];
   return airport?.name || code;
 }
