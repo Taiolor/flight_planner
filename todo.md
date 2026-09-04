@@ -889,3 +889,11 @@
 - [x] Aprimorar a leitura da Variação de Preços com metadados derivados dos dados reais
 - [x] Padronizar os cards de semanas da Home com o acabamento das Centrais
 - [x] Preparar e validar visualmente os alertas para uso móvel, com roteiro de teste em dispositivo físico
+
+## Auditoria de pull requests
+
+- [x] Avaliar todos os PRs abertos quanto a risco, conflitos, validações, sobreposição e recomendação de tratamento
+
+## Operação de merges
+
+- [x] Mesclar PRs abertos elegíveis, individualmente, sem conflitos e sem duplicidades
