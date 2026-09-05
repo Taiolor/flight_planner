@@ -908,3 +908,8 @@
 - [x] Reavaliar os PRs #332 e #345 após a integração da otimização de ordenação
 - [x] Atualizar o Changelog com a entrada do merge do PR #350
 - [x] Executar e confirmar a CI completa na main
+
+## PRs #332 e #345
+
+- [x] Resolver conflitos do PR #332, validar a otimização de contagem filtrada e atualizar a branch
+- [x] Resolver conflitos do PR #345, validar a memoização de feriados e atualizar a branch
