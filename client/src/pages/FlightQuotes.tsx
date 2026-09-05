@@ -669,9 +669,10 @@ const WeekCard = ({
                 href={kayakUrl}
                 target="_blank"
                 rel="noopener noreferrer"
+                aria-label="Abrir busca no Kayak (abre em nova aba)"
                 className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md bg-blue-600 hover:bg-blue-700 text-white transition-colors focus-visible:ring-2 focus-visible:ring-blue-500"
               >
-                <ExternalLink className="w-3.5 h-3.5" />
+                <ExternalLink className="w-3.5 h-3.5" aria-hidden="true" />
                 Abrir Kayak
               </a>
             </div>
