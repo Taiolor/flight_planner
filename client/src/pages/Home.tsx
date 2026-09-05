@@ -1097,6 +1097,86 @@ export default function Home() {
     "12": "Dezembro",
   };
 
+  // ⚡ Bolt Optimization: Pre-calculate and group holidays per week once when weeksData changes.
+  // This prevents executing getFeriadosPorIntervalo (which iterates over all holidays)
+  // and allocating multiple grouped arrays 44 times on EVERY render cycle (e.g., during input typing).
+  const feriadosByWeek = useMemo(() => {
+    const map: Record<
+      number,
+      {
+        feriados: FeriadoInfo[];
+        feriadoIda: FeriadoInfo[];
+        feriadoRetorno: FeriadoInfo[];
+        feriadosIntervaloCopa: FeriadoInfo[];
+        feriadosIntervaloNaoCopa: FeriadoInfo[];
+        jogosDosBrasil: typeof todosJogosParsed;
+        fasesEliminatorias: typeof todasFasesParsed;
+      }
+    > = {};
+
+    for (const w of weeksData) {
+      const feriados = getFeriadosPorIntervalo(
+        w.weekNumber,
+        w.departureDate,
+        w.returnDate
+      );
+      const feriadoIda: FeriadoInfo[] = [];
+      const feriadoRetorno: FeriadoInfo[] = [];
+      const feriadosIntervaloCopa: FeriadoInfo[] = [];
+      const feriadosIntervaloNaoCopa: FeriadoInfo[] = [];
+
+      for (const f of feriados) {
+        if (f.tipo === "ida") feriadoIda.push(f);
+        else if (f.tipo === "retorno") feriadoRetorno.push(f);
+        else if (f.tipo === "intervalo") {
+          if (f.feriado.tipo === "copa") feriadosIntervaloCopa.push(f);
+          else feriadosIntervaloNaoCopa.push(f);
+        }
+      }
+
+      const semanaInicio = parseBR(w.departureDate);
+      const semanaFimViagem = parseBR(w.returnDate);
+      const semanaFim = new Date(semanaInicio);
+      semanaFim.setDate(semanaFim.getDate() + 6);
+      const semanaFimEfetivo =
+        semanaFimViagem > semanaFim ? semanaFimViagem : semanaFim;
+
+      const semanaInicioMs = semanaInicio.getTime();
+      const semanaFimEfetivoMs = semanaFimEfetivo.getTime();
+
+      const jogosDosBrasil: typeof todosJogosParsed = [];
+      for (const jogo of todosJogosParsed) {
+        if (
+          jogo.dataMs >= semanaInicioMs &&
+          jogo.dataMs <= semanaFimEfetivoMs
+        ) {
+          jogosDosBrasil.push(jogo);
+        }
+      }
+
+      const fasesEliminatorias: typeof todasFasesParsed = [];
+      for (const fase of todasFasesParsed) {
+        if (
+          fase.inicioMs <= semanaFimEfetivoMs &&
+          fase.fimMs >= semanaInicioMs
+        ) {
+          fasesEliminatorias.push(fase);
+        }
+      }
+
+      map[w.weekNumber] = {
+        feriados,
+        feriadoIda,
+        feriadoRetorno,
+        feriadosIntervaloCopa,
+        feriadosIntervaloNaoCopa,
+        jogosDosBrasil,
+        fasesEliminatorias,
+      };
+    }
+    return map;
+  }, [weeksData]);
+
   // ⚡ Bolt Optimization:
   // Pre-calculate monthly derived values (issued, selected, holidays, total) during the `weeksByMonth`
   // memoization to prevent expensive O(N) filtering/reductions inside the render loop for each month group.
@@ -1156,8 +1236,7 @@ export default function Home() {
         }
         if (
           !hasHoliday &&
-          getFeriadosPorIntervalo(w.weekNumber, w.departureDate, w.returnDate)
-            .length > 0
+          (feriadosByWeek[w.weekNumber]?.feriados.length ?? 0) > 0
         ) {
           hasHoliday = true;
         }
@@ -1174,7 +1253,7 @@ export default function Home() {
     }
 
     return groups;
-  }, [sortedWeeks, getTotalWeekCost]);
+  }, [sortedWeeks, getTotalWeekCost, feriadosByWeek]);
 
   // Mês corrente para iniciar expandido
   const currentMonthKey = useMemo(() => {
@@ -1405,86 +1484,6 @@ export default function Home() {
   }, [weeksData, priceMap, getLowestPrice]);
 
   const hasChartData = chartData.some(d => Object.keys(d).length > 1);
-
-  // ⚡ Bolt Optimization: Pre-calculate and group holidays per week once when weeksData changes.
-  // This prevents executing getFeriadosPorIntervalo (which iterates over all holidays)
-  // and allocating multiple grouped arrays 44 times on EVERY render cycle (e.g., during input typing).
-  const feriadosByWeek = useMemo(() => {
-    const map: Record<
-      number,
-      {
-        feriados: FeriadoInfo[];
-        feriadoIda: FeriadoInfo[];
-        feriadoRetorno: FeriadoInfo[];
-        feriadosIntervaloCopa: FeriadoInfo[];
-        feriadosIntervaloNaoCopa: FeriadoInfo[];
-        jogosDosBrasil: typeof todosJogosParsed;
-        fasesEliminatorias: typeof todasFasesParsed;
-      }
-    > = {};
-
-    for (const w of weeksData) {
-      const feriados = getFeriadosPorIntervalo(
-        w.weekNumber,
-        w.departureDate,
-        w.returnDate
-      );
-      const feriadoIda: FeriadoInfo[] = [];
-      const feriadoRetorno: FeriadoInfo[] = [];
-      const feriadosIntervaloCopa: FeriadoInfo[] = [];
-      const feriadosIntervaloNaoCopa: FeriadoInfo[] = [];
-
-      for (const f of feriados) {
-        if (f.tipo === "ida") feriadoIda.push(f);
-        else if (f.tipo === "retorno") feriadoRetorno.push(f);
-        else if (f.tipo === "intervalo") {
-          if (f.feriado.tipo === "copa") feriadosIntervaloCopa.push(f);
-          else feriadosIntervaloNaoCopa.push(f);
-        }
-      }
-
-      const semanaInicio = parseBR(w.departureDate);
-      const semanaFimViagem = parseBR(w.returnDate);
-      const semanaFim = new Date(semanaInicio);
-      semanaFim.setDate(semanaFim.getDate() + 6);
-      const semanaFimEfetivo =
-        semanaFimViagem > semanaFim ? semanaFimViagem : semanaFim;
-
-      const semanaInicioMs = semanaInicio.getTime();
-      const semanaFimEfetivoMs = semanaFimEfetivo.getTime();
-
-      const jogosDosBrasil: typeof todosJogosParsed = [];
-      for (const jogo of todosJogosParsed) {
-        if (
-          jogo.dataMs >= semanaInicioMs &&
-          jogo.dataMs <= semanaFimEfetivoMs
-        ) {
-          jogosDosBrasil.push(jogo);
-        }
-      }
-
-      const fasesEliminatorias: typeof todasFasesParsed = [];
-      for (const fase of todasFasesParsed) {
-        if (
-          fase.inicioMs <= semanaFimEfetivoMs &&
-          fase.fimMs >= semanaInicioMs
-        ) {
-          fasesEliminatorias.push(fase);
-        }
-      }
-
-      map[w.weekNumber] = {
-        feriados,
-        feriadoIda,
-        feriadoRetorno,
-        feriadosIntervaloCopa,
-        feriadosIntervaloNaoCopa,
-        jogosDosBrasil,
-        fasesEliminatorias,
-      };
-    }
-    return map;
-  }, [weeksData]);
 
   // ⚡ Bolt Optimization: Consolidate multiple O(N) loops into a single pass
   // Dados do resumo anual: total emitido por mês e totais anuais
