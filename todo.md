@@ -902,3 +902,9 @@
 
 - [x] Resolver conflitos do PR #350, validar a otimização de ordenação por preço e atualizar o PR
 - [x] Fazer merge do PR #350 após confirmação de checks e mergeabilidade
+
+## Pós-merge do PR #350
+
+- [x] Reavaliar os PRs #332 e #345 após a integração da otimização de ordenação
+- [x] Atualizar o Changelog com a entrada do merge do PR #350
+- [x] Executar e confirmar a CI completa na main

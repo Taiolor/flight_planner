@@ -45,6 +45,34 @@ interface Release {
 }
 
 export const releases: Release[] = [
+  // Setembro 2026
+  {
+    version: "v2.0.1",
+    date: "04/09/2026",
+    month: "Setembro 2026",
+    status: "released",
+    highlights:
+      "Ordenação de semanas mais eficiente e integração segura do PR #350",
+    features: [
+      {
+        icon: <Zap className="w-5 h-5" />,
+        category: "Performance na Home",
+        items: [
+          "Ordenação de semanas por preço otimizada com pré-cálculo do menor valor disponível",
+          "Filtros e ordenação preservam o contexto anual e o comportamento responsivo da Home",
+        ],
+      },
+      {
+        icon: <Shield className="w-5 h-5" />,
+        category: "Qualidade e Integração",
+        items: [
+          "PR #350 rebaseado, com conflitos resolvidos e alteração limitada à Home",
+          "Merge commit d437222d integrado à main após validação de TypeScript, build e testes",
+          "791 testes automatizados aprovados no estado reconciliado, com duas integrações externas ignoradas intencionalmente",
+        ],
+      },
+    ],
+  },
   // Agosto 2026
   {
     version: "v2.0.0",
@@ -978,7 +1006,7 @@ export default function Changelog() {
             </div>
           </Card>
           <Card className="p-4 text-center">
-            <div className="text-3xl font-bold text-green-600">772</div>
+            <div className="text-3xl font-bold text-green-600">791</div>
             <div className="text-sm text-slate-600 dark:text-slate-400">
               Testes
             </div>

@@ -5,6 +5,26 @@ import { releases } from "./Changelog";
 describe("Novidades de agosto de 2026", () => {
   const source = readFileSync("client/src/pages/Changelog.tsx", "utf8");
 
+  it("publica a atualização de setembro referente ao PR #350", () => {
+    const release = releases.find(item => item.version === "v2.0.1");
+
+    expect(release).toMatchObject({
+      date: "04/09/2026",
+      month: "Setembro 2026",
+      status: "released",
+    });
+    expect(release?.features.map(feature => feature.category)).toEqual(
+      expect.arrayContaining(["Performance na Home", "Qualidade e Integração"])
+    );
+    expect(release?.features.flatMap(feature => feature.items)).toEqual(
+      expect.arrayContaining([
+        "Ordenação de semanas por preço otimizada com pré-cálculo do menor valor disponível",
+        "Merge commit d437222d integrado à main após validação de TypeScript, build e testes",
+      ])
+    );
+    expect(source).toContain(">791</div>");
+  });
+
   it("consolida as evoluções entregues até o fim de agosto em v2.0.0", () => {
     const release = releases.find(item => item.version === "v2.0.0");
 
@@ -24,7 +44,7 @@ describe("Novidades de agosto de 2026", () => {
       ])
     );
     expect(source).toContain('new Set(["v2.0.0"])');
-    expect(source).toContain(">772</div>");
+    expect(source).toContain(">791</div>");
     expect(source).toContain(">90+</div>");
   });
 
@@ -47,7 +67,7 @@ describe("Novidades de agosto de 2026", () => {
       ])
     );
     expect(source).toContain('new Set(["v2.0.0"])');
-    expect(source).toContain(">772</div>");
+    expect(source).toContain(">791</div>");
   });
 
   it("publica a release v1.8.0 com a evolução recente de Viagens", () => {
