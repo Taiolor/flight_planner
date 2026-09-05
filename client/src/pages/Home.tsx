@@ -1180,16 +1180,8 @@ export default function Home() {
     const now = new Date();
     for (const w of weeksData) {
       if (w.departureDate.length === 10 && w.returnDate.length === 10) {
-        const dep = new Date(
-          +w.departureDate.substring(6, 10),
-          +w.departureDate.substring(3, 5) - 1,
-          +w.departureDate.substring(0, 2)
-        );
-        const ret = new Date(
-          +w.returnDate.substring(6, 10),
-          +w.returnDate.substring(3, 5) - 1,
-          +w.returnDate.substring(0, 2)
-        );
+        const dep = parseBR(w.departureDate);
+        const ret = parseBR(w.returnDate);
         // Expandir janela: 3 dias antes da ida até 1 dia depois da volta
         dep.setDate(dep.getDate() - 3);
         ret.setDate(ret.getDate() + 1);
@@ -1199,11 +1191,7 @@ export default function Home() {
     // Fallback: próxima semana futura
     for (const w of weeksData) {
       if (w.departureDate.length === 10) {
-        const dep = new Date(
-          +w.departureDate.substring(6, 10),
-          +w.departureDate.substring(3, 5) - 1,
-          +w.departureDate.substring(0, 2)
-        );
+        const dep = parseBR(w.departureDate);
         if (dep >= now) return w.weekNumber;
       }
     }
