@@ -1,5 +1,5 @@
-const CACHE_NAME = "smartfly-v7";
-const STATIC_ASSETS = ["/manifest.json?v=20260827"];
+const CACHE_NAME = "smartfly-v8";
+const STATIC_ASSETS = ["/manifest.json?v=20260905"];
 const SMART_FLY_PUSH_ICON = "/smartfly-assets/smartfly-sf-pwa-icon_783c04c6.webp";
 const SMART_FLY_PUSH_BADGE = "/smartfly-assets/smartfly-sf-apple-touch-icon_598faae4.png";
 
@@ -34,6 +34,13 @@ self.addEventListener("fetch", event => {
 
   // Não cachear chamadas de API
   if (url.pathname.startsWith("/api/")) {
+    return;
+  }
+
+  // Tiles devem sempre vir do proxy atual; nunca reutilizar respostas antigas,
+  // que podem ter sido produzidas pela origem Carto descontinuada.
+  if (url.pathname.startsWith("/map-tiles/")) {
+    event.respondWith(fetch(event.request, { cache: "no-store" }));
     return;
   }
 

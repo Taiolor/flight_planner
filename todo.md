@@ -913,3 +913,7 @@
 
 - [x] Resolver conflitos do PR #332, validar a otimização de contagem filtrada e atualizar a branch
 - [x] Resolver conflitos do PR #345, validar a memoização de feriados e atualizar a branch
+
+## Regressão do mapa de Locais de Acesso
+
+- [x] Corrigir novamente a exibição de “API Key Required” no mapa, garantindo que nenhum tile Carto seja usado
