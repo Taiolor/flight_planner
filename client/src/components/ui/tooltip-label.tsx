@@ -6,10 +6,17 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 
+export const TOOLTIP_DELAY_MS = 350;
+export const TOOLTIP_SIDE_OFFSET = 6;
+export const TOOLTIP_COLLISION_PADDING = 8;
+
 export type TooltipLabelProps = {
   label: string;
   children: React.ReactElement;
   side?: React.ComponentProps<typeof TooltipContent>["side"];
+  sideOffset?: number;
+  collisionPadding?: number;
+  delayDuration?: number;
 };
 
 /**
@@ -20,11 +27,18 @@ export function TooltipLabel({
   label,
   children,
   side = "bottom",
+  sideOffset = TOOLTIP_SIDE_OFFSET,
+  collisionPadding = TOOLTIP_COLLISION_PADDING,
+  delayDuration = TOOLTIP_DELAY_MS,
 }: TooltipLabelProps) {
   return (
-    <Tooltip>
+    <Tooltip delayDuration={delayDuration}>
       <TooltipTrigger asChild>{children}</TooltipTrigger>
-      <TooltipContent side={side} sideOffset={6}>
+      <TooltipContent
+        side={side}
+        sideOffset={sideOffset}
+        collisionPadding={collisionPadding}
+      >
         {label}
       </TooltipContent>
     </Tooltip>

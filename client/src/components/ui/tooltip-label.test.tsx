@@ -3,7 +3,12 @@
 import React from "react";
 import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
-import { TooltipLabel } from "./tooltip-label";
+import {
+  TOOLTIP_COLLISION_PADDING,
+  TOOLTIP_DELAY_MS,
+  TOOLTIP_SIDE_OFFSET,
+  TooltipLabel,
+} from "./tooltip-label";
 
 class ResizeObserverMock {
   observe() {}
@@ -14,6 +19,11 @@ class ResizeObserverMock {
 vi.stubGlobal("ResizeObserver", ResizeObserverMock);
 
 describe("TooltipLabel", () => {
+  it("expõe a convenção global de posicionamento e atraso", () => {
+    expect(TOOLTIP_DELAY_MS).toBe(350);
+    expect(TOOLTIP_SIDE_OFFSET).toBe(6);
+    expect(TOOLTIP_COLLISION_PADDING).toBe(8);
+  });
   it("exibe a descrição visual no hover e mantém o controle sem title nativo", async () => {
     render(
       <TooltipLabel label="Mais opções">
