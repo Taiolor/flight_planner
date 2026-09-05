@@ -59,6 +59,7 @@ import { LoginModal } from "@/components/auth/LoginModal";
 import { LoginRequiredScreen } from "@/components/auth/LoginRequiredMessageBox";
 import { GlobalYearSelector } from "@/components/GlobalYearSelector";
 import { StandardPageHeader } from "@/components/StandardPageHeader";
+import { TooltipLabel } from "@/components/ui/tooltip-label";
 import { useYear } from "@/contexts/YearContext";
 import { queryCachePolicies } from "@/lib/queryCache";
 import { downloadNotificationHistoryCsv } from "@/lib/notificationHistoryCsv";
@@ -1209,14 +1210,16 @@ function AdminNotificationsContent() {
                         className="min-h-9 w-full rounded-md border border-slate-300 bg-white py-2 pl-9 pr-10 text-sm text-slate-700 shadow-sm placeholder:text-slate-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#17427e]"
                       />
                       {historySearch && (
-                        <button
-                          type="button"
-                          onClick={() => setHistorySearch("")}
-                          className="absolute right-2 top-1/2 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-sm text-slate-500 hover:bg-slate-100 hover:text-slate-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#17427e]"
-                          aria-label="Limpar pesquisa do histórico"
-                        >
-                          <X className="h-4 w-4" aria-hidden="true" />
-                        </button>
+                        <TooltipLabel label="Limpar pesquisa do histórico">
+                          <button
+                            type="button"
+                            onClick={() => setHistorySearch("")}
+                            className="absolute right-2 top-1/2 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-sm text-slate-500 hover:bg-slate-100 hover:text-slate-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#17427e]"
+                            aria-label="Limpar pesquisa do histórico"
+                          >
+                            <X className="h-4 w-4" aria-hidden="true" />
+                          </button>
+                        </TooltipLabel>
                       )}
                     </div>
                     <p id="notification-history-search-help" className="mt-1 text-xs text-slate-500">

@@ -236,3 +236,4 @@
 - [x] Atualizar a página de Novidades com as evoluções verificáveis do último mês
 - [x] Auditar tooltips dos botões funcionais e completar descrições nos controles sem orientação suficiente
 - [x] Substituir títulos nativos por tooltips padronizados do Radix UI nos controles iconográficos auditados
+- [x] Aplicar tooltips padronizados do Radix UI em todas as telas administrativas

@@ -7,6 +7,7 @@ import { LoginRequiredScreen } from "@/components/auth/LoginRequiredMessageBox";
 import { useYear } from "@/contexts/YearContext";
 import { GlobalYearSelector } from "@/components/GlobalYearSelector";
 import { FinancialDashboardLoadingSkeleton } from "@/components/FinancialDashboardLoadingSkeleton";
+import { TooltipLabel } from "@/components/ui/tooltip-label";
 import { ContentReveal } from "@/components/ContentReveal";
 import { MetricCard } from "@/components/MetricCard";
 import { formatAirlineDisplayName } from "@/lib/airlinePresentation";
@@ -500,25 +501,26 @@ function FinancialDashboardContent() {
         <div className="ml-auto flex items-center gap-2 flex-wrap">
           <GlobalYearSelector compact className="border-white/30 bg-white/10 text-white hover:bg-white/20" />
           {/* Toggle mostrar/ocultar valores */}
-          <button
-            aria-label={
-              showValues
-                ? "Ocultar valores financeiros"
-                : "Mostrar valores financeiros"
-            }
-            onClick={() => setShowValues(v => !v)}
-            title={undefined}
-            className="flex items-center gap-2 px-3 py-2 rounded-xl bg-white/10 hover:bg-white/20 disabled:cursor-not-allowed disabled:opacity-50 transition-colors text-sm font-medium"
-          >
-            {showValues ? (
-              <Eye className="w-4 h-4" />
-            ) : (
-              <EyeOff className="w-4 h-4" />
-            )}
-            <span className="hidden sm:inline">
-              {showValues ? "Ocultar" : "Mostrar"} valores
-            </span>
-          </button>
+          <TooltipLabel label={showValues ? "Ocultar valores financeiros" : "Mostrar valores financeiros"}>
+            <button
+              aria-label={
+                showValues
+                  ? "Ocultar valores financeiros"
+                  : "Mostrar valores financeiros"
+              }
+              onClick={() => setShowValues(v => !v)}
+              className="flex items-center gap-2 px-3 py-2 rounded-xl bg-white/10 hover:bg-white/20 disabled:cursor-not-allowed disabled:opacity-50 transition-colors text-sm font-medium"
+            >
+              {showValues ? (
+                <Eye className="w-4 h-4" />
+              ) : (
+                <EyeOff className="w-4 h-4" />
+              )}
+              <span className="hidden sm:inline">
+                {showValues ? "Ocultar" : "Mostrar"} valores
+              </span>
+            </button>
+          </TooltipLabel>
         </div>
       </header>
 
