@@ -917,3 +917,7 @@
 ## Regressão do mapa de Locais de Acesso
 
 - [x] Corrigir novamente a exibição de “API Key Required” no mapa, garantindo que nenhum tile Carto seja usado
+
+## Geolocalização no mapa de Locais de Acesso
+
+- [x] Adicionar botão acessível para centralizar o mapa na localização atual do dispositivo móvel, com estados de permissão, carregamento e erro
