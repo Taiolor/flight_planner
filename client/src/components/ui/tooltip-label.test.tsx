@@ -1,8 +1,8 @@
 // @vitest-environment jsdom
 
 import React from "react";
-import { fireEvent, render, screen } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   TOOLTIP_COLLISION_PADDING,
   TOOLTIP_DELAY_MS,
@@ -19,11 +19,29 @@ class ResizeObserverMock {
 vi.stubGlobal("ResizeObserver", ResizeObserverMock);
 
 describe("TooltipLabel", () => {
+  afterEach(() => cleanup());
   it("expõe a convenção global de posicionamento e atraso", () => {
     expect(TOOLTIP_DELAY_MS).toBe(350);
     expect(TOOLTIP_SIDE_OFFSET).toBe(6);
     expect(TOOLTIP_COLLISION_PADDING).toBe(8);
   });
+  it("usa reposicionamento seguro para áreas com rolagem horizontal", () => {
+    render(
+      <TooltipLabel label="Ação horizontal">
+        <button type="button" aria-label="Ação horizontal">
+          Ação
+        </button>
+      </TooltipLabel>
+    );
+
+    const trigger = screen.getByRole("button", { name: "Ação horizontal" });
+    fireEvent.focus(trigger);
+
+    const tooltip = screen.getByRole("tooltip");
+    expect(tooltip.getAttribute("data-side")).toBe("bottom");
+    expect(tooltip.className).toContain("max-w-[min(18rem,calc(100vw-1rem))]");
+  });
+
   it("exibe a descrição visual no hover e mantém o controle sem title nativo", async () => {
     render(
       <TooltipLabel label="Mais opções">

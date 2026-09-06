@@ -17,6 +17,9 @@ export type TooltipLabelProps = {
   sideOffset?: number;
   collisionPadding?: number;
   delayDuration?: number;
+  avoidCollisions?: boolean;
+  sticky?: React.ComponentProps<typeof TooltipContent>["sticky"];
+  hideWhenDetached?: boolean;
 };
 
 /**
@@ -30,6 +33,9 @@ export function TooltipLabel({
   sideOffset = TOOLTIP_SIDE_OFFSET,
   collisionPadding = TOOLTIP_COLLISION_PADDING,
   delayDuration = TOOLTIP_DELAY_MS,
+  avoidCollisions = true,
+  sticky = "always",
+  hideWhenDetached = true,
 }: TooltipLabelProps) {
   return (
     <Tooltip delayDuration={delayDuration}>
@@ -38,6 +44,10 @@ export function TooltipLabel({
         side={side}
         sideOffset={sideOffset}
         collisionPadding={collisionPadding}
+        avoidCollisions={avoidCollisions}
+        sticky={sticky}
+        hideWhenDetached={hideWhenDetached}
+        className="max-w-[min(18rem,calc(100vw-1rem))] break-words"
       >
         {label}
       </TooltipContent>

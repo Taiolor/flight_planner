@@ -240,3 +240,4 @@
 - [x] Definir uma convenção global de posicionamento e atraso para tooltips Radix
 - [x] Ampliar o padrão de tooltips para telas administrativas futuras
 - [x] Auditar e validar tooltips administrativos em largura crítica de 320 px
+- [x] Ajustar posicionamento dos tooltips em telas com rolagem horizontal para evitar cortes e sobreposição
