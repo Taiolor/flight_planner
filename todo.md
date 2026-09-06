@@ -921,3 +921,5 @@
 ## Geolocalização no mapa de Locais de Acesso
 
 - [x] Adicionar botão acessível para centralizar o mapa na localização atual do dispositivo móvel, com estados de permissão, carregamento e erro
+
+- [x] Aprimorar o estado visual de carregamento do botão de centralização enquanto o GPS responde

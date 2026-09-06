@@ -70,6 +70,44 @@ describe("OpenStreetMap", () => {
     });
   });
 
+  it("exibe carregamento visual e bloqueia nova solicitação enquanto obtém a localização", async () => {
+    let resolveLocation: PositionCallback | undefined;
+    const getCurrentPosition = vi.fn((success: PositionCallback) => {
+      resolveLocation = success;
+    });
+    Object.defineProperty(navigator, "geolocation", {
+      configurable: true,
+      value: { getCurrentPosition },
+    });
+
+    render(
+      <OpenStreetMap
+        initialCenter={{ lat: -14.235, lng: -51.9253 }}
+        initialZoom={4}
+        points={[]}
+      />
+    );
+
+    const button = screen.getByRole("button", { name: "Centralizar na minha localização atual" });
+    fireEvent.click(button);
+
+    expect(button.getAttribute("aria-busy")).toBe("true");
+    expect(button.getAttribute("disabled")).toBe("");
+    expect(button.getAttribute("aria-label")).toBe("Obtendo sua localização atual");
+    expect(button.querySelector("svg")?.getAttribute("class")).toContain("animate-spin");
+    expect(screen.getByRole("status").textContent).toContain("Obtendo sua localização");
+    expect(getCurrentPosition).toHaveBeenCalledTimes(1);
+
+    resolveLocation?.({
+      coords: { latitude: -26.3044, longitude: -48.8487 },
+    } as GeolocationPosition);
+
+    await waitFor(() => {
+      expect(button.getAttribute("aria-busy")).toBe("false");
+      expect(screen.getByRole("status").textContent).toContain("Mapa centralizado");
+    });
+  });
+
   it("centraliza na localização atual quando o usuário concede permissão", async () => {
     const getCurrentPosition = vi.fn((success: PositionCallback) => {
       success({

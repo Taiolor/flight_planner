@@ -1,8 +1,8 @@
 import "leaflet/dist/leaflet.css";
 import { latLngBounds, type LatLngLiteral } from "leaflet";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useId, useState } from "react";
 import { CircleMarker, MapContainer, TileLayer, Tooltip, useMap } from "react-leaflet";
-import { LocateFixed } from "lucide-react";
+import { LocateFixed, LoaderCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export const OPENSTREETMAP_TILE_URL = "/map-tiles/{z}/{x}/{y}.png";
@@ -56,6 +56,7 @@ function MapViewport({
 
 function MapLocationButton({ onLocationChange }: { onLocationChange: (location: UserLocation) => void }) {
   const map = useMap();
+  const statusId = useId();
   const [status, setStatus] = useState<GeolocationStatus>("idle");
 
   const handleLocate = () => {
@@ -96,18 +97,25 @@ function MapLocationButton({ onLocationChange }: { onLocationChange: (location: 
         type="button"
         onClick={handleLocate}
         disabled={status === "locating"}
-        aria-label="Centralizar na minha localização atual"
+        aria-label={status === "locating" ? "Obtendo sua localização atual" : "Centralizar na minha localização atual"}
         aria-busy={status === "locating"}
-        title="Centralizar na minha localização atual"
+        aria-describedby={statusMessage ? statusId : undefined}
+        title={status === "locating" ? "Obtendo sua localização atual" : "Centralizar na minha localização atual"}
         className={cn(
           "pointer-events-auto inline-flex min-h-11 min-w-11 items-center justify-center rounded-xl border border-slate-200/80 bg-white/95 text-slate-700 shadow-lg backdrop-blur transition-colors duration-200 hover:bg-blue-50 hover:text-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 disabled:cursor-wait disabled:opacity-70",
+          status === "locating" && "border-blue-300 bg-blue-50 text-blue-700",
           status === "located" && "bg-blue-50 text-blue-700"
         )}
       >
-        <LocateFixed className={cn("h-5 w-5", status === "locating" && "animate-pulse")} aria-hidden="true" />
+        {status === "locating" ? (
+          <LoaderCircle className="h-5 w-5 animate-spin" aria-hidden="true" />
+        ) : (
+          <LocateFixed className="h-5 w-5" aria-hidden="true" />
+        )}
       </button>
       {statusMessage ? (
         <span
+          id={statusId}
           role="status"
           aria-live="polite"
           className={cn(
