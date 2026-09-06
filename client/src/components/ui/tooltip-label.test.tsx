@@ -42,6 +42,22 @@ describe("TooltipLabel", () => {
     expect(tooltip.className).toContain("max-w-[min(18rem,calc(100vw-1rem))]");
   });
 
+  it("aplica fade suave e desativa animação não essencial com redução de movimento", () => {
+    render(
+      <TooltipLabel label="Ação suave">
+        <button type="button" aria-label="Ação suave">
+          Ação
+        </button>
+      </TooltipLabel>
+    );
+
+    fireEvent.focus(screen.getByRole("button", { name: "Ação suave" }));
+    const tooltip = screen.getByRole("tooltip");
+    expect(tooltip.className).toContain("motion-safe:duration-150");
+    expect(tooltip.className).toContain("data-[state=closed]:motion-safe:duration-100");
+    expect(tooltip.className).toContain("motion-reduce:animate-none");
+  });
+
   it("exibe a descrição visual no hover e mantém o controle sem title nativo", async () => {
     render(
       <TooltipLabel label="Mais opções">
