@@ -1,5 +1,6 @@
 import { Resend } from "resend";
 import { ENV } from "./env";
+import { escapeHtml } from "./escapeHtml";
 
 /**
  * Email notification for ticket changes
@@ -43,16 +44,6 @@ function getResendClient(): Resend {
 /**
  * Format ticket change details for email body
  */
-
-function escapeHtml(unsafe: string | number | null | undefined): string {
-  if (unsafe == null) return "";
-  return String(unsafe)
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;");
-}
 
 function formatTicketDetails(notification: TicketChangeNotification): string {
   const {

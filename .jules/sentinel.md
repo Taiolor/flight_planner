@@ -38,3 +38,9 @@
 **Vulnerability:** String interpolation in HTML templates without escaping.
 **Learning:** Constructing HTML emails using template literals (e.g., in `server/routers.ts` or `server/_core/emailNotification.ts`) and directly interpolating user-controlled inputs (like flight numbers or locators) exposes the application to HTML Injection and potential Cross-Site Scripting (XSS) if viewed in a vulnerable client.
 **Prevention:** Always sanitize user-provided variables using a strict `escapeHtml` helper function before inserting them into HTML string templates. Furthermore, ensure the `escapeHtml` function handles null checks correctly (`if (unsafe == null)`) so it does not incorrectly strip out the number zero (`0`).
+
+## 2026-09-08 - Centralized HTML Escaping Utility
+
+**Vulnerability:** Duplicated and potentially inconsistent HTML escaping logic.
+**Learning:** Having local definitions of security-critical functions like `escapeHtml` scattered across files (e.g., `server/routers.ts` and `server/_core/emailNotification.ts`) makes it difficult to maintain and audit security standards.
+**Prevention:** Always use a single, centralized utility function (like `server/_core/escapeHtml.ts`) for security-related data transformations. This ensures that any security improvements or bug fixes to the escaping logic are instantly applied codebase-wide.

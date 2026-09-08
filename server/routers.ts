@@ -55,23 +55,13 @@ import {
   formatDateToBrazilian,
 } from "./_core/calendarHelper";
 import { ENV } from "./_core/env";
+import { escapeHtml } from "./_core/escapeHtml";
 import { parse } from "cookie";
 import {
   SESSION_COOKIE,
   getSessionFromCookie,
   flightProtectedProcedure,
 } from "./flightAuthMiddleware";
-
-function escapeHtml(unsafe: string | number | null | undefined): string {
-  if (unsafe == null) return "";
-  return String(unsafe)
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;");
-}
-
 
 interface NextAlert {
   weekNumber: number;
