@@ -236,9 +236,10 @@ export async function getFinancialSummaryByMonth(
  * Agrega dados financeiros para o ano inteiro.
  */
 export async function getFinancialYearSummary(
-  year: number
+  year: number,
+  prefetchedWeekData?: WeekFinancialData[]
 ): Promise<YearSummary> {
-  const weekData = await getFinancialDataByYear(year);
+  const weekData = prefetchedWeekData ?? (await getFinancialDataByYear(year));
   const byMonth = await getFinancialSummaryByMonth(year, weekData);
   const issued = weekData.filter(w => w.isTicketIssued === 1);
 
