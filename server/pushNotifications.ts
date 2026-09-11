@@ -12,9 +12,11 @@ import {
   getAllFlightWeeks,
   deletePushSubscription,
   getNotificationSettings,
-  insertNotificationLog,
+
   deleteOldNotificationLogs,
+  insertNotificationLogs,
 } from "./db";
+import { type InsertNotificationLog } from "../drizzle/schema";
 import { type FlightWeek } from "../drizzle/schema";
 
 // Configurar VAPID uma única vez ao carregar o módulo
@@ -152,16 +154,22 @@ async function processDepartureFlight(
   departureTimeMs: number,
   avisoWindow: AvisoWindow,
   pushSubscriptions: PushSubscriptions,
-  airlineNames: Record<string, string>
+  airlineNames: Record<string, string>,
+  logs: InsertNotificationLog[]
 ): Promise<void> {
   const { aviso, antecedenciaLabel, startMs, endMs } = avisoWindow;
 
-  if (isNaN(departureTimeMs) || departureTimeMs < startMs || departureTimeMs > endMs) {
+  if (
+    isNaN(departureTimeMs) ||
+    departureTimeMs < startMs ||
+    departureTimeMs > endMs
+  ) {
     return;
   }
 
   const airline = week.departureAirline
-    ? (airlineNames[week.departureAirline.toUpperCase()] ?? week.departureAirline)
+    ? (airlineNames[week.departureAirline.toUpperCase()] ??
+      week.departureAirline)
     : "Companhia";
   const flightNum = week.departureFlightNumber ?? "";
   const timeStr = departureTime.toLocaleTimeString("pt-BR", {
@@ -189,7 +197,7 @@ async function processDepartureFlight(
   );
 
   const totalDepDevices = pushSubscriptions.length;
-  await insertNotificationLog({
+  logs.push({
     weekNumber: Number(week.weekNumber),
     direction: "ida",
     avisoLabel: aviso.label,
@@ -215,7 +223,8 @@ async function processReturnFlight(
   returnTimeMs: number,
   avisoWindow: AvisoWindow,
   pushSubscriptions: PushSubscriptions,
-  airlineNames: Record<string, string>
+  airlineNames: Record<string, string>,
+  logs: InsertNotificationLog[]
 ): Promise<void> {
   const { aviso, antecedenciaLabel, startMs, endMs } = avisoWindow;
 
@@ -252,7 +261,7 @@ async function processReturnFlight(
   );
 
   const totalRetDevices = pushSubscriptions.length;
-  await insertNotificationLog({
+  logs.push({
     weekNumber: Number(week.weekNumber),
     direction: "volta",
     avisoLabel: aviso.label,
@@ -273,6 +282,7 @@ async function processReturnFlight(
 }
 
 export async function checkAndNotifyUpcomingFlights(): Promise<void> {
+  const logsToInsert: InsertNotificationLog[] = [];
   ensureVapidConfigured();
   if (!vapidConfigured) return;
 
@@ -342,7 +352,8 @@ export async function checkAndNotifyUpcomingFlights(): Promise<void> {
           departureTimeMs,
           avisoWindow,
           pushSubscriptions,
-          airlineNames
+          airlineNames,
+          logsToInsert
         );
       }
 
@@ -353,10 +364,16 @@ export async function checkAndNotifyUpcomingFlights(): Promise<void> {
           returnTimeMs,
           avisoWindow,
           pushSubscriptions,
-          airlineNames
+          airlineNames,
+          logsToInsert
         );
       }
     }
+  }
+
+  // ⚡ Bolt: Batch insert all notification logs to avoid N+1 database queries
+  if (logsToInsert.length > 0) {
+    await insertNotificationLogs(logsToInsert);
   }
 }
 
