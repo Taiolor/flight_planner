@@ -249,6 +249,7 @@ export default function FlightPopup({
                     href={depTrackUrl}
                     target="_blank"
                     rel="noopener noreferrer"
+                    aria-label="Rastrear voo (abre em nova aba)"
                     className="inline-flex items-center gap-1 text-[10px] text-blue-600 hover:underline font-medium"
                   >
                     <ExternalLink className="w-3 h-3" /> Rastrear voo
@@ -319,6 +320,7 @@ export default function FlightPopup({
                       href={retTrackUrl}
                       target="_blank"
                       rel="noopener noreferrer"
+                      aria-label="Rastrear voo (abre em nova aba)"
                       className="inline-flex items-center gap-1 text-[10px] text-orange-600 hover:underline font-medium"
                     >
                       <ExternalLink className="w-3 h-3" /> Rastrear voo
@@ -340,6 +342,7 @@ export default function FlightPopup({
               href={whatsappUrl}
               target="_blank"
               rel="noopener noreferrer"
+              aria-label="Compartilhar via WhatsApp (abre em nova aba)"
               className="flex items-center gap-2 px-3 py-2 rounded-lg bg-green-500 hover:bg-green-600 transition-colors text-white text-xs font-semibold"
             >
               <MessageCircle className="w-4 h-4" />
@@ -355,6 +358,7 @@ export default function FlightPopup({
                     href={getGoogleCalendarLink(depEvent)}
                     target="_blank"
                     rel="noopener noreferrer"
+                    aria-label="Adicionar ida ao Google Calendar (abre em nova aba)"
                     className="flex items-center justify-center gap-1.5 px-2 py-2 rounded-lg bg-white border border-blue-200 hover:bg-blue-50 transition-colors text-blue-700 text-[11px] font-semibold"
                   >
                     <CalendarPlus className="w-3.5 h-3.5" />
@@ -366,6 +370,7 @@ export default function FlightPopup({
                     href={getGoogleCalendarLink(retEvent)}
                     target="_blank"
                     rel="noopener noreferrer"
+                    aria-label="Adicionar volta ao Google Calendar (abre em nova aba)"
                     className="flex items-center justify-center gap-1.5 px-2 py-2 rounded-lg bg-white border border-orange-200 hover:bg-orange-50 transition-colors text-orange-700 text-[11px] font-semibold"
                   >
                     <CalendarPlus className="w-3.5 h-3.5" />
@@ -377,6 +382,7 @@ export default function FlightPopup({
                     href={getOutlookLink(depEvent)}
                     target="_blank"
                     rel="noopener noreferrer"
+                    aria-label="Adicionar ida ao Outlook (abre em nova aba)"
                     className="flex items-center justify-center gap-1.5 px-2 py-2 rounded-lg bg-white border border-blue-200 hover:bg-blue-50 transition-colors text-blue-700 text-[11px] font-semibold"
                   >
                     <CalendarPlus className="w-3.5 h-3.5" />
@@ -388,6 +394,7 @@ export default function FlightPopup({
                     href={getOutlookLink(retEvent)}
                     target="_blank"
                     rel="noopener noreferrer"
+                    aria-label="Adicionar volta ao Outlook (abre em nova aba)"
                     className="flex items-center justify-center gap-1.5 px-2 py-2 rounded-lg bg-white border border-orange-200 hover:bg-orange-50 transition-colors text-orange-700 text-[11px] font-semibold"
                   >
                     <CalendarPlus className="w-3.5 h-3.5" />
