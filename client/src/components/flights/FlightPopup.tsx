@@ -250,8 +250,9 @@ export default function FlightPopup({
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex items-center gap-1 text-[10px] text-blue-600 hover:underline font-medium"
+                    aria-label="Rastrear voo de ida (abre em nova aba)"
                   >
-                    <ExternalLink className="w-3 h-3" /> Rastrear voo
+                    <ExternalLink className="w-3 h-3" aria-hidden="true" /> Rastrear voo
                   </a>
                 </div>
               )}
@@ -320,8 +321,9 @@ export default function FlightPopup({
                       target="_blank"
                       rel="noopener noreferrer"
                       className="inline-flex items-center gap-1 text-[10px] text-orange-600 hover:underline font-medium"
+                      aria-label="Rastrear voo de volta (abre em nova aba)"
                     >
-                      <ExternalLink className="w-3 h-3" /> Rastrear voo
+                      <ExternalLink className="w-3 h-3" aria-hidden="true" /> Rastrear voo
                     </a>
                   </div>
                 )}
@@ -341,8 +343,9 @@ export default function FlightPopup({
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center gap-2 px-3 py-2 rounded-lg bg-green-500 hover:bg-green-600 transition-colors text-white text-xs font-semibold"
+              aria-label="Compartilhar via WhatsApp (abre em nova aba)"
             >
-              <MessageCircle className="w-4 h-4" />
+              <MessageCircle className="w-4 h-4" aria-hidden="true" />
               Compartilhar via WhatsApp
             </a>
 

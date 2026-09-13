@@ -3756,9 +3756,9 @@ export default function Home() {
                                                     target="_blank"
                                                     rel="noopener noreferrer"
                                                     title={`Buscar na ${airline.name}`}
-                                                    aria-label={`Buscar na ${airline.name}`}
+                                                    aria-label={`Buscar na ${airline.name} (abre em nova aba)`}
                                                   >
-                                                    <ExternalLink className="w-3.5 h-3.5" />
+                                                    <ExternalLink className="w-3.5 h-3.5" aria-hidden="true" />
                                                   </a>
                                                 </Button>
                                               </div>
