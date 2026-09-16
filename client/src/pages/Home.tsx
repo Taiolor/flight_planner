@@ -3886,8 +3886,8 @@ export default function Home() {
                                                   );
                                                 }}
                                                 className="px-2 py-1 text-[10px] font-semibold text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-blue-400"
-                                                title="Limpar dados do voo de ida"
-                                                aria-label="Limpar dados do voo de ida"
+                                                title={`Limpar dados do voo de ida da semana ${week.weekNumber}`}
+                                                aria-label={`Limpar dados do voo de ida da semana ${week.weekNumber}`}
                                               >
                                                 🗑️ Limpar
                                               </button>
@@ -4457,8 +4457,8 @@ export default function Home() {
                                                     );
                                                   }}
                                                   className="px-2 py-1 text-[10px] font-semibold text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-orange-400"
-                                                  title="Limpar dados do voo de volta"
-                                                  aria-label="Limpar dados do voo de volta"
+                                                  title={`Limpar dados do voo de volta da semana ${week.weekNumber}`}
+                                                  aria-label={`Limpar dados do voo de volta da semana ${week.weekNumber}`}
                                                 >
                                                   🗑️ Limpar
                                                 </button>
