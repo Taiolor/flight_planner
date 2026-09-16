@@ -106,8 +106,8 @@ export const appRouter = router({
     login: publicProcedure
       .input(
         z.object({
-          email: z.string().email(),
-          password: z.string().min(1),
+          email: z.string().email().max(255),
+          password: z.string().min(1).max(255),
         })
       )
       .mutation(async ({ input, ctx }) => {
@@ -305,11 +305,11 @@ export const appRouter = router({
         z.array(
           z.object({
             weekNumber: z.number(),
-            departureDate: z.string(),
-            returnDate: z.string(),
-            departureDayOfWeek: z.string(),
-            returnDayOfWeek: z.string(),
-            holiday: z.string().nullable().optional(),
+            departureDate: z.string().max(255),
+            returnDate: z.string().max(255),
+            departureDayOfWeek: z.string().max(255),
+            returnDayOfWeek: z.string().max(255),
+            holiday: z.string().max(255).nullable().optional(),
           })
         )
       )
@@ -1105,8 +1105,8 @@ export const appRouter = router({
     addRecipient: flightProtectedProcedure
       .input(
         z.object({
-          email: z.string().email("E-mail inválido"),
-          name: z.string().optional(),
+          email: z.string().email("E-mail inválido").max(255),
+          name: z.string().max(255).optional(),
         })
       )
       .mutation(async ({ input }) => {
