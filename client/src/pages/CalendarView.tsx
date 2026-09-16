@@ -346,6 +346,50 @@ export default function CalendarView({
     return grids;
   }, [year]);
 
+  // ⚡ Bolt: Pre-calculate unissued alert weeks to avoid O(N) array allocation on every render
+  const unissuedAlertWeeks = useMemo(() => {
+    if (!weeksQuery.data) return [];
+
+    return (weeksQuery.data as any[])
+      .filter((week: any) => {
+        const depDate = parseDate(week.departureDate);
+        const retDate = parseDate(week.returnDate);
+        // Validar padrão: ida domingo (0), retorno quinta (4) ou sexta (5)
+        const isDepartureSunday = depDate && depDate.getDay() === 0;
+        const isReturnThursdayOrFriday =
+          retDate && (retDate.getDay() === 4 || retDate.getDay() === 5);
+        const hasCorrectPattern = isDepartureSunday && isReturnThursdayOrFriday;
+        // Verificar se tem bilhete emitido
+        const hasIssued =
+          depDate &&
+          retDate &&
+          (markedDays[toKey(depDate)]?.departure ||
+            markedDays[toKey(retDate)]?.return);
+        // Mostrar apenas semanas futuras sem bilhete e com padrão correto
+        return !hasIssued && depDate && depDate > today && hasCorrectPattern;
+      })
+      .map((week: any) => {
+        const depDate = parseDate(week.departureDate);
+        const weekNumber = week.weekNumber ?? week.weekNum;
+        // Calcular se está nos próximos 15 dias
+        const daysUntilDeparture = depDate
+          ? Math.ceil(
+              (depDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
+            )
+          : 999;
+        const isUrgent = daysUntilDeparture <= 15 && daysUntilDeparture > 0;
+
+        return {
+          weekNumber,
+          isUrgent,
+          departureDate: week.departureDate,
+          returnDate: week.returnDate,
+          departureDateLabel: formatDateLabel(week.departureDate),
+          returnDateLabel: formatDateLabel(week.returnDate),
+        };
+      });
+  }, [weeksQuery.data, markedDays, today]);
+
   return (
     <div className="min-h-screen bg-slate-50">
       {/* Popup flutuante */}
@@ -703,61 +747,52 @@ export default function CalendarView({
                   Semanas sem passagens emitidas ({unissuedCount})
                 </h3>
                 <p className="text-sm text-amber-800 mb-3">
-                  Você ainda não comprou passagens para as seguintes semanas. Lembre-se: idas aos domingos, retornos quinta ou sexta.
+                  Você ainda não comprou passagens para as seguintes semanas.
+                  Lembre-se: idas aos domingos, retornos quinta ou sexta.
                 </p>
                 <div className="flex flex-wrap gap-2">
-                  {(weeksQuery.data as any)
-                    ?.filter((week: any) => {
-                      const depDate = parseDate(week.departureDate);
-                      const retDate = parseDate(week.returnDate);
-                      // Validar padrão: ida domingo (0), retorno quinta (4) ou sexta (5)
-                      const isDepartureSunday = depDate && depDate.getDay() === 0;
-                      const isReturnThursdayOrFriday = retDate && (retDate.getDay() === 4 || retDate.getDay() === 5);
-                      const hasCorrectPattern = isDepartureSunday && isReturnThursdayOrFriday;
-                      // Verificar se tem bilhete emitido
-                      const hasIssued = depDate && retDate && (markedDays[toKey(depDate)]?.departure || markedDays[toKey(retDate)]?.return);
-                      // Mostrar apenas semanas futuras sem bilhete e com padrão correto
-                      return !hasIssued && depDate && depDate > today && hasCorrectPattern;
-                    })
-                    .map((week: any) => {
-                      const depDate = parseDate(week.departureDate);
-                      const weekNumber = week.weekNumber ?? week.weekNum;
-                      // Calcular se está nos próximos 15 dias
-                      const daysUntilDeparture = depDate ? Math.ceil((depDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)) : 999;
-                      const isUrgent = daysUntilDeparture <= 15 && daysUntilDeparture > 0;
-
-                      return (
-                        <div
-                          key={weekNumber}
-                          className={`px-3 py-2 rounded-xl border text-sm cursor-pointer transition-colors ${
-                            isUrgent
-                              ? 'bg-red-100 border-red-400 text-red-900 hover:bg-red-200'
-                              : 'bg-white border-amber-300 text-amber-900 hover:bg-amber-100'
-                          }`}
-                          onClick={() => {
-                            const element = document.querySelector(`[data-week-id="week-${weekNumber}"]`);
-                            element?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                          }}
-                          title={`Semana ${weekNumber}: ida ${formatDateLabel(week.departureDate)}, volta ${formatDateLabel(week.returnDate)}${isUrgent ? ' (URGENTE - próximos 15 dias)' : ''}`}
-                        >
-                          <div className="flex items-center justify-between gap-3 font-semibold">
-                            <span>Semana {weekNumber}</span>
-                            {isUrgent && <span className="text-[11px] uppercase tracking-wide">Urgente</span>}
-                          </div>
-                          <div className="mt-1 flex flex-col gap-1 text-xs sm:flex-row sm:items-center sm:gap-3">
-                            <span className="inline-flex items-center gap-1 whitespace-nowrap">
-                              <Plane className="h-3.5 w-3.5" aria-hidden="true" />
-                              <span>Ida: {formatDateLabel(week.departureDate)}</span>
-                            </span>
-                            <span className="inline-flex items-center gap-1 whitespace-nowrap">
-                              <Plane className="h-3.5 w-3.5 rotate-180" aria-hidden="true" />
-                              <span>Volta: {formatDateLabel(week.returnDate)}</span>
-                            </span>
-                          </div>
-                        </div>
-                      );
-                    })
-                  }
+                  {unissuedAlertWeeks.map(item => (
+                    <div
+                      key={item.weekNumber}
+                      className={`px-3 py-2 rounded-xl border text-sm cursor-pointer transition-colors ${
+                        item.isUrgent
+                          ? "bg-red-100 border-red-400 text-red-900 hover:bg-red-200"
+                          : "bg-white border-amber-300 text-amber-900 hover:bg-amber-100"
+                      }`}
+                      onClick={() => {
+                        const element = document.querySelector(
+                          `[data-week-id="week-${item.weekNumber}"]`
+                        );
+                        element?.scrollIntoView({
+                          behavior: "smooth",
+                          block: "center",
+                        });
+                      }}
+                      title={`Semana ${item.weekNumber}: ida ${item.departureDateLabel}, volta ${item.returnDateLabel}${item.isUrgent ? " (URGENTE - próximos 15 dias)" : ""}`}
+                    >
+                      <div className="flex items-center justify-between gap-3 font-semibold">
+                        <span>Semana {item.weekNumber}</span>
+                        {item.isUrgent && (
+                          <span className="text-[11px] uppercase tracking-wide">
+                            Urgente
+                          </span>
+                        )}
+                      </div>
+                      <div className="mt-1 flex flex-col gap-1 text-xs sm:flex-row sm:items-center sm:gap-3">
+                        <span className="inline-flex items-center gap-1 whitespace-nowrap">
+                          <Plane className="h-3.5 w-3.5" aria-hidden="true" />
+                          <span>Ida: {item.departureDateLabel}</span>
+                        </span>
+                        <span className="inline-flex items-center gap-1 whitespace-nowrap">
+                          <Plane
+                            className="h-3.5 w-3.5 rotate-180"
+                            aria-hidden="true"
+                          />
+                          <span>Volta: {item.returnDateLabel}</span>
+                        </span>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>
