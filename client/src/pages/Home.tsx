@@ -1200,16 +1200,10 @@ export default function Home() {
     const now = new Date();
     for (const w of weeksData) {
       if (w.departureDate.length === 10 && w.returnDate.length === 10) {
-        const dep = new Date(
-          +w.departureDate.substring(6, 10),
-          +w.departureDate.substring(3, 5) - 1,
-          +w.departureDate.substring(0, 2)
-        );
-        const ret = new Date(
-          +w.returnDate.substring(6, 10),
-          +w.returnDate.substring(3, 5) - 1,
-          +w.returnDate.substring(0, 2)
-        );
+        const dep = parseBR(w.departureDate);
+        const ret = parseBR(w.returnDate);
+        if (isNaN(dep.getTime()) || isNaN(ret.getTime())) continue;
+
         // Expandir janela: 3 dias antes da ida até 1 dia depois da volta
         dep.setDate(dep.getDate() - 3);
         ret.setDate(ret.getDate() + 1);
@@ -1219,11 +1213,9 @@ export default function Home() {
     // Fallback: próxima semana futura
     for (const w of weeksData) {
       if (w.departureDate.length === 10) {
-        const dep = new Date(
-          +w.departureDate.substring(6, 10),
-          +w.departureDate.substring(3, 5) - 1,
-          +w.departureDate.substring(0, 2)
-        );
+        const dep = parseBR(w.departureDate);
+        if (isNaN(dep.getTime())) continue;
+
         if (dep >= now) return w.weekNumber;
       }
     }
@@ -2442,8 +2434,7 @@ export default function Home() {
                         Horário de Ida: {minutesToTime(departureTimeFilter)}
                       </label>
                       <span className="text-xs bg-blue-100 dark:bg-blue-900 text-blue-900 dark:text-blue-100 px-2 py-1 rounded">
-                        {departureFlightCount}{" "}
-                        voos
+                        {departureFlightCount} voos
                       </span>
                     </div>
                     <Slider
@@ -2467,8 +2458,7 @@ export default function Home() {
                         Horário de Volta: {minutesToTime(returnTimeFilter)}
                       </label>
                       <span className="text-xs bg-blue-100 dark:bg-blue-900 text-blue-900 dark:text-blue-100 px-2 py-1 rounded">
-                        {returnFlightCount}{" "}
-                        voos
+                        {returnFlightCount} voos
                       </span>
                     </div>
                     <Slider
@@ -3227,7 +3217,10 @@ export default function Home() {
                                           title={`Excluir semana ${week.weekNumber}`}
                                           aria-label={`Excluir semana ${week.weekNumber}`}
                                         >
-                                          <Trash2 className="w-4 h-4" aria-hidden="true" />
+                                          <Trash2
+                                            className="w-4 h-4"
+                                            aria-hidden="true"
+                                          />
                                         </Button>
                                       </AlertDialogTrigger>
                                       <AlertDialogContent>
