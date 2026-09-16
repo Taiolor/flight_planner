@@ -8,7 +8,7 @@ export function FlightQuotesLoadingSkeleton({ year }: { year: number }) {
       role="status"
       aria-label={`Carregando cotações de ${year}`}
       aria-busy="true"
-      className="animate-pulse"
+      className="animate-pulse motion-reduce:animate-none"
     >
       <span className="sr-only">Carregando semanas e cotações de {year}...</span>
 

@@ -950,3 +950,11 @@
 - [x] Registrar o resultado final e salvar checkpoint revisável
 
 - [x] Encerrar no GitHub os dez PRs conflitantes revisados: seis superseded pela integração manual e quatro obsoletos/duplicados
+
+## Animações e hover dos componentes integrados — sessão atual
+
+- [x] Mapear os componentes recém-integrados e seus estados atuais de carregamento e interação: Cotações, notificações push, compartilhamento por e-mail e ações externas da Home
+- [x] Definir critérios acessíveis para loading, sucesso, erro, hover e foco visível, com motion-reduce e aria-busy/aria-live quando aplicável
+- [x] Implementar animações responsivas e feedback de hover sem alterar os fluxos de negócio em Cotações, notificações e compartilhamento por e-mail
+- [x] Validar reduced motion, mobile em 320/375/390 px, TypeScript, 808 testes aprovados (2 ignorados) e build de produção
+- [x] Registrar a entrega e salvar checkpoint revisável

@@ -137,12 +137,14 @@ export function ShareByEmailButton({
     <Button
       onClick={handleShareByEmail}
       disabled={isDisabled}
+      aria-busy={isLoading}
+      aria-live="polite"
       aria-label={
         isLoading
           ? "Enviando..."
           : `📧 Compartilhar bilhetes da semana ${weekNumber} por e-mail`
       }
-      className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+      className="w-full bg-blue-600 text-white shadow-sm transition-[transform,background-color,box-shadow] duration-200 hover:-translate-y-0.5 hover:bg-blue-700 hover:shadow-md active:translate-y-0 active:scale-[0.98] focus-visible:ring-2 focus-visible:ring-cyan-300 motion-reduce:transform-none motion-reduce:transition-none"
       size="sm"
     >
       {isLoading ? (
@@ -150,7 +152,9 @@ export function ShareByEmailButton({
       ) : (
         <Mail className="w-4 h-4 mr-2" aria-hidden="true" />
       )}
-      {isLoading ? "Enviando..." : "📧 Compartilhar por E-Mail"}
+      <span className={isLoading ? "animate-pulse motion-reduce:animate-none" : ""}>
+        {isLoading ? "Enviando..." : "📧 Compartilhar por E-Mail"}
+      </span>
     </Button>
   );
 

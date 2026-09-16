@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Bell, Settings2, Clock, CheckCircle2 } from "lucide-react";
+import { Bell, Settings2, Clock, CheckCircle2, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { TooltipLabel } from "@/components/ui/tooltip-label";
 import {
@@ -84,7 +84,7 @@ function NotificationOption({
       <Select value={String(value)} onValueChange={v => onChange(Number(v))}>
         <SelectTrigger
           aria-label={ariaLabel}
-          className="bg-slate-800 border-slate-600 text-white h-10 text-sm w-full"
+          className="bg-slate-800 border-slate-600 text-white h-10 text-sm w-full transition-[border-color,background-color,box-shadow] duration-200 hover:border-cyan-400/70 hover:bg-slate-700/80 hover:shadow-sm focus-visible:ring-2 focus-visible:ring-cyan-300 motion-reduce:transition-none"
         >
           <SelectValue />
         </SelectTrigger>
@@ -132,7 +132,7 @@ function NotificationSettingsForm({
   saved,
 }: NotificationSettingsFormProps) {
   return (
-    <div className="space-y-4 p-1">
+    <div className="space-y-4 p-1 animate-in fade-in slide-in-from-top-1 duration-300 motion-reduce:animate-none">
       <p className="text-xs text-slate-400 leading-relaxed">
         Configure com quantas horas de antecedência deseja receber avisos push
         antes de cada voo. Defina como{" "}
@@ -211,11 +211,13 @@ function NotificationSettingsForm({
       <Button
         onClick={onSave}
         disabled={isPending}
-        className="w-full h-10 text-sm font-medium bg-blue-600 hover:bg-blue-700 text-white"
+        aria-busy={isPending}
+        aria-live="polite"
+        className="w-full h-10 text-sm font-medium bg-blue-600 text-white shadow-sm transition-[transform,background-color,box-shadow] duration-200 hover:bg-blue-700 hover:-translate-y-0.5 hover:shadow-md active:translate-y-0 active:scale-[0.98] focus-visible:ring-2 focus-visible:ring-cyan-300 motion-reduce:transform-none motion-reduce:transition-none"
       >
         {isPending ? (
           <span className="flex items-center gap-2">
-            <span className="animate-spin w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full" />
+            <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
             Salvando...
           </span>
         ) : saved ? (
@@ -313,7 +315,7 @@ export function NotificationSettingsPopup({
       size="sm"
       onClick={isMobile ? handleOpen : undefined}
       aria-label="Configurar agendamentos de notificação"
-      className={triggerClassName ?? "flex items-center gap-1.5 text-xs h-8 px-2.5 text-slate-300 hover:text-white hover:bg-white/10"}
+      className={triggerClassName ?? "flex items-center gap-1.5 text-xs h-8 px-2.5 text-slate-300 transition-[transform,background-color,color,box-shadow] duration-200 hover:-translate-y-0.5 hover:text-white hover:bg-white/10 hover:shadow-md active:translate-y-0 active:scale-95 focus-visible:ring-2 focus-visible:ring-cyan-300 motion-reduce:transform-none motion-reduce:transition-none"}
     >
       <Settings2 className="w-4 h-4" />
     </Button>
@@ -371,7 +373,7 @@ export function NotificationSettingsPopup({
           variant="ghost"
           size="sm"
           aria-label="Configurar agendamentos de notificação"
-          className={triggerClassName ?? "flex items-center gap-1.5 text-xs h-8 px-2.5 text-slate-300 hover:text-white hover:bg-white/10"}
+          className={triggerClassName ?? "flex items-center gap-1.5 text-xs h-8 px-2.5 text-slate-300 transition-[transform,background-color,color,box-shadow] duration-200 hover:-translate-y-0.5 hover:text-white hover:bg-white/10 hover:shadow-md active:translate-y-0 active:scale-95 focus-visible:ring-2 focus-visible:ring-cyan-300 motion-reduce:transform-none motion-reduce:transition-none"}
         >
           <Settings2 className="w-4 h-4" />
         </Button>
