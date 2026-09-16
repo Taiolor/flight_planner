@@ -1097,6 +1097,86 @@ export default function Home() {
     "12": "Dezembro",
   };
 
+  // ⚡ Bolt Optimization: Pre-calculate and group holidays per week once when weeksData changes.
+  // This prevents executing getFeriadosPorIntervalo (which iterates over all holidays)
+  // and allocating multiple grouped arrays 44 times on EVERY render cycle (e.g., during input typing).
+  const feriadosByWeek = useMemo(() => {
+    const map: Record<
+      number,
+      {
+        feriados: FeriadoInfo[];
+        feriadoIda: FeriadoInfo[];
+        feriadoRetorno: FeriadoInfo[];
+        feriadosIntervaloCopa: FeriadoInfo[];
+        feriadosIntervaloNaoCopa: FeriadoInfo[];
+        jogosDosBrasil: typeof todosJogosParsed;
+        fasesEliminatorias: typeof todasFasesParsed;
+      }
+    > = {};
+
+    for (const w of weeksData) {
+      const feriados = getFeriadosPorIntervalo(
+        w.weekNumber,
+        w.departureDate,
+        w.returnDate
+      );
+      const feriadoIda: FeriadoInfo[] = [];
+      const feriadoRetorno: FeriadoInfo[] = [];
+      const feriadosIntervaloCopa: FeriadoInfo[] = [];
+      const feriadosIntervaloNaoCopa: FeriadoInfo[] = [];
+
+      for (const f of feriados) {
+        if (f.tipo === "ida") feriadoIda.push(f);
+        else if (f.tipo === "retorno") feriadoRetorno.push(f);
+        else if (f.tipo === "intervalo") {
+          if (f.feriado.tipo === "copa") feriadosIntervaloCopa.push(f);
+          else feriadosIntervaloNaoCopa.push(f);
+        }
+      }
+
+      const semanaInicio = parseBR(w.departureDate);
+      const semanaFimViagem = parseBR(w.returnDate);
+      const semanaFim = new Date(semanaInicio);
+      semanaFim.setDate(semanaFim.getDate() + 6);
+      const semanaFimEfetivo =
+        semanaFimViagem > semanaFim ? semanaFimViagem : semanaFim;
+
+      const semanaInicioMs = semanaInicio.getTime();
+      const semanaFimEfetivoMs = semanaFimEfetivo.getTime();
+
+      const jogosDosBrasil: typeof todosJogosParsed = [];
+      for (const jogo of todosJogosParsed) {
+        if (
+          jogo.dataMs >= semanaInicioMs &&
+          jogo.dataMs <= semanaFimEfetivoMs
+        ) {
+          jogosDosBrasil.push(jogo);
+        }
+      }
+
+      const fasesEliminatorias: typeof todasFasesParsed = [];
+      for (const fase of todasFasesParsed) {
+        if (
+          fase.inicioMs <= semanaFimEfetivoMs &&
+          fase.fimMs >= semanaInicioMs
+        ) {
+          fasesEliminatorias.push(fase);
+        }
+      }
+
+      map[w.weekNumber] = {
+        feriados,
+        feriadoIda,
+        feriadoRetorno,
+        feriadosIntervaloCopa,
+        feriadosIntervaloNaoCopa,
+        jogosDosBrasil,
+        fasesEliminatorias,
+      };
+    }
+    return map;
+  }, [weeksData]);
+
   // ⚡ Bolt Optimization:
   // Pre-calculate monthly derived values (issued, selected, holidays, total) during the `weeksByMonth`
   // memoization to prevent expensive O(N) filtering/reductions inside the render loop for each month group.
@@ -1156,8 +1236,7 @@ export default function Home() {
         }
         if (
           !hasHoliday &&
-          getFeriadosPorIntervalo(w.weekNumber, w.departureDate, w.returnDate)
-            .length > 0
+          (feriadosByWeek[w.weekNumber]?.feriados.length ?? 0) > 0
         ) {
           hasHoliday = true;
         }
@@ -1174,7 +1253,7 @@ export default function Home() {
     }
 
     return groups;
-  }, [sortedWeeks, getTotalWeekCost]);
+  }, [sortedWeeks, getTotalWeekCost, feriadosByWeek]);
 
   // Mês corrente para iniciar expandido
   const currentMonthKey = useMemo(() => {
@@ -1200,16 +1279,10 @@ export default function Home() {
     const now = new Date();
     for (const w of weeksData) {
       if (w.departureDate.length === 10 && w.returnDate.length === 10) {
-        const dep = new Date(
-          +w.departureDate.substring(6, 10),
-          +w.departureDate.substring(3, 5) - 1,
-          +w.departureDate.substring(0, 2)
-        );
-        const ret = new Date(
-          +w.returnDate.substring(6, 10),
-          +w.returnDate.substring(3, 5) - 1,
-          +w.returnDate.substring(0, 2)
-        );
+        const dep = parseBR(w.departureDate);
+        const ret = parseBR(w.returnDate);
+        if (isNaN(dep.getTime()) || isNaN(ret.getTime())) continue;
+
         // Expandir janela: 3 dias antes da ida até 1 dia depois da volta
         dep.setDate(dep.getDate() - 3);
         ret.setDate(ret.getDate() + 1);
@@ -1219,11 +1292,9 @@ export default function Home() {
     // Fallback: próxima semana futura
     for (const w of weeksData) {
       if (w.departureDate.length === 10) {
-        const dep = new Date(
-          +w.departureDate.substring(6, 10),
-          +w.departureDate.substring(3, 5) - 1,
-          +w.departureDate.substring(0, 2)
-        );
+        const dep = parseBR(w.departureDate);
+        if (isNaN(dep.getTime())) continue;
+
         if (dep >= now) return w.weekNumber;
       }
     }
@@ -1405,86 +1476,6 @@ export default function Home() {
   }, [weeksData, priceMap, getLowestPrice]);
 
   const hasChartData = chartData.some(d => Object.keys(d).length > 1);
-
-  // ⚡ Bolt Optimization: Pre-calculate and group holidays per week once when weeksData changes.
-  // This prevents executing getFeriadosPorIntervalo (which iterates over all holidays)
-  // and allocating multiple grouped arrays 44 times on EVERY render cycle (e.g., during input typing).
-  const feriadosByWeek = useMemo(() => {
-    const map: Record<
-      number,
-      {
-        feriados: FeriadoInfo[];
-        feriadoIda: FeriadoInfo[];
-        feriadoRetorno: FeriadoInfo[];
-        feriadosIntervaloCopa: FeriadoInfo[];
-        feriadosIntervaloNaoCopa: FeriadoInfo[];
-        jogosDosBrasil: typeof todosJogosParsed;
-        fasesEliminatorias: typeof todasFasesParsed;
-      }
-    > = {};
-
-    for (const w of weeksData) {
-      const feriados = getFeriadosPorIntervalo(
-        w.weekNumber,
-        w.departureDate,
-        w.returnDate
-      );
-      const feriadoIda: FeriadoInfo[] = [];
-      const feriadoRetorno: FeriadoInfo[] = [];
-      const feriadosIntervaloCopa: FeriadoInfo[] = [];
-      const feriadosIntervaloNaoCopa: FeriadoInfo[] = [];
-
-      for (const f of feriados) {
-        if (f.tipo === "ida") feriadoIda.push(f);
-        else if (f.tipo === "retorno") feriadoRetorno.push(f);
-        else if (f.tipo === "intervalo") {
-          if (f.feriado.tipo === "copa") feriadosIntervaloCopa.push(f);
-          else feriadosIntervaloNaoCopa.push(f);
-        }
-      }
-
-      const semanaInicio = parseBR(w.departureDate);
-      const semanaFimViagem = parseBR(w.returnDate);
-      const semanaFim = new Date(semanaInicio);
-      semanaFim.setDate(semanaFim.getDate() + 6);
-      const semanaFimEfetivo =
-        semanaFimViagem > semanaFim ? semanaFimViagem : semanaFim;
-
-      const semanaInicioMs = semanaInicio.getTime();
-      const semanaFimEfetivoMs = semanaFimEfetivo.getTime();
-
-      const jogosDosBrasil: typeof todosJogosParsed = [];
-      for (const jogo of todosJogosParsed) {
-        if (
-          jogo.dataMs >= semanaInicioMs &&
-          jogo.dataMs <= semanaFimEfetivoMs
-        ) {
-          jogosDosBrasil.push(jogo);
-        }
-      }
-
-      const fasesEliminatorias: typeof todasFasesParsed = [];
-      for (const fase of todasFasesParsed) {
-        if (
-          fase.inicioMs <= semanaFimEfetivoMs &&
-          fase.fimMs >= semanaInicioMs
-        ) {
-          fasesEliminatorias.push(fase);
-        }
-      }
-
-      map[w.weekNumber] = {
-        feriados,
-        feriadoIda,
-        feriadoRetorno,
-        feriadosIntervaloCopa,
-        feriadosIntervaloNaoCopa,
-        jogosDosBrasil,
-        fasesEliminatorias,
-      };
-    }
-    return map;
-  }, [weeksData]);
 
   // ⚡ Bolt Optimization: Consolidate multiple O(N) loops into a single pass
   // Dados do resumo anual: total emitido por mês e totais anuais
@@ -2442,8 +2433,7 @@ export default function Home() {
                         Horário de Ida: {minutesToTime(departureTimeFilter)}
                       </label>
                       <span className="text-xs bg-blue-100 dark:bg-blue-900 text-blue-900 dark:text-blue-100 px-2 py-1 rounded">
-                        {departureFlightCount}{" "}
-                        voos
+                        {departureFlightCount} voos
                       </span>
                     </div>
                     <Slider
@@ -2467,8 +2457,7 @@ export default function Home() {
                         Horário de Volta: {minutesToTime(returnTimeFilter)}
                       </label>
                       <span className="text-xs bg-blue-100 dark:bg-blue-900 text-blue-900 dark:text-blue-100 px-2 py-1 rounded">
-                        {returnFlightCount}{" "}
-                        voos
+                        {returnFlightCount} voos
                       </span>
                     </div>
                     <Slider
@@ -3227,7 +3216,10 @@ export default function Home() {
                                           title={`Excluir semana ${week.weekNumber}`}
                                           aria-label={`Excluir semana ${week.weekNumber}`}
                                         >
-                                          <Trash2 className="w-4 h-4" aria-hidden="true" />
+                                          <Trash2
+                                            className="w-4 h-4"
+                                            aria-hidden="true"
+                                          />
                                         </Button>
                                       </AlertDialogTrigger>
                                       <AlertDialogContent>
@@ -3756,9 +3748,9 @@ export default function Home() {
                                                     target="_blank"
                                                     rel="noopener noreferrer"
                                                     title={`Buscar na ${airline.name}`}
-                                                    aria-label={`Buscar na ${airline.name}`}
+                                                    aria-label={`Buscar na ${airline.name} (abre em nova aba)`}
                                                   >
-                                                    <ExternalLink className="w-3.5 h-3.5" />
+                                                    <ExternalLink className="w-3.5 h-3.5" aria-hidden="true" />
                                                   </a>
                                                 </Button>
                                               </div>
@@ -3893,8 +3885,8 @@ export default function Home() {
                                                   );
                                                 }}
                                                 className="px-2 py-1 text-[10px] font-semibold text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-blue-400"
-                                                title="Limpar dados do voo de ida"
-                                                aria-label="Limpar dados do voo de ida"
+                                                title={`Limpar dados do voo de ida da semana ${week.weekNumber}`}
+                                                aria-label={`Limpar dados do voo de ida da semana ${week.weekNumber}`}
                                               >
                                                 🗑️ Limpar
                                               </button>
@@ -4464,8 +4456,8 @@ export default function Home() {
                                                     );
                                                   }}
                                                   className="px-2 py-1 text-[10px] font-semibold text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-orange-400"
-                                                  title="Limpar dados do voo de volta"
-                                                  aria-label="Limpar dados do voo de volta"
+                                                  title={`Limpar dados do voo de volta da semana ${week.weekNumber}`}
+                                                  aria-label={`Limpar dados do voo de volta da semana ${week.weekNumber}`}
                                                 >
                                                   🗑️ Limpar
                                                 </button>

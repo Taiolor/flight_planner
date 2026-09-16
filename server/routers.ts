@@ -305,11 +305,11 @@ export const appRouter = router({
         z.array(
           z.object({
             weekNumber: z.number(),
-            departureDate: z.string().max(255),
-            returnDate: z.string().max(255),
-            departureDayOfWeek: z.string().max(255),
-            returnDayOfWeek: z.string().max(255),
-            holiday: z.string().max(255).nullable().optional(),
+            departureDate: z.string(),
+            returnDate: z.string(),
+            departureDayOfWeek: z.string(),
+            returnDayOfWeek: z.string(),
+            holiday: z.string().nullable().optional(),
           })
         )
       )
@@ -1106,7 +1106,7 @@ export const appRouter = router({
       .input(
         z.object({
           email: z.string().email("E-mail inválido").max(255),
-          name: z.string().max(255).optional(),
+          name: z.string().optional(),
         })
       )
       .mutation(async ({ input }) => {
@@ -1166,7 +1166,7 @@ export const appRouter = router({
      * Send test email to verify SMTP configuration
      */
     sendTestEmail: flightProtectedProcedure
-      .input(z.object({ testEmail: z.string().email() }))
+      .input(z.object({ testEmail: z.string().email().max(255) }))
       .mutation(async ({ input }) => {
         const success = await sendTestEmail(input.testEmail);
         if (!success) {
