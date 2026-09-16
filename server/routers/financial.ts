@@ -90,13 +90,13 @@ export const financialRouter = router({
     .query(async ({ input }) => {
       const { baseYear, targetYear, inflationRate, tripsPerMonth } = input;
 
-      const yearSummary = await getFinancialYearSummary(baseYear);
-      const monthData = yearSummary.byMonth;
-      const monthDataMap = new Map(monthData.map(m => [m.month, m]));
-
       // Média de gasto por viagem no ano base (apenas viagens com preço registrado)
       // ⚡ Bolt Optimization: Cache getFinancialDataByYear to avoid duplicate DB calls and combine loops
       const baseYearData = await getFinancialDataByYear(baseYear);
+
+      const yearSummary = await getFinancialYearSummary(baseYear, baseYearData);
+      const monthData = yearSummary.byMonth;
+      const monthDataMap = new Map(monthData.map(m => [m.month, m]));
 
       let priceTotal = 0;
       let priceCount = 0;
