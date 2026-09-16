@@ -833,9 +833,9 @@ export function ExportPdfButton({
       className="bg-white/10 border-white text-white hover:bg-white hover:text-blue-700 transition-all"
     >
       {exporting ? (
-        <Loader2 className="w-4 h-4 animate-spin" />
+        <Loader2 className="w-4 h-4 animate-spin" aria-hidden="true" />
       ) : (
-        <FileDown className="w-4 h-4" />
+        <FileDown className="w-4 h-4" aria-hidden="true" />
       )}
       <span className="hidden sm:inline ml-1">PDF</span>
     </Button>
