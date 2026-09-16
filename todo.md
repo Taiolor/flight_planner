@@ -948,3 +948,5 @@
 - [x] Resolver e validar apenas os PRs conflitantes que preservem valor funcional e segurança: #381, #380/#366, #367, #365 e #358
 - [x] Integrar os PRs elegíveis na branch principal com validação completa: TypeScript sem erros, build aprovado e 806 testes aprovados (2 ignorados)
 - [x] Registrar o resultado final e salvar checkpoint revisável
+
+- [x] Encerrar no GitHub os dez PRs conflitantes revisados: seis superseded pela integração manual e quatro obsoletos/duplicados
