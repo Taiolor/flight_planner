@@ -1,5 +1,6 @@
 import { Resend } from "resend";
 import { ENV } from "./env";
+import { escapeHtml } from "./escapeHtml";
 
 const SMART_FLY_EMAIL_LOGO_URL =
   "https://flightplan-hq655wm9.manus.space/smartfly-assets/smartfly-sf-apple-touch-icon_598faae4.png";
@@ -31,19 +32,6 @@ export interface TicketChangeNotification {
   returnLocator?: string;
   departureDate?: string;
   returnDate?: string;
-}
-
-export function escapeHtml(value: unknown): string {
-  return String(value ?? "").replace(/[&<>"']/g, character => {
-    const entities: Record<string, string> = {
-      "&": "&amp;",
-      "<": "&lt;",
-      ">": "&gt;",
-      '"': "&quot;",
-      "'": "&#39;",
-    };
-    return entities[character];
-  });
 }
 
 function formatEmailValue(value: unknown, fallback = "—"): string {

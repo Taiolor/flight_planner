@@ -4,8 +4,17 @@ import {
   formatTicketShareEmail,
   sanitizeEmailSubject,
 } from "./emailNotification";
+import { escapeHtml } from "./escapeHtml";
 
 describe("email notification sanitization", () => {
+  it("centralizes HTML escaping without dropping zero", () => {
+    expect(escapeHtml(0)).toBe("0");
+    expect(escapeHtml(null)).toBe("");
+    expect(escapeHtml('<script>alert("x")</script>')).toBe(
+      "&lt;script&gt;alert(&quot;x&quot;)&lt;/script&gt;"
+    );
+  });
+
   it("escapes ticket fields and change values before inserting them into HTML", () => {
     const html = formatTicketDetails({
       type: "updated",

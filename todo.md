@@ -940,3 +940,11 @@
 - [x] Reconciliar conflitos remanescentes entre a main local e user_github/main sem perder compras de milhas, notificações ou acessibilidade
 - [x] Corrigir regressões de sintaxe JSX, dependências e compatibilidade do Vite após o merge
 - [x] Validar o estado reconciliado com pnpm check, 805 testes aprovados e build de produção aprovado
+
+## Revisão de PRs conflitantes — sessão atual
+
+- [x] Inventariar os PRs ainda abertos e conflitantes contra a branch principal atual: #381, #380, #367, #366, #365, #360, #358, #347, #344 e #334
+- [x] Classificar cada PR por funcionalidade pendente, duplicidade, risco e dependências; #347/#334 são sobrepostos, #380/#366 complementares e #344/#367 estão parcialmente absorvidos
+- [x] Resolver e validar apenas os PRs conflitantes que preservem valor funcional e segurança: #381, #380/#366, #367, #365 e #358
+- [x] Integrar os PRs elegíveis na branch principal com validação completa: TypeScript sem erros, build aprovado e 806 testes aprovados (2 ignorados)
+- [x] Registrar o resultado final e salvar checkpoint revisável

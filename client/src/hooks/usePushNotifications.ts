@@ -127,7 +127,7 @@ export function usePushNotifications(year: number) {
       }
       setStatus("error");
     }
-  }, [vapidData, subscribeMutation]);
+  }, [vapidData, subscribeMutation.mutateAsync]);
 
   const unsubscribe = useCallback(async () => {
     if (!subscription) return;
@@ -149,7 +149,7 @@ export function usePushNotifications(year: number) {
       );
       setStatus("error");
     }
-  }, [subscription, unsubscribeMutation]);
+  }, [subscription, unsubscribeMutation.mutateAsync]);
 
   const sendTest = useCallback(async () => {
     try {
@@ -163,7 +163,7 @@ export function usePushNotifications(year: number) {
       );
       return false;
     }
-  }, [sendTestMutation, year]);
+  }, [sendTestMutation.mutateAsync, year]);
 
   return {
     status,

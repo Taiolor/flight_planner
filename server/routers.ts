@@ -573,11 +573,11 @@ export const appRouter = router({
           weeks: z.array(
             z.object({
               weekNumber: z.number(),
-              departureDate: z.string(),
-              returnDate: z.string(),
-              departureDayOfWeek: z.string(),
-              returnDayOfWeek: z.string(),
-              holiday: z.string().nullable().optional(),
+              departureDate: z.string().max(255),
+              returnDate: z.string().max(255),
+              departureDayOfWeek: z.string().max(255),
+              returnDayOfWeek: z.string().max(255),
+              holiday: z.string().max(255).nullable().optional(),
             })
           ),
         })
@@ -1579,7 +1579,7 @@ export const appRouter = router({
       .input(
         z.object({
           emailId: z.number(),
-          name: z.string().optional(),
+          name: z.string().max(255).optional(),
         })
       )
       .mutation(async ({ input }) => {
