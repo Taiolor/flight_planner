@@ -345,6 +345,7 @@ export default function FinancialDashboard() {
         <div className="ml-auto flex items-center gap-2 flex-wrap">
           {/* Seletor de ano */}
           <select
+            aria-label="Selecionar ano de referência"
             value={selectedYear}
             onChange={e => setSelectedYear(Number(e.target.value))}
             className="bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-400"
@@ -456,7 +457,12 @@ export default function FinancialDashboard() {
 
           {/* ── Tab: Dinheiro ── */}
           {activeTab === "cash" && (
-            <div role="tabpanel" id="tabpanel-cash" aria-labelledby="tab-cash" className="space-y-6">
+            <div
+              role="tabpanel"
+              id="tabpanel-cash"
+              aria-labelledby="tab-cash"
+              className="space-y-6"
+            >
               {/* Gráfico de barras mensal */}
               <div className="bg-white dark:bg-slate-900 rounded-2xl p-3 sm:p-6 shadow-sm border border-slate-100 dark:border-slate-800">
                 <SectionHeader
@@ -637,7 +643,12 @@ export default function FinancialDashboard() {
 
           {/* ── Tab: Milhas ── */}
           {activeTab === "miles" && (
-            <div role="tabpanel" id="tabpanel-miles" aria-labelledby="tab-miles" className="space-y-6">
+            <div
+              role="tabpanel"
+              id="tabpanel-miles"
+              aria-labelledby="tab-miles"
+              className="space-y-6"
+            >
               <div className="bg-white dark:bg-slate-900 rounded-2xl p-3 sm:p-6 shadow-sm border border-slate-100 dark:border-slate-800">
                 <SectionHeader
                   title="Gastos em Milhas por Mês"
@@ -770,7 +781,12 @@ export default function FinancialDashboard() {
 
           {/* ── Tab: Comparativo por Companhia ── */}
           {activeTab === "comparison" && (
-            <div role="tabpanel" id="tabpanel-comparison" aria-labelledby="tab-comparison" className="space-y-6">
+            <div
+              role="tabpanel"
+              id="tabpanel-comparison"
+              aria-labelledby="tab-comparison"
+              className="space-y-6"
+            >
               <div className="grid md:grid-cols-2 gap-6">
                 {/* Pizza de gastos por companhia */}
                 <div className="bg-white dark:bg-slate-900 rounded-2xl p-3 sm:p-6 shadow-sm border border-slate-100 dark:border-slate-800">
