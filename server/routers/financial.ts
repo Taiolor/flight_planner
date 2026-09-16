@@ -17,6 +17,13 @@ import {
   type MonthSummary,
   type YearSummary,
 } from "../financialDb";
+import {
+  createMileagePurchase,
+  deleteMileagePurchase,
+  getMileagePurchasesByYear,
+  getMileagePurchasesSummaryByYear,
+  updateMileagePurchase,
+} from "../mileagePurchasesDb";
 
 // ─── Constantes de projeção ───────────────────────────────────────────────────
 
@@ -76,6 +83,46 @@ export const financialRouter = router({
     .query(async ({ input }) => {
       return getFinancialMonthlyBudgets(input.year);
     }),
+
+  getMileagePurchases: flightProtectedProcedure
+    .input(z.object({ year: planningYearSchema }))
+    .query(async ({ input }) => {
+      const items = await getMileagePurchasesByYear(input.year);
+      const summary = await getMileagePurchasesSummaryByYear(input.year, items);
+      return { items, summary };
+    }),
+
+  createMileagePurchase: flightProtectedProcedure
+    .input(
+      z.object({
+        year: planningYearSchema,
+        purchaseDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Informe uma data válida."),
+        miles: z.number().int().min(1).max(100_000_000),
+        program: z.string().trim().min(1).max(100),
+        paidPriceCents: z.number().int().min(0).max(100_000_000),
+      })
+    )
+    .mutation(async ({ input }) => createMileagePurchase(input)),
+
+  updateMileagePurchase: flightProtectedProcedure
+    .input(
+      z.object({
+        id: z.number().int().positive(),
+        year: planningYearSchema,
+        purchaseDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Informe uma data válida.").optional(),
+        miles: z.number().int().min(1).max(100_000_000).optional(),
+        program: z.string().trim().min(1).max(100).optional(),
+        paidPriceCents: z.number().int().min(0).max(100_000_000).optional(),
+      })
+    )
+    .mutation(async ({ input }) => {
+      const { id, year, ...patch } = input;
+      return updateMileagePurchase(id, year, patch);
+    }),
+
+  deleteMileagePurchase: flightProtectedProcedure
+    .input(z.object({ id: z.number().int().positive(), year: planningYearSchema }))
+    .mutation(async ({ input }) => deleteMileagePurchase(input.id, input.year)),
 
   upsertMonthlyBudget: flightProtectedProcedure
     .input(

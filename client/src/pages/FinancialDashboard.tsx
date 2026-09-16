@@ -1,4 +1,4 @@
-import { lazy, Suspense, useMemo, useState } from "react";
+import { lazy, Suspense, useEffect, useMemo, useState, type FormEvent } from "react";
 import { trpc } from "@/lib/trpc";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
@@ -12,6 +12,10 @@ import { ContentReveal } from "@/components/ContentReveal";
 import { MetricCard } from "@/components/MetricCard";
 import { formatAirlineDisplayName } from "@/lib/airlinePresentation";
 import { queryCachePolicies } from "@/lib/queryCache";
+import {
+  parseMileagePurchasePriceToCents,
+  validateMileagePurchaseDraft,
+} from "@/lib/mileagePurchaseValidation";
 import {
   getLatestMonthlyKpiComparisons,
   type MonthlyKpiComparison,
@@ -37,6 +41,11 @@ import {
   AlertCircle,
   Info,
   WalletCards,
+  Plus,
+  Pencil,
+  Trash2,
+  Save,
+  X,
   type LucideIcon,
 } from "lucide-react";
 
@@ -98,6 +107,13 @@ const AIRLINE_COLORS: Record<string, string> = {
   desconhecida: "#94A3B8",
 };
 
+type MileageDraft = {
+  purchaseDate: string;
+  miles: string;
+  program: string;
+  paidValue: string;
+};
+
 const AIRLINE_LABELS: Record<string, string> = {
   latam: "LATAM",
   gol: "GOL",
@@ -120,6 +136,14 @@ function formatBRL(value: number, hidden = false): string {
 
 function formatMiles(value: number): string {
   return new Intl.NumberFormat("pt-BR").format(value) + " pts";
+}
+
+function formatPurchaseDate(value: string): string {
+  return new Intl.DateTimeFormat("pt-BR", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  }).format(new Date(`${value}T12:00:00`));
 }
 
 function displayAirline(airline: string | null | undefined): string {
@@ -258,6 +282,24 @@ function FinancialDashboardContent() {
   const [activeTab, setActiveTab] = useState<"cash" | "miles" | "comparison">(
     "cash"
   );
+  const [mileageDraft, setMileageDraft] = useState<MileageDraft>({
+    purchaseDate: `${selectedYear}-01-01`,
+    miles: "",
+    program: "",
+    paidValue: "",
+  });
+  const [editingMileageId, setEditingMileageId] = useState<number | null>(null);
+  const [mileageFeedback, setMileageFeedback] = useState("");
+  const [mileageError, setMileageError] = useState("");
+
+  useEffect(() => {
+    setMileageDraft(current => ({
+      ...current,
+      purchaseDate: current.purchaseDate.startsWith(`${selectedYear}-`)
+        ? current.purchaseDate
+        : `${selectedYear}-01-01`,
+    }));
+  }, [selectedYear]);
 
   // ─── Queries ───────────────────────────────────────────────────────────────
   const { data: yearSummary, isLoading: loadingYear } =
@@ -268,6 +310,12 @@ function FinancialDashboardContent() {
 
   const { data: weeklyData, isLoading: loadingWeekly } =
     trpc.financial.getWeeklyData.useQuery(
+      { year: selectedYear },
+      queryCachePolicies.financial
+    );
+
+  const { data: mileagePurchasesData, isLoading: loadingMileagePurchases } =
+    trpc.financial.getMileagePurchases.useQuery(
       { year: selectedYear },
       queryCachePolicies.financial
     );
@@ -308,6 +356,91 @@ function FinancialDashboardContent() {
       setBudgetFeedback("Não foi possível copiar os envelopes. Tente novamente.");
     },
   });
+
+  const resetMileageDraft = () => {
+    setEditingMileageId(null);
+    setMileageDraft({
+      purchaseDate: `${selectedYear}-01-01`,
+      miles: "",
+      program: "",
+      paidValue: "",
+    });
+  };
+
+  const saveMileagePurchase = trpc.financial.createMileagePurchase.useMutation({
+    onSuccess: () => {
+      setMileageFeedback("Compra de milhas registrada.");
+      setMileageError("");
+      resetMileageDraft();
+      void utils.financial.getMileagePurchases.invalidate({ year: selectedYear });
+    },
+    onError: error => setMileageError(error.message || "Não foi possível salvar a compra."),
+  });
+  const updateMileagePurchase = trpc.financial.updateMileagePurchase.useMutation({
+    onSuccess: () => {
+      setMileageFeedback("Compra de milhas atualizada.");
+      setMileageError("");
+      resetMileageDraft();
+      void utils.financial.getMileagePurchases.invalidate({ year: selectedYear });
+    },
+    onError: error => setMileageError(error.message || "Não foi possível atualizar a compra."),
+  });
+  const deleteMileagePurchase = trpc.financial.deleteMileagePurchase.useMutation({
+    onSuccess: () => {
+      setMileageFeedback("Compra de milhas removida.");
+      setMileageError("");
+      void utils.financial.getMileagePurchases.invalidate({ year: selectedYear });
+    },
+    onError: error => setMileageError(error.message || "Não foi possível remover a compra."),
+  });
+
+  const submitMileagePurchase = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const miles = Number(mileageDraft.miles);
+    const paidPriceCents = parseMileagePurchasePriceToCents(mileageDraft.paidValue);
+    const validationError = validateMileagePurchaseDraft(mileageDraft, selectedYear);
+    if (validationError || paidPriceCents === null) {
+      setMileageError(validationError ?? "Informe um valor pago válido.");
+      return;
+    }
+    setMileageError("");
+    setMileageFeedback("");
+    const payload = {
+      year: selectedYear,
+      purchaseDate: mileageDraft.purchaseDate,
+      miles,
+      program: mileageDraft.program.trim(),
+      paidPriceCents,
+    };
+    if (editingMileageId !== null) {
+      updateMileagePurchase.mutate({ id: editingMileageId, ...payload });
+    } else {
+      saveMileagePurchase.mutate(payload);
+    }
+  };
+
+  const startEditingMileagePurchase = (purchase: NonNullable<typeof mileagePurchasesData>["items"][number]) => {
+    setEditingMileageId(purchase.id);
+    setMileageDraft({
+      purchaseDate: purchase.purchaseDate,
+      miles: String(purchase.miles),
+      program: purchase.program,
+      paidValue: (purchase.paidPriceCents / 100).toFixed(2),
+    });
+    setMileageFeedback("");
+    setMileageError("");
+  };
+
+  const removeMileagePurchase = (id: number) => {
+    if (window.confirm("Remover esta compra de milhas?")) {
+      deleteMileagePurchase.mutate({ id, year: selectedYear });
+    }
+  };
+
+  const mileagePurchaseBusy =
+    saveMileagePurchase.isPending ||
+    updateMileagePurchase.isPending ||
+    deleteMileagePurchase.isPending;
 
   const { data: projections, isLoading: loadingProjections } =
     trpc.financial.getProjections.useQuery(
@@ -900,6 +1033,145 @@ function FinancialDashboardContent() {
           {/* ── Tab: Milhas ── */}
           {activeTab === "miles" && (
             <div role="tabpanel" id="tabpanel-miles" aria-labelledby="tab-miles" className="space-y-6">
+              <section
+                aria-labelledby="mileage-purchases-title"
+                className="overflow-hidden rounded-2xl border border-amber-100 bg-white shadow-sm dark:border-amber-900/50 dark:bg-slate-900"
+              >
+                <div className="border-b border-amber-100 bg-gradient-to-r from-amber-50 via-white to-orange-50 p-4 dark:border-amber-900/50 dark:from-amber-950/30 dark:via-slate-900 dark:to-orange-950/20 sm:p-6">
+                  <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                    <SectionHeader
+                      title="Compras de milhas"
+                      subtitle={`Registros do exercício ${selectedYear}`}
+                      icon={Star}
+                    />
+                    <div className="grid grid-cols-3 gap-2 sm:min-w-[360px]">
+                      <div className="rounded-xl bg-white/80 p-2.5 text-center dark:bg-slate-800/70">
+                        <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Compras</p>
+                        <p className="mt-1 text-lg font-bold text-slate-900 dark:text-white">{mileagePurchasesData?.summary.purchaseCount ?? 0}</p>
+                      </div>
+                      <div className="rounded-xl bg-white/80 p-2.5 text-center dark:bg-slate-800/70">
+                        <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Milhas</p>
+                        <p className="mt-1 text-sm font-bold text-amber-700 dark:text-amber-300">{formatMiles(mileagePurchasesData?.summary.totalMiles ?? 0)}</p>
+                      </div>
+                      <div className="rounded-xl bg-white/80 p-2.5 text-center dark:bg-slate-800/70">
+                        <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Investido</p>
+                        <p className="mt-1 text-sm font-bold text-orange-700 dark:text-orange-300">{formatBRL((mileagePurchasesData?.summary.totalPaidCents ?? 0) / 100, !showValues)}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-4 p-4 sm:p-6">
+                  <form onSubmit={submitMileagePurchase} className="rounded-xl border border-amber-200 bg-amber-50/60 p-3 dark:border-amber-900/60 dark:bg-amber-950/20 sm:p-4">
+                    <div className="mb-3 flex items-center justify-between gap-3">
+                      <h3 id="mileage-purchases-title" className="text-sm font-bold text-slate-900 dark:text-slate-100">
+                        {editingMileageId === null ? "Adicionar compra" : "Editar compra"}
+                      </h3>
+                      {editingMileageId !== null && (
+                        <Button type="button" variant="ghost" size="sm" onClick={resetMileageDraft} aria-label="Cancelar edição da compra de milhas">
+                          <X className="mr-1 h-4 w-4" /> Cancelar
+                        </Button>
+                      )}
+                    </div>
+                    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                      <label className="space-y-1 text-sm font-medium text-slate-700 dark:text-slate-300">
+                        <span>Data da compra</span>
+                        <input
+                          type="date"
+                          value={mileageDraft.purchaseDate}
+                          onChange={event => setMileageDraft(current => ({ ...current, purchaseDate: event.target.value }))}
+                          max={`${selectedYear}-12-31`}
+                          min={`${selectedYear}-01-01`}
+                          required
+                          className="h-10 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-900 outline-none transition focus:border-amber-500 focus:ring-2 focus:ring-amber-200 dark:border-slate-700 dark:bg-slate-950 dark:text-white dark:focus:ring-amber-900"
+                        />
+                      </label>
+                      <label className="space-y-1 text-sm font-medium text-slate-700 dark:text-slate-300">
+                        <span>Total de milhas compradas</span>
+                        <input
+                          type="number"
+                          min="1"
+                          step="1"
+                          inputMode="numeric"
+                          value={mileageDraft.miles}
+                          onChange={event => setMileageDraft(current => ({ ...current, miles: event.target.value }))}
+                          placeholder="Ex.: 50.000"
+                          required
+                          className="h-10 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-900 outline-none transition focus:border-amber-500 focus:ring-2 focus:ring-amber-200 dark:border-slate-700 dark:bg-slate-950 dark:text-white dark:focus:ring-amber-900"
+                        />
+                      </label>
+                      <label className="space-y-1 text-sm font-medium text-slate-700 dark:text-slate-300">
+                        <span>Programa ou companhia aérea</span>
+                        <input
+                          type="text"
+                          maxLength={100}
+                          value={mileageDraft.program}
+                          onChange={event => setMileageDraft(current => ({ ...current, program: event.target.value }))}
+                          placeholder="Ex.: SMILES, LATAM PASS"
+                          required
+                          className="h-10 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-900 outline-none transition focus:border-amber-500 focus:ring-2 focus:ring-amber-200 dark:border-slate-700 dark:bg-slate-950 dark:text-white dark:focus:ring-amber-900"
+                        />
+                      </label>
+                      <label className="space-y-1 text-sm font-medium text-slate-700 dark:text-slate-300">
+                        <span>Valor pago (R$)</span>
+                        <input
+                          type="number"
+                          min="0"
+                          step="0.01"
+                          inputMode="decimal"
+                          value={mileageDraft.paidValue}
+                          onChange={event => setMileageDraft(current => ({ ...current, paidValue: event.target.value }))}
+                          placeholder="Ex.: 799,90"
+                          required
+                          className="h-10 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-900 outline-none transition focus:border-amber-500 focus:ring-2 focus:ring-amber-200 dark:border-slate-700 dark:bg-slate-950 dark:text-white dark:focus:ring-amber-900"
+                        />
+                      </label>
+                    </div>
+                    {(mileageError || mileageFeedback) && (
+                      <p role="status" className={`mt-3 text-sm ${mileageError ? "text-rose-700 dark:text-rose-300" : "text-emerald-700 dark:text-emerald-300"}`}>
+                        {mileageError || mileageFeedback}
+                      </p>
+                    )}
+                    <div className="mt-3 flex justify-end">
+                      <Button type="submit" disabled={mileagePurchaseBusy} className="bg-amber-600 text-white hover:bg-amber-700">
+                        {editingMileageId === null ? <Plus className="mr-2 h-4 w-4" /> : <Save className="mr-2 h-4 w-4" />}
+                        {mileagePurchaseBusy ? "Salvando…" : editingMileageId === null ? "Adicionar compra" : "Salvar alterações"}
+                      </Button>
+                    </div>
+                  </form>
+
+                  <div className="space-y-2">
+                    {loadingMileagePurchases ? (
+                      <div className="h-20 animate-pulse rounded-xl bg-slate-100 dark:bg-slate-800" aria-label="Carregando compras de milhas" />
+                    ) : (mileagePurchasesData?.items ?? []).length === 0 ? (
+                      <div className="rounded-xl border border-dashed border-slate-200 p-6 text-center text-sm text-slate-500 dark:border-slate-700 dark:text-slate-400">
+                        Nenhuma compra de milhas registrada em {selectedYear}.
+                      </div>
+                    ) : (
+                      (mileagePurchasesData?.items ?? []).map(purchase => (
+                        <article key={purchase.id} className="flex flex-col gap-3 rounded-xl border border-slate-100 bg-slate-50/70 p-3 dark:border-slate-800 dark:bg-slate-800/40 sm:flex-row sm:items-center sm:justify-between">
+                          <div className="min-w-0">
+                            <div className="flex flex-wrap items-center gap-2">
+                              <p className="font-semibold text-slate-900 dark:text-slate-100">{purchase.program}</p>
+                              <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-800 dark:bg-amber-900/50 dark:text-amber-200">{formatMiles(purchase.miles)}</span>
+                            </div>
+                            <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">{formatPurchaseDate(purchase.purchaseDate)} · {formatBRL(purchase.paidPriceCents / 100, !showValues)}</p>
+                          </div>
+                          <div className="flex shrink-0 gap-2">
+                            <Button type="button" variant="ghost" size="sm" onClick={() => startEditingMileagePurchase(purchase)} aria-label={`Editar compra de ${purchase.program}`}>
+                              <Pencil className="mr-1 h-4 w-4" /> Editar
+                            </Button>
+                            <Button type="button" variant="ghost" size="sm" onClick={() => removeMileagePurchase(purchase.id)} aria-label={`Remover compra de ${purchase.program}`} className="text-rose-700 hover:text-rose-800 dark:text-rose-300">
+                              <Trash2 className="mr-1 h-4 w-4" /> Remover
+                            </Button>
+                          </div>
+                        </article>
+                      ))
+                    )}
+                  </div>
+                </div>
+              </section>
+
               <div className="bg-white dark:bg-slate-900 rounded-2xl p-3 sm:p-6 shadow-sm border border-slate-100 dark:border-slate-800">
                 <SectionHeader
                   title="Gastos em Milhas por Mês"

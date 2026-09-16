@@ -892,3 +892,26 @@ export type TicketNotificationEmail =
   typeof ticketNotificationEmails.$inferSelect;
 export type InsertTicketNotificationEmail =
   typeof ticketNotificationEmails.$inferInsert;
+
+
+/** Compras avulsas de milhas, isoladas pelo exercício selecionado. */
+export const mileagePurchases = mysqlTable(
+  "mileage_purchases",
+  {
+    id: int("id").autoincrement().primaryKey(),
+    year: int("year").notNull(),
+    purchaseDate: varchar("purchaseDate", { length: 10 }).notNull(),
+    miles: int("miles").notNull(),
+    program: varchar("program", { length: 100 }).notNull(),
+    paidPriceCents: int("paidPriceCents").notNull().default(0),
+    createdAt: timestamp("createdAt").defaultNow().notNull(),
+    updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+  },
+  table => [
+    index("idx_mileage_purchases_year_date").on(table.year, table.purchaseDate),
+    index("idx_mileage_purchases_year_program").on(table.year, table.program),
+  ]
+);
+
+export type MileagePurchase = typeof mileagePurchases.$inferSelect;
+export type InsertMileagePurchase = typeof mileagePurchases.$inferInsert;

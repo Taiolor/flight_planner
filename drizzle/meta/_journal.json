@@ -337,6 +337,13 @@
       "when": 1787769266307,
       "tag": "0047_mushy_mac_gargan",
       "breakpoints": true
+    },
+    {
+      "idx": 48,
+      "version": "5",
+      "when": 1789564041048,
+      "tag": "0048_wakeful_dark_phoenix",
+      "breakpoints": true
     }
   ]
 }

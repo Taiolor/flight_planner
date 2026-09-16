@@ -927,3 +927,9 @@
 - [x] Exibir a precisão aproximada da localização atual no mapa
 - [x] Permitir remover o marcador pessoal da localização atual
 - [x] Preparar roteiro de validação da geolocalização em iOS e Android
+
+## Compras de milhas
+
+- [x] Criar cadastro anual de compras de milhas com data, total de milhas, programa ou companhia aérea e valor pago
+- [x] Integrar compras de milhas aos totais e detalhamento do Financeiro por ano
+- [x] Validar autorização, valores monetários, responsividade mobile e testes do módulo
