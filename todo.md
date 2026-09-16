@@ -923,3 +923,7 @@
 - [x] Adicionar botão acessível para centralizar o mapa na localização atual do dispositivo móvel, com estados de permissão, carregamento e erro
 
 - [x] Aprimorar o estado visual de carregamento do botão de centralização enquanto o GPS responde
+
+- [x] Exibir a precisão aproximada da localização atual no mapa
+- [x] Permitir remover o marcador pessoal da localização atual
+- [x] Preparar roteiro de validação da geolocalização em iOS e Android

@@ -27,6 +27,7 @@ vi.mock("react-leaflet", async () => {
       ReactModule.createElement("div", { "data-testid": "osm-tiles", "data-url": url }),
     CircleMarker: ({ children }: { children: React.ReactNode }) =>
       ReactModule.createElement("div", { "data-testid": "osm-marker" }, children),
+    Circle: () => ReactModule.createElement("div", { "data-testid": "osm-accuracy-circle" }),
     Tooltip: ({ children }: { children: React.ReactNode }) =>
       ReactModule.createElement("span", null, children),
     useMap: () => ({
@@ -111,7 +112,7 @@ describe("OpenStreetMap", () => {
   it("centraliza na localização atual quando o usuário concede permissão", async () => {
     const getCurrentPosition = vi.fn((success: PositionCallback) => {
       success({
-        coords: { latitude: -26.3044, longitude: -48.8487 },
+        coords: { latitude: -26.3044, longitude: -48.8487, accuracy: 42 },
       } as GeolocationPosition);
     });
     Object.defineProperty(navigator, "geolocation", {
@@ -145,7 +146,17 @@ describe("OpenStreetMap", () => {
         expect.objectContaining({ animate: true, duration: 0.6 })
       );
       expect(screen.getByText("Sua localização atual")).toBeTruthy();
-      expect(screen.getByRole("status").textContent).toContain("Mapa centralizado");
+      expect(screen.getByTestId("osm-accuracy-circle")).toBeTruthy();
+      expect(screen.getByRole("status").textContent).toContain("Precisão aproximada de 42 m");
+      expect(screen.getByRole("button", { name: "Remover marcador da minha localização" })).toBeTruthy();
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "Remover marcador da minha localização" }));
+
+    await waitFor(() => {
+      expect(screen.queryByText("Sua localização atual")).toBeNull();
+      expect(screen.queryByTestId("osm-accuracy-circle")).toBeNull();
+      expect(screen.queryByRole("button", { name: "Remover marcador da minha localização" })).toBeNull();
     });
   });
 

@@ -1,8 +1,8 @@
 import "leaflet/dist/leaflet.css";
 import { latLngBounds, type LatLngLiteral } from "leaflet";
 import React, { useEffect, useId, useState } from "react";
-import { CircleMarker, MapContainer, TileLayer, Tooltip, useMap } from "react-leaflet";
-import { LocateFixed, LoaderCircle } from "lucide-react";
+import { Circle, CircleMarker, MapContainer, TileLayer, Tooltip, useMap } from "react-leaflet";
+import { LocateFixed, LoaderCircle, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export const OPENSTREETMAP_TILE_URL = "/map-tiles/{z}/{x}/{y}.png";
@@ -25,7 +25,16 @@ type OpenStreetMapProps = {
 
 type GeolocationStatus = "idle" | "locating" | "located" | "error";
 
-type UserLocation = LatLngLiteral;
+type UserLocation = {
+  position: LatLngLiteral;
+  accuracyMeters: number | null;
+};
+
+function formatApproximateAccuracy(accuracyMeters: number | null) {
+  if (accuracyMeters === null) return "Precisão aproximada indisponível";
+  if (accuracyMeters >= 1000) return `Precisão aproximada de ${(accuracyMeters / 1000).toFixed(1).replace(".0", "")} km`;
+  return `Precisão aproximada de ${Math.max(1, Math.round(accuracyMeters))} m`;
+}
 
 function MapViewport({
   initialCenter,
@@ -54,10 +63,19 @@ function MapViewport({
   return null;
 }
 
-function MapLocationButton({ onLocationChange }: { onLocationChange: (location: UserLocation) => void }) {
+function MapLocationButton({
+  hasLocation,
+  onLocationChange,
+  onClearLocation,
+}: {
+  hasLocation: boolean;
+  onLocationChange: (location: UserLocation) => void;
+  onClearLocation: () => void;
+}) {
   const map = useMap();
   const statusId = useId();
   const [status, setStatus] = useState<GeolocationStatus>("idle");
+  const [lastAccuracyMeters, setLastAccuracyMeters] = useState<number | null>(null);
 
   const handleLocate = () => {
     if (!navigator.geolocation) {
@@ -68,13 +86,20 @@ function MapLocationButton({ onLocationChange }: { onLocationChange: (location: 
     setStatus("locating");
     navigator.geolocation.getCurrentPosition(
       ({ coords }) => {
-        const location = { lat: coords.latitude, lng: coords.longitude };
+        const location = {
+          position: { lat: coords.latitude, lng: coords.longitude },
+          accuracyMeters:
+            typeof coords.accuracy === "number" && Number.isFinite(coords.accuracy)
+              ? coords.accuracy
+              : null,
+        };
         const reducedMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
-        map.flyTo([location.lat, location.lng], Math.max(map.getZoom(), 13), {
+        map.flyTo([location.position.lat, location.position.lng], Math.max(map.getZoom(), 13), {
           animate: !reducedMotion,
           duration: reducedMotion ? 0 : 0.6,
         });
         onLocationChange(location);
+        setLastAccuracyMeters(location.accuracyMeters);
         setStatus("located");
       },
       () => setStatus("error"),
@@ -86,13 +111,14 @@ function MapLocationButton({ onLocationChange }: { onLocationChange: (location: 
     status === "locating"
       ? "Obtendo sua localização…"
       : status === "located"
-        ? "Mapa centralizado na sua localização"
+        ? `Mapa centralizado na sua localização. ${formatApproximateAccuracy(lastAccuracyMeters)}`
         : status === "error"
           ? "Não foi possível acessar sua localização"
           : null;
 
   return (
     <div className="pointer-events-none absolute right-3 top-3 z-[1000] flex flex-col items-end gap-2">
+      <div className="pointer-events-auto flex items-center gap-2">
       <button
         type="button"
         onClick={handleLocate}
@@ -113,6 +139,22 @@ function MapLocationButton({ onLocationChange }: { onLocationChange: (location: 
           <LocateFixed className="h-5 w-5" aria-hidden="true" />
         )}
       </button>
+      {hasLocation ? (
+        <button
+          type="button"
+          onClick={() => {
+            onClearLocation();
+            setLastAccuracyMeters(null);
+            setStatus("idle");
+          }}
+          aria-label="Remover marcador da minha localização"
+          title="Remover marcador da minha localização"
+          className="pointer-events-auto inline-flex min-h-11 min-w-11 items-center justify-center rounded-xl border border-slate-200/80 bg-white/95 text-slate-700 shadow-lg backdrop-blur transition-colors duration-200 hover:bg-rose-50 hover:text-rose-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:ring-offset-2"
+        >
+          <X className="h-5 w-5" aria-hidden="true" />
+        </button>
+      ) : null}
+      </div>
       {statusMessage ? (
         <span
           id={statusId}
@@ -159,7 +201,18 @@ export function OpenStreetMap({ className, initialCenter, initialZoom, points }:
           }}
         />
         <MapViewport initialCenter={initialCenter} initialZoom={initialZoom} points={points} />
-        <MapLocationButton onLocationChange={setUserLocation} />
+        <MapLocationButton
+          hasLocation={userLocation !== null}
+          onLocationChange={setUserLocation}
+          onClearLocation={() => setUserLocation(null)}
+        />
+        {userLocation && userLocation.accuracyMeters !== null ? (
+          <Circle
+            center={userLocation.position}
+            radius={userLocation.accuracyMeters}
+            pathOptions={{ color: "#2563eb", fillColor: "#60a5fa", fillOpacity: 0.12, weight: 1 }}
+          />
+        ) : null}
         {points.map(point => (
           <CircleMarker
             key={point.id}
@@ -174,7 +227,7 @@ export function OpenStreetMap({ className, initialCenter, initialZoom, points }:
         ))}
         {userLocation ? (
           <CircleMarker
-            center={userLocation}
+            center={userLocation.position}
             pathOptions={{ color: "#1d4ed8", fillColor: "#60a5fa", fillOpacity: 0.9, weight: 3 }}
             radius={7}
           >
