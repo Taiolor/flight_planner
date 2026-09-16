@@ -38,3 +38,8 @@
 **Vulnerability:** String interpolation in HTML templates without escaping.
 **Learning:** Constructing HTML emails using template literals (e.g., in `server/routers.ts` or `server/_core/emailNotification.ts`) and directly interpolating user-controlled inputs (like flight numbers or locators) exposes the application to HTML Injection and potential Cross-Site Scripting (XSS) if viewed in a vulnerable client.
 **Prevention:** Always sanitize user-provided variables using a strict `escapeHtml` helper function before inserting them into HTML string templates. Furthermore, ensure the `escapeHtml` function handles null checks correctly (`if (unsafe == null)`) so it does not incorrectly strip out the number zero (`0`).
+## 2026-09-10 - Zod Max Length Limits for Unbounded Inputs
+
+**Vulnerability:** Resource Exhaustion / Denial of Service (DoS) via excessively long string inputs.
+**Learning:** Using `z.string()` without length boundaries for fields like `email` or `password` allows attackers to send arbitrarily large payloads (e.g., millions of characters). This can tie up the event loop during string parsing, trigger payload size limits downstream, or cause excessive CPU usage if the long string is passed to expensive hashing functions like `crypto.createHash('sha256')`.
+**Prevention:** Always append explicit max length limits (e.g., `.max(255)`) to `z.string()` schemas for unbounded user inputs, especially for authentication and email-related fields.

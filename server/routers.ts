@@ -1105,7 +1105,7 @@ export const appRouter = router({
     addRecipient: flightProtectedProcedure
       .input(
         z.object({
-          email: z.string().email("E-mail inválido"),
+          email: z.string().email("E-mail inválido").max(255),
           name: z.string().optional(),
         })
       )
@@ -1166,7 +1166,7 @@ export const appRouter = router({
      * Send test email to verify SMTP configuration
      */
     sendTestEmail: flightProtectedProcedure
-      .input(z.object({ testEmail: z.string().email() }))
+      .input(z.object({ testEmail: z.string().email().max(255) }))
       .mutation(async ({ input }) => {
         const success = await sendTestEmail(input.testEmail);
         if (!success) {
