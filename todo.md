@@ -933,3 +933,10 @@
 - [x] Criar cadastro anual de compras de milhas com data, total de milhas, programa ou companhia aérea e valor pago
 - [x] Integrar compras de milhas aos totais e detalhamento do Financeiro por ano
 - [x] Validar autorização, valores monetários, responsividade mobile e testes do módulo
+
+## Operação dos PRs CLEAN
+
+- [x] Reconfirmar, mesclar e validar individualmente os PRs sem conflitos, priorizando segurança
+- [x] Reconciliar conflitos remanescentes entre a main local e user_github/main sem perder compras de milhas, notificações ou acessibilidade
+- [x] Corrigir regressões de sintaxe JSX, dependências e compatibilidade do Vite após o merge
+- [x] Validar o estado reconciliado com pnpm check, 805 testes aprovados e build de produção aprovado
