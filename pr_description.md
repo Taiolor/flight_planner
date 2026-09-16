@@ -1,4 +1,7 @@
-💡 What: Added explicit `id` and `htmlFor` bindings to the "SMILES", "LATAM PASS", and Airline price `<Input>` fields in the Home page.
-🎯 Why: These inputs lacked proper label associations, relying entirely on visual context and placeholders. Adding visually hidden (`sr-only`) labels ensures complete context and accessibility for screen reader users.
-📸 Before/After: Before, screen readers might not announce the purpose of these inputs clearly. Now, they are explicitly linked to invisible labels like "Pontos SMILES" and "Preço LATAM".
-♿ Accessibility: Improved WCAG compliance by ensuring all form controls have explicitly associated `<label>` elements.
+💡 What: Replaced full tRPC mutation objects (`subscribeMutation`, `unsubscribeMutation`, `sendTestMutation`, and `logoutMutation`) with their stable `.mutateAsync` properties in the dependency arrays of `useCallback` hooks within `usePushNotifications.ts` and `useAuth.ts`.
+
+🎯 Why: Passing the entire mutation object to a `useCallback` dependency array causes the callback to be recreated every time the mutation's internal state (e.g., `isPending`, `isError`) updates. By depending on the stable `mutateAsync` function instead, we maintain referential stability for these callbacks, preventing unnecessary downstream re-renders in components that consume these hooks.
+
+📊 Impact: Reduces unnecessary React component re-renders triggered by state changes in authentication and push notification hooks, saving CPU cycles and memory allocations during state transitions.
+
+🔬 Measurement: Observe that components using `useAuth` and `usePushNotifications` no longer re-render unnecessarily when a mutation is in flight (`isPending`). Verified that `pnpm test` and `pnpm run check` pass successfully.

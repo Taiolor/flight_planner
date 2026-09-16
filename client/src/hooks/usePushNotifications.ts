@@ -123,7 +123,7 @@ export function usePushNotifications() {
       }
       setStatus("error");
     }
-  }, [vapidData, subscribeMutation]);
+  }, [vapidData, subscribeMutation.mutateAsync]);
 
   const unsubscribe = useCallback(async () => {
     if (!subscription) return;
@@ -145,7 +145,7 @@ export function usePushNotifications() {
       );
       setStatus("error");
     }
-  }, [subscription, unsubscribeMutation]);
+  }, [subscription, unsubscribeMutation.mutateAsync]);
 
   const sendTest = useCallback(async () => {
     try {
@@ -159,7 +159,7 @@ export function usePushNotifications() {
       );
       return false;
     }
-  }, [sendTestMutation]);
+  }, [sendTestMutation.mutateAsync]);
 
   return {
     status,

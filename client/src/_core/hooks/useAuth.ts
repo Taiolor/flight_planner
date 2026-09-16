@@ -39,7 +39,7 @@ export function useAuth(options?: UseAuthOptions) {
       utils.auth.me.setData(undefined, null);
       await utils.auth.me.invalidate();
     }
-  }, [logoutMutation, utils]);
+  }, [logoutMutation.mutateAsync, utils]);
 
   const state = useMemo(() => {
     localStorage.setItem(
