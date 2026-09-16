@@ -945,7 +945,12 @@ function FinancialDashboardContent() {
 
           {/* ── Tab: Dinheiro ── */}
           {activeTab === "cash" && (
-            <div role="tabpanel" id="tabpanel-cash" aria-labelledby="tab-cash" className="space-y-6">
+            <div
+              role="tabpanel"
+              id="tabpanel-cash"
+              aria-labelledby="tab-cash"
+              className="space-y-6"
+            >
               {/* Gráfico de barras mensal */}
               <div className="bg-white dark:bg-slate-900 rounded-2xl p-3 sm:p-6 shadow-sm border border-slate-100 dark:border-slate-800">
                 <SectionHeader
@@ -1334,7 +1339,12 @@ function FinancialDashboardContent() {
 
           {/* ── Tab: Comparativo por Companhia ── */}
           {activeTab === "comparison" && (
-            <div role="tabpanel" id="tabpanel-comparison" aria-labelledby="tab-comparison" className="space-y-6">
+            <div
+              role="tabpanel"
+              id="tabpanel-comparison"
+              aria-labelledby="tab-comparison"
+              className="space-y-6"
+            >
               <div className="grid md:grid-cols-2 gap-6">
                 {/* Pizza de gastos por companhia */}
                 <div className="bg-white dark:bg-slate-900 rounded-2xl p-3 sm:p-6 shadow-sm border border-slate-100 dark:border-slate-800">

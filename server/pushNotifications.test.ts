@@ -215,6 +215,7 @@ describe("pushNotifications", () => {
 
       await checkAndNotifyUpcomingFlights();
 
+      expect(db.insertNotificationLogs).not.toHaveBeenCalled();
       expect(db.insertNotificationLog).not.toHaveBeenCalled();
       expect(webpush.sendNotification).not.toHaveBeenCalled();
     });
@@ -303,12 +304,23 @@ describe("pushNotifications", () => {
       });
       expect(db.completeNotificationDelivery).toHaveBeenCalledWith(
         "2023:1:ida:60:2023-10-10T13:00:00",
-        {
-        status: "success",
-        devicesReached: 1,
-        totalDevices: 1,
-        }
+        { status: "success", devicesReached: 1, totalDevices: 1 }
       );
+      expect(db.insertNotificationLogs).toHaveBeenCalledWith([
+        {
+          weekNumber: 1,
+          direction: "ida",
+          avisoLabel: "Aviso 1",
+          avisoMinutes: 60,
+          airline: "LATAM",
+          flightNumber: "LA1234",
+          flightDatetime: "2023-10-10T13:00:00",
+          status: "success",
+          devicesReached: 1,
+          totalDevices: 1,
+          isTest: 0,
+        },
+      ]);
     });
 
     it("should notify about a return flight within the warning window", async () => {
@@ -379,12 +391,23 @@ describe("pushNotifications", () => {
       });
       expect(db.completeNotificationDelivery).toHaveBeenCalledWith(
         "2023:2:volta:1440:2023-10-11T12:00:00",
-        {
-        status: "success",
-        devicesReached: 1,
-        totalDevices: 1,
-        }
+        { status: "success", devicesReached: 1, totalDevices: 1 }
       );
+      expect(db.insertNotificationLogs).toHaveBeenCalledWith([
+        {
+          weekNumber: 2,
+          direction: "volta",
+          avisoLabel: "Aviso 2",
+          avisoMinutes: 1440,
+          airline: "AZUL",
+          flightNumber: "AD4321",
+          flightDatetime: "2023-10-11T12:00:00",
+          status: "success",
+          devicesReached: 1,
+          totalDevices: 1,
+          isTest: 0,
+        },
+      ]);
     });
 
     it("does not send a duplicate when the scheduled callback is retried", async () => {

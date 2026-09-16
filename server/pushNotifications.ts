@@ -14,7 +14,10 @@ import {
   getNotificationSettings,
   claimNotificationDelivery,
   completeNotificationDelivery,
+  deleteOldNotificationLogs,
+  insertNotificationLogs,
 } from "./db";
+import { type InsertNotificationLog } from "../drizzle/schema";
 import { type FlightWeek } from "../drizzle/schema";
 import { sdk } from "./_core/sdk";
 import type { Request, Response } from "express";
@@ -166,11 +169,16 @@ async function processDepartureFlight(
   departureTimeMs: number,
   avisoWindow: AvisoWindow,
   pushSubscriptions: PushSubscriptions,
-  airlineNames: Record<string, string>
+  airlineNames: Record<string, string>,
+  logs: InsertNotificationLog[]
 ): Promise<void> {
   const { aviso, antecedenciaLabel, startMs, endMs } = avisoWindow;
 
-  if (isNaN(departureTimeMs) || departureTimeMs < startMs || departureTimeMs > endMs) {
+  if (
+    isNaN(departureTimeMs) ||
+    departureTimeMs < startMs ||
+    departureTimeMs > endMs
+  ) {
     return;
   }
 
@@ -199,7 +207,8 @@ async function processDepartureFlight(
   if (!claimed) return;
 
   const airline = week.departureAirline
-    ? (airlineNames[week.departureAirline.toUpperCase()] ?? week.departureAirline)
+    ? (airlineNames[week.departureAirline.toUpperCase()] ??
+      week.departureAirline)
     : "Companhia";
   const flightNum = week.departureFlightNumber ?? "";
   const timeStr = departureTime.toLocaleTimeString("pt-BR", {
@@ -226,15 +235,29 @@ async function processDepartureFlight(
     pushSubscriptions
   );
 
+  const departureStatus =
+    sentDepCount === totalDepDevices
+      ? "success"
+      : sentDepCount > 0
+        ? "partial"
+        : "failed";
   await completeNotificationDelivery(deliveryKey, {
-    status:
-      sentDepCount === totalDepDevices
-        ? "success"
-        : sentDepCount > 0
-          ? "partial"
-          : "failed",
+    status: departureStatus,
     devicesReached: sentDepCount,
     totalDevices: totalDepDevices,
+  });
+  logs.push({
+    weekNumber: Number(week.weekNumber),
+    direction: "ida",
+    avisoLabel: aviso.label,
+    avisoMinutes: aviso.minutes,
+    airline: week.departureAirline ?? null,
+    flightNumber: week.departureFlightNumber ?? null,
+    flightDatetime: week.departureFlightDatetime ?? null,
+    status: departureStatus,
+    devicesReached: sentDepCount,
+    totalDevices: totalDepDevices,
+    isTest: 0,
   });
 }
 
@@ -244,7 +267,8 @@ async function processReturnFlight(
   returnTimeMs: number,
   avisoWindow: AvisoWindow,
   pushSubscriptions: PushSubscriptions,
-  airlineNames: Record<string, string>
+  airlineNames: Record<string, string>,
+  logs: InsertNotificationLog[]
 ): Promise<void> {
   const { aviso, antecedenciaLabel, startMs, endMs } = avisoWindow;
 
@@ -304,19 +328,34 @@ async function processReturnFlight(
     pushSubscriptions
   );
 
+  const returnStatus =
+    sentRetCount === totalRetDevices
+      ? "success"
+      : sentRetCount > 0
+        ? "partial"
+        : "failed";
   await completeNotificationDelivery(deliveryKey, {
-    status:
-      sentRetCount === totalRetDevices
-        ? "success"
-        : sentRetCount > 0
-          ? "partial"
-          : "failed",
+    status: returnStatus,
     devicesReached: sentRetCount,
     totalDevices: totalRetDevices,
+  });
+  logs.push({
+    weekNumber: Number(week.weekNumber),
+    direction: "volta",
+    avisoLabel: aviso.label,
+    avisoMinutes: aviso.minutes,
+    airline: week.returnAirline ?? null,
+    flightNumber: week.returnFlightNumber ?? null,
+    flightDatetime: week.returnFlightDatetime ?? null,
+    status: returnStatus,
+    devicesReached: sentRetCount,
+    totalDevices: totalRetDevices,
+    isTest: 0,
   });
 }
 
 export async function checkAndNotifyUpcomingFlights(): Promise<void> {
+  const logsToInsert: InsertNotificationLog[] = [];
   ensureVapidConfigured();
   if (!vapidConfigured) return;
 
@@ -395,7 +434,8 @@ export async function checkAndNotifyUpcomingFlights(): Promise<void> {
           departureTimeMs,
           avisoWindow,
           pushSubscriptions,
-          airlineNames
+          airlineNames,
+          logsToInsert
         );
       }
 
@@ -406,10 +446,16 @@ export async function checkAndNotifyUpcomingFlights(): Promise<void> {
           returnTimeMs,
           avisoWindow,
           pushSubscriptions,
-          airlineNames
+          airlineNames,
+          logsToInsert
         );
       }
     }
+  }
+
+  // ⚡ Bolt: Batch insert all notification logs to avoid N+1 database queries
+  if (logsToInsert.length > 0) {
+    await insertNotificationLogs(logsToInsert);
   }
 }
 

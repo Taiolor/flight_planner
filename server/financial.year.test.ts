@@ -138,7 +138,7 @@ describe("financial router by planning year", () => {
 
     expect(result.baseYear).toBe(2028);
     expect(result.targetYear).toBe(2029);
-    expect(financialDb.getFinancialYearSummary).toHaveBeenCalledWith(2028);
+    expect(financialDb.getFinancialYearSummary).toHaveBeenCalledWith(2028, []);
     expect(financialDb.getFinancialDataByYear).toHaveBeenCalledWith(2028);
   });
 

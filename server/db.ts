@@ -800,6 +800,15 @@ export async function getRecentPwaInstallations(limit = 30) {
 // Notification Logs
 // =====================
 
+export async function insertNotificationLogs(
+  data: InsertNotificationLog[]
+): Promise<void> {
+  if (data.length === 0) return;
+  const db = await getDb();
+  if (!db) return;
+  await db.insert(notificationLogs).values(data);
+}
+
 export async function insertNotificationLog(
   data: InsertNotificationLog & { year: number }
 ): Promise<void> {

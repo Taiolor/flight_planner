@@ -62,7 +62,7 @@ describe("DestinationWeatherPanel", () => {
   it("recolhe de fato os detalhes e expõe um controle acessível para reabri-los", () => {
     const onToggleDetails = vi.fn();
     const { rerender } = render(
-      <DestinationWeatherPanel {...baseProps} detailsVisible onToggleDetails={onToggleDetails} />
+      <DestinationWeatherPanel {...baseProps} detailsVisible={true} onToggleDetails={onToggleDetails} />
     );
 
     const hideButton = screen.getByRole("button", { name: "Ocultar detalhes" });

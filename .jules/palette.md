@@ -92,3 +92,8 @@
 
 **Learning:** When standard HTML `<input>` elements rely on `placeholder` attributes (e.g. for simple forms like "add email" or "test email") or have isolated `aria-label` tags, they still technically fail to meet robust form grouping standards without explicit `id` and `htmlFor` bindings to a `<label>` (which can be visually hidden using `sr-only` if design dictates).
 **Action:** Always ensure that inputs, even simple inline ones with placeholders, have a linked `<label>` (using `sr-only` if necessary) with explicit `id` and `htmlFor` attributes to guarantee complete screen reader context.
+
+## 2026-09-05 - Missing ID and htmlFor attributes on standard HTML range sliders in FinancialDashboard
+
+**Learning:** In standard HTML inputs like `<input type="range">`, the associated `<label>` text must correctly link to the `input` field via `htmlFor` and `id` properties. Omitting them directly results in inputs lacking accessible names, which breaks usability for screen reader users.
+**Action:** When adding or reviewing filter controls with native HTML form elements like ranges or checkboxes, verify that matching `id` and `htmlFor` props are explicitly set and functional.
