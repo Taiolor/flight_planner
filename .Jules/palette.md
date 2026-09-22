@@ -10,3 +10,6 @@
 ## 2024-05-14 - Semantic Grouping of Tab Content in Shadcn UI
 **Learning:** Custom tab implementations using styled `<button>` elements within `<div className="flex gap-1 ...">` wrappers completely break screen reader navigation if ARIA roles (`tablist`, `tab`, `tabpanel`) are omitted. Screen readers won't announce the number of tabs, which tab is selected, or associate the tab content with its trigger.
 **Action:** When refactoring or encountering custom tab interfaces, ensure full screen-reader compatibility by adding `role="tablist"` to the container, `role="tab"`, `aria-selected`, and `aria-controls` to the tab triggers, and `role="tabpanel"` with `aria-labelledby` to the corresponding content panels.
+## 2024-11-20 - Adding aria-hidden to decorative close icons
+**Learning:** Decorative icons inside icon-only close buttons (like Dialog and Sheet) should have `aria-hidden="true"` applied. This ensures screen readers rely entirely on the visually-hidden `<span className="sr-only">Close</span>` text, preventing redundant or confusing announcements (e.g., reading both the icon description and the word "Close").
+**Action:** When adding or reviewing custom `XIcon` implementations inside close buttons, always verify that `aria-hidden="true"` is applied to the SVG/icon component if a screen-reader-only text alternative is provided.
