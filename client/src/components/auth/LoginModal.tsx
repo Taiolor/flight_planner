@@ -52,7 +52,7 @@ export function LoginModal({ open, onOpenChange }: LoginModalProps) {
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Lock className="w-5 h-5 text-blue-600" />
+            <Lock className="w-5 h-5 text-blue-600" aria-hidden="true" />
             Acesso Restrito
           </DialogTitle>
         </DialogHeader>
@@ -123,9 +123,9 @@ export function LoginModal({ open, onOpenChange }: LoginModalProps) {
             className="bg-blue-600 hover:bg-blue-700"
           >
             {loginMutation.isPending ? (
-              <Loader2 className="w-4 h-4 animate-spin mr-2" />
+              <Loader2 className="w-4 h-4 animate-spin mr-2" aria-hidden="true" />
             ) : (
-              <Lock className="w-4 h-4 mr-2" />
+              <Lock className="w-4 h-4 mr-2" aria-hidden="true" />
             )}
             Entrar
           </Button>
