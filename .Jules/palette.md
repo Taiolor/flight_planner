@@ -10,3 +10,6 @@
 ## 2024-05-14 - Semantic Grouping of Tab Content in Shadcn UI
 **Learning:** Custom tab implementations using styled `<button>` elements within `<div className="flex gap-1 ...">` wrappers completely break screen reader navigation if ARIA roles (`tablist`, `tab`, `tabpanel`) are omitted. Screen readers won't announce the number of tabs, which tab is selected, or associate the tab content with its trigger.
 **Action:** When refactoring or encountering custom tab interfaces, ensure full screen-reader compatibility by adding `role="tablist"` to the container, `role="tab"`, `aria-selected`, and `aria-controls` to the tab triggers, and `role="tabpanel"` with `aria-labelledby` to the corresponding content panels.
+## $(date +%Y-%m-%d) - Use visually hidden text instead of aria-label
+**Learning:** Automated translation tools like Google Translate often fail to translate `aria-label` attributes on elements, but they will correctly translate standard DOM text, even if it is styled to be visually hidden (e.g., using `sr-only` class).
+**Action:** When adding accessible labels to elements like buttons (especially icon-only buttons), prefer inserting a visually hidden `<span>` (like `<span className="sr-only">Label</span>`) inside the element instead of using the `aria-label` attribute.

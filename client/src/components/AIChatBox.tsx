@@ -321,15 +321,15 @@ export function AIChatBox({
         <Button
           type="submit"
           size="icon"
-          aria-label="Send message"
           disabled={!input.trim() || isLoading}
           className="shrink-0 h-[38px] w-[38px]"
         >
           {isLoading ? (
-            <Loader2 className="size-4 animate-spin" />
+            <Loader2 className="size-4 animate-spin" aria-hidden="true" />
           ) : (
-            <Send className="size-4" />
+            <Send className="size-4" aria-hidden="true" />
           )}
+          <span className="sr-only">Send message</span>
         </Button>
       </form>
     </div>
