@@ -10,3 +10,7 @@
 ## 2024-05-14 - Semantic Grouping of Tab Content in Shadcn UI
 **Learning:** Custom tab implementations using styled `<button>` elements within `<div className="flex gap-1 ...">` wrappers completely break screen reader navigation if ARIA roles (`tablist`, `tab`, `tabpanel`) are omitted. Screen readers won't announce the number of tabs, which tab is selected, or associate the tab content with its trigger.
 **Action:** When refactoring or encountering custom tab interfaces, ensure full screen-reader compatibility by adding `role="tablist"` to the container, `role="tab"`, `aria-selected`, and `aria-controls` to the tab triggers, and `role="tabpanel"` with `aria-labelledby` to the corresponding content panels.
+## 2026-09-23 - Hiding Decorative Icons
+
+**Learning:** When decorative icons (e.g., Lucide React icons like `<CalendarPlus>`, `<Download>`) are placed inside interactive elements (like buttons or links) that already have visible text or an explicit `aria-label`, screen readers may redundantly announce the icon's generic component name. This creates a noisy and confusing auditory experience.
+**Action:** Always add `aria-hidden="true"` to SVG or component icons when they are purely decorative and sit adjacent to descriptive text or within an element that already provides sufficient context via an `aria-label`.
