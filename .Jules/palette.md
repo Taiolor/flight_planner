@@ -10,3 +10,8 @@
 ## 2024-05-14 - Semantic Grouping of Tab Content in Shadcn UI
 **Learning:** Custom tab implementations using styled `<button>` elements within `<div className="flex gap-1 ...">` wrappers completely break screen reader navigation if ARIA roles (`tablist`, `tab`, `tabpanel`) are omitted. Screen readers won't announce the number of tabs, which tab is selected, or associate the tab content with its trigger.
 **Action:** When refactoring or encountering custom tab interfaces, ensure full screen-reader compatibility by adding `role="tablist"` to the container, `role="tab"`, `aria-selected`, and `aria-controls` to the tab triggers, and `role="tabpanel"` with `aria-labelledby` to the corresponding content panels.
+
+## 2025-02-13 - Form Wrapper Implementation for Native Accessibility
+
+**Learning:** When refactoring existing UI components (like modals or dialogs) to wrap inputs inside a native `<form>` element for improved accessibility (enabling "Enter" to submit globally), secondary buttons like "Cancelar" will silently inherit the default `type="submit"` behavior. This causes unintended form submissions or validation errors when a user simply tries to dismiss the modal.
+**Action:** When adding a `<form>` wrapper to a component with multiple buttons, strictly audit every nested button. Explicitly add `type="button"` to any button that should not trigger form submission.

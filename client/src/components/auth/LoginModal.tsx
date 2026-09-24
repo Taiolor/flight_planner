@@ -56,80 +56,91 @@ export function LoginModal({ open, onOpenChange }: LoginModalProps) {
             Acesso Restrito
           </DialogTitle>
         </DialogHeader>
-        <div className="space-y-4 py-4">
-          <p className="text-sm text-slate-500">
-            Faça login para editar preços, datas e status dos bilhetes.
-          </p>
-          {loginError && (
-            <div className="bg-red-50 border border-red-200 text-red-700 rounded-lg px-4 py-2 text-sm flex items-center gap-2">
-              <AlertCircle className="w-4 h-4 flex-shrink-0" />
-              {loginError}
-            </div>
-          )}
-          <div>
-            <Label htmlFor="login-email">E-mail</Label>
-            <Input
-              id="login-email"
-              type="email"
-              placeholder="seu@email.com"
-              value={loginEmail}
-              onChange={e => setLoginEmail(e.target.value)}
-              className="mt-1"
-              onKeyDown={e => e.key === "Enter" && handleLogin()}
-            />
-          </div>
-          <div>
-            <Label htmlFor="login-password">Senha</Label>
-            <div className="relative mt-1">
-              <Input
-                id="login-password"
-                type={showPassword ? "text" : "password"}
-                placeholder="••••••••"
-                value={loginPassword}
-                onChange={e => setLoginPassword(e.target.value)}
-                onKeyDown={e => e.key === "Enter" && handleLogin()}
-                className="pr-10"
-              />
-              <button
-                type="button"
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded-sm p-0.5"
-                onClick={() => setShowPassword(!showPassword)}
-                aria-pressed={showPassword}
-                title={showPassword ? "Ocultar senha" : "Mostrar senha"}
-                aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
-              >
-                {showPassword ? (
-                  <EyeOff className="w-4 h-4" aria-hidden="true" />
-                ) : (
-                  <Eye className="w-4 h-4" aria-hidden="true" />
-                )}
-              </button>
-            </div>
-          </div>
-        </div>
-        <DialogFooter>
-          <Button
-            variant="outline"
-            onClick={() => {
-              onOpenChange(false);
-              setLoginError("");
-            }}
-          >
-            Cancelar
-          </Button>
-          <Button
-            onClick={handleLogin}
-            disabled={loginMutation.isPending || !loginEmail || !loginPassword}
-            className="bg-blue-600 hover:bg-blue-700"
-          >
-            {loginMutation.isPending ? (
-              <Loader2 className="w-4 h-4 animate-spin mr-2" />
-            ) : (
-              <Lock className="w-4 h-4 mr-2" />
+        <form
+          onSubmit={e => {
+            e.preventDefault();
+            handleLogin();
+          }}
+        >
+          <div className="space-y-4 py-4">
+            <p className="text-sm text-slate-500">
+              Faça login para editar preços, datas e status dos bilhetes.
+            </p>
+            {loginError && (
+              <div className="bg-red-50 border border-red-200 text-red-700 rounded-lg px-4 py-2 text-sm flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                {loginError}
+              </div>
             )}
-            Entrar
-          </Button>
-        </DialogFooter>
+            <div>
+              <Label htmlFor="login-email">E-mail</Label>
+              <Input
+                id="login-email"
+                type="email"
+                placeholder="seu@email.com"
+                value={loginEmail}
+                onChange={e => setLoginEmail(e.target.value)}
+                className="mt-1"
+              />
+            </div>
+            <div>
+              <Label htmlFor="login-password">Senha</Label>
+              <div className="relative mt-1">
+                <Input
+                  id="login-password"
+                  type={showPassword ? "text" : "password"}
+                  placeholder="••••••••"
+                  value={loginPassword}
+                  onChange={e => setLoginPassword(e.target.value)}
+                  className="pr-10"
+                />
+                <button
+                  type="button"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded-sm p-0.5"
+                  onClick={() => setShowPassword(!showPassword)}
+                  aria-pressed={showPassword}
+                  title={showPassword ? "Ocultar senha" : "Mostrar senha"}
+                  aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
+                >
+                  {showPassword ? (
+                    <EyeOff className="w-4 h-4" aria-hidden="true" />
+                  ) : (
+                    <Eye className="w-4 h-4" aria-hidden="true" />
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => {
+                onOpenChange(false);
+                setLoginError("");
+              }}
+            >
+              Cancelar
+            </Button>
+            <Button
+              type="submit"
+              disabled={
+                loginMutation.isPending || !loginEmail || !loginPassword
+              }
+              className="bg-blue-600 hover:bg-blue-700"
+            >
+              {loginMutation.isPending ? (
+                <Loader2
+                  className="w-4 h-4 animate-spin mr-2"
+                  aria-hidden="true"
+                />
+              ) : (
+                <Lock className="w-4 h-4 mr-2" aria-hidden="true" />
+              )}
+              Entrar
+            </Button>
+          </DialogFooter>
+        </form>
       </DialogContent>
     </Dialog>
   );
