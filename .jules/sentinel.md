@@ -43,3 +43,9 @@
 **Vulnerability:** Resource Exhaustion / Denial of Service (DoS) via excessively long string inputs.
 **Learning:** Using `z.string()` without length boundaries for fields like `email` or `password` allows attackers to send arbitrarily large payloads (e.g., millions of characters). This can tie up the event loop during string parsing, trigger payload size limits downstream, or cause excessive CPU usage if the long string is passed to expensive hashing functions like `crypto.createHash('sha256')`.
 **Prevention:** Always append explicit max length limits (e.g., `.max(255)`) to `z.string()` schemas for unbounded user inputs, especially for authentication and email-related fields.
+
+## $(date +%Y-%m-%d) - Centralize HTML Escaping Utility
+
+**Vulnerability:** HTML Injection/XSS in Email Templates
+**Learning:** Having duplicate local implementations of `escapeHtml` (e.g., in `server/routers.ts` and `server/_core/emailNotification.ts`) leads to inconsistencies and missed escaping of variables interpolated into HTML string templates. Several variables (like flight numbers and locators) were missing escaping entirely in the email notification templates, leaving them vulnerable if user input is reflected.
+**Prevention:** Always use a single, centralized `escapeHtml` utility imported from a core module. Ensure all user-controlled data interpolated into raw HTML strings is consistently wrapped in this escape function to prevent injection vulnerabilities.

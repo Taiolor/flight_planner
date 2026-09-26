@@ -6,8 +6,7 @@ import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import { publicProcedure, router } from "./_core/trpc";
 import { z } from "zod";
-
-
+import { escapeHtml } from "./_core/escapeHtml";
 
 import { TRPCError } from "@trpc/server";
 import {
@@ -61,17 +60,6 @@ import {
   getSessionFromCookie,
   flightProtectedProcedure,
 } from "./flightAuthMiddleware";
-
-function escapeHtml(unsafe: string | number | null | undefined): string {
-  if (unsafe == null) return "";
-  return String(unsafe)
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;");
-}
-
 
 interface NextAlert {
   weekNumber: number;
