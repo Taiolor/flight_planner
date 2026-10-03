@@ -28,6 +28,8 @@ export function LoginModal({ open, onOpenChange }: LoginModalProps) {
   const authUtils = trpc.useUtils();
 
   const handleLogin = () => {
+    if (loginMutation.isPending) return;
+
     setLoginError("");
     loginMutation.mutate(
       { email: loginEmail, password: loginPassword },
@@ -109,6 +111,7 @@ export function LoginModal({ open, onOpenChange }: LoginModalProps) {
         </div>
         <DialogFooter>
           <Button
+            type="button"
             variant="outline"
             onClick={() => {
               onOpenChange(false);
