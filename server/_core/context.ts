@@ -1,6 +1,6 @@
 import type { CreateExpressContextOptions } from "@trpc/server/adapters/express";
 import type { User } from "../../drizzle/schema";
-import { sdk } from "./sdk";
+import { getSessionFromCookie } from "../flightAuthMiddleware";
 
 export type TrpcContext = {
   req: CreateExpressContextOptions["req"];
@@ -14,7 +14,20 @@ export async function createContext(
   let user: User | null = null;
 
   try {
-    user = await sdk.authenticateRequest(opts.req);
+    const session = await getSessionFromCookie(opts.req);
+    if (session) {
+      user = {
+        id: 0,
+        openId: `flight:${session.email}`,
+        name: session.email,
+        email: session.email,
+        loginMethod: "password",
+        role: session.role,
+        createdAt: new Date(0),
+        updatedAt: new Date(),
+        lastSignedIn: new Date(),
+      };
+    }
   } catch (error) {
     // Authentication is optional for public procedures.
     user = null;

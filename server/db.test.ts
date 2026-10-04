@@ -165,29 +165,6 @@ describe("upsertUser", () => {
     );
   });
 
-  it("should fall back to admin role if openId matches ownerOpenId", async () => {
-    const mockDb = {
-      insert: vi.fn().mockReturnThis(),
-      values: vi.fn().mockReturnThis(),
-      onDuplicateKeyUpdate: vi.fn().mockResolvedValue([{ insertId: 1 }]),
-    };
-
-    (drizzle as any).mockReturnValue(mockDb);
-
-    // We mock ENV to enforce ownerOpenId matching
-    vi.doMock("./_core/env", () => ({
-      ENV: { ownerOpenId: "owner-123" },
-    }));
-    vi.resetModules();
-
-    const { upsertUser } = await import("./db");
-
-    await expect(upsertUser({ openId: "owner-123" })).resolves.toBeUndefined();
-
-    expect(mockDb.values).toHaveBeenCalledWith(
-      expect.objectContaining({ openId: "owner-123", role: "admin" })
-    );
-  });
 });
 
 describe("deleteOldNotificationLogs", () => {

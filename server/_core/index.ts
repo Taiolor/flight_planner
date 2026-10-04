@@ -3,7 +3,6 @@ import express from "express";
 import { createServer } from "http";
 import net from "net";
 import { createExpressMiddleware } from "@trpc/server/adapters/express";
-import { registerOAuthRoutes } from "./oauth";
 import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
@@ -120,16 +119,10 @@ async function startServer() {
     })
   );
 
-  // Rate limiting mais restrito para rotas de autenticação OAuth
-  app.use("/api/oauth", authLimiter);
-
   // Servir ativos estáticos privados publicados para esta aplicação.
   registerStorageProxy(app);
   // Entregar a base cartográfica no mesmo domínio para navegadores que bloqueiam imagens externas.
   registerMapTilesProxy(app);
-
-  // OAuth callback under /api/oauth/callback
-  registerOAuthRoutes(app);
 
   // O middleware é registrado uma única vez antes do adaptador tRPC.
   app.use("/api/trpc", createTrpcLoginRateLimiter(authLimiter));

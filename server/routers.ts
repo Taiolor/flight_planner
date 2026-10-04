@@ -1,4 +1,3 @@
-import { COOKIE_NAME } from "@shared/const";
 import { quotesRouter } from "./routers/quotes";
 import { financialRouter } from "./routers/financial";
 import { memoriesRouter } from "./routers/memories";
@@ -153,17 +152,6 @@ export const appRouter = router({
       })),
     summary: flightAdminProcedure.query(() => getProtectedAccessAttemptSummary()),
   }),
-  auth: router({
-    me: publicProcedure.query(opts => opts.ctx.user),
-    logout: publicProcedure.mutation(({ ctx }) => {
-      const cookieOptions = getSessionCookieOptions(ctx.req);
-      ctx.res.clearCookie(COOKIE_NAME, { ...cookieOptions, maxAge: -1 });
-      return {
-        success: true,
-      } as const;
-    }),
-  }),
-
   // =====================
   // Autenticação por e-mail + senha
   // =====================

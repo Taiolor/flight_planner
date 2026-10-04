@@ -56,8 +56,7 @@ const redirectToLoginIfUnauthorized = (error: unknown) => {
 
   if (!isUnauthorized) return;
 
-  // Dispara evento customizado para abrir o modal de login proprietário
-  // em vez de redirecionar para o Manus OAuth externo
+  // Dispara evento customizado para abrir o modal de login interno.
   window.dispatchEvent(new CustomEvent("flight:require-login"));
 };
 

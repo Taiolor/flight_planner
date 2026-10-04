@@ -1,9 +1,7 @@
 import { router } from "../_core/trpc";
 import { flightProtectedProcedure } from "../flightAuthMiddleware";
 import { z } from "zod";
-import { parse } from "cookie";
 import { TRPCError } from "@trpc/server";
-import { SESSION_COOKIE } from "../flightAuthMiddleware";
 import { createHeartbeatJob, updateHeartbeatJob } from "../_core/heartbeat";
 import {
   addOperationalChecklistItem,
@@ -77,8 +75,6 @@ export const operationalRouter = router({
   configureReportSchedule: flightProtectedProcedure
     .input(z.object({ year: planningYearSchema, enabled: z.boolean(), cronExpression: z.string().regex(/^\d+ \d+ \d+ \d+ \d+ \d+$/, "Use o formato cron de seis campos.") }))
     .mutation(async ({ input, ctx }) => {
-      const sessionToken = parse(ctx.req.headers.cookie ?? "")[SESSION_COOKIE];
-      if (!sessionToken) throw new TRPCError({ code: "UNAUTHORIZED", message: "Sessão interna inválida para agendamento." });
       const current = await getOperationalReportSchedule();
       let taskUid = current?.scheduleCronTaskUid ?? null;
       if (!taskUid && input.enabled) {
@@ -87,10 +83,15 @@ export const operationalRouter = router({
           cron: input.cronExpression,
           path: "/api/scheduled/operational-executive-report",
           description: "Relatório executivo recorrente de viagens",
-        }, sessionToken);
+        }, "");
         taskUid = job.taskUid;
+        await updateHeartbeatJob(taskUid, { payload: { taskUid } }, "");
       } else if (taskUid) {
-        await updateHeartbeatJob(taskUid, { cron: input.cronExpression, enable: input.enabled }, sessionToken);
+        await updateHeartbeatJob(taskUid, {
+          cron: input.cronExpression,
+          enable: input.enabled,
+          payload: { taskUid },
+        }, "");
       }
       await saveOperationalReportSchedule({ ...input, scheduleCronTaskUid: taskUid });
       return { enabled: input.enabled, taskUid };

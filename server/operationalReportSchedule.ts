@@ -1,5 +1,5 @@
 import type { Request, Response } from "express";
-import { sdk } from "./_core/sdk";
+import { isScheduledRequest } from "./_core/scheduledAuth";
 import { sendShareByEmailNotification } from "./_core/emailNotification";
 import { getTicketNotificationEmails } from "./db";
 import {
@@ -12,13 +12,17 @@ import { buildOperationalExecutiveReportEmail } from "./operationalReport";
 /** Executa o envio mensal pelo Heartbeat; é idempotente por taskUid e não usa o corpo da requisição. */
 export async function runScheduledOperationalReport(req: Request, res: Response) {
   try {
-    const user = await sdk.authenticateRequest(req);
-    if (!user.isCron || !user.taskUid) {
+    if (!isScheduledRequest(req)) {
       res.status(403).json({ error: "cron-only" });
       return;
     }
 
-    const schedule = await getOperationalReportScheduleByTaskUid(user.taskUid);
+    const taskUid = String(req.body?.taskUid ?? "").trim();
+    if (!taskUid) {
+      res.status(400).json({ error: "taskUid-required" });
+      return;
+    }
+    const schedule = await getOperationalReportScheduleByTaskUid(taskUid);
     if (!schedule || !schedule.enabled) {
       res.json({ ok: true, skipped: "disabled-or-orphan" });
       return;
@@ -39,7 +43,7 @@ export async function runScheduledOperationalReport(req: Request, res: Response)
       buildOperationalExecutiveReportEmail(schedule.year, overview)
     );
     if (!sent) throw new Error("Falha ao enviar relatório executivo recorrente");
-    await markOperationalReportSent(user.taskUid);
+    await markOperationalReportSent(taskUid);
     res.json({ ok: true, sentTo: recipients.length, year: schedule.year });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Erro desconhecido";

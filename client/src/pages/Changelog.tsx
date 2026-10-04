@@ -45,6 +45,56 @@ interface Release {
 }
 
 export const releases: Release[] = [
+  // Setembro 2026 — fechamento do ciclo dos últimos dois meses
+  {
+    version: "v2.1.0",
+    date: "29/09/2026",
+    month: "Setembro 2026",
+    status: "released",
+    highlights:
+      "Autenticação interna, segurança reforçada e experiência operacional mais consistente",
+    features: [
+      {
+        icon: <Shield className="w-5 h-5" />,
+        category: "Autenticação e Sessões",
+        items: [
+          "Remoção completa do Manus OAuth, incluindo callback, SDK, cookie app_session_id e redirecionamentos externos",
+          "Sessão interna flight_session integrada ao contexto global e às telas protegidas",
+          "Login, verificação de sessão e logout centralizados em flightAuth, sem duplicidade de provedores",
+          "Callbacks agendados protegidos por SCHEDULE_SECRET com comparação resistente a timing attacks",
+        ],
+      },
+      {
+        icon: <Zap className="w-5 h-5" />,
+        category: "Performance e Operação",
+        items: [
+          "Microinterações de hover, loading por operação e feedback de salvamento aplicados a Notificações e Cotações",
+          "Skeletons responsivos com fade-in e suporte a prefers-reduced-motion nas telas de planejamento",
+          "Otimizações de memoização, ordenação por preço, buscas O(1) e redução de consultas redundantes",
+          "Deploy e documentação atualizados para o fluxo de autenticação interno e para os callbacks agendados",
+        ],
+      },
+      {
+        icon: <Accessibility className="w-5 h-5" />,
+        category: "Acessibilidade e Qualidade",
+        items: [
+          "Labels ARIA dinâmicos, ícones decorativos corretamente ocultos e links externos com contexto acessível",
+          "Tooltips compartilhados com foco por teclado, reposicionamento responsivo e suporte a redução de movimento",
+          "Limites de tamanho em entradas de autenticação e validações Zod para reduzir riscos de DoS",
+          "Integração validada dos PRs #381, #380/#366, #367, #365 e #358; itens duplicados foram encerrados com rastreabilidade",
+        ],
+      },
+      {
+        icon: <Rocket className="w-5 h-5" />,
+        category: "Validação e Entrega",
+        items: [
+          "Suíte consolidada com 783 testes aprovados e 2 integrações externas ignoradas intencionalmente",
+          "TypeScript, build de produção e verificação de diferenças aprovados após a migração de autenticação",
+          "Auditoria mobile preservada nas larguras de 320 px, 375 px e 390 px",
+        ],
+      },
+    ],
+  },
   // Setembro 2026
   {
     version: "v2.0.1",
@@ -933,7 +983,7 @@ const sortedMonths = Object.keys(releasesByMonth)
 export default function Changelog() {
   const [location, setLocation] = useLocation();
   const [expandedReleases, setExpandedReleases] = useState<Set<string>>(
-    new Set(["v2.0.0"])
+    new Set(["v2.1.0"])
   );
 
   const navigateHome = (event: MouseEvent<HTMLAnchorElement>) => {
@@ -1006,7 +1056,7 @@ export default function Changelog() {
             </div>
           </Card>
           <Card className="p-4 text-center">
-            <div className="text-3xl font-bold text-green-600">791</div>
+            <div className="text-3xl font-bold text-green-600">783</div>
             <div className="text-sm text-slate-600 dark:text-slate-400">
               Testes
             </div>

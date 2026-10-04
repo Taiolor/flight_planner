@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { releases } from "./Changelog";
 
-describe("Novidades de agosto de 2026", () => {
+describe("Novidades dos últimos dois meses", () => {
   const source = readFileSync("client/src/pages/Changelog.tsx", "utf8");
 
   it("publica a atualização de setembro referente ao PR #350", () => {
@@ -22,7 +22,31 @@ describe("Novidades de agosto de 2026", () => {
         "Merge commit d437222d integrado à main após validação de TypeScript, build e testes",
       ])
     );
-    expect(source).toContain(">791</div>");
+    expect(source).toContain(">783</div>");
+  });
+
+  it("publica a consolidação de setembro com a remoção do OAuth Manus", () => {
+    const release = releases.find(item => item.version === "v2.1.0");
+
+    expect(release).toMatchObject({
+      date: "29/09/2026",
+      month: "Setembro 2026",
+      status: "released",
+    });
+    expect(release?.features.map(feature => feature.category)).toEqual(
+      expect.arrayContaining([
+        "Autenticação e Sessões",
+        "Performance e Operação",
+        "Acessibilidade e Qualidade",
+        "Validação e Entrega",
+      ])
+    );
+    expect(release?.features.flatMap(feature => feature.items)).toEqual(
+      expect.arrayContaining([
+        "Remoção completa do Manus OAuth, incluindo callback, SDK, cookie app_session_id e redirecionamentos externos",
+        "Callbacks agendados protegidos por SCHEDULE_SECRET com comparação resistente a timing attacks",
+      ])
+    );
   });
 
   it("consolida as evoluções entregues até o fim de agosto em v2.0.0", () => {
@@ -43,8 +67,8 @@ describe("Novidades de agosto de 2026", () => {
         "Confiabilidade e Qualidade",
       ])
     );
-    expect(source).toContain('new Set(["v2.0.0"])');
-    expect(source).toContain(">791</div>");
+    expect(source).toContain('new Set(["v2.1.0"])');
+    expect(source).toContain(">783</div>");
     expect(source).toContain(">90+</div>");
   });
 
@@ -66,8 +90,8 @@ describe("Novidades de agosto de 2026", () => {
         "Confiabilidade e Qualidade",
       ])
     );
-    expect(source).toContain('new Set(["v2.0.0"])');
-    expect(source).toContain(">791</div>");
+    expect(source).toContain('new Set(["v2.1.0"])');
+    expect(source).toContain(">783</div>");
   });
 
   it("publica a release v1.8.0 com a evolução recente de Viagens", () => {

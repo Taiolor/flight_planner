@@ -19,7 +19,7 @@ import {
 } from "./db";
 import { type InsertNotificationLog } from "../drizzle/schema";
 import { type FlightWeek } from "../drizzle/schema";
-import { sdk } from "./_core/sdk";
+import { isScheduledRequest } from "./_core/scheduledAuth";
 import type { Request, Response } from "express";
 
 export const SMART_FLY_PUSH_ICON = "/smartfly-assets/smartfly-sf-pwa-icon_783c04c6.webp";
@@ -465,14 +465,13 @@ export async function runScheduledFlightNotifications(
   res: Response
 ): Promise<void> {
   try {
-    const user = await sdk.authenticateRequest(req);
-    if (!user.isCron || !user.taskUid) {
+    if (!isScheduledRequest(req)) {
       res.status(403).json({ error: "cron-only" });
       return;
     }
 
     await checkAndNotifyUpcomingFlights();
-    res.json({ ok: true, taskUid: user.taskUid });
+    res.json({ ok: true });
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     console.error("[Push] Falha no callback agendado:", message);

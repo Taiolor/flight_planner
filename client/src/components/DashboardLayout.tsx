@@ -1,4 +1,5 @@
-import { useAuth } from "@/_core/hooks/useAuth";
+import { LoginModal } from "@/components/auth/LoginModal";
+import { trpc } from "@/lib/trpc";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -19,7 +20,6 @@ import {
   SidebarTrigger,
   useSidebar,
 } from "@/components/ui/sidebar";
-import { getLoginUrl } from "@/const";
 import { useIsMobile } from "@/hooks/useMobile";
 import { LayoutDashboard, LogOut, PanelLeft, Users } from "lucide-react";
 import { CSSProperties, useEffect, useRef, useState } from "react";
@@ -46,17 +46,18 @@ export default function DashboardLayout({
     const saved = localStorage.getItem(SIDEBAR_WIDTH_KEY);
     return saved ? parseInt(saved, 10) : DEFAULT_WIDTH;
   });
-  const { loading, user } = useAuth();
+  const [loginOpen, setLoginOpen] = useState(false);
+  const authQuery = trpc.flightAuth.check.useQuery(undefined, { retry: false });
 
   useEffect(() => {
     localStorage.setItem(SIDEBAR_WIDTH_KEY, sidebarWidth.toString());
   }, [sidebarWidth]);
 
-  if (loading) {
+  if (authQuery.isLoading) {
     return <DashboardLayoutSkeleton />;
   }
 
-  if (!user) {
+  if (!authQuery.data?.authenticated) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="flex flex-col items-center gap-8 p-8 max-w-md w-full">
@@ -65,20 +66,18 @@ export default function DashboardLayout({
               Sign in to continue
             </h1>
             <p className="text-sm text-muted-foreground text-center max-w-sm">
-              Access to this dashboard requires authentication. Continue to
-              launch the login flow.
+              Faça login para acessar este painel protegido.
             </p>
           </div>
           <Button
-            onClick={() => {
-              window.location.href = getLoginUrl();
-            }}
+            onClick={() => setLoginOpen(true)}
             size="lg"
             className="w-full shadow-lg hover:shadow-xl transition-all"
           >
-            Sign in
+            Entrar
           </Button>
         </div>
+        <LoginModal open={loginOpen} onOpenChange={setLoginOpen} />
       </div>
     );
   }
@@ -145,7 +144,13 @@ function useSidebarResizer(
 }
 
 function SidebarUserMenu() {
-  const { user, logout } = useAuth();
+  const authQuery = trpc.flightAuth.check.useQuery(undefined, { retry: false });
+  const logoutMutation = trpc.flightAuth.logout.useMutation({
+    onSuccess: () => authQuery.refetch(),
+  });
+  const user = authQuery.data?.authenticated
+    ? { email: authQuery.data.email, name: authQuery.data.email }
+    : null;
   return (
     <SidebarFooter className="p-3">
       <DropdownMenu>
@@ -172,7 +177,7 @@ function SidebarUserMenu() {
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-48">
           <DropdownMenuItem
-            onClick={logout}
+            onClick={() => logoutMutation.mutate()}
             className="cursor-pointer text-destructive focus:text-destructive"
           >
             <LogOut className="mr-2 h-4 w-4" />

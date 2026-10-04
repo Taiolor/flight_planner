@@ -25,12 +25,11 @@ Crie um arquivo `.env` na raiz do projeto com os seguintes valores. **Nunca comm
 # ── Banco de dados ────────────────────────────────────────────────────────────
 DATABASE_URL=mysql://usuario:senha@host:3306/nome_do_banco
 
-# ── Autenticação (Manus OAuth) ────────────────────────────────────────────────
+# ── Autenticação interna ─────────────────────────────────────────────────────
 JWT_SECRET=string_aleatoria_longa_e_segura
-VITE_APP_ID=id_do_app_manus
-OAUTH_SERVER_URL=https://api.manus.im
-VITE_OAUTH_PORTAL_URL=https://login.manus.im
-OWNER_OPEN_ID=open_id_do_dono
+AUTH_EMAIL=usuario autorizado
+AUTH_PASSWORD=senha forte
+SCHEDULE_SECRET=segredo exclusivo para callbacks agendados
 
 # ── Manus Forge API (LLM, Storage, Notificações) ─────────────────────────────
 BUILT_IN_FORGE_API_URL=https://forge.manus.im
@@ -147,7 +146,7 @@ O servidor Express serve o frontend estático automaticamente em produção.
 
 ```bash
 # Checar se o servidor está respondendo
-curl -s http://localhost:3000/api/trpc/auth.me | python3 -m json.tool
+curl -s http://localhost:3000/api/trpc/flightAuth.check | python3 -m json.tool
 
 # Checar se o frontend carrega
 curl -s -o /dev/null -w "%{http_code}" http://localhost:3000/
@@ -164,7 +163,7 @@ curl -s -o /dev/null -w "%{http_code}" http://localhost:3000/
 | `ECONNREFUSED` no banco       | Banco não acessível     | Verificar host, porta e credenciais no `DATABASE_URL`  |
 | Página em branco após deploy  | Build desatualizado     | Rodar `pnpm build` novamente                           |
 | Push notifications não chegam | Chaves VAPID inválidas  | Regenerar com `pnpm exec web-push generate-vapid-keys` |
-| Erro de CORS no OAuth         | URL de callback errada  | Verificar `VITE_OAUTH_PORTAL_URL` e `OAUTH_SERVER_URL` |
+| Callback agendado retorna 403 | Segredo ausente ou inválido | Verificar `SCHEDULE_SECRET` e o header `Authorization: Bearer ...` |
 | E-mail não enviado            | RESEND_API_KEY inválida | Verificar chave em https://resend.com/api-keys         |
 
 ---
@@ -173,7 +172,7 @@ curl -s -o /dev/null -w "%{http_code}" http://localhost:3000/
 
 - **Domínio publicado:** https://flightplan-hq655wm9.manus.space
 - **Banco de dados:** MySQL/TiDB com 14 migrations aplicadas
-- **Autenticação:** Manus OAuth
+- **Autenticação:** e-mail e senha com sessão interna `flight_session`
 - **E-mail:** Resend (plano gratuito: 3.000 e-mails/mês)
 - **PWA:** Manifesto configurado, Service Worker ativo, ícones em CDN
 - **Push Notifications:** VAPID configurado, job agendado a cada hora
