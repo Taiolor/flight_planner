@@ -6665,6 +6665,9 @@ export default function Home({ mode = "home" }: HomeProps) {
                                         Promise.all([
                                           utils.additionalFlights.getYear.invalidate({ year: selectedYear }),
                                           utils.flights.getWeeks.invalidate({ year: selectedYear }),
+                                          utils.financial.getYearSummary.invalidate({ year: selectedYear }),
+                                          utils.financial.getWeeklyData.invalidate({ year: selectedYear }),
+                                          utils.financial.getProjections.invalidate(),
                                         ])
                                       }
                                     />
