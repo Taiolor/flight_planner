@@ -1,11 +1,13 @@
 /** @vitest-environment jsdom */
 
 import React, { act } from "react";
+import { fireEvent } from "@testing-library/react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   AdditionalFlightsPanel,
   normalizeAdditionalFlightDraft,
+  toPaidPriceCents,
   validateAdditionalFlightDraft,
   type AdditionalFlightRecord,
 } from "./AdditionalFlightsPanel";
@@ -97,6 +99,12 @@ describe("AdditionalFlightsPanel form rules", () => {
     expect(normalizeAdditionalFlightDraft(makeDraft({ paidPriceCents: 12345 })).paidPriceCents).toBe(12345);
   });
 
+  it("accepts paid prices greater than one real with Brazilian formatting", () => {
+    expect(toPaidPriceCents("12,34")).toBe(1234);
+    expect(toPaidPriceCents("1.234,56")).toBe(123456);
+    expect(toPaidPriceCents("1234.56")).toBe(123456);
+  });
+
   it("requires the outbound datetime before an issued ticket can be saved", () => {
     expect(validateAdditionalFlightDraft(makeDraft({ departureFlightDatetime: null }), "2027-01-10", "2027-01-16")).toBe("Informe a data e hora do voo de ida antes de emitir a passagem adicional.");
   });
@@ -109,7 +117,7 @@ describe("AdditionalFlightsPanel form rules", () => {
     expect(validateAdditionalFlightDraft(makeDraft({ returnFlightDatetime: "2027-01-10T19:00" }), "2027-01-10", "2027-01-16")).toBe("A volta não pode ocorrer antes da ida.");
   });
 
-  it("opens the additional form with weekly dates, price, and weekly-card controls", () => {
+  it("opens the form with weekly dates, price, and weekly-card controls", () => {
     const container = renderPanel([]);
     const createButton = container.querySelector<HTMLButtonElement>('button[aria-label="Adicionar passagem adicional"]');
     expect(createButton).toBeTruthy();
@@ -119,6 +127,16 @@ describe("AdditionalFlightsPanel form rules", () => {
     expect(container.textContent).toContain("Pagamento em Milhas");
     const datetimeInputs = Array.from(container.querySelectorAll<HTMLInputElement>('input[type="datetime-local"]'));
     expect(datetimeInputs.map(input => input.value)).toEqual(["2027-01-10T00:00", "2027-01-16T00:00"]);
+  });
+
+  it("keeps the typed paid value while editing instead of forcing one decimal step", () => {
+    const container = renderPanel([]);
+    click(container.querySelector<HTMLButtonElement>('button[aria-label="Adicionar passagem adicional"]')!);
+    const priceInput = container.querySelector<HTMLInputElement>('input[aria-label="Preço pago da passagem adicional"]');
+
+    expect(priceInput).toBeTruthy();
+    fireEvent.change(priceInput!, { target: { value: "12,34" } });
+    expect(priceInput!.value).toBe("12,34");
   });
 
   it("opens the form when a weekly header requests a new additional ticket", () => {

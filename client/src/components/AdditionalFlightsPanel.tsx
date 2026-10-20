@@ -7,7 +7,7 @@ import { trpc } from "@/lib/trpc";
 import { AIRLINE_LOGO_ASSETS } from "@/lib/airlineAssets";
 import { formatAirlineDisplayName } from "@/lib/airlinePresentation";
 import { ChevronDown, ChevronUp, Copy, CopyPlus, Loader2, Minus, Pencil, Plane, Plus } from "lucide-react";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
 export type AdditionalFlightRecord = {
@@ -95,9 +95,16 @@ function formatCents(cents: number | null) {
   return cents === null ? null : currencyFormatter.format(cents / 100);
 }
 
-function toCents(value: string) {
-  if (!value.trim()) return null;
-  const parsed = Number(value.replace(",", "."));
+export function toPaidPriceCents(value: string) {
+  const trimmed = value.trim().replace(/\s/g, "");
+  if (!trimmed) return null;
+
+  // Aceita tanto 1234.56 quanto 1234,56. Quando a vírgula existe,
+  // pontos são tratados como separadores de milhar.
+  const normalized = trimmed.includes(",")
+    ? trimmed.replace(/\./g, "").replace(",", ".")
+    : trimmed;
+  const parsed = Number(normalized);
   return Number.isFinite(parsed) && parsed >= 0 ? Math.round(parsed * 100) : null;
 }
 
@@ -417,6 +424,34 @@ function CopyButton({ label, onClick }: { label: string; onClick: () => void }) 
 
 function MileageField({ label, value, onChange }: { label: string; value: number | null; onChange: (value: number | null) => void }) { return <div className="flex items-center gap-2"><span className="w-20 flex-shrink-0 rounded bg-slate-700 px-2 py-1 text-center text-xs font-semibold text-white">{label}</span><Input inputMode="numeric" placeholder="0 pontos" className="h-8 text-xs" value={value ?? ""} onChange={event => onChange(optionalNumber(event.target.value))} /></div>; }
 
-function PaidPriceField({ value, onChange }: { value: number | null; onChange: (value: number | null) => void }) { return <div className="flex items-center gap-2"><span className="w-20 flex-shrink-0 rounded bg-emerald-600 px-2 py-1 text-center text-xs font-semibold text-white">VALOR PAGO</span><Input aria-label="Preço pago da passagem adicional" inputMode="decimal" placeholder="R$ 0,00" className="h-8 text-xs" value={value === null ? "" : (value / 100).toFixed(2)} onChange={event => onChange(toCents(event.target.value))} /><span className="text-[10px] text-slate-500">em R$</span></div>; }
+function PaidPriceField({ value, onChange }: { value: number | null; onChange: (value: number | null) => void }) {
+  const [inputValue, setInputValue] = useState(() => value === null ? "" : (value / 100).toFixed(2));
+  const lastEmittedCents = useRef<number | null>(value);
+
+  useEffect(() => {
+    // Atualiza o texto somente quando o valor vier de fora (por exemplo,
+    // ao abrir outro registro), sem sobrescrever a digitação em andamento.
+    if (value !== lastEmittedCents.current) {
+      setInputValue(value === null ? "" : (value / 100).toFixed(2));
+      lastEmittedCents.current = value;
+    }
+  }, [value]);
+
+  const handleChange = (nextValue: string) => {
+    setInputValue(nextValue);
+    const cents = toPaidPriceCents(nextValue);
+    lastEmittedCents.current = cents;
+    onChange(cents);
+  };
+
+  const normalizeInput = () => {
+    const cents = toPaidPriceCents(inputValue);
+    setInputValue(cents === null ? "" : (cents / 100).toFixed(2));
+    lastEmittedCents.current = cents;
+    onChange(cents);
+  };
+
+  return <div className="flex items-center gap-2"><span className="w-20 flex-shrink-0 rounded bg-emerald-600 px-2 py-1 text-center text-xs font-semibold text-white">VALOR PAGO</span><Input aria-label="Preço pago da passagem adicional" inputMode="decimal" placeholder="R$ 0,00" className="h-8 text-xs" value={inputValue} onChange={event => handleChange(event.target.value)} onBlur={normalizeInput} /><span className="text-[10px] text-slate-500">em R$</span></div>;
+}
 
 function optionalNumber(value: string) { const number = Number(value); return value === "" || !Number.isFinite(number) ? null : Math.max(0, Math.trunc(number)); }
