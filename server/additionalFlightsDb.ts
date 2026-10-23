@@ -16,6 +16,43 @@ export async function getAdditionalFlightsForYear(year: number) {
     .where(eq(additionalFlights.year, year));
 }
 
+/**
+ * Projeção pública mínima usada exclusivamente pelos marcadores do Calendário.
+ * Retorna apenas passagens emitidas e não expõe localizador, terminal, preço,
+ * milhas ou identificadores completos do bilhete.
+ */
+export async function getPublicAdditionalFlightsForCalendar(year: number) {
+  const db = await getDb();
+  if (!db) return [];
+
+  const rows = await db
+    .select({
+      id: additionalFlights.id,
+      weekNumber: additionalFlights.weekNumber,
+      isTicketIssued: additionalFlights.isTicketIssued,
+      ticketType: additionalFlights.ticketType,
+      departureAirline: additionalFlights.departureAirline,
+      returnAirline: additionalFlights.returnAirline,
+      departureFlightDatetime: additionalFlights.departureFlightDatetime,
+      returnFlightDatetime: additionalFlights.returnFlightDatetime,
+      departureAirport: additionalFlights.departureAirport,
+      returnAirport: additionalFlights.returnAirport,
+      departureRescheduled: additionalFlights.departureRescheduled,
+      returnRescheduled: additionalFlights.returnRescheduled,
+      departureCancelled: additionalFlights.departureCancelled,
+      returnCancelled: additionalFlights.returnCancelled,
+    })
+    .from(additionalFlights)
+    .where(
+      and(
+        eq(additionalFlights.year, year),
+        eq(additionalFlights.isTicketIssued, 1)
+      )
+    );
+
+  return rows;
+}
+
 export async function getAdditionalFlight(id: number, year: number) {
   const db = await getDb();
   if (!db) return null;

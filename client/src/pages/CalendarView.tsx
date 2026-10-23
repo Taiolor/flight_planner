@@ -253,13 +253,9 @@ export default function CalendarView() {
     { year },
     queryCachePolicies.annualPlanning
   );
-  const authCheckQuery = trpc.flightAuth.check.useQuery(undefined, { retry: false });
-  const additionalFlightsQuery = trpc.additionalFlights.getYear.useQuery(
+  const additionalFlightsQuery = trpc.additionalFlights.getCalendar.useQuery(
     { year },
-    {
-      ...queryCachePolicies.annualPlanning,
-      enabled: Boolean(authCheckQuery.data?.authenticated),
-    }
+    queryCachePolicies.annualPlanning
   );
   const [selectedMark, setSelectedMark] = useState<DayMark | null>(null);
   const [showOnlyHolidaysAndWeekends, setShowOnlyHolidaysAndWeekends] =
@@ -405,9 +401,9 @@ export default function CalendarView() {
           datetime: flight.departureFlightDatetime,
           airline: flight.departureAirline,
           airport: flight.departureAirport,
-          flightNumber: flight.departureFlightNumber,
-          locator: flight.departureLocator,
-          terminal: flight.departureTerminal,
+          flightNumber: null,
+          locator: null,
+          terminal: null,
           rescheduled: flight.departureRescheduled,
           cancelled: flight.departureCancelled,
         },
@@ -416,9 +412,9 @@ export default function CalendarView() {
           datetime: flight.ticketType === "oneway" ? null : flight.returnFlightDatetime,
           airline: flight.returnAirline,
           airport: flight.returnAirport,
-          flightNumber: flight.returnFlightNumber,
-          locator: flight.returnLocator,
-          terminal: flight.returnTerminal,
+          flightNumber: null,
+          locator: null,
+          terminal: null,
           rescheduled: flight.returnRescheduled,
           cancelled: flight.returnCancelled,
         },
@@ -496,8 +492,7 @@ export default function CalendarView() {
 
   const isCalendarLoading =
     weeksQuery.isLoading ||
-    authCheckQuery.isLoading ||
-    (authCheckQuery.data?.authenticated === true && additionalFlightsQuery.isLoading);
+    additionalFlightsQuery.isLoading;
 
   const normalizedFlightSearchTerm = normalizeCalendarFlightSearch(
     deferredFlightSearchTerm

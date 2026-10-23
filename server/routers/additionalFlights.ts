@@ -5,6 +5,7 @@ import {
   deleteAdditionalFlight,
   getAdditionalFlight,
   getAdditionalFlightsForYear,
+  getPublicAdditionalFlightsForCalendar,
   updateAdditionalFlight,
 } from "../additionalFlightsDb";
 import {
@@ -15,8 +16,11 @@ import {
   sendTicketNotificationEmail,
   type TicketChangeNotification,
 } from "../_core/emailNotification";
-import { flightProtectedProcedure } from "../flightAuthMiddleware";
-import { router } from "../_core/trpc";
+import {
+  flightProtectedProcedure,
+  getSessionFromCookie,
+} from "../flightAuthMiddleware";
+import { publicProcedure, router } from "../_core/trpc";
 import { z } from "zod";
 
 const nullableText = z.string().trim().max(255).nullable().optional();
@@ -342,6 +346,15 @@ async function notifyWhenIssuedStateChanges(
 }
 
 export const additionalFlightsRouter = router({
+  getCalendar: publicProcedure
+    .input(z.object({ year: yearSchema }))
+    .query(async ({ ctx, input }) => {
+      const session = await getSessionFromCookie(ctx.req);
+      return session
+        ? getAdditionalFlightsForYear(input.year)
+        : getPublicAdditionalFlightsForCalendar(input.year);
+    }),
+
   getYear: flightProtectedProcedure
     .input(z.object({ year: yearSchema }))
     .query(({ input }) => getAdditionalFlightsForYear(input.year)),
