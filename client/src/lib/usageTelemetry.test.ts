@@ -3,6 +3,8 @@ import {
   approximatePosition,
   createUsageTelemetrySessionId,
   getSafeUsageRoute,
+  markUsageTelemetryActiveNoticeShown,
+  shouldShowUsageTelemetryActiveNotice,
 } from "./usageTelemetry";
 
 describe("telemetria de uso consentida", () => {
@@ -23,5 +25,18 @@ describe("telemetria de uso consentida", () => {
     expect(getSafeUsageRoute("/admin/telemetria")).toBe("/admin/telemetria");
     expect(getSafeUsageRoute("/?email=private@example.com")).toBe("/");
     expect(createUsageTelemetrySessionId()).toMatch(/^[a-f0-9]{32}$/);
+  });
+
+  it("marca o aviso ativo como já exibido no próximo carregamento da sessão", () => {
+    const values = new Map<string, string>();
+    const storage = {
+      getItem: (key: string) => values.get(key) ?? null,
+      setItem: (key: string, value: string) => values.set(key, value),
+      removeItem: (key: string) => values.delete(key),
+    };
+
+    expect(shouldShowUsageTelemetryActiveNotice(storage)).toBe(true);
+    markUsageTelemetryActiveNoticeShown(storage);
+    expect(shouldShowUsageTelemetryActiveNotice(storage)).toBe(false);
   });
 });

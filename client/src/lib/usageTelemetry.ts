@@ -1,5 +1,24 @@
 export const USAGE_TELEMETRY_CONSENT_KEY = "smartfly_usage_telemetry_consent";
 export const USAGE_TELEMETRY_SESSION_KEY = "smartfly_usage_telemetry_session";
+export const USAGE_TELEMETRY_ACTIVE_NOTICE_KEY = "smartfly_usage_telemetry_active_notice";
+
+export type UsageTelemetryStorage = Pick<Storage, "getItem" | "setItem" | "removeItem">;
+
+export function shouldShowUsageTelemetryActiveNotice(
+  storage: UsageTelemetryStorage | undefined = typeof sessionStorage === "undefined"
+    ? undefined
+    : sessionStorage
+): boolean {
+  return storage?.getItem(USAGE_TELEMETRY_ACTIVE_NOTICE_KEY) !== "shown";
+}
+
+export function markUsageTelemetryActiveNoticeShown(
+  storage: UsageTelemetryStorage | undefined = typeof sessionStorage === "undefined"
+    ? undefined
+    : sessionStorage
+) {
+  storage?.setItem(USAGE_TELEMETRY_ACTIVE_NOTICE_KEY, "shown");
+}
 
 export type ApproximatePosition = {
   latitudeE2: number;

@@ -4,6 +4,9 @@ import {
   approximatePosition,
   createUsageTelemetrySessionId,
   getSafeUsageRoute,
+  markUsageTelemetryActiveNoticeShown,
+  shouldShowUsageTelemetryActiveNotice,
+  USAGE_TELEMETRY_ACTIVE_NOTICE_KEY,
   USAGE_TELEMETRY_CONSENT_KEY,
   USAGE_TELEMETRY_SESSION_KEY,
   type ApproximatePosition,
@@ -41,6 +44,11 @@ export default function UsageTelemetry() {
   );
   const [isPromptDismissed, setIsPromptDismissed] = useState(
     () => sessionStorage.getItem(USAGE_TELEMETRY_CONSENT_KEY) === "dismissed"
+  );
+  const [showActiveNotice, setShowActiveNotice] = useState(
+    () =>
+      sessionStorage.getItem(USAGE_TELEMETRY_CONSENT_KEY) === "granted" &&
+      shouldShowUsageTelemetryActiveNotice()
   );
   const [position, setPosition] = useState<ApproximatePosition>();
   const queueRef = useRef<UsageEvent[]>([]);
@@ -89,6 +97,8 @@ export default function UsageTelemetry() {
     sessionIdRef.current = getSessionId();
     setIsPromptDismissed(false);
     setIsEnabled(true);
+    setShowActiveNotice(true);
+    markUsageTelemetryActiveNoticeShown();
     if (!navigator.geolocation) return;
     navigator.geolocation.getCurrentPosition(
       result => {
@@ -106,6 +116,7 @@ export default function UsageTelemetry() {
     timerRef.current = null;
     sessionStorage.removeItem(USAGE_TELEMETRY_CONSENT_KEY);
     sessionStorage.removeItem(USAGE_TELEMETRY_SESSION_KEY);
+    sessionStorage.removeItem(USAGE_TELEMETRY_ACTIVE_NOTICE_KEY);
     sessionIdRef.current = undefined;
     setPosition(undefined);
     setIsEnabled(false);
@@ -114,6 +125,12 @@ export default function UsageTelemetry() {
       deleteMutation.mutate({ sessionId }, { onError: () => undefined });
     }
   }, [deleteMutation, isInternalSessionAuthenticated]);
+
+  useEffect(() => {
+    if (isEnabled && showActiveNotice) {
+      markUsageTelemetryActiveNoticeShown();
+    }
+  }, [isEnabled, showActiveNotice]);
 
   useEffect(() => {
     if (!isEnabled || !isInternalSessionAuthenticated) return;
@@ -145,7 +162,13 @@ export default function UsageTelemetry() {
     };
   }, []);
 
-  if (!isInternalSessionAuthenticated || (!isEnabled && isPromptDismissed)) return null;
+  if (
+    !isInternalSessionAuthenticated ||
+    (!isEnabled && isPromptDismissed) ||
+    (isEnabled && !showActiveNotice)
+  ) {
+    return null;
+  }
 
   return (
     <aside className="fixed bottom-4 left-4 z-50 max-w-sm rounded-xl border border-slate-200 bg-white/95 p-3 shadow-lg backdrop-blur dark:border-slate-700 dark:bg-slate-900/95">
