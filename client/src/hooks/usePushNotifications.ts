@@ -9,6 +9,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { trpc } from "@/lib/trpc";
+import { queryCachePolicies } from "@/lib/queryCache";
 
 export type NotificationStatus =
   | "unsupported" // Navegador não suporta push
@@ -29,14 +30,17 @@ function urlBase64ToUint8Array(base64String: string): Uint8Array<ArrayBuffer> {
   return outputArray;
 }
 
-export function usePushNotifications() {
+export function usePushNotifications(year: number) {
   const [status, setStatus] = useState<NotificationStatus>("loading");
   const [subscription, setSubscription] = useState<PushSubscription | null>(
     null
   );
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const { data: vapidData } = trpc.push.getVapidPublicKey.useQuery();
+  const { data: vapidData } = trpc.push.getVapidPublicKey.useQuery(
+    undefined,
+    queryCachePolicies.staticPublicKey
+  );
   const subscribeMutation = trpc.push.subscribe.useMutation();
   const unsubscribeMutation = trpc.push.unsubscribe.useMutation();
   const sendTestMutation = trpc.push.sendTest.useMutation();
@@ -123,7 +127,7 @@ export function usePushNotifications() {
       }
       setStatus("error");
     }
-  }, [vapidData, subscribeMutation]);
+  }, [vapidData, subscribeMutation.mutateAsync]);
 
   const unsubscribe = useCallback(async () => {
     if (!subscription) return;
@@ -145,11 +149,11 @@ export function usePushNotifications() {
       );
       setStatus("error");
     }
-  }, [subscription, unsubscribeMutation]);
+  }, [subscription, unsubscribeMutation.mutateAsync]);
 
   const sendTest = useCallback(async () => {
     try {
-      await sendTestMutation.mutateAsync();
+      await sendTestMutation.mutateAsync({ year });
       return true;
     } catch (err: unknown) {
       setErrorMessage(
@@ -159,7 +163,7 @@ export function usePushNotifications() {
       );
       return false;
     }
-  }, [sendTestMutation]);
+  }, [sendTestMutation.mutateAsync, year]);
 
   return {
     status,

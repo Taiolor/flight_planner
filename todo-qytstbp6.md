@@ -1,0 +1,280 @@
+# Project TODO
+
+- [x] Auditar os componentes atuais, as rotas tRPC e as fontes de dados de voos, compras, cancelamentos e cidades.
+- [x] Definir e documentar a arquitetura do Fly.IA com Gemini 2.5 Flash no servidor, contexto mínimo do banco, proteção da sessão e limitação de uso.
+- [x] Comparar modelos de linguagem locais de baixo investimento, com foco em português, requisitos de memória e compatibilidade com o Fly.IA.
+- [x] Comparar APIs remotas de LLM com camada gratuita ou custo inicial reduzido, incluindo limites, política de dados e qualidade em português.
+- [x] Decidir entre o modelo local leve e a Gemini API paga para a primeira versão do Fly.IA.
+- [x] Confirmar Gemini 2.5 Flash como provedor e modelo remoto, com política de privacidade da modalidade paga.
+- [x] Confirmar que os painéis de consumo do Google registram requisições bem-sucedidas pela chave FlyAI.
+- [x] Verificar se o projeto Google AI Studio **FlyAI** possui faturamento ativo e está no **Paid Tier** da Gemini API.
+- [x] Documentar a recarga pré-paga de R$ 100,00 do projeto FlyAI e a gestão de gastos pelo usuário.
+- [x] Confirmar em arquivo a persistência da documentação da recarga pré-paga e do controle de gastos.
+- [x] Salvar checkpoint final após registrar a ativação pré-paga do FlyAI.
+- [x] Registrar que a confirmação de sistema operacional, RAM e GPU não é necessária nesta versão baseada em Gemini API.
+- [x] Registrar que a infraestrutura local de LLM foi substituída pela Gemini API nesta versão.
+- [x] Implementar o gatilho flutuante discreto do Fly.IA, disponível em toda a aplicação.
+- [x] Implementar a janela de chatbot acessível, responsiva e em português, com sugestões de perguntas relacionadas aos dados do planejamento.
+- [x] Criar uma rota segura de consulta contextual aos dados do banco, sem expor dados além da sessão autorizada.
+- [x] Integrar o mecanismo de resposta Gemini 2.5 Flash para perguntas sobre próximos voos, compras, cancelamentos, cidades e distâncias.
+- [x] Criar e executar testes automatizados para as consultas e a interface do Fly.IA.
+- [x] Documentar em arquivo técnico o fluxo cliente→tRPC→Gemini, o contexto mínimo, a proteção de sessão e o limite de uso.
+- [x] Adicionar testes do procedimento Fly.IA para autorização, limitação, falha do provedor e resposta bem-sucedida.
+- [x] Adicionar testes explícitos de sanitização que comprovem a exclusão de localizadores e identificadores sensíveis do contexto do Gemini.
+- [x] Adicionar teste renderizado do widget para orientar visitantes a entrar e abrir o chat após autenticação.
+- [x] Adicionar testes tRPC de `flyIa.chat` para sessão ausente, limite excedido, indisponibilidade do provedor e resposta bem-sucedida.
+- [x] Validar a interface em desktop e celular e revisar o arquivo de tarefas.
+- [x] Salvar o checkpoint da versão validada do Fly.IA.
+- [x] Definir o modo de alerta de orçamento e os indicadores de consumo exibidos no painel administrativo.
+- [x] Implementar alertas únicos por faixa de orçamento, enviados por e-mail e push a cada novo cruzamento de limite.
+- [x] Criar a persistência de consumo estimado e das configurações de orçamento do Gemini por projeto e mês.
+- [x] Registrar consumo e estimativas de custo após cada resposta bem-sucedida do Fly.IA.
+- [x] Expor procedimentos administrativos protegidos para leitura de consumo e atualização do orçamento e dos limiares de alerta.
+- [x] Implementar a tela administrativa de consumo do Gemini com status de orçamento, evolução mensal e formulário de alertas.
+- [x] Criar testes de cálculo, autorização, persistência e alerta de orçamento do painel Gemini.
+- [x] Adicionar testes de `recordGeminiUsage` cobrindo persistência do evento, atualização mensal e cálculo do snapshot.
+- [x] Adicionar testes de alertas de orçamento cobrindo idempotência por `deliveryKey` e envio por e-mail e push.
+- [x] Validar em teste a `deliveryKey` real usada no claim de alerta para o par mês e faixa de orçamento.
+- [x] Validar em teste os payloads de e-mail e push enviados ao cruzar uma nova faixa de orçamento.
+- [x] Validar a experiência em desktop e celular e revisar o arquivo de tarefas.
+- [x] Salvar o checkpoint do painel administrativo Gemini validado.
+- [x] Definir se os resumos de voos serão gerados sob demanda ou automaticamente e como serão atualizados.
+- [x] Gerar o primeiro resumo automaticamente ao abrir um voo sem resumo e exibir uma ação manual de atualização.
+- [x] Modelar a persistência do resumo, data de geração, versão do modelo e vínculo ao voo e ao exercício selecionado.
+- [x] Preparar um contexto factual mínimo de cada voo, excluindo localizadores e demais identificadores sensíveis.
+- [x] Implementar procedimentos protegidos para gerar, consultar e atualizar resumos de voo pelo Gemini.
+- [x] Integrar controles e apresentação dos resumos no Diário de Bordo em desktop e celular.
+- [x] Criar testes de autorização, contexto seguro, persistência e experiência de geração dos resumos.
+- [x] Validar a funcionalidade e documentar o uso responsável da IA.
+- [x] Disparar a geração automaticamente ao visualizar a viagem sem resumo, sem exigir abertura manual da seção Fly.IA.
+- [x] Adicionar teste renderizado para geração automática, carregamento, resumo salvo e atualização manual no Diário de Bordo.
+- [x] Validar no teste renderizado a mensagem de carregamento exibida enquanto o resumo automático está sendo gerado.
+- [x] Adicionar teste de persistência do resumo cobrindo inserção, atualização, leitura no overview e metadados de geração.
+- [x] Salvar um checkpoint da versão validada de resumos Fly.IA.
+- [x] Investigar logs de servidor, rede e navegador para localizar a ausência de resposta do Fly.IA após o consumo da Gemini.
+- [x] Corrigir a propagação da resposta ou de erro entre a Gemini, o procedimento tRPC e o chat flutuante.
+- [x] Adicionar teste de regressão e validar uma conversa completa do Fly.IA.
+- [x] Adicionar teste renderizado do chat cobrindo envio, carregamento e resposta bem-sucedida da mutation Fly.IA.
+- [x] Adicionar teste renderizado do erro do provedor confirmando feedback visível e encerramento do carregamento.
+- [x] Salvar um checkpoint da correção do Fly.IA.
+- [x] Capturar a exceção real que causa o erro interno atual no procedimento do Fly.IA.
+- [x] Corrigir a falha e registrar um identificador de diagnóstico seguro no servidor e no chat.
+- [x] Adicionar teste de regressão para o novo caminho de erro e validar uma pergunta completa.
+- [x] Salvar um checkpoint da correção do erro interno do Fly.IA.
+- [x] Restaurar a validação de tipos da tela Financeiro após a atualização concorrente de acesso protegido.
+- [x] Reproduzir uma pergunta pelo procedimento tRPC Fly.IA com os serviços reais e registrar a exceção original caso ocorra.
+- [x] Validar no fluxo real do chat que uma pergunta autenticada recebe resposta, ou coletar o novo código de diagnóstico para correção específica.
+- [x] Adicionar teste integrado do caminho real reproduzido e da resposta exibida no widget Fly.IA.
+- [x] Adicionar teste integrado do widget Fly.IA que envia uma pergunta pelo caller tRPC autenticado real e renderiza a resposta retornada.
+- [x] Comparar os dados exibidos no card de descrição com o contexto factual atualmente enviado ao Fly.IA.
+- [x] Responder o próximo voo de forma determinística no servidor, preservando textos de data e hora do banco sem enviar este caso ao Gemini.
+- [x] Aplicar uma resposta determinística e completa para perguntas sobre o próximo voo, sem permitir que o modelo altere horários.
+- [x] Criar testes de regressão para data, hora, rota, companhia, número do voo, status e demais detalhes do card.
+- [x] Cobrir a pergunta de seguimento “detalhes” para garantir a repetição factual completa do próximo voo.
+- [x] Validar a resposta no chat e documentar a correção.
+- [x] Ajustar o timeout do teste de integração da Gemini para acomodar a latência real da API.
+- [x] Salvar um checkpoint da resposta completa e precisa do próximo voo.
+- [x] Corrigir o registro de tarefas para refletir que perguntas sobre o próximo voo são respondidas deterministicamente no servidor, sem enviar esse caso ao Gemini.
+- [x] Ampliar os testes para validar rota completa, ida e volta associadas, companhia, número, terminal, status e data e hora literais.
+- [x] Adicionar validação integrada do widget Fly.IA para a pergunta inicial e o seguimento por detalhes do próximo voo.
+- [x] Estender o teste fim a fim autenticado do widget para cobrir a pergunta inicial, o seguimento por detalhes e a renderização completa das duas respostas.
+- [x] Validar no teste fim a fim que cada uma das duas respostas do assistente é renderizada separadamente e contém todos os campos do card.
+- [x] Avaliar o estado de espera atual do chat Fly.IA e o componente Skeleton compartilhado.
+- [x] Implementar um skeleton de resposta do assistente enquanto a mutation Fly.IA estiver pendente.
+- [x] Garantir anúncio acessível de carregamento e respeito à preferência de redução de movimento.
+- [x] Criar teste renderizado para o skeleton e validar em desktop e celular.
+- [x] Adicionar validação responsiva dedicada do skeleton Fly.IA para confirmar largura fluida em celular e limite de leitura em desktop.
+- [x] Executar validação responsiva do skeleton em viewports móvel e desktop com medidas de layout distintas.
+- [x] Registrar evidência dedicada de layout do skeleton Fly.IA em desktop e celular pela cobertura de viewport responsiva.
+- [x] Habilitar temporariamente uma prévia de desenvolvimento do skeleton Fly.IA, capturar desktop e celular e remover o código de prévia antes do checkpoint.
+- [x] Salvar um checkpoint da melhoria de carregamento do Fly.IA.
+- [x] Mapear o contexto factual atual, o histórico de mensagens e os dados textuais disponíveis ao Fly.IA.
+- [x] Comparar os ganhos e custos de RAG, memória resumida de conversa e consultas estruturadas para o SmartFly.
+- [x] Produzir uma recomendação de arquitetura incremental para memória do Fly.IA.
+- [x] Salvar um checkpoint da avaliação arquitetural de memória do Fly.IA.
+- [x] Confirmar em arquivo o mapeamento de contexto, a comparação de alternativas e a recomendação incremental de memória do Fly.IA.
+- [x] Definir o escopo da memória por sessão e exercício, incluindo retenção, limpeza e campos permitidos.
+- [x] Criar tabelas para resumos de sessão e métricas de contexto, latência e tokens do Fly.IA.
+- [x] Integrar a leitura, atualização segura e expiração da memória resumida ao fluxo de conversa.
+- [x] Expor indicadores administrativos de memória, economia estimada de contexto e perguntas sem resposta.
+- [x] Criar testes de privacidade, isolamento por exercício, expiração, persistência e observabilidade.
+- [x] Documentar o gatilho futuro para introduzir RAG.
+- [x] Adicionar testes explícitos de isolamento da memória por exercício para a mesma sessão.
+- [x] Adicionar testes do serviço de memória cobrindo expiração, regravação e contrato de persistência.
+- [x] Adicionar testes de agregação dos indicadores administrativos de memória com dados de banco simulados.
+- [x] Confirmar em arquivo a documentação final de memória de sessão e o gatilho de RAG.
+- [x] Adicionar teste com banco mockado do serviço de memória para isolar a mesma sessão entre exercícios distintos.
+- [x] Adicionar teste com banco mockado para expiração, limpeza e regravação por upsert da memória Fly.IA.
+- [x] Adicionar teste de `getFlyIaMemoryDashboard` com linhas simuladas do banco para validar a agregação completa dos indicadores.
+- [x] Salvar um checkpoint da memória incremental do Fly.IA.
+- [x] Definir sugestões de próximas perguntas para respostas de voos, compras, cancelamentos, cidades, distâncias e contexto geral.
+- [x] Exibir sugestões contextuais interativas após mensagens bem-sucedidas do assistente no Fly.IA.
+- [x] Fazer cada sugestão preencher e enviar uma nova pergunta pelo fluxo atual do chat.
+- [x] Criar testes de categorias, interação, acessibilidade e responsividade das sugestões.
+- [x] Validar em teste renderizado que o chip de sugestão é acessível, envia a pergunta correta e se adapta à largura do chat.
+- [x] Adicionar categoria explícita de sugestões para respostas sobre distância e quilometragem.
+- [x] Despachar a sugestão pelo mesmo fluxo de envio do campo, com preenchimento de estado, foco preservado e envio direto em uma ação.
+- [x] Adicionar cenários renderizados de celular e desktop para validar quebra de linha e largura fluida dos chips.
+- [x] Confirmar em arquivo a categoria de distância e o fluxo de envio com foco preservado dos chips Fly.IA.
+- [x] Reexecutar testes focados de sugestões e chat após confirmar as mudanças de categoria e envio.
+- [x] Salvar um checkpoint das sugestões de perguntas do Fly.IA.
+- [x] Definir categorias de preferência efêmera e uma regra transparente de priorização das sugestões.
+- [x] Registrar apenas a categoria da sugestão escolhida na sessão atual, sem persistência no banco ou conteúdo da conversa.
+- [x] Reordenar as sugestões contextuais pelo interesse demonstrado e manter diversidade mínima de temas.
+- [x] Criar testes de ordenação, limpeza ao encerrar conversa, acessibilidade e responsividade.
+- [x] Validar no widget que uma escolha reordena sugestões e que limpar a conversa remove as preferências da sessão.
+- [x] Salvar um checkpoint da personalização de sugestões por sessão.
+- [x] Definir os estados de preferência, ativação e tema prioritário dentro da sessão atual.
+- [x] Adicionar controle para ativar ou desativar sugestões personalizadas.
+- [x] Adicionar redefinição de um tema preferido e de todas as preferências da sessão.
+- [x] Exibir um indicador discreto quando a ordem das sugestões estiver adaptada à sessão.
+- [x] Criar testes de ativação, redefinição, indicador, acessibilidade e responsividade.
+- [x] Validar no widget que "Limpar sugestões" remove todas as preferências e restaura a ordem padrão.
+- [x] Validar os controles do cabeçalho em celular e desktop, incluindo rótulos acessíveis, indicador e quebra de linha fluida.
+- [x] Salvar um checkpoint dos controles ampliados de sugestões.
+- [x] Definir preferência efêmera de quantidade e modo explorar, com valores seguros e padrão da sessão.
+- [x] Adicionar uma explicação curta e acessível sobre a adaptação de sugestões.
+- [x] Permitir configurar a quantidade de sugestões exibidas no Fly.IA.
+- [x] Implementar modo explorar que prioriza variedade de temas em vez de afinidade.
+- [x] Criar testes de quantidade, diversidade, explicação, acessibilidade e responsividade.
+- [x] Salvar um checkpoint da ampliação de sugestões do Fly.IA.
+- [x] Definir captura de áudio temporária, formatos, limite de 5 MB e mensagens de permissão do microfone.
+- [x] Criar procedimento protegido para transcrever áudio em português com chave temporária restrita à sessão.
+- [x] Implementar controle de microfone, gravação, estado de transcrição e prévia editável do texto no Fly.IA.
+- [x] Fazer a transcrição confirmada preencher o campo e usar o mesmo fluxo de envio de perguntas do chat após revisão manual.
+- [x] Criar testes de transcrição, falhas do serviço, estados e prévia editável da entrada por voz.
+- [x] Cobrir no roteador a propriedade do áudio, a transcrição bem-sucedida e a falha segura do provedor de voz.
+- [x] Cobrir no componente o microfone, estados de gravação e transcrição e a prévia editável do texto.
+- [x] Simular no widget Fly.IA a captura de mídia, o upload temporário e o preenchimento da pergunta transcrita.
+- [x] Documentar o fluxo, formatos, privacidade, estados e retenção atual da entrada por voz.
+- [x] Adicionar teste de permissão negada do microfone, validando feedback em português e retorno ao estado ocioso.
+- [x] Adicionar teste de navegador sem `MediaRecorder` ou `getUserMedia`, validando fallback para digitação.
+- [x] Confirmar no `AIChatBox` real que o campo editável permanece disponível após mensagem de navegador sem suporte a voz.
+- [x] Validar o controle de voz em celular e desktop, incluindo botão, estados e prévia editável.
+- [x] Eliminar a necessidade de exclusão automática ao remover por completo o armazenamento de objetos `flyia-voice/`.
+- [x] Salvar um checkpoint da entrada por voz do Fly.IA.
+- [x] Avaliar transcrição de voz em fluxo, sem persistir áudio no armazenamento, mantendo a chave do provedor apenas no servidor.
+- [x] Definir e implementar a alternativa sem armazenamento, caso o provedor de transcrição suporte o formato e a privacidade necessários.
+- [x] Testar e documentar o fluxo de voz sem persistência de áudio.
+- [x] Manter Whisper como mecanismo de transcrição e confirmar o envio sem persistência temporária no armazenamento integrado.
+- [x] Ajustar a documentação e a retenção de áudio conforme a limitação efetiva do mecanismo Whisper.
+- [x] Salvar checkpoint da transcrição Whisper em memória, sem objetos temporários no armazenamento.
+- [x] Diagnosticar por que resumos, calendário e três semanas de planejamento não carregam após a sincronização recente.
+- [x] Corrigir a falha de leitura ou apresentação sem alterar nem perder dados persistidos.
+- [x] Criar regressão para garantir que a flag de controles não oculte resumo, calendário e semanas disponíveis.
+- [x] Validar a restauração no navegador, na API e na suíte de testes antes do checkpoint.
+- [x] Salvar checkpoint da correção de visibilidade de dados da Home após sincronização.
+- [x] Mapear o consumo atual de tokens, contexto e transcrição de áudio no Fly.IA.
+- [x] Comparar otimizações de tokens e áudio em tempo real, considerando custo, qualidade e privacidade.
+- [x] Apresentar recomendações priorizadas para reduzir custos operacionais do Fly.IA.
+- [x] Corrigir a precisão de custo do Gemini para preservar frações abaixo de um centavo por requisição.
+- [x] Registrar duração, tamanho, resultado e latência do áudio do Fly.IA sem persistir arquivo ou conteúdo transcrito.
+- [x] Exibir no painel Gemini indicadores agregados de custo preciso e uso de áudio.
+- [x] Criar migração, cobertura de regressão, documentação e validação final da nova telemetria.
+- [x] Salvar checkpoint da precisão de custo e telemetria de áudio do Fly.IA.
+- [x] Mapear a granularidade temporal segura para tokens Gemini e duração de áudio.
+- [x] Expor uma série diária agregada de tokens e duração de áudio, sem conteúdo ou identificadores.
+- [x] Adicionar gráfico acessível e responsivo de tokens e áudio ao painel administrativo Gemini.
+- [x] Criar cobertura de API e interface, validar o estado protegido em celular e versionar o gráfico temporal.
+- [x] Salvar checkpoint do gráfico temporal de tokens e duração de áudio do Fly.IA.
+- [x] Definir perguntas operacionais elegíveis para fonte externa e a prioridade de fontes oficiais.
+- [x] Comparar busca com citações e integração de rota, considerando custo, cobertura e privacidade.
+- [x] Restringir a consulta externa a orientação geral e estimativa de rota, sem buscar dados do voo quando o contexto interno não responder.
+- [x] Exibir fonte, momento da consulta e ressalvas nas respostas externas de orientação e rota.
+- [x] Criar cobertura de falha de rota, citação de fonte e precedência dos dados internos; documentar e versionar.
+- [x] Confirmar que um provedor externo de status de voo não será utilizado nesta versão.
+- [x] Definir que somente a origem informada e o endereço público do aeroporto são enviados à estimativa de rota.
+- [x] Manter status, terminal e horário de voo exclusivamente na base SmartFly, sem integração de provedor externo de status.
+- [x] Criar testes de consulta de rota, falha segura, fonte e precedência dos dados de voo persistidos.
+- [x] Garantir que horários, status, terminais e demais detalhes de voo sejam respondidos exclusivamente com a base de dados do SmartFly.
+- [x] Restringir fontes externas a orientações gerais de chegada, check-in e embarque, sem consulta de status ou horário de voo.
+- [x] Criar regressões para impedir que conteúdo externo substitua ou contradiga dados de voo persistidos.
+- [x] Detectar perguntas sobre horário de embarque e selecionar o voo persistido aplicável.
+- [x] Informar literalmente a data e hora de partida cadastradas e calcular uma recomendação prévia de chegada e embarque.
+- [x] Distinguir visual e textualmente o fato persistido da recomendação oficial, incluindo fonte e ressalvas.
+- [x] Consultar externamente a rota e o trânsito somente quando a pessoa informar uma origem para chegar ao aeroporto.
+- [x] Cobrir voos nacionais de GRU, casos sem horário, perguntas de seguimento e estimativas de rota em testes de regressão.
+- [x] Salvar checkpoint da orientação de embarque e deslocamento do Fly.IA.
+- [x] Detectar perguntas sobre horário de embarque e selecionar o voo persistido aplicável.
+- [x] Informar literalmente a data e hora de partida cadastradas e calcular uma recomendação prévia de chegada e embarque.
+- [x] Distinguir visual e textualmente o fato persistido da recomendação oficial, incluindo a fonte e as ressalvas.
+- [x] Cobrir voos nacionais de GRU, casos sem horário e perguntas de seguimento em testes de regressão.
+- [x] Mapear o contrato de mensagem do Fly.IA para transportar um link de rota sem expor conteúdo sensível.
+- [x] Criar link de direções do Google Maps apenas para respostas de tempo de deslocamento com origem explícita.
+- [x] Exibir botão acessível “Ver rota no mapa” junto à resposta aplicável, abrindo em nova aba com proteção de referência.
+- [x] Cobrir link, ausência da ação em outras respostas, acessibilidade e responsividade; documentar e versionar.
+- [x] Salvar checkpoint do botão de rota no mapa do Fly.IA.
+- [x] Definir identificadores mínimos de companhia, número, rota e data para montar um link externo de rastreamento sem API.
+- [x] Adicionar acesso de rastreamento apenas a trechos emitidos que possuam os dados mínimos necessários.
+- [x] Abrir o rastreador em nova aba com rótulo acessível e proteção de referência, sem persistir dados externos.
+- [x] Cobrir o link, estados sem dados, segurança e responsividade; documentar e versionar a ação.
+- [x] Salvar checkpoint do link externo de rastreamento do Fly.IA.
+- [x] Mapear os componentes de calendário e detalhes de voo para adicionar rastreamento separado de ida e volta.
+- [x] Reutilizar links públicos seguros do Flightradar24 para trechos emitidos sem importar dados externos.
+- [x] Avaliar fontes licenciadas e selecionar a modalidade de alerta planejado, sem custo ou consulta externa.
+- [x] Manter alertas de decolagem opt-in sem substituir os horários persistidos no SmartFly.
+- [x] Criar cobertura de links, alertas, falhas, autorização e privacidade; documentar e versionar.
+- [x] Avaliar as três modalidades e selecionar o link público mais alerta baseado no horário planejado.
+- [x] Manter os controles administrativos existentes para ativar e configurar os alertas planejados.
+- [x] Não integrar provedor de status licenciado enquanto a modalidade planejada estiver selecionada.
+- [x] Cobrir configuração, prioridade, falhas, privacidade e idempotência da modalidade planejada.
+- [x] Manter somente alertas de decolagem baseados no horário planejado da base SmartFly, sem API externa.
+- [x] Padronizar os links públicos de rastreamento de ida e volta no calendário e no Fly.IA.
+- [x] Validar configuração, idempotência, autorização e comunicação explícita de que os alertas seguem horários planejados.
+- [x] Salvar checkpoint do rastreamento por trecho e alertas planejados do SmartFly.
+- [x] Mapear o estado de atualização das consultas de voos e o ponto de exibição mais adequado.
+- [x] Adicionar uma animação suave de atualização sem ocultar dados já carregados nem causar deslocamento de layout.
+- [x] Garantir anúncio acessível, preferência de redução de movimento e cobertura responsiva.
+- [x] Criar regressões, validar visualmente e versionar a animação de atualização de voos.
+- [x] Salvar checkpoint da animação suave de atualização dos voos.
+- [x] Mapear os cartões de voo exibidos na Home e no Calendário e seus estilos compartilhados.
+- [x] Adicionar hover e foco com elevação, contraste e destaque de informações sem deslocamento de layout.
+- [x] Respeitar preferência de redução de movimento e preservar estados de cartão em telas táteis.
+- [x] Criar regressões, validar visualmente em desktop e celular e versionar a melhoria de interatividade.
+- [x] Salvar checkpoint dos efeitos de hover nos cartões de voo.
+- [x] Mapear células clicáveis do Calendário, estado de voo remarcado e utilitários de feedback tátil já disponíveis.
+- [x] Aplicar hover, foco e feedback visual consistente nas células de voo do Calendário sem afetar datas comuns.
+- [x] Reforçar a distinção de voo remarcado com sinal visual acessível e sem depender apenas da cor.
+- [x] Adicionar feedback tátil opcional às aberturas de detalhes de voo em dispositivos compatíveis.
+- [x] Criar regressões, validar em desktop e celular, documentar e versionar as três melhorias.
+- [x] Salvar checkpoint das interações de voo no Calendário.
+- [x] Mapear a legenda, os filtros de status e os rótulos das células de voo no Calendário.
+- [x] Adicionar explicação acessível e discreta sobre o feedback tátil opcional.
+- [x] Permitir filtrar a grade anual para exibir somente voos remarcados.
+- [x] Adicionar rótulo textual de cancelamento sem depender apenas da cor.
+- [x] Criar regressões, validar em desktop e celular, documentar e versionar os três aprimoramentos.
+- [x] Salvar checkpoint da legenda, dos filtros e dos rótulos de status do Calendário.
+- [x] Mapear os detalhes expandidos de voo, o aeroporto de destino e a antecedência de previsão disponível.
+- [x] Selecionar uma fonte meteorológica confiável e definir consulta, cache, limites e contingência.
+- [x] Exibir previsão do destino somente nos detalhes expandidos, com fonte, atualização e estados de carregamento ou falha.
+- [x] Criar testes de dados, privacidade, interface e responsividade; documentar e versionar a integração de clima.
+- [x] Salvar checkpoint da previsão meteorológica do destino nos detalhes de voo.
+- [x] Diagnosticar a consulta de clima que gera erro de autenticação ao abrir o Calendário sem sessão interna.
+- [x] Tornar a consulta pública, limitada e validada por aeroporto e data, eliminando a falha sem ocultar detalhes de voo.
+- [x] Criar regressões para sessão ausente e sessão válida, validar no navegador e versionar a correção.
+- [x] Salvar checkpoint da correção de autenticação da previsão no Calendário.
+- [x] Mapear as sugestões contextuais e as respostas determinísticas disponíveis para clima no Fly.IA.
+- [x] Definir ícones, rótulos textuais e cores semânticas para condição, temperatura, chuva e vento.
+- [x] Adicionar chips de clima e um cartão visual de previsão às respostas aplicáveis do Fly.IA.
+- [x] Criar regressões de sugestões, dados, acessibilidade e responsividade; documentar e versionar a melhoria.
+- [x] Salvar checkpoint das sugestões e do cartão visual de clima do Fly.IA.
+- [x] Mapear ida e volta emitidas para selecionar qual previsão meteorológica o Fly.IA deve consultar.
+- [x] Definir alerta acessível de chuva intensa e recomendações prudentes de bagagem por condição meteorológica.
+- [x] Permitir escolher ida ou volta nas perguntas de clima sem alterar os dados persistidos do voo.
+- [x] Exibir alerta e recomendação de bagagem no cartão visual de previsão do Fly.IA.
+- [x] Criar regressões de seleção, chuva, bagagem, acessibilidade e responsividade; documentar e versionar as três melhorias.
+- [x] Salvar checkpoint da seleção de trecho, alerta de chuva e bagagem do Fly.IA.
+- [x] Mapear o contexto enviado à Gemini e o caminho determinístico das perguntas de clima do Fly.IA.
+- [x] Investigar logs, métricas e tempo de resposta da previsão pública para identificar falhas e latência.
+- [x] Corrigir chamadas desnecessárias, indisponibilidade e feedback de carregamento das respostas meteorológicas.
+- [x] Validar desempenho e confiabilidade, documentar o fluxo de Gemini e dados públicos e versionar a correção.
+- [x] Mapear direção, intensidade, rajadas e índice UV disponíveis na previsão meteorológica reutilizada.
+- [x] Definir limite prudente de alerta de vento forte e rótulos acessíveis para índice UV.
+- [x] Exibir alerta de vento e índice UV nos cartões de clima do Fly.IA e nos detalhes de voo aplicáveis.
+- [x] Criar regressões, validar visualmente, documentar e versionar os dois aprimoramentos meteorológicos.
+- [x] Salvar checkpoint da correção de desempenho e dos indicadores de vento e UV do Fly.IA.
+- [x] Mapear o skeleton e os estados pendentes do chat Fly.IA para ampliar o feedback de processamento.
+- [x] Projetar uma animação interativa com etapas de status sem representar progresso falso.
+- [x] Implementar a espera dinâmica com anúncio acessível e preferência de redução de movimento.
+- [x] Criar regressões de animação, atraso, responsividade e acessibilidade; documentar e versionar a melhoria.
+- [x] Salvar checkpoint da animação interativa de processamento do Fly.IA.

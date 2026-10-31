@@ -1,0 +1,1 @@
+ALTER TABLE `protected_access_attempts` MODIFY COLUMN `resource` enum('fly-ia','share-by-email','quotes','financial','memories','admin-notifications','admin-telemetry','gemini-budget') NOT NULL;

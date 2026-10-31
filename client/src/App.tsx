@@ -3,6 +3,12 @@ import NotFound from "@/pages/NotFound";
 import { lazy, Suspense } from "react";
 import { Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
+import { BackToTopButton } from "./components/BackToTopButton";
+import FlyIA from "./components/FlyIA";
+import PerformanceTelemetry from "./components/PerformanceTelemetry";
+import { RouteScrollRestoration } from "./components/RouteScrollRestoration";
+import UsageTelemetry from "./components/UsageTelemetry";
+import { MobileBottomNavigation } from "./components/MobileBottomNavigation";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import { YearProvider } from "./contexts/YearContext";
 import Home from "./pages/Home";
@@ -14,6 +20,11 @@ const AdminNotifications = lazy(() => import("./pages/AdminNotifications"));
 const FlightQuotes = lazy(() => import("./pages/FlightQuotes"));
 const Changelog = lazy(() => import("./pages/Changelog"));
 const FinancialDashboard = lazy(() => import("./pages/FinancialDashboard"));
+const UsageTelemetryMap = lazy(() => import("./pages/UsageTelemetryMap"));
+const GeminiBudgetDashboard = lazy(() => import("./pages/GeminiBudgetDashboard"));
+const Memories = lazy(() => import("./pages/Memories"));
+const PassageManagementPage = lazy(() => import("./pages/PassageManagementPage"));
+const OperationalControl = lazy(() => import("./pages/OperationalControl"));
 
 // Fallback de carregamento para rotas com lazy loading
 function PageLoader() {
@@ -31,7 +42,14 @@ function Router() {
   // make sure to consider if you need authentication for certain routes
   return (
     <Switch>
-      <Route path={"/"} component={Home} />
+      <Route path={"/"}>
+        <Home />
+      </Route>
+      <Route path={"/gestao-passagens"}>
+        <Suspense fallback={<PageLoader />}>
+          <PassageManagementPage />
+        </Suspense>
+      </Route>
       <Route path={"/calendar"}>
         <Suspense fallback={<PageLoader />}>
           <CalendarView />
@@ -40,6 +58,16 @@ function Router() {
       <Route path={"/admin/notifications"}>
         <Suspense fallback={<PageLoader />}>
           <AdminNotifications />
+        </Suspense>
+      </Route>
+      <Route path={"/admin/telemetria"}>
+        <Suspense fallback={<PageLoader />}>
+          <UsageTelemetryMap />
+        </Suspense>
+      </Route>
+      <Route path={"/admin/gemini"}>
+        <Suspense fallback={<PageLoader />}>
+          <GeminiBudgetDashboard />
         </Suspense>
       </Route>
       <Route path={"/cotacoes"}>
@@ -57,6 +85,16 @@ function Router() {
           <FinancialDashboard />
         </Suspense>
       </Route>
+      <Route path={"/controle"}>
+        <Suspense fallback={<PageLoader />}>
+          <OperationalControl />
+        </Suspense>
+      </Route>
+      <Route path={"/memorias"}>
+        <Suspense fallback={<PageLoader />}>
+          <Memories />
+        </Suspense>
+      </Route>
       <Route path={"/404"} component={NotFound} />
       {/* Final fallback route */}
       <Route component={NotFound} />
@@ -71,7 +109,15 @@ function App() {
         <ThemeProvider defaultTheme="light">
           <TooltipProvider>
             <Toaster position="top-right" richColors />
-            <Router />
+            <PerformanceTelemetry />
+            <UsageTelemetry />
+            <RouteScrollRestoration />
+            <div className="pb-24 sm:pb-0">
+              <Router />
+            </div>
+            <BackToTopButton />
+            <MobileBottomNavigation />
+            <FlyIA />
           </TooltipProvider>
         </ThemeProvider>
       </YearProvider>

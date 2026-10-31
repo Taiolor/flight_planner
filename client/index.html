@@ -42,7 +42,7 @@
     />
     <meta
       property="og:image"
-      content="https://d2xsxph8kpxj0f.cloudfront.net/310419663028456038/HQ655wm9a6bck22hJAwYRc/smartfly-icon-512-fy4eDuGdVJBtxeYLKc2qAk.png"
+      content="https://flightplan-hq655wm9.manus.space/smartfly-assets/smartfly-sf-apple-touch-icon_598faae4.png?v=20260827"
     />
     <meta property="og:image:width" content="512" />
     <meta property="og:image:height" content="512" />
@@ -62,7 +62,7 @@
     />
     <meta
       name="twitter:image"
-      content="https://d2xsxph8kpxj0f.cloudfront.net/310419663028456038/HQ655wm9a6bck22hJAwYRc/smartfly-icon-512-fy4eDuGdVJBtxeYLKc2qAk.png"
+      content="https://flightplan-hq655wm9.manus.space/smartfly-assets/smartfly-sf-apple-touch-icon_598faae4.png?v=20260827"
     />
 
     <!-- ═══════════════════════════════════════════════════════════
@@ -96,8 +96,9 @@
     <!-- ═══════════════════════════════════════════════════════════
          PWA
     ════════════════════════════════════════════════════════════ -->
-    <link rel="manifest" href="/manifest.json" />
+    <link rel="manifest" href="/manifest.json?v=20260827" />
     <meta name="theme-color" content="#2563eb" />
+    <meta name="color-scheme" content="light dark" />
     <meta name="msapplication-TileColor" content="#2563eb" />
 
     <!-- iOS PWA -->
@@ -106,30 +107,31 @@
       name="apple-mobile-web-app-status-bar-style"
       content="black-translucent"
     />
-    <meta name="apple-mobile-web-app-title" content="Smart Fly" />
+    <meta name="apple-mobile-web-app-title" content="Viagens" />
     <link
       rel="apple-touch-icon"
       sizes="180x180"
-      href="https://d2xsxph8kpxj0f.cloudfront.net/310419663028456038/HQ655wm9a6bck22hJAwYRc/apple-touch-icon_406505a4.png"
+      href="/smartfly-assets/smartfly-sf-apple-touch-icon_598faae4.png?v=20260827"
     />
 
     <!-- Favicon -->
     <link
       rel="icon"
-      href="https://d2xsxph8kpxj0f.cloudfront.net/310419663028456038/HQ655wm9a6bck22hJAwYRc/favicon_4bea3061.ico"
-      sizes="any"
+      type="image/png"
+      sizes="48x48"
+      href="/smartfly-assets/smartfly-sf-favicon-48_45731084.png?v=20260827"
     />
     <link
       rel="icon"
       type="image/png"
       sizes="32x32"
-      href="https://d2xsxph8kpxj0f.cloudfront.net/310419663028456038/HQ655wm9a6bck22hJAwYRc/favicon-32x32_9f7e40ea.png"
+      href="/smartfly-assets/smartfly-sf-favicon-32_fa912500.png?v=20260827"
     />
     <link
       rel="icon"
       type="image/png"
       sizes="16x16"
-      href="https://d2xsxph8kpxj0f.cloudfront.net/310419663028456038/HQ655wm9a6bck22hJAwYRc/favicon-16x16_df3ae22b.png"
+      href="/smartfly-assets/smartfly-sf-favicon-16_8b3260d7.png?v=20260827"
     />
 
     <!-- Prevent tap highlight on mobile + iOS safe area -->
@@ -144,11 +146,177 @@
       #root {
         background-color: #f8fafc;
         min-height: 100dvh;
+        opacity: 0;
+        transform: translateY(4px);
+      }
+      #root[data-pwa-revealed="true"] {
+        animation: pwa-root-reveal 420ms cubic-bezier(0.2, 0.75, 0.25, 1) both;
+      }
+      #pwa-startup-splash {
+        --pwa-splash-accent: #dcfce7;
+        --pwa-splash-progress: 0%;
+        align-items: center;
+        background:
+          radial-gradient(circle at 76% 18%, rgba(45, 212, 191, 0.32), transparent 33%),
+          radial-gradient(circle at 18% 82%, rgba(96, 165, 250, 0.32), transparent 38%),
+          linear-gradient(145deg, #104a8e 0%, #2563b8 58%, #0f8f82 160%);
+        color: #fff;
+        display: flex;
+        inset: 0;
+        justify-content: center;
+        opacity: 1;
+        overflow: hidden;
+        padding: max(24px, env(safe-area-inset-top)) 24px max(24px, env(safe-area-inset-bottom));
+        position: fixed;
+        transform: scale(1);
+        transition: opacity 420ms cubic-bezier(0.2, 0.75, 0.25, 1), transform 420ms cubic-bezier(0.2, 0.75, 0.25, 1), visibility 0s linear 420ms;
+        z-index: 2147483647;
+      }
+      #pwa-startup-splash[data-ready="true"] {
+        opacity: 0;
+        pointer-events: none;
+        transform: scale(1.025);
+        visibility: hidden;
+      }
+      .pwa-splash-content {
+        align-items: center;
+        display: flex;
+        flex-direction: column;
+        max-width: 280px;
+        text-align: center;
+      }
+      .pwa-splash-logo {
+        animation: pwa-splash-logo-breathe 1.8s ease-in-out infinite;
+        background: rgba(255, 255, 255, 0.14);
+        border: 1px solid rgba(255, 255, 255, 0.26);
+        border-radius: 24px;
+        box-shadow: 0 18px 44px rgba(0, 0, 0, 0.3);
+        height: 88px;
+        padding: 10px;
+        width: 88px;
+      }
+      .pwa-splash-title {
+        font: 700 27px/1.1 Roboto, system-ui, sans-serif;
+        letter-spacing: -0.04em;
+        margin: 20px 0 6px;
+      }
+      .pwa-splash-subtitle {
+        color: rgba(255, 255, 255, 0.82);
+        font: 400 14px/1.45 Roboto, system-ui, sans-serif;
+        margin: 0;
+      }
+      .pwa-splash-status {
+        color: rgba(255, 255, 255, 0.76);
+        font: 500 12px/1.4 Roboto, system-ui, sans-serif;
+        margin: 16px 0 0;
+        min-height: 17px;
+      }
+      .pwa-splash-progress {
+        color: rgba(255, 255, 255, 0.78);
+        display: none;
+        font: 700 11px/1 Roboto, system-ui, sans-serif;
+        letter-spacing: 0.08em;
+        margin-top: 9px;
+      }
+      .pwa-splash-loader {
+        background: rgba(255, 255, 255, 0.24);
+        border-radius: 999px;
+        height: 4px;
+        margin-top: 28px;
+        overflow: hidden;
+        position: relative;
+        width: 132px;
+      }
+      .pwa-splash-loader::before {
+        animation: pwa-splash-loader-beacon 900ms ease-in-out infinite;
+        background: var(--pwa-splash-accent);
+        border-radius: inherit;
+        content: "";
+        height: 8px;
+        left: 0;
+        position: absolute;
+        top: -2px;
+        width: 8px;
+        z-index: 1;
+      }
+      .pwa-splash-loader::after {
+        animation: pwa-splash-progress 900ms ease-in-out infinite;
+        background: #fff;
+        border-radius: inherit;
+        content: "";
+        display: block;
+        height: 100%;
+        transform: translateX(-65%);
+        width: 65%;
+      }
+      #pwa-startup-splash[data-progress-known="true"] .pwa-splash-progress {
+        display: block;
+      }
+      #pwa-startup-splash[data-progress-known="true"] .pwa-splash-loader::before {
+        animation: none;
+        left: var(--pwa-splash-progress);
+        transform: translateX(-50%);
+      }
+      #pwa-startup-splash[data-progress-known="true"] .pwa-splash-loader::after {
+        animation: none;
+        transform: none;
+        width: var(--pwa-splash-progress);
+      }
+      #pwa-startup-splash[data-season="autumn"] { --pwa-splash-accent: #fde68a; }
+      #pwa-startup-splash[data-season="winter"] { --pwa-splash-accent: #bae6fd; }
+      #pwa-startup-splash[data-season="spring"] { --pwa-splash-accent: #bbf7d0; }
+      #pwa-startup-splash[data-connection="offline"] .pwa-splash-status { color: #fef3c7; }
+      @media (prefers-color-scheme: dark) {
+        #pwa-startup-splash {
+          background:
+            radial-gradient(circle at 76% 18%, rgba(45, 212, 191, 0.22), transparent 33%),
+            radial-gradient(circle at 18% 82%, rgba(59, 130, 246, 0.24), transparent 38%),
+            linear-gradient(145deg, #020617 0%, #071b3f 58%, #064e4a 160%);
+        }
+        .pwa-splash-logo {
+          background: rgba(255, 255, 255, 0.1);
+          border-color: rgba(255, 255, 255, 0.3);
+          box-shadow: 0 18px 44px rgba(0, 0, 0, 0.52);
+        }
+        .pwa-splash-subtitle { color: rgba(255, 255, 255, 0.88); }
+        .pwa-splash-loader { background: rgba(255, 255, 255, 0.3); }
+      }
+      @keyframes pwa-splash-progress {
+        50% { transform: translateX(54%); }
+        100% { transform: translateX(160%); }
+      }
+      @keyframes pwa-splash-logo-breathe {
+        50% { transform: translateY(-2px) scale(1.025); }
+      }
+      @keyframes pwa-splash-loader-beacon {
+        0%, 100% { opacity: 0.38; transform: translateX(10px) scale(0.78); }
+        50% { opacity: 1; transform: translateX(114px) scale(1); }
+      }
+      @keyframes pwa-root-reveal {
+        from { opacity: 0; transform: translateY(4px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        #pwa-startup-splash { transition: none; }
+        #root[data-pwa-revealed="true"] { animation: none; opacity: 1; transform: none; }
+        .pwa-splash-logo { animation: none; }
+        .pwa-splash-loader::before { animation: none; opacity: 0.8; transform: translateX(62px); }
+        .pwa-splash-loader::after { animation: none; transform: translateX(54%); }
       }
     </style>
   </head>
 
   <body>
+    <div id="pwa-startup-splash" aria-label="Carregando o Smart Fly">
+      <div class="pwa-splash-content">
+        <img class="pwa-splash-logo" src="/smartfly-assets/smartfly-sf-pwa-icon_783c04c6.webp?v=20260827" alt="" />
+        <strong class="pwa-splash-title">Smart Fly</strong>
+        <p class="pwa-splash-subtitle">Preparando suas viagens</p>
+        <p class="pwa-splash-status" id="pwa-splash-status" role="status" aria-live="polite" aria-atomic="true">Verificando a inicialização</p>
+        <span class="pwa-splash-loader" aria-hidden="true"></span>
+        <span class="pwa-splash-progress" id="pwa-splash-progress" aria-hidden="true"></span>
+      </div>
+    </div>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
     <script

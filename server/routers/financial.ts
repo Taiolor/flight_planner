@@ -7,18 +7,29 @@ import { router } from "../_core/trpc";
 import { flightProtectedProcedure } from "../flightAuthMiddleware";
 import { z } from "zod";
 import {
+  copyFinancialMonthlyBudgets,
   getFinancialDataByYear,
   getFinancialSummaryByMonth,
+  getFinancialMonthlyBudgets,
   getFinancialYearSummary,
+  upsertFinancialMonthlyBudget,
   type WeekFinancialData,
   type MonthSummary,
   type YearSummary,
 } from "../financialDb";
+import {
+  createMileagePurchase,
+  deleteMileagePurchase,
+  getMileagePurchasesByYear,
+  getMileagePurchasesSummaryByYear,
+  updateMileagePurchase,
+} from "../mileagePurchasesDb";
 
 // ─── Constantes de projeção ───────────────────────────────────────────────────
 
 // Índice de inflação acumulado estimado para 2027 (IPCA ~5%)
 const INFLATION_RATE_DEFAULT = 0.05;
+const planningYearSchema = z.number().int().min(2020).max(2100);
 
 // Sazonalidade por mês: fator multiplicador sobre a média anual
 // Baseado em padrões históricos de passagens aéreas no Brasil
@@ -44,9 +55,7 @@ export const financialRouter = router({
    * Retorna todos os dados financeiros por semana para um dado ano.
    */
   getWeeklyData: flightProtectedProcedure
-    .input(
-      z.object({ year: z.number().int().min(2020).max(2030).default(2026) })
-    )
+    .input(z.object({ year: planningYearSchema }))
     .query(async ({ input }) => {
       return getFinancialDataByYear(input.year);
     }),
@@ -55,9 +64,7 @@ export const financialRouter = router({
    * Retorna o resumo financeiro por mês para um dado ano.
    */
   getMonthlySummary: flightProtectedProcedure
-    .input(
-      z.object({ year: z.number().int().min(2020).max(2030).default(2026) })
-    )
+    .input(z.object({ year: planningYearSchema }))
     .query(async ({ input }) => {
       return getFinancialSummaryByMonth(input.year);
     }),
@@ -66,11 +73,92 @@ export const financialRouter = router({
    * Retorna o resumo financeiro anual completo (inclui por mês e por companhia).
    */
   getYearSummary: flightProtectedProcedure
-    .input(
-      z.object({ year: z.number().int().min(2020).max(2030).default(2026) })
-    )
+    .input(z.object({ year: planningYearSchema }))
     .query(async ({ input }) => {
       return getFinancialYearSummary(input.year);
+    }),
+
+  getMonthlyBudgets: flightProtectedProcedure
+    .input(z.object({ year: planningYearSchema }))
+    .query(async ({ input }) => {
+      return getFinancialMonthlyBudgets(input.year);
+    }),
+
+  getMileagePurchases: flightProtectedProcedure
+    .input(z.object({ year: planningYearSchema }))
+    .query(async ({ input }) => {
+      const items = await getMileagePurchasesByYear(input.year);
+      const summary = await getMileagePurchasesSummaryByYear(input.year, items);
+      return { items, summary };
+    }),
+
+  createMileagePurchase: flightProtectedProcedure
+    .input(
+      z.object({
+        year: planningYearSchema,
+        purchaseDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Informe uma data válida."),
+        miles: z.number().int().min(1).max(100_000_000),
+        program: z.string().trim().min(1).max(100),
+        paidPriceCents: z.number().int().min(0).max(100_000_000),
+      })
+    )
+    .mutation(async ({ input }) => createMileagePurchase(input)),
+
+  updateMileagePurchase: flightProtectedProcedure
+    .input(
+      z.object({
+        id: z.number().int().positive(),
+        year: planningYearSchema,
+        purchaseDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Informe uma data válida.").optional(),
+        miles: z.number().int().min(1).max(100_000_000).optional(),
+        program: z.string().trim().min(1).max(100).optional(),
+        paidPriceCents: z.number().int().min(0).max(100_000_000).optional(),
+      })
+    )
+    .mutation(async ({ input }) => {
+      const { id, year, ...patch } = input;
+      return updateMileagePurchase(id, year, patch);
+    }),
+
+  deleteMileagePurchase: flightProtectedProcedure
+    .input(z.object({ id: z.number().int().positive(), year: planningYearSchema }))
+    .mutation(async ({ input }) => deleteMileagePurchase(input.id, input.year)),
+
+  upsertMonthlyBudget: flightProtectedProcedure
+    .input(
+      z.object({
+        year: planningYearSchema,
+        month: z.number().int().min(1).max(12),
+        budgetCents: z.number().int().min(0).max(100_000_000),
+      })
+    )
+    .mutation(async ({ input }) => {
+      return upsertFinancialMonthlyBudget(
+        input.year,
+        input.month,
+        input.budgetCents
+      );
+    }),
+
+  copyMonthlyBudgets: flightProtectedProcedure
+    .input(
+      z
+        .object({
+          sourceYear: planningYearSchema,
+          targetYear: planningYearSchema,
+          adjustmentPercent: z.number().min(-50).max(100).default(0),
+        })
+        .refine(({ sourceYear, targetYear }) => sourceYear !== targetYear, {
+          message: "O ano de destino deve ser diferente do ano de origem.",
+          path: ["targetYear"],
+        })
+    )
+    .mutation(async ({ input }) => {
+      return copyFinancialMonthlyBudgets(
+        input.sourceYear,
+        input.targetYear,
+        input.adjustmentPercent
+      );
     }),
 
   /**
@@ -79,13 +167,22 @@ export const financialRouter = router({
    */
   getProjections: flightProtectedProcedure
     .input(
-      z.object({
-        baseYear: z.number().int().min(2020).max(2030).default(2026),
-        targetYear: z.number().int().min(2021).max(2031).default(2027),
-        inflationRate: z.number().min(0).max(1).default(INFLATION_RATE_DEFAULT),
-        // Frequência esperada de viagens por mês no próximo ano
-        tripsPerMonth: z.number().min(0).max(10).default(4),
-      })
+      z
+        .object({
+          baseYear: planningYearSchema,
+          targetYear: z.number().int().min(2021).max(2101),
+          inflationRate: z
+            .number()
+            .min(0)
+            .max(1)
+            .default(INFLATION_RATE_DEFAULT),
+          // Frequência esperada de viagens por mês no próximo ano
+          tripsPerMonth: z.number().min(0).max(10).default(4),
+        })
+        .refine(({ baseYear, targetYear }) => targetYear === baseYear + 1, {
+          message: "O ano projetado deve ser o ano seguinte ao exercício base.",
+          path: ["targetYear"],
+        })
     )
     .query(async ({ input }) => {
       const { baseYear, targetYear, inflationRate, tripsPerMonth } = input;

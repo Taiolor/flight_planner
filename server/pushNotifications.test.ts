@@ -22,6 +22,7 @@ vi.mock("./_core/env", () => ({
 describe("pushNotifications", () => {
   beforeEach(() => {
     vi.resetAllMocks();
+    vi.mocked(db.claimNotificationDelivery).mockResolvedValue(true);
   });
 
   describe("sendPushToOne", () => {
@@ -219,6 +220,21 @@ describe("pushNotifications", () => {
       expect(webpush.sendNotification).not.toHaveBeenCalled();
     });
 
+    it("should not send flight alerts when the push channel is disabled", async () => {
+      vi.mocked(db.getNotificationSettings).mockResolvedValue({
+        aviso1Minutes: 60,
+        aviso2Minutes: 0,
+        flightPushEnabled: false,
+        ticketEmailEnabled: true,
+      } as any);
+
+      await checkAndNotifyUpcomingFlights();
+
+      expect(db.getAllFlightWeeks).not.toHaveBeenCalled();
+      expect(db.getAllPushSubscriptions).not.toHaveBeenCalled();
+      expect(webpush.sendNotification).not.toHaveBeenCalled();
+    });
+
     it("should notify about a departure flight within the warning window", async () => {
       vi.mocked(db.getNotificationSettings).mockResolvedValue({
         aviso1Minutes: 60,
@@ -239,6 +255,7 @@ describe("pushNotifications", () => {
       // 16:00Z corresponds to 13:00 in Brasilia time (-03:00).
       vi.mocked(db.getAllFlightWeeks).mockResolvedValue([
         {
+          year: 2023,
           weekNumber: "1",
           isTicketIssued: 1,
           departureAirline: "LATAM",
@@ -258,11 +275,11 @@ describe("pushNotifications", () => {
       expect(webpush.sendNotification).toHaveBeenCalledTimes(1);
       const expectedPayload = JSON.stringify({
         title: "✈️ 1h antes — LATAM LA1234",
-        body: "Voo de ida GRU → NVT: terça-feira, 10/10 às 13:00. Prepare-se! 🧳",
-        icon: "/icons/icon-192.png",
-        badge: "/icons/icon-192.png",
-        tag: "departure-week-1-aviso60",
-        data: { weekNumber: "1", direction: "departure" },
+        body: "Horário planejado — ida GRU → NVT: terça-feira, 10/10 às 13:00. Prepare-se! 🧳",
+        icon: "/smartfly-assets/smartfly-sf-pwa-icon_783c04c6.webp",
+        badge: "/smartfly-assets/smartfly-sf-apple-touch-icon_598faae4.png",
+        tag: "departure-2023-week-1-aviso60",
+        data: { year: 2023, weekNumber: "1", direction: "departure" },
       });
       expect(webpush.sendNotification).toHaveBeenCalledWith(
         { endpoint: "endpoint1", keys: { p256dh: "p1", auth: "a1" } },
@@ -270,7 +287,25 @@ describe("pushNotifications", () => {
         { TTL: 86400 }
       );
 
-      // Should log the notification
+      expect(db.claimNotificationDelivery).toHaveBeenCalledWith({
+        year: 2023,
+        weekNumber: 1,
+        direction: "ida",
+        avisoLabel: "Aviso 1",
+        avisoMinutes: 60,
+        airline: "LATAM",
+        flightNumber: "LA1234",
+        flightDatetime: "2023-10-10T13:00:00",
+        status: "processing",
+        devicesReached: 0,
+        totalDevices: 1,
+        isTest: 0,
+        deliveryKey: "2023:1:ida:60:2023-10-10T13:00:00",
+      });
+      expect(db.completeNotificationDelivery).toHaveBeenCalledWith(
+        "2023:1:ida:60:2023-10-10T13:00:00",
+        { status: "success", devicesReached: 1, totalDevices: 1 }
+      );
       expect(db.insertNotificationLogs).toHaveBeenCalledWith([
         {
           weekNumber: 1,
@@ -308,6 +343,7 @@ describe("pushNotifications", () => {
       // 15:00Z corresponds to 12:00 in Brasilia time (-03:00).
       vi.mocked(db.getAllFlightWeeks).mockResolvedValue([
         {
+          year: 2023,
           weekNumber: "2",
           isTicketIssued: 1,
           departureAirline: null,
@@ -326,11 +362,11 @@ describe("pushNotifications", () => {
       expect(webpush.sendNotification).toHaveBeenCalledTimes(1);
       const expectedPayload = JSON.stringify({
         title: "🏠 24h antes — Azul AD4321",
-        body: "Voo de volta NVT → GRU: quarta-feira, 11/10 às 12:00. Boa viagem! ✈️",
-        icon: "/icons/icon-192.png",
-        badge: "/icons/icon-192.png",
-        tag: "return-week-2-aviso1440",
-        data: { weekNumber: "2", direction: "return" },
+        body: "Horário planejado — volta NVT → GRU: quarta-feira, 11/10 às 12:00. Boa viagem! ✈️",
+        icon: "/smartfly-assets/smartfly-sf-pwa-icon_783c04c6.webp",
+        badge: "/smartfly-assets/smartfly-sf-apple-touch-icon_598faae4.png",
+        tag: "return-2023-week-2-aviso1440",
+        data: { year: 2023, weekNumber: "2", direction: "return" },
       });
       expect(webpush.sendNotification).toHaveBeenCalledWith(
         { endpoint: "endpoint1", keys: { p256dh: "p1", auth: "a1" } },
@@ -338,7 +374,25 @@ describe("pushNotifications", () => {
         { TTL: 86400 }
       );
 
-      // Should log the notification
+      expect(db.claimNotificationDelivery).toHaveBeenCalledWith({
+        year: 2023,
+        weekNumber: 2,
+        direction: "volta",
+        avisoLabel: "Aviso 2",
+        avisoMinutes: 1440,
+        airline: "AZUL",
+        flightNumber: "AD4321",
+        flightDatetime: "2023-10-11T12:00:00",
+        status: "processing",
+        devicesReached: 0,
+        totalDevices: 1,
+        isTest: 0,
+        deliveryKey: "2023:2:volta:1440:2023-10-11T12:00:00",
+      });
+      expect(db.completeNotificationDelivery).toHaveBeenCalledWith(
+        "2023:2:volta:1440:2023-10-11T12:00:00",
+        { status: "success", devicesReached: 1, totalDevices: 1 }
+      );
       expect(db.insertNotificationLogs).toHaveBeenCalledWith([
         {
           weekNumber: 2,
@@ -354,6 +408,33 @@ describe("pushNotifications", () => {
           isTest: 0,
         },
       ]);
+    });
+
+    it("does not send a duplicate when the scheduled callback is retried", async () => {
+      vi.mocked(db.getNotificationSettings).mockResolvedValue({
+        aviso1Minutes: 60,
+        aviso2Minutes: 0,
+      } as any);
+      vi.mocked(db.getAllPushSubscriptions).mockResolvedValue([
+        { id: 1, endpoint: "endpoint1", p256dh: "p1", auth: "a1", createdAt: new Date() },
+      ]);
+      vi.mocked(db.getAllFlightWeeks).mockResolvedValue([
+        {
+          year: 2023,
+          weekNumber: "3",
+          isTicketIssued: 1,
+          departureAirline: "GOL",
+          departureFlightNumber: "G31234",
+          departureFlightDatetime: "2023-10-10T13:00:00",
+          returnFlightDatetime: null,
+        } as any,
+      ]);
+      vi.mocked(db.claimNotificationDelivery).mockResolvedValue(false);
+
+      await checkAndNotifyUpcomingFlights();
+
+      expect(webpush.sendNotification).not.toHaveBeenCalled();
+      expect(db.completeNotificationDelivery).not.toHaveBeenCalled();
     });
   });
 });

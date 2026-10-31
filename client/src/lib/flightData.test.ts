@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { generateBookingLink } from "./flightData";
+import { airlineIconColors, airlines, generateBookingLink } from "./flightData";
 
 /**
  * Unit tests for generateBookingLink.
@@ -122,5 +122,15 @@ describe("generateBookingLink", () => {
       expect(link).toContain(`outbound=01${expected}26`);
       expect(link).toContain(`inbound=05${expected}26`);
     });
+  });
+
+  it("mantém LATAM e Azul diferenciadas sem acentos azul-brilhante", () => {
+    const latam = airlines.find(airline => airline.id === "latam");
+    const azul = airlines.find(airline => airline.id === "azul");
+
+    expect(latam?.color).toBe("bg-rose-800");
+    expect(azul?.color).toBe("bg-teal-800");
+    expect(airlineIconColors.latam).toBe("text-rose-800");
+    expect(airlineIconColors.azul).toBe("text-teal-800");
   });
 });

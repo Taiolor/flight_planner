@@ -132,7 +132,7 @@ function MatchCardScoreboard({
 
       {/* Adversário */}
       <div className="flex items-center gap-1.5 flex-1 min-w-0 justify-end">
-        <span className="text-xs font-bold text-slate-800 truncate text-right">
+        <span className="min-w-0 break-words text-right text-xs font-bold leading-tight text-slate-800">
           {opponentTeam}
         </span>
         <span className="text-lg leading-none">{opponentFlag}</span>

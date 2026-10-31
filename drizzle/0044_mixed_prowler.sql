@@ -1,0 +1,1 @@
+ALTER TABLE `gemini_budget_alerts` ADD `estimatedCostMicrocents` bigint DEFAULT 0 NOT NULL;

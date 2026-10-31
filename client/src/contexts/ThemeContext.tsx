@@ -2,6 +2,7 @@ import React, { createContext, useContext, useEffect, useState } from "react";
 
 type Theme = "light" | "dark";
 type ColorPreset = "blue" | "green" | "purple" | "orange";
+type NavyIntensity = "standard" | "intense";
 
 interface ThemeContextType {
   theme: Theme;
@@ -9,6 +10,8 @@ interface ThemeContextType {
   switchable: boolean;
   colorPreset: ColorPreset;
   setColorPreset: (preset: ColorPreset) => void;
+  navyIntensity: NavyIntensity;
+  setNavyIntensity: (intensity: NavyIntensity) => void;
 }
 
 interface PresetColors {
@@ -26,13 +29,13 @@ interface PresetColors {
 const COLOR_PRESETS: Record<ColorPreset, PresetColors> = {
   blue: {
     name: "Azul Marinho",
-    headerFrom: "#0f172a",
-    headerTo: "#1e3a5f",
-    headerOverlay: "rgba(15,23,42,0.75)",
-    primary: "#0066cc",
+    headerFrom: "#071a36",
+    headerTo: "#17427e",
+    headerOverlay: "rgba(7,26,54,0.80)",
+    primary: "#102f61",
     accent: "#00a86b",
-    ring: "#0066cc",
-    chartPrimary: "#0066cc",
+    ring: "#17427e",
+    chartPrimary: "#17427e",
     chartAccent: "#00a86b",
   },
   green: {
@@ -70,6 +73,25 @@ const COLOR_PRESETS: Record<ColorPreset, PresetColors> = {
   },
 };
 
+const NAVY_INTENSITIES: Record<NavyIntensity, { name: string; primary: string; ring: string; headerFrom: string; headerTo: string; headerOverlay: string }> = {
+  standard: {
+    name: "Equilibrado",
+    primary: "#102f61",
+    ring: "#17427e",
+    headerFrom: "#071a36",
+    headerTo: "#17427e",
+    headerOverlay: "rgba(7,26,54,0.80)",
+  },
+  intense: {
+    name: "Intenso",
+    primary: "#071a36",
+    ring: "#102f61",
+    headerFrom: "#031024",
+    headerTo: "#102f61",
+    headerOverlay: "rgba(3,16,36,0.88)",
+  },
+};
+
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 interface ThemeProviderProps {
@@ -78,9 +100,10 @@ interface ThemeProviderProps {
   switchable?: boolean;
 }
 
-function applyPreset(preset: ColorPreset) {
-  const colors = COLOR_PRESETS[preset];
+function applyPreset(preset: ColorPreset, navyIntensity: NavyIntensity) {
+  const colors = preset === "blue" ? { ...COLOR_PRESETS.blue, ...NAVY_INTENSITIES[navyIntensity] } : COLOR_PRESETS[preset];
   const root = document.documentElement;
+  root.dataset.navyIntensity = navyIntensity;
   root.style.setProperty("--preset-header-from", colors.headerFrom);
   root.style.setProperty("--preset-header-to", colors.headerTo);
   root.style.setProperty("--preset-header-overlay", colors.headerOverlay);
@@ -107,7 +130,12 @@ export function ThemeProvider({
 
   const [colorPreset, setColorPresetState] = useState<ColorPreset>(() => {
     const stored = localStorage.getItem("colorPreset");
-    return (stored as ColorPreset) || "blue";
+    return stored && stored in COLOR_PRESETS ? (stored as ColorPreset) : "blue";
+  });
+
+  const [navyIntensity, setNavyIntensityState] = useState<NavyIntensity>(() => {
+    const stored = localStorage.getItem("smartfly.navy-intensity");
+    return stored === "intense" || stored === "standard" ? stored : "standard";
   });
 
   useEffect(() => {
@@ -124,8 +152,8 @@ export function ThemeProvider({
 
   // Apply preset on mount and whenever it changes
   useEffect(() => {
-    applyPreset(colorPreset);
-  }, [colorPreset]);
+    applyPreset(colorPreset, navyIntensity);
+  }, [colorPreset, navyIntensity]);
 
   const toggleTheme = switchable
     ? () => {
@@ -136,12 +164,16 @@ export function ThemeProvider({
   const setColorPreset = (preset: ColorPreset) => {
     setColorPresetState(preset);
     localStorage.setItem("colorPreset", preset);
-    applyPreset(preset);
+  };
+
+  const setNavyIntensity = (intensity: NavyIntensity) => {
+    setNavyIntensityState(intensity);
+    localStorage.setItem("smartfly.navy-intensity", intensity);
   };
 
   return (
     <ThemeContext.Provider
-      value={{ theme, toggleTheme, switchable, colorPreset, setColorPreset }}
+      value={{ theme, toggleTheme, switchable, colorPreset, setColorPreset, navyIntensity, setNavyIntensity }}
     >
       {children}
     </ThemeContext.Provider>
@@ -156,5 +188,5 @@ export function useTheme() {
   return context;
 }
 
-export { COLOR_PRESETS };
-export type { ColorPreset };
+export { COLOR_PRESETS, NAVY_INTENSITIES };
+export type { ColorPreset, NavyIntensity };

@@ -8,6 +8,8 @@ import {
 import { Mail, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { trpc } from "@/lib/trpc";
+import { LoginModal } from "@/components/auth/LoginModal";
+import { LoginRequiredMessageBox } from "@/components/auth/LoginRequiredMessageBox";
 
 interface ShareByEmailButtonProps {
   weekNumber: number;
@@ -56,6 +58,8 @@ export function ShareByEmailButton({
   returnTerminal,
 }: ShareByEmailButtonProps) {
   const [isLoading, setIsLoading] = useState(false);
+  const [showLoginRequiredMessage, setShowLoginRequiredMessage] = useState(false);
+  const [showLoginModal, setShowLoginModal] = useState(false);
   // Usar useMemo para evitar criar a mutation múltiplas vezes
   // A mutation será criada apenas uma vez por renderização
   const shareByEmailMutation =
@@ -109,10 +113,7 @@ export function ShareByEmailButton({
     } catch (error) {
       // Tratar erro de autenticação
       if (error instanceof Error && error.message.includes("Faça login")) {
-        toast.error("❌ Você precisa fazer login para compartilhar", {
-          description: "Faça login e tente novamente.",
-          duration: 5000,
-        });
+        setShowLoginRequiredMessage(true);
       } else {
         const errorMessage =
           error instanceof Error
@@ -136,12 +137,14 @@ export function ShareByEmailButton({
     <Button
       onClick={handleShareByEmail}
       disabled={isDisabled}
+      aria-busy={isLoading}
+      aria-live="polite"
       aria-label={
         isLoading
           ? "Enviando..."
           : `📧 Compartilhar bilhetes da semana ${weekNumber} por e-mail`
       }
-      className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+      className="w-full bg-blue-600 text-white shadow-sm transition-[transform,background-color,box-shadow] duration-200 hover:-translate-y-0.5 hover:bg-blue-700 hover:shadow-md active:translate-y-0 active:scale-[0.98] focus-visible:ring-2 focus-visible:ring-cyan-300 motion-reduce:transform-none motion-reduce:transition-none"
       size="sm"
     >
       {isLoading ? (
@@ -149,27 +152,52 @@ export function ShareByEmailButton({
       ) : (
         <Mail className="w-4 h-4 mr-2" aria-hidden="true" />
       )}
-      {isLoading ? "Enviando..." : "📧 Compartilhar por E-Mail"}
+      <span className={isLoading ? "animate-pulse motion-reduce:animate-none" : ""}>
+        {isLoading ? "Enviando..." : "📧 Compartilhar por E-Mail"}
+      </span>
     </Button>
+  );
+
+  const authMessage = (
+    <>
+      <LoginRequiredMessageBox
+        open={showLoginRequiredMessage}
+        onOpenChange={setShowLoginRequiredMessage}
+        onLogin={() => setShowLoginModal(true)}
+        title="Compartilhamento protegido"
+        description="Entre para compartilhar os dados de seus bilhetes com os destinatários cadastrados."
+        loginLabel="Entrar para compartilhar"
+        resource="share-by-email"
+      />
+      <LoginModal open={showLoginModal} onOpenChange={setShowLoginModal} />
+    </>
   );
 
   if (!departureFlightNumber || !returnFlightNumber) {
     return (
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <span
-            tabIndex={0}
-            className="w-full block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-md"
-          >
-            {buttonContent}
-          </span>
-        </TooltipTrigger>
-        <TooltipContent>
-          <p>Preencha os dados de ida e volta antes de compartilhar</p>
-        </TooltipContent>
-      </Tooltip>
+      <>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <span
+              tabIndex={0}
+              className="w-full block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-md"
+            >
+              {buttonContent}
+            </span>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Preencha os dados de ida e volta antes de compartilhar</p>
+          </TooltipContent>
+        </Tooltip>
+        {authMessage}
+      </>
     );
   }
 
-  return buttonContent;
+  return (
+    <>
+      {buttonContent}
+      {authMessage}
+    </>
+  );
 }

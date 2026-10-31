@@ -18,7 +18,7 @@ import {
   insertFlightQuote,
   deleteFlightQuote,
   getApiUsage,
-  incrementApiUsage,
+  reserveApiUsage,
 } from "../db";
 
 // Constantes da rota GRU → NVT
@@ -27,9 +27,93 @@ const GRU_ENTITY_ID = "95673332";
 const NVT_SKY_ID = "NVT";
 const NVT_ENTITY_ID = "95673774";
 const RAPIDAPI_HOST = "sky-scrapper.p.rapidapi.com";
+const planningYearSchema = z.number().int().min(2020).max(2100);
+const RAPIDAPI_TIMEOUT_MS = 12_000;
+const RAPIDAPI_MAX_RESPONSE_BYTES = 512_000;
+const QUOTE_RATE_LIMIT_MAX_REQUESTS = 4;
+const QUOTE_RATE_LIMIT_WINDOW_MS = 60_000;
 
 /** Espera ms milissegundos */
 const sleep = (ms: number) => new Promise(r => setTimeout(r, ms));
+
+type QuoteRateLimitEntry = { count: number; resetAt: number };
+
+export function createQuoteRequestLimiter(
+  maxRequests = QUOTE_RATE_LIMIT_MAX_REQUESTS,
+  windowMs = QUOTE_RATE_LIMIT_WINDOW_MS
+) {
+  const requests = new Map<string, QuoteRateLimitEntry>();
+
+  return (key: string, now = Date.now()) => {
+    const current = requests.get(key);
+    if (!current || now >= current.resetAt) {
+      requests.set(key, { count: 1, resetAt: now + windowMs });
+      return;
+    }
+    if (current.count >= maxRequests) {
+      throw new TRPCError({
+        code: "TOO_MANY_REQUESTS",
+        message: "Aguarde um minuto antes de solicitar novas cotações.",
+      });
+    }
+    current.count += 1;
+  };
+}
+
+const enforceQuoteRequestRateLimit = createQuoteRequestLimiter();
+
+async function fetchRapidApiJson(url: string, headers: Record<string, string>) {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), RAPIDAPI_TIMEOUT_MS);
+
+  try {
+    const response = await fetch(url, { headers, signal: controller.signal });
+    const declaredLength = Number(response.headers.get("content-length") ?? 0);
+    if (declaredLength > RAPIDAPI_MAX_RESPONSE_BYTES) {
+      throw new TRPCError({
+        code: "PAYLOAD_TOO_LARGE",
+        message: "A resposta da cotação excedeu o tamanho permitido.",
+      });
+    }
+
+    const rawBody = await response.text();
+    if (Buffer.byteLength(rawBody, "utf8") > RAPIDAPI_MAX_RESPONSE_BYTES) {
+      throw new TRPCError({
+        code: "PAYLOAD_TOO_LARGE",
+        message: "A resposta da cotação excedeu o tamanho permitido.",
+      });
+    }
+    if (!response.ok) {
+      throw new TRPCError({
+        code: "BAD_GATEWAY",
+        message: "O serviço de cotação não está disponível no momento.",
+      });
+    }
+
+    try {
+      return JSON.parse(rawBody);
+    } catch {
+      throw new TRPCError({
+        code: "BAD_GATEWAY",
+        message: "O serviço de cotação retornou uma resposta inválida.",
+      });
+    }
+  } catch (error) {
+    if (error instanceof TRPCError) throw error;
+    if (controller.signal.aborted) {
+      throw new TRPCError({
+        code: "TIMEOUT",
+        message: "A consulta de cotação excedeu o tempo permitido.",
+      });
+    }
+    throw new TRPCError({
+      code: "BAD_GATEWAY",
+      message: "Não foi possível consultar o serviço de cotações.",
+    });
+  } finally {
+    clearTimeout(timeout);
+  }
+}
 
 /** Retorna o yearMonth atual no formato YYYY-MM */
 let cachedYearMonth = "";
@@ -97,16 +181,7 @@ async function initiateFlightSearch(
   searchUrl.searchParams.set("cabinClass", "economy");
   searchUrl.searchParams.set("sortBy", "best");
 
-  const initResponse = await fetch(searchUrl.toString(), { headers });
-  if (!initResponse.ok) {
-    const errorText = await initResponse.text();
-    throw new TRPCError({
-      code: "INTERNAL_SERVER_ERROR",
-      message: `Sky Scrapper API erro ${initResponse.status}: ${errorText}`,
-    });
-  }
-
-  const initData = await initResponse.json();
+  const initData = await fetchRapidApiJson(searchUrl.toString(), headers);
   const sessionId: string | undefined = initData?.data?.context?.sessionId;
 
   if (!sessionId) {
@@ -144,10 +219,12 @@ async function pollForResults(
     const delay = 500 * Math.pow(2, attempt);
     await sleep(delay);
 
-    const pollResponse = await fetch(pollUrlString, { headers });
-    if (!pollResponse.ok) continue; // Ignorar erros transitórios no polling
-
-    const pollData = await pollResponse.json();
+    let pollData: any;
+    try {
+      pollData = await fetchRapidApiJson(pollUrlString, headers);
+    } catch {
+      continue; // Ignorar falhas transitórias de polling sem expor detalhes.
+    }
     contextStatus = pollData?.data?.context?.status ?? contextStatus;
     const newItins = pollData?.data?.itineraries ?? [];
     if (newItins.length > 0) {
@@ -269,22 +346,32 @@ async function fetchSkyScrapperPrice(
 
 export const quotesRouter = router({
   /** Listar todas as cotações (mais recentes primeiro) */
-  getAll: protectedProcedure.query(async () => {
-    return getAllFlightQuotes();
-  }),
+  getAll: protectedProcedure
+    .input(z.object({ year: planningYearSchema }))
+    .query(async ({ input }) => getAllFlightQuotes(input.year)),
 
   /** Listar cotações de uma semana específica */
   getByWeek: protectedProcedure
-    .input(z.object({ weekNumber: z.number().int().positive() }))
+    .input(
+      z.object({
+        year: planningYearSchema,
+        weekNumber: z.number().int().positive(),
+      })
+    )
     .query(async ({ input }) => {
-      return getFlightQuotesByWeek(input.weekNumber);
+      return getFlightQuotesByWeek(input.weekNumber, input.year);
     }),
 
   /** Verificar uso atual da API no mês corrente */
-  getApiUsage: protectedProcedure.query(async () => {
-    const yearMonth = getCurrentYearMonth();
-    return getApiUsage(yearMonth);
-  }),
+  getApiUsage: protectedProcedure
+    .input(z.object({ year: planningYearSchema }))
+    .query(async ({ input }) => {
+      // A franquia da RapidAPI é mensal e compartilhada; o ano mantém a
+      // chave de consulta sincronizada ao planejamento selecionado.
+      void input.year;
+      const yearMonth = getCurrentYearMonth();
+      return getApiUsage(yearMonth);
+    }),
 
   /**
    * Buscar preço via Sky Scrapper API
@@ -293,6 +380,7 @@ export const quotesRouter = router({
   fetchFromApi: protectedProcedure
     .input(
       z.object({
+        year: planningYearSchema,
         weekNumber: z.number().int().positive(),
         departureDate: z
           .string()
@@ -302,23 +390,12 @@ export const quotesRouter = router({
           .regex(/^\d{4}-\d{2}-\d{2}$/, "Formato YYYY-MM-DD"),
       })
     )
-    .mutation(async ({ input }) => {
+    .mutation(async ({ input, ctx }) => {
       const apiKey = ENV.rapidapiKey;
       if (!apiKey) {
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
           message: "Chave da API Sky Scrapper não configurada",
-        });
-      }
-
-      // Verificar limite mensal
-      const yearMonth = getCurrentYearMonth();
-      const usage = await getApiUsage(yearMonth);
-
-      if (usage.requestsUsed >= usage.requestsLimit) {
-        throw new TRPCError({
-          code: "TOO_MANY_REQUESTS",
-          message: `Limite mensal de ${usage.requestsLimit} requisições atingido. Use o Kayak para cotação manual.`,
         });
       }
 
@@ -337,6 +414,16 @@ export const quotesRouter = router({
         });
       }
 
+      enforceQuoteRequestRateLimit(ctx.flightSession.email.toLowerCase());
+      const yearMonth = getCurrentYearMonth();
+      const usage = await reserveApiUsage(yearMonth);
+      if (!usage.reserved) {
+        throw new TRPCError({
+          code: "TOO_MANY_REQUESTS",
+          message: `Limite mensal de ${usage.requestsLimit} requisições atingido. Use o Kayak para cotação manual.`,
+        });
+      }
+
       // Buscar preço na API com dados detalhados
       const result = await fetchSkyScrapperPrice(
         effectiveDeparture,
@@ -344,11 +431,9 @@ export const quotesRouter = router({
         apiKey
       );
 
-      // Incrementar contador de uso
-      const newUsage = await incrementApiUsage(yearMonth);
-
       // Salvar cotação no banco com todos os campos detalhados
       await insertFlightQuote({
+        year: input.year,
         weekNumber: input.weekNumber,
         departureDate: input.departureDate,
         returnDate: input.returnDate,
@@ -362,7 +447,7 @@ export const quotesRouter = router({
         outboundArrival: result.outboundArrival ?? null,
         returnDeparture: result.returnDeparture ?? null,
         returnArrival: result.returnArrival ?? null,
-        apiRequestsUsed: newUsage.requestsUsed,
+        apiRequestsUsed: usage.requestsUsed,
         rawResponse: result.rawResponse,
         quotedAt: new Date(),
       });
@@ -384,8 +469,8 @@ export const quotesRouter = router({
         returnDeparture: result.returnDeparture,
         returnArrival: result.returnArrival,
         source: "api" as const,
-        requestsUsed: newUsage.requestsUsed,
-        requestsLimit: newUsage.requestsLimit,
+        requestsUsed: usage.requestsUsed,
+        requestsLimit: usage.requestsLimit,
       };
     }),
 
@@ -395,6 +480,7 @@ export const quotesRouter = router({
   saveManual: protectedProcedure
     .input(
       z.object({
+        year: planningYearSchema,
         weekNumber: z.number().int().positive(),
         departureDate: z
           .string()
@@ -416,6 +502,7 @@ export const quotesRouter = router({
       const lowestPrice = Math.round(input.price * 100); // Converter para centavos
 
       await insertFlightQuote({
+        year: input.year,
         weekNumber: input.weekNumber,
         departureDate: input.departureDate,
         returnDate: input.returnDate,
@@ -446,9 +533,14 @@ export const quotesRouter = router({
 
   /** Deletar uma cotação pelo ID */
   delete: protectedProcedure
-    .input(z.object({ id: z.number().int().positive() }))
+    .input(
+      z.object({
+        id: z.number().int().positive(),
+        year: planningYearSchema,
+      })
+    )
     .mutation(async ({ input }) => {
-      await deleteFlightQuote(input.id);
+      await deleteFlightQuote(input.id, input.year);
       return { success: true };
     }),
 });

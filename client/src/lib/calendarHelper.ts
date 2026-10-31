@@ -200,14 +200,14 @@ export const airportAddresses: Record<string, string> = {
 
 /** Mapa de companhias para nomes completos */
 export const airlineNames: Record<string, string> = {
-  latam: "LATAM Airlines",
-  gol: "Gol Linhas Aéreas",
-  azul: "Azul Linhas Aéreas",
+  latam: "LATAM AIRLINES",
+  gol: "GOL LINHAS AÉREAS",
+  azul: "AZUL LINHAS AÉREAS",
 };
 
 /**
  * Prefixos IATA das companhias aéreas (2 letras)
- * Usados para montar a URL de rastreamento de voo no Google.
+ * Usados para completar o número IATA do voo quando ele foi salvo apenas com dígitos.
  */
 export const airlineIataCodes: Record<string, string> = {
   latam: "LA",
@@ -216,16 +216,15 @@ export const airlineIataCodes: Record<string, string> = {
 };
 
 /**
- * Monta a URL de rastreamento de voo no Google.
+ * Monta a URL pública de rastreamento de voo no Flightradar24.
  *
  * Formato:
- *   https://www.google.com/search?q=LA+flight+3045+from+GRU+to+NVT,+2026-03-21
+ *   https://www.flightradar24.com/data/flights/la3045
  *
  * @param airline       - chave da companhia (ex: 'latam')
  * @param flightNumber  - número completo do voo (ex: 'LA3045' ou '3045')
- * @param departureAirport - sigla do aeroporto de partida (ex: 'GRU')
- * @param arrivalAirport   - sigla do aeroporto de destino (ex: 'NVT')
- * @param flightDatetime   - ISO local 'YYYY-MM-DDTHH:mm'
+ * Os parâmetros de rota e data permanecem para compatibilidade com os chamadores
+ * existentes, mas não são enviados ao rastreador público.
  */
 export function buildFlightTrackUrl(
   airline: string,
@@ -237,15 +236,17 @@ export function buildFlightTrackUrl(
   const iata =
     airlineIataCodes[airline.toLowerCase()] ??
     airline.toUpperCase().slice(0, 2);
-  // Extrair apenas os dígitos do número do voo e pegar os últimos 4
-  // Padrão: [AA][9999] — 2 letras da companhia + 4 dígitos do voo
-  // Ex: 'LA3045' -> '3045', 'G31234' -> '1234', '3045' -> '3045'
-  const allDigits = flightNumber.replace(/[^0-9]/g, "");
-  const digits = allDigits.slice(-4).padStart(4, "0");
-  // Extrair data no formato YYYY-MM-DD
-  const date = flightDatetime.slice(0, 10);
-  const query = `${iata}+flight+${digits}+from+${departureAirport.toUpperCase()}+to+${arrivalAirport.toUpperCase()},+${date}`;
-  return `https://www.google.com/search?q=${query}`;
+  const compactFlight = flightNumber.replace(/[^a-z0-9]/gi, "").toUpperCase();
+  const digits = compactFlight.replace(/[^0-9]/g, "");
+  if (!digits) return "";
+  const hasCarrierPrefix = /[A-Z]/.test(compactFlight);
+  const normalizedFlight = hasCarrierPrefix
+    ? compactFlight
+    : `${iata}${digits}`;
+
+  if (!/^[A-Z0-9]{2,10}$/.test(normalizedFlight)) return "";
+
+  return `https://www.flightradar24.com/data/flights/${normalizedFlight.toLowerCase()}`;
 }
 
 /** Retorna o dia da semana em português para uma data no formato YYYY-MM-DD */

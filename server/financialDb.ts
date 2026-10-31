@@ -3,9 +3,14 @@
  * Helpers de banco de dados para a página de Gestão Financeira.
  * Agrega dados de flight_weeks e flight_prices para análises financeiras.
  */
-import { and, eq, isNotNull } from "drizzle-orm";
+import { and, eq, isNotNull, sql } from "drizzle-orm";
 import { getDb } from "./db";
-import { flightWeeks, flightPrices } from "../drizzle/schema";
+import {
+  additionalFlights,
+  financialMonthlyBudgets,
+  flightWeeks,
+  flightPrices,
+} from "../drizzle/schema";
 
 // ─── Tipos ────────────────────────────────────────────────────────────────────
 
@@ -28,6 +33,10 @@ export interface WeekFinancialData {
   smilesPoints: number | null;
   latamPassPoints: number | null;
   totalMiles: number | null;
+  additionalFlightCount: number;
+  additionalPaidPriceTotal: number;
+  additionalCashByAirline: Record<string, { cashBRL: number; count: number }>;
+  primaryTicketIssued: number;
   // Mês derivado da data de ida
   month: number;
 }
@@ -56,6 +65,11 @@ export interface YearSummary {
   avgCashBRL: number;
   byAirline: Record<string, { cashBRL: number; miles: number; count: number }>;
   byMonth: MonthSummary[];
+}
+
+export interface FinancialMonthlyBudgetData {
+  month: number;
+  budgetCents: number;
 }
 
 // ─── Helpers internos ─────────────────────────────────────────────────────────
@@ -87,6 +101,10 @@ function parseYear(dateStr: string): number {
   return new Date().getFullYear();
 }
 
+function roundBRL(value: number) {
+  return Math.round((value + Number.EPSILON) * 100) / 100;
+}
+
 // ─── Funções exportadas ───────────────────────────────────────────────────────
 
 /**
@@ -110,6 +128,17 @@ export async function getFinancialDataByYear(
     .select()
     .from(flightPrices)
     .where(eq(flightPrices.year, year));
+
+  const additional = await db
+    .select()
+    .from(additionalFlights)
+    .where(and(eq(additionalFlights.year, year), eq(additionalFlights.isTicketIssued, 1)));
+  const additionalByWeek = new Map<number, typeof additional>();
+  for (const flight of additional) {
+    const rows = additionalByWeek.get(flight.weekNumber) ?? [];
+    rows.push(flight);
+    additionalByWeek.set(flight.weekNumber, rows);
+  }
 
   // Indexar preços por semana+companhia
   const priceMap = new Map<string, number>();
@@ -150,7 +179,29 @@ export async function getFinancialDataByYear(
         ? (priceMap.get(`${w.weekNumber}:${retAirline}`) ?? null)
         : null;
 
-    const totalMiles = (w.smilesPoints ?? 0) + (w.latamPassPoints ?? 0);
+    const additionalForWeek = additionalByWeek.get(w.weekNumber) ?? [];
+    const additionalCashByAirline: Record<string, { cashBRL: number; count: number }> = {};
+    const additionalPaidPriceCents = additionalForWeek.reduce((sum, flight) => {
+      const priceCents = flight.paidPriceCents ?? 0;
+      const cashBRL = priceCents / 100;
+      if (cashBRL > 0) {
+        const airline = flight.departureAirline ?? flight.returnAirline ?? "viagem adicional";
+        if (!additionalCashByAirline[airline]) {
+          additionalCashByAirline[airline] = { cashBRL: 0, count: 0 };
+        }
+        additionalCashByAirline[airline].cashBRL = roundBRL(
+          additionalCashByAirline[airline].cashBRL + cashBRL
+        );
+        additionalCashByAirline[airline].count += 1;
+      }
+      return sum + priceCents;
+    }, 0);
+    const additionalPaidPriceTotal = additionalPaidPriceCents / 100;
+    const additionalSmiles = additionalForWeek.reduce((sum, flight) => sum + (flight.smilesPoints ?? 0), 0);
+    const additionalLatam = additionalForWeek.reduce((sum, flight) => sum + (flight.latamPassPoints ?? 0), 0);
+    const smilesPoints = (w.smilesPoints ?? 0) + additionalSmiles;
+    const latamPassPoints = (w.latamPassPoints ?? 0) + additionalLatam;
+    const totalMiles = smilesPoints + latamPassPoints;
 
     return {
       weekNumber: w.weekNumber,
@@ -160,15 +211,19 @@ export async function getFinancialDataByYear(
       departureAirline: depAirline,
       returnAirline: retAirline,
       ticketType: w.ticketType,
-      isTicketIssued: w.isTicketIssued,
+      isTicketIssued: w.isTicketIssued || additionalForWeek.length > 0 ? 1 : 0,
       departureRescheduled: w.departureRescheduled,
       returnRescheduled: w.returnRescheduled,
       paidPriceDeparture: paidDep,
       paidPriceReturn: paidRet,
-      paidPriceTotal: paidTotal,
-      smilesPoints: w.smilesPoints ?? null,
-      latamPassPoints: w.latamPassPoints ?? null,
+      paidPriceTotal: roundBRL((paidTotal ?? 0) + additionalPaidPriceTotal) || null,
+      smilesPoints: smilesPoints > 0 ? smilesPoints : null,
+      latamPassPoints: latamPassPoints > 0 ? latamPassPoints : null,
       totalMiles: totalMiles > 0 ? totalMiles : null,
+      additionalFlightCount: additionalForWeek.length,
+      additionalPaidPriceTotal,
+      additionalCashByAirline,
+      primaryTicketIssued: w.isTicketIssued,
       month: parseMonth(w.departureDate),
     };
   });
@@ -203,28 +258,44 @@ export async function getFinancialSummaryByMonth(
       });
     }
     const ms = monthMap.get(m)!;
-    ms.issuedCount++;
+    ms.issuedCount += w.primaryTicketIssued + w.additionalFlightCount;
     ms.weeksCount++;
 
     const cash = w.paidPriceTotal ?? 0;
-    ms.totalCashBRL += cash;
+    const primaryCash = roundBRL(Math.max(0, cash - w.additionalPaidPriceTotal));
+    ms.totalCashBRL = roundBRL(ms.totalCashBRL + cash);
     ms.totalSmilesPoints += w.smilesPoints ?? 0;
     ms.totalLatamPassPoints += w.latamPassPoints ?? 0;
     ms.totalMiles += w.totalMiles ?? 0;
 
     // Agrega por companhia (usa a companhia de ida como referência)
-    const airline = w.departureAirline ?? "desconhecida";
-    if (!ms.byAirline[airline]) {
-      ms.byAirline[airline] = { cashBRL: 0, miles: 0, count: 0 };
+    if (w.primaryTicketIssued === 1) {
+      const airline = w.departureAirline ?? "desconhecida";
+      if (!ms.byAirline[airline]) {
+        ms.byAirline[airline] = { cashBRL: 0, miles: 0, count: 0 };
+      }
+      ms.byAirline[airline].cashBRL = roundBRL(
+        ms.byAirline[airline].cashBRL + primaryCash
+      );
+      ms.byAirline[airline].miles += w.totalMiles ?? 0;
+      ms.byAirline[airline].count++;
     }
-    ms.byAirline[airline].cashBRL += cash;
-    ms.byAirline[airline].miles += w.totalMiles ?? 0;
-    ms.byAirline[airline].count++;
+    for (const [airline, data] of Object.entries(w.additionalCashByAirline)) {
+      if (!ms.byAirline[airline]) {
+        ms.byAirline[airline] = { cashBRL: 0, miles: 0, count: 0 };
+      }
+      ms.byAirline[airline].cashBRL = roundBRL(
+        ms.byAirline[airline].cashBRL + data.cashBRL
+      );
+      ms.byAirline[airline].count += data.count;
+    }
   }
 
   // Calcular médias
   monthMap.forEach(ms => {
-    ms.avgCashBRL = ms.issuedCount > 0 ? ms.totalCashBRL / ms.issuedCount : 0;
+    ms.avgCashBRL = ms.issuedCount > 0
+      ? roundBRL(ms.totalCashBRL / ms.issuedCount)
+      : 0;
   });
 
   const result: MonthSummary[] = [];
@@ -252,7 +323,9 @@ export async function getFinancialYearSummary(
     for (const [airline, data] of Object.entries(ms.byAirline)) {
       if (!byAirline[airline])
         byAirline[airline] = { cashBRL: 0, miles: 0, count: 0 };
-      byAirline[airline].cashBRL += data.cashBRL;
+      byAirline[airline].cashBRL = roundBRL(
+        byAirline[airline].cashBRL + data.cashBRL
+      );
       byAirline[airline].miles += data.miles;
       byAirline[airline].count += data.count;
     }
@@ -265,12 +338,15 @@ export async function getFinancialYearSummary(
   let totalMiles = 0;
 
   for (const m of byMonth) {
-    totalCashBRL += m.totalCashBRL;
+    totalCashBRL = roundBRL(totalCashBRL + m.totalCashBRL);
     totalSmilesPoints += m.totalSmilesPoints;
     totalLatamPassPoints += m.totalLatamPassPoints;
     totalMiles += m.totalMiles;
   }
-  const issuedCount = issued.length;
+  const issuedCount = issued.reduce(
+    (sum, week) => sum + week.primaryTicketIssued + week.additionalFlightCount,
+    0
+  );
 
   return {
     year,
@@ -284,4 +360,83 @@ export async function getFinancialYearSummary(
     byAirline,
     byMonth,
   };
+}
+
+export async function getFinancialMonthlyBudgets(
+  year: number
+): Promise<FinancialMonthlyBudgetData[]> {
+  const db = await getDb();
+  if (!db) return [];
+
+  const budgets = await db
+    .select({
+      month: financialMonthlyBudgets.month,
+      budgetCents: financialMonthlyBudgets.budgetCents,
+    })
+    .from(financialMonthlyBudgets)
+    .where(eq(financialMonthlyBudgets.year, year));
+
+  return budgets.sort((a, b) => a.month - b.month);
+}
+
+export async function upsertFinancialMonthlyBudget(
+  year: number,
+  month: number,
+  budgetCents: number
+): Promise<FinancialMonthlyBudgetData> {
+  const db = await getDb();
+  if (!db) throw new Error("Banco de dados indisponível.");
+
+  await db
+    .insert(financialMonthlyBudgets)
+    .values({ year, month, budgetCents })
+    .onDuplicateKeyUpdate({
+      set: { budgetCents, updatedAt: new Date() },
+    });
+
+  return { month, budgetCents };
+}
+
+export function adjustFinancialBudgetCents(
+  budgetCents: number,
+  adjustmentPercent: number
+): number {
+  return Math.max(0, Math.round(budgetCents * (1 + adjustmentPercent / 100)));
+}
+
+export async function copyFinancialMonthlyBudgets(
+  sourceYear: number,
+  targetYear: number,
+  adjustmentPercent: number
+): Promise<{ copiedCount: number; targetYear: number }> {
+  if (sourceYear === targetYear) {
+    throw new Error("O ano de origem deve ser diferente do ano de destino.");
+  }
+
+  const db = await getDb();
+  if (!db) throw new Error("Banco de dados indisponível.");
+
+  const sourceBudgets = await getFinancialMonthlyBudgets(sourceYear);
+  if (sourceBudgets.length === 0) return { copiedCount: 0, targetYear };
+
+  await db
+    .insert(financialMonthlyBudgets)
+    .values(
+      sourceBudgets.map(budget => ({
+        year: targetYear,
+        month: budget.month,
+        budgetCents: adjustFinancialBudgetCents(
+          budget.budgetCents,
+          adjustmentPercent
+        ),
+      }))
+    )
+    .onDuplicateKeyUpdate({
+      set: {
+        budgetCents: sql`values(${financialMonthlyBudgets.budgetCents})`,
+        updatedAt: new Date(),
+      },
+    });
+
+  return { copiedCount: sourceBudgets.length, targetYear };
 }

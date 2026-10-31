@@ -634,3 +634,327 @@
 - [x] Integrar e validar os PRs de segurança #303 e #292 (PRs #290 e #286 retidos por conflitos)
 
 - [x] Integrar isoladamente e validar atualizações de dependências dos PRs #271, #270 e #269 (PR #268 retido por conflito)
+
+- [x] Fechar PRs comprovadamente duplicados ou obsoletos após os merges recentes (8 PRs fechados)
+
+- [x] Configurar CI para validar instalação determinística, TypeScript e Vitest em cada pull request
+
+- [x] Resolver o conflito do PR #290 em branch dedicada de rate limiting (`security/resolve-pr-290-rate-limit`)
+- [x] Resolver o conflito do PR #286 em branch dedicada de Content Security Policy (`security/resolve-pr-286-csp`)
+
+- [x] Criar pull requests para as branches dedicadas de rate limiting e Content Security Policy (#313 e #314)
+
+- [x] Validar e integrar sequencialmente os PRs de segurança #313 e #314
+- [x] Rebasear e validar o upgrade para pnpm 11 do PR #268 (substituído pelo PR #315; #268 fechado)
+- [x] Avaliar isoladamente os PRs de dependências #304 e #309 (225 testes aprovados em ambos)
+
+- [x] Integrar o PR #315 e fechar os PRs substituídos #290 e #286
+- [x] Atualizar a página de Novidades com as entregas dos últimos dois meses
+
+- [x] Auditar e fechar PRs de segurança comprovadamente substituídos (#312, #249, #253 e #277 fechados; #276 retido para revisão)
+
+- [x] Publicação da pipeline de CI adiada por decisão do usuário; aguardar autorização futura de workflows
+
+- [x] Mapear e priorizar as demais pendências abertas do projeto
+
+- [x] Executar automaticamente PRs pendentes que possam ser validados por instalação, TypeScript e Vitest (fila de PRs esvaziada)
+
+- [x] Avaliar arquitetura e migração para calendário dinâmico com semanas e passagens isoladas por ano
+
+- [x] Elaborar plano diretor à prova de falhas para calendário anual dinâmico em Home, Calendário e Financeiro
+
+- [x] Criar seletor global de ano e conectá-lo visualmente à Home, ao Calendário e ao Financeiro
+
+- [x] Fase 1: criar fundação anual no banco, migrar 2026 e isolar entidades de planejamento por ano
+
+- [x] Fase 2: gerar semanas idempotentes por ano e carregar a Home pelo ano selecionado
+
+- [x] Conectar consultas, gravações e histórico de Cotações ao ano global selecionado
+
+- [x] Revisar e concluir o isolamento de indicadores, tabelas, gráficos e projeções financeiras por ano selecionado
+
+- [x] Isolar exportação PDF, notificações e logs pelo ano global selecionado
+
+- [x] Publicar o callback anual de notificações e criar o agendamento periódico na plataforma
+
+- [x] Adicionar checkboxes de cancelamento independentes para ida e volta, com persistência anual e indicação visual
+
+- [x] Adicionar filtro de voos cancelados no calendário anual
+- [x] Enviar alerta automático aos destinatários quando ida ou volta for cancelada
+
+- [x] Validar o alerta de cancelamento com envio real para um destinatário de teste ativo
+- [x] Confirmar a validação de envio exclusivamente pelo Resend, sem consulta a caixas Gmail
+
+- [x] Auditar integralmente a performance de rotas, telas, funções, consultas, banco e tarefas automáticas
+
+- [x] Auditar segurança da informação com SAST, DAST não invasivo, APIs, autenticação, autorização e integrações
+- [x] Mapear vulnerabilidades e aderência ao OWASP Top 10 com plano de remediação priorizado
+
+- [x] Elaborar plano integrado para executar otimizações de performance e, em seguida, remediações de segurança
+
+- [x] Atualizar a página de Novidades com as entregas concluídas no mês corrente
+
+- [x] P1: carregar a exportação PDF somente sob demanda na Home
+
+- [x] P2: carregar gráficos e Recharts somente sob demanda
+
+- [x] P3: aplicar cache tRPC por domínio e invalidação anual granular
+
+- [x] P4: paginar histórico administrativo por ano e adicionar índices às consultas críticas
+
+- [x] P5: implementar telemetria anônima de Web Vitals e latência tRPC
+
+- [x] S1: corrigir dependências transitivas com vulnerabilidades altas e validar regressões
+
+- [x] Corrigir a telemetria para não enviar mutações antes da sessão interna estar autenticada
+
+- [x] Implementar telemetria de uso com consentimento por sessão, localização aproximada e mapa administrativo protegido
+- [x] Publicar e ativar a limpeza periódica de eventos de uso com retenção de 30 dias
+
+- [x] Adicionar menu administrativo exclusivo para acessar o mapa de locais consentidos
+
+- [x] Corrigir o erro React #310 na tela administrativa de mapa de telemetria
+
+- [x] Corrigir o botão Voltar da tela Locais para retornar à Home sem erro React #310
+
+- [x] Corrigir a exibição do mapa interativo do Google Maps na tela de locais
+
+- [x] Permitir múltiplos voos adicionais de ida e volta por semana, com todos os dados e estados atuais
+
+- [x] Criar a área Memórias com quilômetros dinâmicos, mapa de rotas e mídias por passagem emitida
+
+## Segurança e performance — ciclo de endurecimento
+
+- [x] Restringir a CSP de produção, removendo permissões amplas e permitindo apenas origens necessárias
+- [x] Criar autorização administrativa persistente para todos os procedimentos de administração
+- [x] Escapar e validar campos de voo interpolados em e-mails HTML
+- [x] Proteger a cota da RapidAPI com reserva atômica, limite específico, timeout e resposta limitada
+- [x] Carregar gráficos secundários do Financeiro somente quando a respectiva seção for aberta
+
+## Reavaliação integral — versão mais recente
+
+- [x] Auditar o código completo, incluindo mapa OpenStreetMap, segurança, desempenho, rotas e tarefas automáticas
+- [x] Permitir os tiles do OpenStreetMap na CSP de produção sem reabrir origens amplas
+
+- [x] Corrigir bloqueio de abertura da página administrativa
+
+## Padronização visual
+
+- [x] Substituir em toda a interface o rótulo visual “GRU → NVT • 2026” por “Viagens”
+- [x] Atualizar o nome e o ícone do atalho PWA para a marca Viagens
+
+## Conteúdo editorial
+
+- [x] Atualizar a página Novidades com os últimos lançamentos, novidades e implementações
+
+## Viagens adicionais
+
+- [x] Corrigir o botão Cancelar na adição de viagens adicionais
+- [x] Replicar integralmente os campos, combos, dados, posições e layout do cartão semanal no formulário de viagens adicionais
+- [x] Incluir preço pago em viagens adicionais e somá-lo ao Financeiro anual com centavos
+
+## Bilhetes semanais
+
+- [x] Incluir campos de Terminal na Ida, Volta e Somente Ida de todas as semanas
+
+## Responsividade mobile
+
+- [x] Reavaliar e corrigir a responsividade de todos os elementos da Home para telas de celular
+- [x] Reavaliar e corrigir a responsividade de todos os elementos da página Calendário para telas de celular
+- [x] Reavaliar e corrigir a responsividade de todos os elementos da página Cotações para telas de celular
+- [x] Reavaliar e corrigir a responsividade de todos os elementos da página Memórias para telas de celular
+- [x] Reavaliar e corrigir a responsividade de todos os elementos da página Financeiro para telas de celular
+- [x] Reavaliar e corrigir a responsividade de todas as telas administrativas para telas de celular
+
+## Experiência administrativa
+
+- [x] Adicionar animações de carregamento e mensagens de feedback visual ao salvar formulários administrativos
+- [x] Registrar e exibir a data e hora da última ação em cada formulário administrativo de Notificações
+- [x] Adicionar botões acessíveis para limpar o histórico local de ações administrativas
+- [x] Criar uma linha do tempo centralizada para exibir ações administrativas recentes
+
+## Experiência de planejamento
+
+- [x] Criar uma Central de atenção inteligente na Home com prazos de compra, cancelamentos e variações de preço
+- [x] Permitir dispensar temporariamente e reativar alertas da Central de atenção
+- [x] Adicionar resumo visual de progresso anual com semanas emitidas e pendentes
+- [x] Permitir configurar e acompanhar uma meta anual de emissões
+- [x] Transformar Central de atenção e Progresso anual em sanfonas com estado persistido individualmente
+- [x] Permitir escolher o prazo de adiamento dos alertas da Central de atenção
+- [x] Adicionar comparativo de emissões e pendências entre anos no progresso anual
+
+## Experiência de Memórias
+
+- [x] Criar um fundo dinâmico em carrossel com fotos reais em alta resolução das cidades das viagens
+- [x] Suavizar o fade e tornar os controles de pausa do carrossel mais evidentes
+- [x] Corrigir “Diário de borda” para “Diário de Bordo” na página Memórias
+- [x] Corrigir o carregamento das imagens do carrossel de cidades em Memórias
+- [x] Adicionar fotos reais de Guarulhos, Piracicaba e Novo Hamburgo ao carrossel de Memórias
+- [x] Permitir escolher e persistir uma foto favorita no carrossel de Memórias
+- [x] Corrigir a sobreposição entre gestão de fotos de fundo e Rota do ano
+- [x] Adicionar animação de entrada e hover interativo ao cartão Rota do ano
+- [x] Adicionar brilho interativo, expansão com detalhes e quilometragem anual ao cartão Rota do ano
+- [x] Reposicionar e tornar recolhível o painel de seleção de fotos para não cobrir o acesso Fly.IA
+- [x] Aplicar skeletons responsivos e acessíveis a Memórias e Rota do ano
+- [x] Adicionar fade-in entre skeletons e conteúdo real de Memórias
+- [x] Padronizar fade-in entre skeletons e conteúdo real em todas as telas com carregamento
+- [x] Substituir os spinners de Calendário e Cotações por skeletons completos e responsivos
+- [x] Ordenar a Central de atenção por escore combinado de urgência
+- [x] Adicionar visão mensal de orçamento, realizado e projetado no Financeiro
+- [x] Permitir copiar o orçamento de um exercício para o próximo com ajuste percentual
+- [x] Destacar envelopes financeiros que atingem 90% ou ultrapassam o limite
+- [x] Adicionar filtros de período e tipo de evento na página Locais
+- [x] Animar suavemente a expansão e o recolhimento dos meses em Gestão de Passagens
+- [x] Animar a entrada escalonada dos cards semanais ao abrir um mês
+- [x] Calcular os cards de semana anterior, atual e próxima pela data real de acesso
+- [x] Verificar a persistência do Terminal ao salvar bilhetes de ida, volta e somente ida
+- [x] Exibir o Terminal salvo na Gestão de Passagens e no detalhe de bilhetes do Calendário
+- [x] Corrigir a hidratação dos campos de Terminal após salvar na Gestão de Passagens
+- [x] Adicionar hover suave e tooltip explicativo ao logo Smart Fly
+- [x] Exibir confirmação visual acessível ao salvar dados de bilhete por semana
+- [x] Corrigir marcação indevida no Calendário para o bilhete somente ida da Semana 42
+- [x] Eliminar marcação residual de passagem emitida em 13/12/2026 no Calendário
+- [x] Exibir a data efetiva do bilhete no popup, compartilhamento e agenda do Calendário
+- [x] Atualizar o resumo de semanas sem passagens pelas datas efetivas emitidas
+- [x] Exibir nomes de companhias aéreas em caixa alta em toda a interface
+- [x] Adicionar logos pequenos e acessíveis aos badges de companhia dos bilhetes
+- [x] Recalcular o percentual do Progresso anual pela meta de viagens selecionada
+- [x] Atualizar a página de Novidades com entregas das últimas duas semanas
+- [x] Exibir a meta anual configurada no Comparativo entre anos
+- [x] Permitir metas de emissão independentes para cada ano no comparativo
+- [x] Exibir percentual de conclusão para todos os anos comparados
+- [x] Adicionar visualização de tendência de emissões versus metas anuais
+- [x] Adicionar transição suave e acessível ao navegar pelo botão de Calendário
+- [x] Aplicar a transição suave e acessível aos botões Gestão e Financeiro do cabeçalho
+- [x] Aplicar a transição suave e acessível às rotas Cotações e Memórias no cabeçalho
+- [x] Restaurar a posição de rolagem ao retornar entre páginas
+- [x] Aplicar a transição suave às rotas Novidades e administrativas no cabeçalho
+- [x] Restaurar o foco no controle que iniciou uma navegação de retorno
+- [x] Adicionar atalho acessível para voltar ao topo das páginas longas
+- [x] Aprimorar animações de carregamento e feedback visual nas interações do painel administrativo de notificações
+- [x] Adicionar filtro por status ao histórico de envios administrativos
+- [x] Exibir resumo diário de entregas e falhas no histórico de notificações
+- [x] Permitir exportar o histórico administrativo filtrado em CSV
+- [x] Adicionar pesquisa por texto livre ao histórico de envios administrativos
+- [x] Criar painel de pendências de compra e risco de preço por semana
+- [x] Criar linha do tempo operacional e checklist pré-viagem por viagem
+- [x] Implementar gestão de créditos, vouchers e reembolsos por companhia
+- [x] Vincular anexos operacionais aos bilhetes emitidos com armazenamento seguro
+- [x] Detectar conflitos de voo e trechos de retorno ausentes
+- [x] Adicionar metas por categoria de viagens, orçamento, milhas e créditos
+- [x] Criar Centro de decisões com recomendações prioritárias e explicáveis
+- [x] Criar relatório executivo com geração manual de PDF/CSV e opção de agendamento seguro
+- [x] Corrigir a atualização do ícone do site, favicon e cache do PWA
+- [x] Adicionar tela de abertura personalizada e acessível ao carregamento inicial do PWA
+- [x] Adaptar a tela de abertura do PWA ao modo escuro do sistema
+- [x] Refinar o fade out entre a splash screen e a tela principal do PWA
+- [x] Adicionar skeletons responsivos e acessíveis à Home após a splash screen
+- [x] Preparar proposta visual de cartão Apple Wallet e código de referência do botão de adição
+- [x] Remover a tag textual de remarcação sobre os dias do Calendário no celular
+- [x] Padronizar a legenda de status em todos os filtros do Calendário
+- [x] Adicionar modo de alto contraste ao Calendário
+- [x] Permitir recolher filtros secundários do Calendário no celular
+- [x] Adicionar busca por número ou destino de voo no Calendário
+- [x] Atualizar a habilidade reutilizável com o processo de evolução segura aplicado ao Smart Fly
+- [x] Adicionar ícones visuais e previsão dos próximos dias nos dados meteorológicos do Fly.IA
+- [x] Adicionar autocompletar de destinos na busca do Calendário
+- [x] Adicionar alerta de chuva na Central de Decisão pela previsão dos próximos dias
+- [x] Alertar sobre vento forte e baixa visibilidade na Central de Decisão
+- [x] Exibir a previsão de retorno junto ao alerta meteorológico da próxima viagem
+- [x] Permitir dispensar alertas meteorológicos por viagem com preferência persistente
+- [x] Corrigir a visibilidade de Painel de avisos, Locais de Acesso e Uso de IA no menu mobile
+- [x] Corrigir a origem de tiles que exige API key na tela Locais
+
+## Processo reutilizável
+
+- [x] Criar habilidade reutilizável para evolução visual e UX segura de aplicações web
+
+## Acesso e autenticação
+
+- [x] Padronizar os avisos de usuário não autenticado em uma message box centralizada e acessível
+- [x] Aplicar a message box centralizada ao compartilhamento de passagens por e-mail
+- [x] Adicionar animação sutil e respeitosa à message box de acesso
+- [x] Registrar tentativas de acesso a recursos protegidos sem coletar dados pessoais
+- [x] Proteger a página Financeiro com a message box centralizada e login interno
+
+## Preferências da Home
+
+- [x] Persistir os estados aberto e fechado do Resumo Anual e de Filtros e Controles
+- [x] Simplificar o botão da Central de decisão para exibir somente o ícone de expandir ou recolher
+- [x] Alinhar a Central de decisão ao padrão do Resumo Anual, com controle sem borda e hover com fade suave
+- [x] Equalizar o design da Central de Atenção com a Central de Decisão
+- [x] Padronizar a seção Variação de Preços com o acabamento das Centrais
+- [x] Reforçar o contraste dos alertas e controles em modo escuro
+- [x] Consolidar checkpoint revisado e pronto para publicação
+- [x] Aprimorar a leitura da Variação de Preços com metadados derivados dos dados reais
+- [x] Padronizar os cards de semanas da Home com o acabamento das Centrais
+- [x] Preparar e validar visualmente os alertas para uso móvel, com roteiro de teste em dispositivo físico
+
+## Auditoria de pull requests
+
+- [x] Avaliar todos os PRs abertos quanto a risco, conflitos, validações, sobreposição e recomendação de tratamento
+
+## Operação de merges
+
+- [x] Mesclar PRs abertos elegíveis, individualmente, sem conflitos e sem duplicidades
+
+## PR #350
+
+- [x] Resolver conflitos do PR #350, validar a otimização de ordenação por preço e atualizar o PR
+- [x] Fazer merge do PR #350 após confirmação de checks e mergeabilidade
+
+## Pós-merge do PR #350
+
+- [x] Reavaliar os PRs #332 e #345 após a integração da otimização de ordenação
+- [x] Atualizar o Changelog com a entrada do merge do PR #350
+- [x] Executar e confirmar a CI completa na main
+
+## PRs #332 e #345
+
+- [x] Resolver conflitos do PR #332, validar a otimização de contagem filtrada e atualizar a branch
+- [x] Resolver conflitos do PR #345, validar a memoização de feriados e atualizar a branch
+
+## Regressão do mapa de Locais de Acesso
+
+- [x] Corrigir novamente a exibição de “API Key Required” no mapa, garantindo que nenhum tile Carto seja usado
+
+## Geolocalização no mapa de Locais de Acesso
+
+- [x] Adicionar botão acessível para centralizar o mapa na localização atual do dispositivo móvel, com estados de permissão, carregamento e erro
+
+- [x] Aprimorar o estado visual de carregamento do botão de centralização enquanto o GPS responde
+
+- [x] Exibir a precisão aproximada da localização atual no mapa
+- [x] Permitir remover o marcador pessoal da localização atual
+- [x] Preparar roteiro de validação da geolocalização em iOS e Android
+
+## Compras de milhas
+
+- [x] Criar cadastro anual de compras de milhas com data, total de milhas, programa ou companhia aérea e valor pago
+- [x] Integrar compras de milhas aos totais e detalhamento do Financeiro por ano
+- [x] Validar autorização, valores monetários, responsividade mobile e testes do módulo
+
+## Operação dos PRs CLEAN
+
+- [x] Reconfirmar, mesclar e validar individualmente os PRs sem conflitos, priorizando segurança
+- [x] Reconciliar conflitos remanescentes entre a main local e user_github/main sem perder compras de milhas, notificações ou acessibilidade
+- [x] Corrigir regressões de sintaxe JSX, dependências e compatibilidade do Vite após o merge
+- [x] Validar o estado reconciliado com pnpm check, 805 testes aprovados e build de produção aprovado
+
+## Revisão de PRs conflitantes — sessão atual
+
+- [x] Inventariar os PRs ainda abertos e conflitantes contra a branch principal atual: #381, #380, #367, #366, #365, #360, #358, #347, #344 e #334
+- [x] Classificar cada PR por funcionalidade pendente, duplicidade, risco e dependências; #347/#334 são sobrepostos, #380/#366 complementares e #344/#367 estão parcialmente absorvidos
+- [x] Resolver e validar apenas os PRs conflitantes que preservem valor funcional e segurança: #381, #380/#366, #367, #365 e #358
+- [x] Integrar os PRs elegíveis na branch principal com validação completa: TypeScript sem erros, build aprovado e 806 testes aprovados (2 ignorados)
+- [x] Registrar o resultado final e salvar checkpoint revisável
+
+- [x] Encerrar no GitHub os dez PRs conflitantes revisados: seis superseded pela integração manual e quatro obsoletos/duplicados
+
+## Animações e hover dos componentes integrados — sessão atual
+
+- [x] Mapear os componentes recém-integrados e seus estados atuais de carregamento e interação: Cotações, notificações push, compartilhamento por e-mail e ações externas da Home
+- [x] Definir critérios acessíveis para loading, sucesso, erro, hover e foco visível, com motion-reduce e aria-busy/aria-live quando aplicável
+- [x] Implementar animações responsivas e feedback de hover sem alterar os fluxos de negócio em Cotações, notificações e compartilhamento por e-mail
+- [x] Validar reduced motion, mobile em 320/375/390 px, TypeScript, 808 testes aprovados (2 ignorados) e build de produção
+- [x] Registrar a entrega e salvar checkpoint revisável

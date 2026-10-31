@@ -18,7 +18,7 @@ export type AlertType = {
 export function AlertRow({ alert }: { alert: AlertType }) {
   return (
     <div
-      className={`px-4 py-3 flex items-center gap-3 ${alert.status === "past" ? "opacity-50" : ""}`}
+      className={`px-4 py-3 flex items-start gap-3 ${alert.status === "past" ? "opacity-50" : ""}`}
     >
       <div
         className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
@@ -51,7 +51,7 @@ export function AlertRow({ alert }: { alert: AlertType }) {
             {alert.avisoLabel}
           </span>
         </div>
-        <div className="flex items-center gap-3 mt-0.5">
+        <div className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-1">
           <span className="text-xs text-gray-400">
             Alerta: {formatDatetimeBRT(alert.alertDatetime)}
           </span>
@@ -68,7 +68,7 @@ export function AlertRow({ alert }: { alert: AlertType }) {
           </span>
         </div>
       </div>
-      <div className="flex flex-col items-end gap-1 flex-shrink-0">
+      <div className="flex shrink-0 flex-col items-end gap-1 self-end sm:self-auto">
         <StatusBadge status={alert.status as AlertStatus} />
         {alert.status === "pending" && (
           <span className="text-xs text-gray-500">

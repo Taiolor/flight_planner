@@ -9,6 +9,18 @@ import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { ContentReveal } from "@/components/ContentReveal";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import {
   ArrowLeft,
   Bell,
@@ -26,8 +38,15 @@ import {
   Plane,
   ChevronDown,
   Loader2,
+  Activity,
+  MapPinned,
+  Download,
+  Search,
+  X,
+  Eye,
+  Mail,
 } from "lucide-react";
-import { useState, useMemo } from "react";
+import { useDeferredValue, useState, useMemo } from "react";
 import { toast } from "sonner";
 import { TestNextAlertButton } from "@/components/admin-notifications/TestNextAlertButton";
 import {
@@ -36,12 +55,354 @@ import {
   formatRelativeTime,
 } from "@/components/admin-notifications/utils";
 import { AlertRow } from "@/components/admin-notifications/AlertRow";
+import { LoginModal } from "@/components/auth/LoginModal";
+import { LoginRequiredScreen } from "@/components/auth/LoginRequiredMessageBox";
+import { GlobalYearSelector } from "@/components/GlobalYearSelector";
+import { StandardPageHeader } from "@/components/StandardPageHeader";
+import { TooltipLabel } from "@/components/ui/tooltip-label";
+import { useYear } from "@/contexts/YearContext";
+import { queryCachePolicies } from "@/lib/queryCache";
+import { downloadNotificationHistoryCsv } from "@/lib/notificationHistoryCsv";
+
+export type AdminAccessState = "checking" | "login-required" | "authorized";
+
+export type AdminFormAction = {
+  label: string;
+  timestamp: string;
+  status: "success" | "error";
+};
+
+export type AdminActionTimelineEntry = AdminFormAction & {
+  id: string;
+  source: "push" | "recipients" | "test-email";
+};
+
+type AdminInteractionFeedback = {
+  kind: "success" | "error" | "info";
+  message: string;
+};
+
+type NotificationHistoryStatusFilter = "all" | "success" | "partial" | "failed";
+
+const notificationHistoryStatusOptions: Array<{
+  value: NotificationHistoryStatusFilter;
+  label: string;
+}> = [
+  { value: "all", label: "Todos os status" },
+  { value: "success", label: "Sucessos" },
+  { value: "partial", label: "Parciais" },
+  { value: "failed", label: "Falhas" },
+];
+
+function formatDailySummaryDate(day: string) {
+  return new Intl.DateTimeFormat("pt-BR", {
+    timeZone: "America/Sao_Paulo",
+    day: "2-digit",
+    month: "short",
+  }).format(new Date(`${day}T12:00:00-03:00`));
+}
+
+const ADMIN_ACTION_TIMELINE_KEY = "viagens.admin.action-timeline";
+const MAX_ADMIN_ACTION_TIMELINE_ENTRIES = 30;
+
+export function readAdminFormAction(key: string): AdminFormAction | null {
+  if (typeof window === "undefined") return null;
+
+  try {
+    const stored = window.localStorage.getItem(key);
+    if (!stored) return null;
+    const parsed = JSON.parse(stored) as Partial<AdminFormAction>;
+    if (
+      typeof parsed.label !== "string" ||
+      typeof parsed.timestamp !== "string" ||
+      (parsed.status !== "success" && parsed.status !== "error")
+    ) {
+      return null;
+    }
+    return parsed as AdminFormAction;
+  } catch {
+    return null;
+  }
+}
+
+export function saveAdminFormAction(key: string, action: AdminFormAction) {
+  if (typeof window !== "undefined") {
+    window.localStorage.setItem(key, JSON.stringify(action));
+  }
+}
+
+export function clearAdminFormAction(key: string) {
+  if (typeof window !== "undefined") {
+    window.localStorage.removeItem(key);
+  }
+}
+
+export function readAdminActionTimeline(): AdminActionTimelineEntry[] {
+  if (typeof window === "undefined") return [];
+
+  try {
+    const stored = window.localStorage.getItem(ADMIN_ACTION_TIMELINE_KEY);
+    if (stored) {
+      const parsed = JSON.parse(stored) as Partial<AdminActionTimelineEntry>[];
+      if (!Array.isArray(parsed)) return [];
+      return parsed
+        .filter(
+          entry =>
+            typeof entry.id === "string" &&
+            typeof entry.label === "string" &&
+            typeof entry.timestamp === "string" &&
+            (entry.status === "success" || entry.status === "error") &&
+            (entry.source === "push" ||
+              entry.source === "recipients" ||
+              entry.source === "test-email")
+        )
+        .map(entry => entry as AdminActionTimelineEntry)
+        .sort((a, b) => b.timestamp.localeCompare(a.timestamp))
+        .slice(0, MAX_ADMIN_ACTION_TIMELINE_ENTRIES);
+    }
+
+    const legacyEntries = [
+      ["push", readAdminFormAction("viagens.admin.last-push-action")],
+      ["recipients", readAdminFormAction("viagens.admin.last-recipient-action")],
+      ["test-email", readAdminFormAction("viagens.admin.last-test-email-action")],
+    ] as const;
+    return legacyEntries
+      .filter(([, action]) => action !== null)
+      .map(([source, action]) => ({
+        ...action!,
+        id: `${source}-${action!.timestamp}`,
+        source,
+      }))
+      .sort((a, b) => b.timestamp.localeCompare(a.timestamp));
+  } catch {
+    return [];
+  }
+}
+
+export function appendAdminActionTimeline(
+  source: AdminActionTimelineEntry["source"],
+  action: AdminFormAction
+): AdminActionTimelineEntry[] {
+  const entry: AdminActionTimelineEntry = {
+    ...action,
+    source,
+    id: `${source}-${action.timestamp}-${Math.random().toString(36).slice(2, 8)}`,
+  };
+  const entries = [entry, ...readAdminActionTimeline()]
+    .sort((a, b) => b.timestamp.localeCompare(a.timestamp))
+    .slice(0, MAX_ADMIN_ACTION_TIMELINE_ENTRIES);
+
+  if (typeof window !== "undefined") {
+    window.localStorage.setItem(ADMIN_ACTION_TIMELINE_KEY, JSON.stringify(entries));
+  }
+  return entries;
+}
+
+export function clearAdminActionTimeline() {
+  if (typeof window !== "undefined") {
+    window.localStorage.setItem(ADMIN_ACTION_TIMELINE_KEY, "[]");
+  }
+}
+
+function LastAdminFormAction({
+  action,
+  onClear,
+}: {
+  action: AdminFormAction | null;
+  onClear: () => void;
+}) {
+  if (!action) {
+    return (
+      <p className="mt-3 text-xs text-slate-400">
+        Nenhuma ação registrada neste navegador.
+      </p>
+    );
+  }
+
+  return (
+    <div className="mt-3 flex flex-col gap-2 rounded-md border border-slate-200 bg-slate-50 px-3 py-2 sm:flex-row sm:items-center sm:justify-between">
+      <p
+        className={`flex items-center gap-1.5 text-xs ${
+          action.status === "success" ? "text-emerald-700" : "text-amber-700"
+        }`}
+      >
+        <Clock className="h-3.5 w-3.5 shrink-0" />
+        Última ação: {action.label} em {new Date(action.timestamp).toLocaleString("pt-BR")}
+      </p>
+      <AlertDialog>
+        <AlertDialogTrigger asChild>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="h-8 self-start px-2 text-xs text-slate-600 hover:bg-slate-200 hover:text-slate-900 sm:self-auto"
+            aria-label="Limpar registro local da última ação"
+          >
+            Limpar registro
+          </Button>
+        </AlertDialogTrigger>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Limpar registro local?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta ação remove apenas a data e a hora exibidas neste navegador. O histórico persistido de notificações não será alterado.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={onClear}>
+              Limpar registro
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </div>
+  );
+}
+
+function AdminInteractionFeedback({
+  feedback,
+}: {
+  feedback: AdminInteractionFeedback | null;
+}) {
+  if (!feedback) return null;
+
+  const Icon = feedback.kind === "success" ? CheckCircle2 : AlertCircle;
+  const colorClass =
+    feedback.kind === "success"
+      ? "border-emerald-200 bg-emerald-50 text-emerald-800"
+      : feedback.kind === "error"
+        ? "border-red-200 bg-red-50 text-red-800"
+        : "border-[#c8d6e9] bg-[#f4f7fb] text-[#0b2349]";
+
+  return (
+    <div
+      role={feedback.kind === "error" ? "alert" : "status"}
+      aria-live={feedback.kind === "error" ? "assertive" : "polite"}
+      aria-atomic="true"
+      className={`flex items-start gap-2 rounded-lg border p-3 text-sm animate-in fade-in slide-in-from-top-1 duration-200 motion-reduce:animate-none ${colorClass}`}
+    >
+      <Icon className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+      <span>{feedback.message}</span>
+    </div>
+  );
+}
+
+export function getAdminAccessState({
+  isCheckingAuthentication,
+  isAuthenticated,
+}: {
+  isCheckingAuthentication: boolean;
+  isAuthenticated: boolean;
+}): AdminAccessState {
+  if (isCheckingAuthentication) return "checking";
+  return isAuthenticated ? "authorized" : "login-required";
+}
 
 export default function AdminNotifications() {
+  const [showLoginModal, setShowLoginModal] = useState(false);
+  const authCheckQuery = trpc.flightAuth.check.useQuery();
+  const isAuthenticated = authCheckQuery.data?.authenticated ?? false;
+
+  if (authCheckQuery.isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <StandardPageHeader icon={Bell} title="Admin · Notificações" />
+        <div className="flex min-h-[calc(100vh-60px)] items-center justify-center">
+          <div className="space-y-3 text-center">
+            <div className="mx-auto h-10 w-10 animate-spin rounded-full border-4 border-[#102f61] border-t-transparent" />
+            <p className="text-sm text-gray-500">Carregando painel...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <StandardPageHeader icon={Bell} title="Admin · Notificações" />
+        <LoginRequiredScreen
+          icon={Bell}
+          title="Acesso a notificações"
+          description="Entre com sua conta para acompanhar alertas e notificações de voo."
+          onLogin={() => setShowLoginModal(true)}
+          resource="admin-notifications"
+        >
+          <Link href="/">
+            <Button variant="ghost" aria-label="Voltar para a página inicial" className="gap-2">
+              <ArrowLeft className="w-4 h-4" /> Voltar
+            </Button>
+          </Link>
+        </LoginRequiredScreen>
+        <LoginModal open={showLoginModal} onOpenChange={setShowLoginModal} />
+      </div>
+    );
+  }
+
+  return <AdminNotificationsContent />;
+}
+
+function AdminNotificationsContent() {
+  const { selectedYear } = useYear();
   const [autoRefresh, setAutoRefresh] = useState(false);
+  const [lastPushAction, setLastPushAction] = useState<AdminFormAction | null>(
+    () => readAdminFormAction("viagens.admin.last-push-action")
+  );
+  const [actionTimeline, setActionTimeline] = useState<AdminActionTimelineEntry[]>(
+    () => readAdminActionTimeline()
+  );
   const [expandedSections, setExpandedSections] = useState<Set<string>>(
     new Set()
   );
+  const [testFeedback, setTestFeedback] = useState<{
+    kind: "success" | "error";
+    message: string;
+  } | null>(null);
+  const [panelFeedback, setPanelFeedback] = useState<AdminInteractionFeedback | null>(null);
+  const [historyStatus, setHistoryStatus] =
+    useState<NotificationHistoryStatusFilter>("all");
+  const [historySearch, setHistorySearch] = useState("");
+  const deferredHistorySearch = useDeferredValue(historySearch);
+  const historySearchTerm = deferredHistorySearch.trim() || undefined;
+  const registerPushAction = (
+    label: string,
+    status: AdminFormAction["status"]
+  ) => {
+    const action = { label, status, timestamp: new Date().toISOString() };
+    setLastPushAction(action);
+    saveAdminFormAction("viagens.admin.last-push-action", action);
+    setActionTimeline(appendAdminActionTimeline("push", action));
+  };
+  const clearPushAction = () => {
+    clearAdminFormAction("viagens.admin.last-push-action");
+    setLastPushAction(null);
+    toast.success("Registro local de teste de notificação limpo.");
+  };
+  const registerTimelineAction = (
+    source: AdminActionTimelineEntry["source"],
+    action: AdminFormAction
+  ) => {
+    setActionTimeline(appendAdminActionTimeline(source, action));
+  };
+  const clearTimeline = () => {
+    clearAdminActionTimeline();
+    setActionTimeline([]);
+    toast.success("Linha do tempo local limpa.");
+  };
+
+  const handleAutoRefreshToggle = () => {
+    setAutoRefresh(current => {
+      const next = !current;
+      setPanelFeedback({
+        kind: "success",
+        message: next
+          ? "Atualização automática ativada: o painel será atualizado a cada minuto."
+          : "Atualização automática desativada. Use Atualizar quando quiser consultar dados novos.",
+      });
+      return next;
+    });
+  };
 
   const toggleSection = (section: string) => {
     const newSet = new Set(expandedSections);
@@ -54,62 +415,143 @@ export default function AdminNotifications() {
   };
 
   const { data, isLoading, error, refetch, isFetching } =
-    trpc.adminNotifications.getStatus.useQuery(undefined, {
+    trpc.adminNotifications.getStatus.useQuery({ year: selectedYear }, {
+      enabled: true,
+      ...queryCachePolicies.admin,
       refetchInterval: autoRefresh ? 60_000 : false,
     });
 
-  const { data: logs, refetch: refetchLogs } =
-    trpc.adminNotifications.getLogs.useQuery(
-      { limit: 100 },
-      { refetchInterval: autoRefresh ? 60_000 : false }
-    );
+  const logsQuery = trpc.adminNotifications.getLogs.useInfiniteQuery(
+    {
+      year: selectedYear,
+      limit: 25,
+      status: historyStatus === "all" ? undefined : historyStatus,
+      search: historySearchTerm,
+    },
+    {
+      enabled: true,
+      ...queryCachePolicies.admin,
+      refetchInterval: autoRefresh ? 60_000 : false,
+      getNextPageParam: lastPage => lastPage.nextCursor,
+    }
+  );
+  const dailySummaryQuery = trpc.adminNotifications.getDailySummary.useQuery(
+    {
+      year: selectedYear,
+      status: historyStatus === "all" ? undefined : historyStatus,
+      search: historySearchTerm,
+    },
+    {
+      enabled: true,
+      ...queryCachePolicies.admin,
+      refetchInterval: autoRefresh ? 60_000 : false,
+    }
+  );
+  const exportLogsQuery = trpc.adminNotifications.exportLogs.useQuery(
+    {
+      year: selectedYear,
+      status: historyStatus === "all" ? undefined : historyStatus,
+      search: historySearchTerm,
+    },
+    {
+      enabled: false,
+      retry: false,
+    }
+  );
+  const handlePanelRefresh = async () => {
+    setPanelFeedback({ kind: "info", message: "Atualizando dados do painel..." });
+    const result = await refetch();
+    if (result.error) {
+      setPanelFeedback({
+        kind: "error",
+        message: "Não foi possível atualizar os dados do painel. Tente novamente.",
+      });
+      return;
+    }
+    setPanelFeedback({ kind: "success", message: "Dados do painel atualizados." });
+  };
+
+  const handleHistoryRefresh = async () => {
+    setPanelFeedback({ kind: "info", message: "Atualizando histórico de envios..." });
+    const [logsResult, summaryResult] = await Promise.all([
+      logsQuery.refetch(),
+      dailySummaryQuery.refetch(),
+    ]);
+    if (logsResult.error || summaryResult.error) {
+      setPanelFeedback({
+        kind: "error",
+        message: "Não foi possível atualizar o histórico de envios. Tente novamente.",
+      });
+      return;
+    }
+    setPanelFeedback({ kind: "success", message: "Histórico de envios atualizado." });
+  };
+  const handleHistoryExport = async () => {
+    setPanelFeedback({ kind: "info", message: "Preparando o CSV do histórico filtrado e pesquisado..." });
+    const result = await exportLogsQuery.refetch();
+    if (result.error || !result.data) {
+      setPanelFeedback({
+        kind: "error",
+        message: "Não foi possível exportar o histórico de envios. Tente novamente.",
+      });
+      return;
+    }
+    downloadNotificationHistoryCsv(result.data, selectedYear);
+    setPanelFeedback({ kind: "success", message: "Histórico exportado em CSV." });
+  };
+  const logs = useMemo(
+    () => logsQuery.data?.pages.flatMap(page => page.items) ?? [],
+    [logsQuery.data]
+  );
+  const performanceSummaryQuery = trpc.performanceMetrics.getSummary.useQuery(
+    { hours: 24 },
+    {
+      enabled: true,
+      ...queryCachePolicies.admin,
+    }
+  );
+  const reliabilityQuery = trpc.reliability.getFlightWeeksSummary.useQuery(
+    { hours: 24 },
+    {
+      enabled: true,
+      ...queryCachePolicies.admin,
+    }
+  );
+  const performanceByMetric = useMemo(
+    () =>
+      new Map(
+        (performanceSummaryQuery.data ?? []).map(summary => [
+          summary.metric,
+          summary,
+        ])
+      ),
+    [performanceSummaryQuery.data]
+  );
+  const reliabilitySummary = reliabilityQuery.data ?? {
+    transientFailures: 0,
+    schemaFailures: 0,
+    lastFailureAt: null,
+  };
+  const hasSchemaMismatch = reliabilitySummary.schemaFailures > 0;
 
   const sendTestMutation = trpc.push.sendTest.useMutation({
     onSuccess: result => {
-      toast.success(
-        `Notificação de teste enviada para ${result.sent} dispositivo(s).`
-      );
+      const message = `Notificação de teste enviada para ${result.sent} dispositivo(s).`;
+      setTestFeedback({ kind: "success", message });
+      registerPushAction("Teste de notificação enviado", "success");
+      toast.success(message);
     },
     onError: err => {
-      toast.error(err.message || "Erro ao enviar notificação de teste.");
+      const message = err.message || "Erro ao enviar notificação de teste.";
+      setTestFeedback({ kind: "error", message });
+      registerPushAction("Tentativa de teste de notificação", "error");
+      toast.error(message);
     },
   });
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center space-y-3">
-          <div className="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto" />
-          <p className="text-gray-500 text-sm">Carregando painel...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center space-y-4 max-w-sm">
-          <AlertCircle className="w-12 h-12 text-red-400 mx-auto" />
-          <p className="text-gray-700 font-medium">Acesso negado</p>
-          <p className="text-gray-500 text-sm">{error.message}</p>
-          <Button
-            variant="outline"
-            aria-label="Voltar para a página inicial"
-            className="gap-2"
-            asChild
-          >
-            <Link href="/">
-              <ArrowLeft className="w-4 h-4" aria-hidden="true" /> Voltar
-            </Link>
-          </Button>
-        </div>
-      </div>
-    );
-  }
-
-  // ⚡ Bolt Optimization: Single-pass iteration to categorize alerts
-  // Replaces 3x O(N) .filter() array iterations with 1x O(N) pass, reducing overhead
+  // Este Hook deve ser executado em todos os estados de autenticação. Mantê-lo
+  // antes dos retornos condicionais evita alterar a ordem de Hooks após o
+  // carregamento da sessão e dos dados do painel.
   const { pendingAlerts, sentAlerts, pastAlerts } = useMemo(() => {
     type AlertArray = NonNullable<typeof data>["scheduledAlerts"];
     const pending: AlertArray = [];
@@ -126,45 +568,82 @@ export default function AdminNotifications() {
 
     return { pendingAlerts: pending, sentAlerts: sent, pastAlerts: past };
   }, [data?.scheduledAlerts]);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <StandardPageHeader
+          icon={Bell}
+          title={`Admin · Notificações · ${selectedYear}`}
+        />
+          <div className="flex min-h-[calc(100vh-60px)] items-center justify-center px-4">
+            <div className="w-full max-w-sm space-y-4 rounded-2xl bg-white p-6 text-center shadow-sm">
+              <div className="mx-auto h-10 w-10 animate-spin rounded-full border-4 border-[#102f61] border-t-transparent" />
+              <div className="space-y-2 animate-pulse">
+                <div className="mx-auto h-3 w-32 rounded bg-slate-200" />
+                <div className="mx-auto h-3 w-48 rounded bg-slate-100" />
+              </div>
+              <p className="text-sm text-gray-500">Carregando painel e histórico...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <StandardPageHeader
+          icon={Bell}
+          title={`Admin · Notificações · ${selectedYear}`}
+        />
+        <div className="flex min-h-[calc(100vh-60px)] items-center justify-center">
+          <div className="max-w-sm space-y-4 text-center">
+            <AlertCircle className="mx-auto h-12 w-12 text-red-400" />
+            <p className="font-medium text-gray-700">
+              Não foi possível carregar o painel
+            </p>
+            <p className="text-sm text-gray-500">{error.message}</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   const nextAlert = pendingAlerts[0];
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white border-b border-gray-200 sticky top-0 z-10">
-        <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-3">
+    <ContentReveal className="min-h-screen bg-gray-50">
+      <StandardPageHeader
+        icon={Bell}
+        title={`Admin · Notificações · ${selectedYear}`}
+        actions={
+          <>
+            <GlobalYearSelector
+              compact
+              className="border-white/40 bg-white/10 text-white hover:bg-white/20"
+            />
+            <Link href="/admin/telemetria">
+              <Button
+                variant="outline"
+                size="sm"
+                className="gap-2 border-white/40 bg-white/10 text-white hover:bg-white hover:text-[#0b2349]"
+                aria-label="Abrir mapa de telemetria de uso"
+              >
+                <MapPinned className="w-4 h-4" />
+                <span className="hidden md:inline">Locais</span>
+              </Button>
+            </Link>
             <Button
               variant="ghost"
               size="sm"
-              aria-label="Voltar para a página inicial"
-              className="gap-2 text-gray-600"
-              asChild
-            >
-              <Link href="/">
-                <ArrowLeft className="w-4 h-4" aria-hidden="true" />
-                <span className="hidden sm:inline">Voltar</span>
-              </Link>
-            </Button>
-            <div className="h-5 w-px bg-gray-200" />
-            <div className="flex items-center gap-2">
-              <Bell className="w-5 h-5 text-blue-600" />
-              <h1 className="font-semibold text-gray-800">
-                Painel de Notificações
-              </h1>
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setAutoRefresh(v => !v)}
+              onClick={handleAutoRefreshToggle}
               aria-label={
                 autoRefresh
                   ? "Desativar atualização automática"
                   : "Ativar atualização automática"
               }
-              className={`gap-2 text-sm ${autoRefresh ? "text-green-600" : "text-gray-500"}`}
+              className={`gap-2 text-sm text-white hover:bg-white/10 hover:text-white ${autoRefresh ? "text-emerald-200" : "text-white/80"}`}
             >
               {autoRefresh ? (
                 <Wifi className="w-4 h-4" />
@@ -178,21 +657,23 @@ export default function AdminNotifications() {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => refetch()}
+              onClick={() => void handlePanelRefresh()}
               disabled={isFetching}
               aria-label="Atualizar"
-              className="gap-2"
+              aria-busy={isFetching}
+              className="gap-2 border-white/40 bg-white/10 text-white hover:bg-white hover:text-[#0b2349]"
             >
               <RefreshCw
                 className={`w-4 h-4 ${isFetching ? "animate-spin" : ""}`}
               />
-              <span className="hidden sm:inline">Atualizar</span>
+              <span className="hidden sm:inline">{isFetching ? "Atualizando..." : "Atualizar"}</span>
             </Button>
-          </div>
-        </div>
-      </div>
+          </>
+        }
+      />
 
       <div className="max-w-5xl mx-auto px-4 py-6 space-y-6">
+        <AdminInteractionFeedback feedback={panelFeedback} />
         {/* Cards de resumo */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           <Card className="p-4 border-l-4 border-l-blue-500">
@@ -229,16 +710,67 @@ export default function AdminNotifications() {
           </Card>
         </div>
 
+        <section
+          aria-labelledby="flight-weeks-integrity-title"
+          role={hasSchemaMismatch ? "alert" : undefined}
+          className={`rounded-2xl border p-4 ${
+            hasSchemaMismatch
+              ? "border-rose-200 bg-rose-50 text-rose-950"
+              : reliabilitySummary.transientFailures > 0
+                ? "border-amber-200 bg-amber-50 text-amber-950"
+                : "border-emerald-200 bg-emerald-50 text-emerald-950"
+          }`}
+        >
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-start gap-3">
+              {hasSchemaMismatch ? (
+                <AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-rose-700" aria-hidden="true" />
+              ) : (
+                <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-emerald-700" aria-hidden="true" />
+              )}
+              <div>
+                <p id="flight-weeks-integrity-title" className="text-sm font-semibold">
+                  Integridade de flight_weeks
+                </p>
+                {reliabilityQuery.isError ? (
+                  <p className="mt-1 text-sm">Não foi possível verificar a integridade nesta atualização.</p>
+                ) : hasSchemaMismatch ? (
+                  <p className="mt-1 text-sm">
+                    Divergência permanente de schema detectada em {reliabilitySummary.schemaFailures} leitura(s) nas últimas 24 horas. Revise a migração antes de alterar o planejamento.
+                  </p>
+                ) : reliabilitySummary.transientFailures > 0 ? (
+                  <p className="mt-1 text-sm">
+                    {reliabilitySummary.transientFailures} falha(s) transitória(s) de leitura foram registradas nas últimas 24 horas, inclusive as recuperadas automaticamente.
+                  </p>
+                ) : (
+                  <p className="mt-1 text-sm">Nenhuma falha de leitura de semanas foi registrada nas últimas 24 horas.</p>
+                )}
+              </div>
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => reliabilityQuery.refetch()}
+              disabled={reliabilityQuery.isFetching}
+              aria-busy={reliabilityQuery.isFetching}
+              className="shrink-0"
+            >
+              <RefreshCw className={`mr-2 h-4 w-4 ${reliabilityQuery.isFetching ? "animate-spin" : ""}`} aria-hidden="true" />
+              Atualizar integridade
+            </Button>
+          </div>
+        </section>
+
         {/* Próximo alerta */}
         {nextAlert && (
-          <Card className="p-5 bg-blue-50 border-blue-200">
-            <div className="flex items-start justify-between gap-4">
+          <Card className="p-4 sm:p-5 bg-[#f4f7fb] border-[#c8d6e9]">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center flex-shrink-0">
+                <div className="w-10 h-10 rounded-full bg-[#102f61] flex items-center justify-center flex-shrink-0">
                   <Bell className="w-5 h-5 text-white" />
                 </div>
                 <div>
-                  <p className="text-xs text-blue-600 font-medium uppercase tracking-wide mb-0.5">
+                  <p className="text-xs text-[#102f61] font-medium uppercase tracking-wide mb-0.5">
                     Próximo Alerta
                   </p>
                   <p className="font-semibold text-gray-800">
@@ -255,20 +787,73 @@ export default function AdminNotifications() {
                   </p>
                 </div>
               </div>
-              <div className="flex flex-col items-end gap-3 flex-shrink-0">
+              <div className="flex flex-row items-end justify-between gap-3 sm:flex-col sm:items-end">
                 <div className="text-right">
-                  <p className="text-lg font-bold text-blue-700">
+                  <p className="text-lg font-bold text-[#0b2349]">
                     {formatRelativeTime(nextAlert.alertDatetime)}
                   </p>
                   <p className="text-xs text-gray-500">
                     {formatDatetimeBRT(nextAlert.alertDatetime)}
                   </p>
                 </div>
-                <TestNextAlertButton />
+                <TestNextAlertButton year={selectedYear} />
               </div>
             </div>
           </Card>
         )}
+
+        {/* Telemetria de performance */}
+        <Card className="p-5 border-slate-200">
+          <div className="flex items-start justify-between gap-4 mb-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center flex-shrink-0">
+                <Activity className="w-5 h-5 text-slate-700" />
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-gray-800">
+                  Desempenho anônimo
+                </p>
+                <p className="text-xs text-gray-500">
+                  Médias das últimas 24 horas, sem dados pessoais.
+                </p>
+              </div>
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => performanceSummaryQuery.refetch()}
+              disabled={performanceSummaryQuery.isFetching}
+              aria-busy={performanceSummaryQuery.isFetching}
+              className="text-xs text-gray-500 gap-1"
+            >
+              <RefreshCw
+                className={`w-3 h-3 ${performanceSummaryQuery.isFetching ? "animate-spin" : ""}`}
+              />
+              {performanceSummaryQuery.isFetching ? "Atualizando..." : "Atualizar"}
+            </Button>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+            {["FCP", "LCP", "INP", "CLS", "TRPC"].map(metric => {
+              const summary = performanceByMetric.get(metric);
+              const value = summary
+                ? metric === "CLS"
+                  ? (summary.average / 1000).toFixed(3)
+                  : `${summary.average} ms`
+                : "Sem dados";
+              return (
+                <div key={metric} className="rounded-lg bg-slate-50 p-3">
+                  <p className="text-xs font-semibold text-slate-500">{metric}</p>
+                  <p className="mt-1 text-sm font-medium text-slate-800">{value}</p>
+                  {summary && (
+                    <p className="mt-1 text-[11px] text-slate-400">
+                      {summary.count} amostra{summary.count === 1 ? "" : "s"}
+                    </p>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </Card>
 
         {/* Configurações ativas */}
         <div>
@@ -293,7 +878,7 @@ export default function AdminNotifications() {
               </Card>
             ))}
             {(!data?.avisos || data.avisos.length === 0) && (
-              <Card className="p-4 flex items-center gap-3 col-span-2">
+              <Card className="p-4 flex items-center gap-3 sm:col-span-2">
                 <BellOff className="w-5 h-5 text-gray-400" />
                 <p className="text-gray-500 text-sm">
                   Nenhum aviso configurado. Configure em Notificações.
@@ -308,17 +893,17 @@ export default function AdminNotifications() {
           <button
             type="button"
             onClick={() => toggleSection("alerts")}
-            className="w-full flex items-center justify-between p-4 bg-white hover:bg-gray-50 transition-colors border border-gray-200 rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+            className="w-full flex items-start justify-between p-4 bg-white hover:bg-gray-50 transition-colors border border-gray-200 rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-[#17427e]"
             aria-expanded={expandedSections.has("alerts")}
             aria-controls="section-alerts"
           >
-            <div className="flex items-center justify-between flex-1 gap-4">
+            <div className="flex min-w-0 flex-1 flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
               <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide">
                 Alertas Agendados ({data?.scheduledAlerts.length ?? 0})
               </h2>
-              <div className="flex gap-2 text-xs text-gray-400">
+              <div className="hidden gap-2 text-xs text-gray-400 sm:flex">
                 <span className="flex items-center gap-1">
-                  <span className="w-2 h-2 rounded-full bg-blue-400 inline-block" />{" "}
+                  <span className="w-2 h-2 rounded-full bg-[#17427e] inline-block" />{" "}
                   Pendente
                 </span>
                 <span className="flex items-center gap-1">
@@ -355,8 +940,8 @@ export default function AdminNotifications() {
                   {/* Pendentes primeiro */}
                   {pendingAlerts.length > 0 && (
                     <>
-                      <div className="px-4 py-2 bg-blue-50">
-                        <p className="text-xs font-semibold text-blue-600 uppercase tracking-wide">
+                      <div className="px-4 py-2 bg-[#f4f7fb]">
+                        <p className="text-xs font-semibold text-[#102f61] uppercase tracking-wide">
                           Aguardando envio ({pendingAlerts.length})
                         </p>
                       </div>
@@ -404,7 +989,7 @@ export default function AdminNotifications() {
           <button
             type="button"
             onClick={() => toggleSection("devices")}
-            className="w-full flex items-center justify-between p-4 bg-white hover:bg-gray-50 transition-colors border border-gray-200 rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+            className="w-full flex items-center justify-between p-4 bg-white hover:bg-gray-50 transition-colors border border-gray-200 rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-[#17427e]"
             aria-expanded={expandedSections.has("devices")}
             aria-controls="section-devices"
           >
@@ -456,43 +1041,274 @@ export default function AdminNotifications() {
           )}
         </div>
 
+        {/* Linha do tempo local de ações administrativas */}
+        <div>
+          <div className="w-full flex items-center gap-2 p-4 bg-white hover:bg-gray-50 transition-colors border border-gray-200 rounded-lg">
+            <button
+              type="button"
+              onClick={() => toggleSection("local-timeline")}
+              className="min-w-0 flex flex-1 items-center justify-between gap-3 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-[#17427e] rounded-sm"
+              aria-expanded={expandedSections.has("local-timeline")}
+              aria-controls="section-local-timeline"
+            >
+              <div>
+                <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide">
+                  Ações administrativas recentes ({actionTimeline.length})
+                </h2>
+                <p className="mt-1 text-xs text-gray-400">
+                  Histórico local deste navegador, organizado da ação mais recente à mais antiga.
+                </p>
+              </div>
+              <ChevronDown
+                className={`w-5 h-5 text-slate-400 transition-transform duration-200 flex-shrink-0 ${
+                  expandedSections.has("local-timeline") ? "rotate-180" : ""
+                }`}
+              />
+            </button>
+            {actionTimeline.length > 0 && (
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="shrink-0 text-xs text-slate-500 hover:bg-slate-100 hover:text-slate-800"
+                    aria-label="Limpar todas as ações administrativas locais"
+                  >
+                    Limpar tudo
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Limpar a linha do tempo local?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Esta ação remove todas as ações administrativas salvas neste navegador. O histórico persistido de notificações não será alterado.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                    <AlertDialogAction onClick={clearTimeline}>
+                      Limpar tudo
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            )}
+          </div>
+
+          {expandedSections.has("local-timeline") && (
+            <Card id="section-local-timeline" className="mt-3 overflow-hidden">
+              {actionTimeline.length === 0 ? (
+                <div className="p-8 text-center">
+                  <History className="mx-auto mb-3 h-10 w-10 text-gray-300" />
+                  <p className="text-sm text-gray-500">
+                    Nenhuma ação administrativa local registrada ainda.
+                  </p>
+                </div>
+              ) : (
+                <div className="divide-y divide-slate-100">
+                  {actionTimeline.map(entry => {
+                    const sourceLabel =
+                      entry.source === "push"
+                        ? "Notificação push"
+                        : entry.source === "recipients"
+                          ? "Destinatários"
+                          : "E-mail de teste";
+                    return (
+                      <div
+                        key={entry.id}
+                        className="flex items-start gap-3 px-4 py-3 sm:items-center"
+                      >
+                        <div
+                          className={`mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full sm:mt-0 ${
+                            entry.status === "success"
+                              ? "bg-emerald-100 text-emerald-700"
+                              : "bg-amber-100 text-amber-700"
+                          }`}
+                        >
+                          {entry.status === "success" ? (
+                            <CheckCircle2 className="h-4 w-4" />
+                          ) : (
+                            <AlertCircle className="h-4 w-4" />
+                          )}
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <p className="text-sm font-medium text-slate-800">
+                            {entry.label}
+                          </p>
+                          <p className="mt-0.5 text-xs text-slate-500">
+                            {sourceLabel}
+                          </p>
+                        </div>
+                        <time
+                          dateTime={entry.timestamp}
+                          className="max-w-28 shrink-0 text-right text-xs text-slate-400"
+                        >
+                          {new Date(entry.timestamp).toLocaleString("pt-BR")}
+                        </time>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </Card>
+          )}
+        </div>
+
         {/* Histórico Persistente de Envios */}
         <div>
-          <button
-            type="button"
-            onClick={() => toggleSection("history")}
-            className="w-full flex items-center justify-between p-4 bg-white hover:bg-gray-50 transition-colors border border-gray-200 rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
-            aria-expanded={expandedSections.has("history")}
-            aria-controls="section-history"
-          >
+          <div className="w-full flex items-center gap-2 p-4 bg-white hover:bg-gray-50 transition-colors border border-gray-200 rounded-lg">
+            <button
+              type="button"
+              onClick={() => toggleSection("history")}
+              className="min-w-0 flex flex-1 items-center justify-between gap-3 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-[#17427e] rounded-sm"
+              aria-expanded={expandedSections.has("history")}
+              aria-controls="section-history"
+            >
             <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide">
-              Histórico de Envios ({logs?.length ?? 0})
+              Histórico de Envios ({logs.length})
             </h2>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={e => {
-                  e.stopPropagation();
-                  refetchLogs();
-                }}
-                className="text-xs text-gray-400 hover:text-gray-600 flex items-center gap-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm"
-              >
-                <RefreshCw className="w-3 h-3" /> Atualizar
-              </button>
               <ChevronDown
                 className={`w-5 h-5 text-slate-400 transition-transform duration-200 flex-shrink-0 ${
                   expandedSections.has("history") ? "rotate-180" : ""
                 }`}
               />
-            </div>
-          </button>
+            </button>
+            <button
+              type="button"
+              onClick={() => void handleHistoryRefresh()}
+              disabled={logsQuery.isFetching}
+              aria-busy={logsQuery.isFetching}
+              className="text-xs text-gray-400 hover:text-gray-600 flex items-center gap-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm"
+              aria-label="Atualizar histórico de envios"
+            >
+              <RefreshCw className={`w-3 h-3 ${logsQuery.isFetching ? "animate-spin" : ""}`} />
+              {logsQuery.isFetching ? "Atualizando..." : "Atualizar"}
+            </button>
+          </div>
 
           {expandedSections.has("history") && (
             <Card id="section-history" className="overflow-hidden mt-3">
-              {!logs || logs.length === 0 ? (
+              <div className="space-y-4 border-b border-slate-100 bg-slate-50/70 p-4">
+                <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_13rem_auto] sm:items-end">
+                  <div className="min-w-0">
+                    <label
+                      htmlFor="notification-history-search"
+                      className="block text-xs font-semibold uppercase tracking-wide text-slate-500"
+                    >
+                      Pesquisar no histórico
+                    </label>
+                    <div className="relative mt-1">
+                      <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" aria-hidden="true" />
+                      <input
+                        id="notification-history-search"
+                        type="search"
+                        value={historySearch}
+                        onChange={event => setHistorySearch(event.target.value)}
+                        placeholder="Mensagem, voo, companhia ou erro"
+                        aria-describedby="notification-history-search-help"
+                        className="min-h-9 w-full rounded-md border border-slate-300 bg-white py-2 pl-9 pr-10 text-sm text-slate-700 shadow-sm placeholder:text-slate-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#17427e]"
+                      />
+                      {historySearch && (
+                        <TooltipLabel label="Limpar pesquisa do histórico">
+                          <button
+                            type="button"
+                            onClick={() => setHistorySearch("")}
+                            className="absolute right-2 top-1/2 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-sm text-slate-500 hover:bg-slate-100 hover:text-slate-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#17427e]"
+                            aria-label="Limpar pesquisa do histórico"
+                          >
+                            <X className="h-4 w-4" aria-hidden="true" />
+                          </button>
+                        </TooltipLabel>
+                      )}
+                    </div>
+                    <p id="notification-history-search-help" className="mt-1 text-xs text-slate-500">
+                      Busca por mensagem, semana, trecho, companhia, voo, status ou detalhe de erro.
+                    </p>
+                  </div>
+                  <div className="min-w-0">
+                    <label
+                      htmlFor="notification-history-status"
+                      className="block text-xs font-semibold uppercase tracking-wide text-slate-500"
+                    >
+                      Filtrar por status
+                    </label>
+                    <select
+                      id="notification-history-status"
+                      value={historyStatus}
+                      onChange={event =>
+                        setHistoryStatus(event.target.value as NotificationHistoryStatusFilter)
+                      }
+                      className="mt-1 min-h-9 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-[#17427e] sm:w-52"
+                    >
+                      {notificationHistoryStatusOptions.map(option => (
+                        <option key={option.value} value={option.value}>
+                          {option.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => void handleHistoryExport()}
+                    disabled={exportLogsQuery.isFetching}
+                    aria-busy={exportLogsQuery.isFetching}
+                    className="w-full gap-2 sm:w-auto"
+                  >
+                    <Download className={`h-4 w-4 ${exportLogsQuery.isFetching ? "animate-pulse" : ""}`} aria-hidden="true" />
+                    {exportLogsQuery.isFetching ? "Preparando CSV..." : "Exportar CSV"}
+                  </Button>
+                </div>
+
+                {dailySummaryQuery.isLoading ? (
+                  <div className="grid grid-cols-2 gap-2 sm:grid-cols-4" aria-label="Carregando resumo diário">
+                    {[0, 1, 2, 3].map(index => (
+                      <div key={index} className="h-16 animate-pulse rounded-lg bg-slate-200 motion-reduce:animate-none" />
+                    ))}
+                  </div>
+                ) : dailySummaryQuery.data && dailySummaryQuery.data.length > 0 ? (
+                  <div aria-labelledby="notification-daily-summary-title">
+                    <p id="notification-daily-summary-title" className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                      Resumo diário de entregas
+                    </p>
+                    <div className="mt-2 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+                      {dailySummaryQuery.data.map(summary => (
+                        <div key={summary.day} className="rounded-lg border border-slate-200 bg-white p-3">
+                          <p className="text-xs font-medium capitalize text-slate-600">
+                            {formatDailySummaryDate(summary.day)}
+                          </p>
+                          <p className="mt-1 text-lg font-semibold text-slate-900">
+                            {summary.total} {summary.total === 1 ? "envio" : "envios"}
+                          </p>
+                          <p className="mt-1 text-xs text-emerald-700">
+                            {summary.success} sucesso{summary.success === 1 ? "" : "s"}
+                          </p>
+                          <p className="text-xs text-amber-700">
+                            {summary.partial} parcial{summary.partial === 1 ? "" : "is"}
+                          </p>
+                          <p className="text-xs text-red-700">
+                            {summary.failed} falha{summary.failed === 1 ? "" : "s"}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ) : (
+                  <p className="text-sm text-slate-500">
+                    Ainda não há entregas para compor o resumo diário neste filtro.
+                  </p>
+                )}
+              </div>
+              {logs.length === 0 ? (
                 <div className="p-8 text-center">
                   <History className="w-10 h-10 text-gray-300 mx-auto mb-3" />
                   <p className="text-gray-500 text-sm">
-                    Nenhum envio registrado ainda.
+                    {historySearchTerm
+                      ? `Nenhum envio corresponde a “${historySearchTerm}”.`
+                      : historyStatus === "all"
+                        ? "Nenhum envio registrado ainda."
+                        : "Nenhum envio corresponde ao status selecionado."}
                   </p>
                   <p className="text-gray-400 text-xs mt-1">
                     Os próximos envios automáticos e testes aparecerão aqui.
@@ -500,7 +1316,7 @@ export default function AdminNotifications() {
                 </div>
               ) : (
                 <div className="divide-y divide-gray-100">
-                  <div className="grid grid-cols-[auto_1fr_auto_auto] gap-x-3 px-4 py-2 bg-gray-50 text-xs font-semibold text-gray-400 uppercase tracking-wide">
+                  <div className="hidden grid-cols-[auto_1fr_auto_auto] gap-x-3 bg-gray-50 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-gray-400 sm:grid">
                     <span>Status</span>
                     <span>Voo</span>
                     <span className="text-right">Dispositivos</span>
@@ -509,7 +1325,7 @@ export default function AdminNotifications() {
                   {logs.map(log => (
                     <div
                       key={log.id}
-                      className="grid grid-cols-[auto_1fr_auto_auto] gap-x-3 items-center px-4 py-3"
+                      className="flex flex-wrap items-start gap-x-3 gap-y-1 px-4 py-3 sm:grid sm:grid-cols-[auto_1fr_auto_auto] sm:items-center"
                     >
                       {/* Status */}
                       <div className="flex-shrink-0">
@@ -522,7 +1338,7 @@ export default function AdminNotifications() {
                         )}
                       </div>
                       {/* Descrição */}
-                      <div className="min-w-0">
+                      <div className="min-w-[10rem] flex-1 sm:min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
                           {log.isTest ? (
                             <span className="flex items-center gap-1 text-sm font-medium text-purple-700">
@@ -549,7 +1365,7 @@ export default function AdminNotifications() {
                         )}
                       </div>
                       {/* Dispositivos */}
-                      <div className="text-right text-sm text-gray-600 flex-shrink-0">
+                      <div className="ml-auto text-right text-sm text-gray-600 sm:ml-0">
                         <span
                           className={
                             log.devicesReached === 0
@@ -564,7 +1380,7 @@ export default function AdminNotifications() {
                         </span>
                       </div>
                       {/* Timestamp */}
-                      <div className="text-right text-xs text-gray-400 flex-shrink-0">
+                      <div className="basis-full text-left text-xs text-gray-400 sm:basis-auto sm:text-right">
                         {formatDatetimeBRT(
                           log.sentAt instanceof Date
                             ? log.sentAt.toISOString()
@@ -573,6 +1389,26 @@ export default function AdminNotifications() {
                       </div>
                     </div>
                   ))}
+                  {logsQuery.hasNextPage && (
+                    <div className="p-4 bg-gray-50 border-t border-gray-100 flex justify-center">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => logsQuery.fetchNextPage()}
+                        disabled={logsQuery.isFetchingNextPage}
+                        className="gap-2"
+                      >
+                        {logsQuery.isFetchingNextPage ? (
+                          <>
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                            Carregando...
+                          </>
+                        ) : (
+                          "Carregar mais"
+                        )}
+                      </Button>
+                    </div>
+                  )}
                 </div>
               )}
             </Card>
@@ -584,14 +1420,14 @@ export default function AdminNotifications() {
           <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">
             Ações
           </h2>
-          <div className="flex flex-wrap gap-3">
+          <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
             <Button
-              onClick={() => sendTestMutation.mutate()}
+              onClick={() => sendTestMutation.mutate({ year: selectedYear })}
               disabled={
                 sendTestMutation.isPending ||
                 (data?.totalSubscriptions ?? 0) === 0
               }
-              className="gap-2 bg-blue-600 hover:bg-blue-700"
+              className="w-full gap-2 bg-[#102f61] hover:bg-[#0b2349] sm:w-auto"
             >
               {sendTestMutation.isPending ? (
                 <>
@@ -606,12 +1442,31 @@ export default function AdminNotifications() {
               )}
             </Button>
             <Link href="/">
-              <Button variant="outline" className="gap-2">
+              <Button variant="outline" className="w-full gap-2 sm:w-auto">
                 <Plane className="w-4 h-4" />
                 Ver Voos
               </Button>
             </Link>
           </div>
+          {testFeedback && (
+            <div
+              role="status"
+              aria-live="polite"
+              className={`mt-3 flex items-start gap-2 rounded-lg border p-3 text-sm animate-in fade-in slide-in-from-top-1 duration-200 ${
+                testFeedback.kind === "success"
+                  ? "border-emerald-200 bg-emerald-50 text-emerald-800"
+                  : "border-red-200 bg-red-50 text-red-800"
+              }`}
+            >
+              {testFeedback.kind === "success" ? (
+                <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0" />
+              ) : (
+                <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+              )}
+              <span>{testFeedback.message}</span>
+            </div>
+          )}
+          <LastAdminFormAction action={lastPushAction} onClear={clearPushAction} />
           {(data?.totalSubscriptions ?? 0) === 0 && (
             <p className="text-xs text-amber-600 mt-2 flex items-center gap-1">
               <AlertCircle className="w-3 h-3" />
@@ -640,8 +1495,10 @@ export default function AdminNotifications() {
         </div>
       </div>
 
+      <PwaInstallationHistory />
+
       {/* Seção: Notificações por E-mail de Bilhetes */}
-      <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+        <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
         <div className="bg-gradient-to-r from-purple-50 to-pink-50 border-b border-gray-200 px-5 py-4">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-lg bg-purple-600 flex items-center justify-center flex-shrink-0">
@@ -657,57 +1514,127 @@ export default function AdminNotifications() {
             </div>
           </div>
         </div>
-        <TicketNotificationEmailsSection />
-      </div>
-    </div>
+          <TicketNotificationEmailsSection onRecordAction={registerTimelineAction} />
+        </div>
+    </ContentReveal>
   );
 }
 
 /**
  * Seção de gerenciamento de e-mails de notificação de bilhetes
  */
-function TicketNotificationEmailsSection() {
+function TicketNotificationEmailsSection({
+  onRecordAction,
+}: {
+  onRecordAction: (
+    source: AdminActionTimelineEntry["source"],
+    action: AdminFormAction
+  ) => void;
+}) {
   const [newEmail, setNewEmail] = useState("");
   const [newName, setNewName] = useState("");
   const [testEmail, setTestEmail] = useState("");
   const [showTestForm, setShowTestForm] = useState(false);
+  const [showEmailPreview, setShowEmailPreview] = useState(false);
+  const [emailFeedback, setEmailFeedback] = useState<{
+    kind: "success" | "error";
+    message: string;
+  } | null>(null);
+  const [lastRecipientsAction, setLastRecipientsAction] =
+    useState<AdminFormAction | null>(() =>
+      readAdminFormAction("viagens.admin.last-recipient-action")
+    );
+  const [lastTestEmailAction, setLastTestEmailAction] =
+    useState<AdminFormAction | null>(() =>
+      readAdminFormAction("viagens.admin.last-test-email-action")
+    );
+
+  const registerRecipientsAction = (
+    label: string,
+    status: AdminFormAction["status"]
+  ) => {
+    const action = { label, status, timestamp: new Date().toISOString() };
+    setLastRecipientsAction(action);
+    saveAdminFormAction("viagens.admin.last-recipient-action", action);
+    onRecordAction("recipients", action);
+  };
+  const registerTestEmailAction = (
+    label: string,
+    status: AdminFormAction["status"]
+  ) => {
+    const action = { label, status, timestamp: new Date().toISOString() };
+    setLastTestEmailAction(action);
+    saveAdminFormAction("viagens.admin.last-test-email-action", action);
+    onRecordAction("test-email", action);
+  };
+  const clearRecipientsAction = () => {
+    clearAdminFormAction("viagens.admin.last-recipient-action");
+    setLastRecipientsAction(null);
+    toast.success("Registro local de destinatários limpo.");
+  };
+  const clearTestEmailAction = () => {
+    clearAdminFormAction("viagens.admin.last-test-email-action");
+    setLastTestEmailAction(null);
+    toast.success("Registro local de e-mail de teste limpo.");
+  };
 
   const { data: recipients, refetch } =
     trpc.ticketNotifications.getRecipients.useQuery();
+  const emailPreviewQuery = trpc.ticketNotifications.preview.useQuery(undefined, {
+    enabled: showEmailPreview,
+  });
 
   const addRecipientMutation =
     trpc.ticketNotifications.addRecipient.useMutation({
       onSuccess: () => {
-        toast.success("E-mail adicionado com sucesso!");
+        const message = "Destinatário adicionado com sucesso.";
+        setEmailFeedback({ kind: "success", message });
+        registerRecipientsAction("Destinatário adicionado", "success");
+        toast.success(message);
         setNewEmail("");
         setNewName("");
         refetch();
       },
       onError: err => {
-        toast.error(err.message || "Erro ao adicionar e-mail.");
+        const message = err.message || "Erro ao adicionar e-mail.";
+        setEmailFeedback({ kind: "error", message });
+        registerRecipientsAction("Tentativa de adicionar destinatário", "error");
+        toast.error(message);
       },
     });
 
   const removeRecipientMutation =
     trpc.ticketNotifications.removeRecipient.useMutation({
       onSuccess: () => {
-        toast.success("E-mail removido com sucesso!");
+        const message = "Destinatário removido com sucesso.";
+        setEmailFeedback({ kind: "success", message });
+        registerRecipientsAction("Destinatário removido", "success");
+        toast.success(message);
         refetch();
       },
       onError: err => {
-        toast.error(err.message || "Erro ao remover e-mail.");
+        const message = err.message || "Erro ao remover e-mail.";
+        setEmailFeedback({ kind: "error", message });
+        registerRecipientsAction("Tentativa de remover destinatário", "error");
+        toast.error(message);
       },
     });
 
   const sendTestEmailMutation =
     trpc.ticketNotifications.sendTestEmail.useMutation({
       onSuccess: () => {
-        toast.success("E-mail de teste enviado com sucesso!");
+        const message = "E-mail de teste enviado com sucesso.";
+        setEmailFeedback({ kind: "success", message });
+        registerTestEmailAction("E-mail de teste enviado", "success");
+        toast.success(message);
         setTestEmail("");
         setShowTestForm(false);
       },
       onError: err => {
-        toast.error(err.message || "Erro ao enviar e-mail de teste.");
+        const message = err.message || "Erro ao enviar e-mail de teste.";
+        setEmailFeedback({ kind: "error", message });
+        registerTestEmailAction("Tentativa de envio de e-mail de teste", "error");
+        toast.error(message);
       },
     });
 
@@ -733,7 +1660,8 @@ function TicketNotificationEmailsSection() {
   };
 
   return (
-    <div className="p-5 space-y-5">
+    <div className="space-y-5 p-4 sm:p-5">
+      <AdminInteractionFeedback feedback={emailFeedback} />
       {/* Formulário para adicionar novo e-mail */}
       <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
         <h3 className="font-medium text-gray-800 mb-3 text-sm">
@@ -773,7 +1701,8 @@ function TicketNotificationEmailsSection() {
             <Button
               type="submit"
               disabled={addRecipientMutation.isPending}
-              className="bg-purple-600 hover:bg-purple-700 text-white gap-2"
+              aria-busy={addRecipientMutation.isPending}
+              className="w-full bg-purple-600 text-white gap-2 hover:bg-purple-700 sm:w-auto"
             >
               {addRecipientMutation.isPending ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
@@ -784,6 +1713,10 @@ function TicketNotificationEmailsSection() {
             </Button>
           </div>
         </form>
+        <LastAdminFormAction
+          action={lastRecipientsAction}
+          onClear={clearRecipientsAction}
+        />
       </div>
 
       {/* Lista de destinatários */}
@@ -815,14 +1748,15 @@ function TicketNotificationEmailsSection() {
                     removeRecipientMutation.mutate({ emailId: recipient.id })
                   }
                   disabled={removeRecipientMutation.isPending}
+                  aria-busy={removeRecipientMutation.isPending}
                   className="text-red-600 hover:text-red-700 hover:bg-red-50 ml-2 flex-shrink-0"
-                  aria-label={`Remover destinatário ${recipient.email}`}
+                  aria-label="Remover destinatário"
                   title="Remover destinatário"
                 >
                   {removeRecipientMutation.isPending ? (
-                    <Loader2 className="w-4 h-4 animate-spin" aria-hidden="true" />
+                    <Loader2 className="w-4 h-4 animate-spin" />
                   ) : (
-                    <XCircle className="w-4 h-4" aria-hidden="true" />
+                    <XCircle className="w-4 h-4" />
                   )}
                 </Button>
               </div>
@@ -842,22 +1776,64 @@ function TicketNotificationEmailsSection() {
       <div className="flex gap-2">
         <Button
           variant="outline"
+          onClick={() => setShowEmailPreview(current => !current)}
+          className="w-full gap-2 sm:w-auto"
+          aria-expanded={showEmailPreview}
+          aria-controls="ticket-email-preview"
+        >
+          <Eye className="w-4 h-4" />
+          {showEmailPreview ? "Fechar Prévia" : "Ver Prévia do E-mail"}
+        </Button>
+        <Button
+          variant="outline"
           onClick={() => setShowTestForm(!showTestForm)}
-          className="gap-2"
+          className="w-full gap-2 sm:w-auto"
         >
           <FlaskConical className="w-4 h-4" />
           {showTestForm ? "Cancelar" : "Enviar E-mail de Teste"}
         </Button>
       </div>
+      <LastAdminFormAction
+        action={lastTestEmailAction}
+        onClear={clearTestEmailAction}
+      />
+
+      {showEmailPreview && (
+        <section
+          id="ticket-email-preview"
+          aria-labelledby="ticket-email-preview-title"
+          className="overflow-hidden rounded-lg border border-[#c8d6e9] bg-[#f4f7fb]"
+        >
+          <div className="flex items-start gap-2 border-b border-[#c8d6e9] px-4 py-3">
+            <Mail className="mt-0.5 size-4 text-[#17427e]" aria-hidden="true" />
+            <div>
+              <h3 id="ticket-email-preview-title" className="text-sm font-semibold text-slate-800">Prévia segura do e-mail</h3>
+              <p className="text-xs text-slate-500">Exemplo estático, sem dados reais de passageiros ou bilhetes.</p>
+            </div>
+          </div>
+          {emailPreviewQuery.isLoading ? (
+            <div className="h-72 animate-pulse bg-white motion-reduce:animate-none" aria-label="Carregando prévia do e-mail" />
+          ) : emailPreviewQuery.data ? (
+            <iframe
+              title="Prévia do e-mail Smart Fly"
+              sandbox=""
+              srcDoc={emailPreviewQuery.data.html}
+              className="h-[32rem] w-full border-0 bg-white"
+            />
+          ) : (
+            <p role="status" className="p-4 text-sm text-rose-700">Não foi possível carregar a prévia agora.</p>
+          )}
+        </section>
+      )}
 
       {/* Formulário para enviar e-mail de teste */}
       {showTestForm && (
-        <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
+        <div className="bg-[#f4f7fb] rounded-lg p-4 border border-[#c8d6e9]">
           <h3 className="font-medium text-gray-800 mb-3 text-sm">
             Enviar E-mail de Teste
           </h3>
           <form onSubmit={handleSendTestEmail} className="space-y-3">
-            <div className="flex gap-2">
+            <div className="flex flex-col gap-2 sm:flex-row">
               <label htmlFor="test-email" className="sr-only">
                 E-mail para teste
               </label>
@@ -868,13 +1844,14 @@ function TicketNotificationEmailsSection() {
                 aria-label="E-mail para envio de teste"
                 value={testEmail}
                 onChange={e => setTestEmail(e.target.value)}
-                className="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-[#17427e]"
                 required
               />
               <Button
                 type="submit"
                 disabled={sendTestEmailMutation.isPending}
-                className="bg-blue-600 hover:bg-blue-700 text-white gap-2"
+                aria-busy={sendTestEmailMutation.isPending}
+                className="w-full bg-[#102f61] text-white gap-2 hover:bg-[#0b2349] sm:w-auto"
               >
                 {sendTestEmailMutation.isPending ? (
                   <>
@@ -894,5 +1871,48 @@ function TicketNotificationEmailsSection() {
         </div>
       )}
     </div>
+  );
+}
+
+function PwaInstallationHistory() {
+  const installationsQuery = trpc.pwaInstallations.listRecent.useQuery();
+  const platformLabel: Record<string, string> = {
+    ios: "iPhone/iPad",
+    android: "Android",
+    desktop: "Computador",
+    unknown: "Outro dispositivo",
+  };
+
+  return (
+    <section className="rounded-lg border border-gray-200 bg-white p-4 sm:p-5" aria-labelledby="pwa-installation-history-title">
+      <div className="flex items-start gap-3">
+        <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-[#102f61] text-white">
+          <Smartphone className="size-4" aria-hidden="true" />
+        </div>
+        <div>
+          <h2 id="pwa-installation-history-title" className="font-semibold text-gray-800">Instalações consentidas</h2>
+          <p className="mt-0.5 text-xs text-gray-500">Histórico mínimo: plataforma, método e data. Não inclui conta, IP, user-agent ou identificador do aparelho.</p>
+        </div>
+      </div>
+      {installationsQuery.isLoading ? (
+        <div className="mt-4 h-16 animate-pulse rounded-lg bg-slate-100 motion-reduce:animate-none" aria-label="Carregando instalações consentidas" />
+      ) : installationsQuery.data && installationsQuery.data.length > 0 ? (
+        <ul className="mt-4 divide-y divide-slate-100 rounded-lg border border-slate-200">
+          {installationsQuery.data.map(installation => {
+            const installedAt = installation.installedAt instanceof Date
+              ? installation.installedAt.toISOString()
+              : String(installation.installedAt);
+            return (
+              <li key={installation.id} className="flex items-center justify-between gap-3 px-3 py-2 text-sm">
+                <span className="font-medium text-slate-700">{platformLabel[installation.platform] ?? "Outro dispositivo"} · {installation.method === "native" ? "Instalação nativa" : "Registro manual"}</span>
+                <time className="shrink-0 text-xs text-slate-500">{formatDatetimeBRT(installedAt)}</time>
+              </li>
+            );
+          })}
+        </ul>
+      ) : (
+        <p className="mt-4 text-sm text-slate-500">Ainda não há instalações registradas com consentimento.</p>
+      )}
+    </section>
   );
 }

@@ -12,12 +12,18 @@ import {
   getAllFlightWeeks,
   deletePushSubscription,
   getNotificationSettings,
-
+  claimNotificationDelivery,
+  completeNotificationDelivery,
   deleteOldNotificationLogs,
   insertNotificationLogs,
 } from "./db";
 import { type InsertNotificationLog } from "../drizzle/schema";
 import { type FlightWeek } from "../drizzle/schema";
+import { isScheduledRequest } from "./_core/scheduledAuth";
+import type { Request, Response } from "express";
+
+export const SMART_FLY_PUSH_ICON = "/smartfly-assets/smartfly-sf-pwa-icon_783c04c6.webp";
+export const SMART_FLY_PUSH_BADGE = "/smartfly-assets/smartfly-sf-apple-touch-icon_598faae4.png";
 
 // Configurar VAPID uma única vez ao carregar o módulo
 let vapidConfigured = false;
@@ -148,6 +154,15 @@ interface AvisoWindow {
 
 type PushSubscriptions = Awaited<ReturnType<typeof getAllPushSubscriptions>>;
 
+function createDeliveryKey(
+  week: FlightWeek,
+  direction: "ida" | "volta",
+  avisoMinutes: number,
+  flightDatetime: string
+): string {
+  return [week.year, week.weekNumber, direction, avisoMinutes, flightDatetime].join(":");
+}
+
 async function processDepartureFlight(
   week: FlightWeek,
   departureTime: Date,
@@ -166,6 +181,30 @@ async function processDepartureFlight(
   ) {
     return;
   }
+
+  const totalDepDevices = pushSubscriptions.length;
+  const deliveryKey = createDeliveryKey(
+    week,
+    "ida",
+    aviso.minutes,
+    week.departureFlightDatetime ?? ""
+  );
+  const claimed = await claimNotificationDelivery({
+    year: week.year,
+    weekNumber: Number(week.weekNumber),
+    direction: "ida",
+    avisoLabel: aviso.label,
+    avisoMinutes: aviso.minutes,
+    airline: week.departureAirline ?? null,
+    flightNumber: week.departureFlightNumber ?? null,
+    flightDatetime: week.departureFlightDatetime ?? null,
+    status: "processing",
+    devicesReached: 0,
+    totalDevices: totalDepDevices,
+    isTest: 0,
+    deliveryKey,
+  });
+  if (!claimed) return;
 
   const airline = week.departureAirline
     ? (airlineNames[week.departureAirline.toUpperCase()] ??
@@ -187,16 +226,26 @@ async function processDepartureFlight(
   const sentDepCount = await sendPushToAll(
     {
       title: `✈️ ${antecedenciaLabel} — ${airline} ${flightNum}`,
-      body: `Voo de ida GRU → NVT: ${dateStr} às ${timeStr}. Prepare-se! 🧳`,
-      icon: "/icons/icon-192.png",
-      badge: "/icons/icon-192.png",
-      tag: `departure-week-${week.weekNumber}-aviso${aviso.minutes}`,
-      data: { weekNumber: week.weekNumber, direction: "departure" },
+      body: `Horário planejado — ida GRU → NVT: ${dateStr} às ${timeStr}. Prepare-se! 🧳`,
+      icon: SMART_FLY_PUSH_ICON,
+      badge: SMART_FLY_PUSH_BADGE,
+      tag: `departure-${week.year}-week-${week.weekNumber}-aviso${aviso.minutes}`,
+      data: { year: week.year, weekNumber: week.weekNumber, direction: "departure" },
     },
     pushSubscriptions
   );
 
-  const totalDepDevices = pushSubscriptions.length;
+  const departureStatus =
+    sentDepCount === totalDepDevices
+      ? "success"
+      : sentDepCount > 0
+        ? "partial"
+        : "failed";
+  await completeNotificationDelivery(deliveryKey, {
+    status: departureStatus,
+    devicesReached: sentDepCount,
+    totalDevices: totalDepDevices,
+  });
   logs.push({
     weekNumber: Number(week.weekNumber),
     direction: "ida",
@@ -205,12 +254,7 @@ async function processDepartureFlight(
     airline: week.departureAirline ?? null,
     flightNumber: week.departureFlightNumber ?? null,
     flightDatetime: week.departureFlightDatetime ?? null,
-    status:
-      sentDepCount === totalDepDevices
-        ? "success"
-        : sentDepCount > 0
-          ? "partial"
-          : "failed",
+    status: departureStatus,
     devicesReached: sentDepCount,
     totalDevices: totalDepDevices,
     isTest: 0,
@@ -232,6 +276,30 @@ async function processReturnFlight(
     return;
   }
 
+  const totalRetDevices = pushSubscriptions.length;
+  const deliveryKey = createDeliveryKey(
+    week,
+    "volta",
+    aviso.minutes,
+    week.returnFlightDatetime ?? ""
+  );
+  const claimed = await claimNotificationDelivery({
+    year: week.year,
+    weekNumber: Number(week.weekNumber),
+    direction: "volta",
+    avisoLabel: aviso.label,
+    avisoMinutes: aviso.minutes,
+    airline: week.returnAirline ?? null,
+    flightNumber: week.returnFlightNumber ?? null,
+    flightDatetime: week.returnFlightDatetime ?? null,
+    status: "processing",
+    devicesReached: 0,
+    totalDevices: totalRetDevices,
+    isTest: 0,
+    deliveryKey,
+  });
+  if (!claimed) return;
+
   const airline = week.returnAirline
     ? (airlineNames[week.returnAirline.toUpperCase()] ?? week.returnAirline)
     : "Companhia";
@@ -251,16 +319,26 @@ async function processReturnFlight(
   const sentRetCount = await sendPushToAll(
     {
       title: `🏠 ${antecedenciaLabel} — ${airline} ${flightNum}`,
-      body: `Voo de volta NVT → GRU: ${dateStr} às ${timeStr}. Boa viagem! ✈️`,
-      icon: "/icons/icon-192.png",
-      badge: "/icons/icon-192.png",
-      tag: `return-week-${week.weekNumber}-aviso${aviso.minutes}`,
-      data: { weekNumber: week.weekNumber, direction: "return" },
+      body: `Horário planejado — volta NVT → GRU: ${dateStr} às ${timeStr}. Boa viagem! ✈️`,
+      icon: SMART_FLY_PUSH_ICON,
+      badge: SMART_FLY_PUSH_BADGE,
+      tag: `return-${week.year}-week-${week.weekNumber}-aviso${aviso.minutes}`,
+      data: { year: week.year, weekNumber: week.weekNumber, direction: "return" },
     },
     pushSubscriptions
   );
 
-  const totalRetDevices = pushSubscriptions.length;
+  const returnStatus =
+    sentRetCount === totalRetDevices
+      ? "success"
+      : sentRetCount > 0
+        ? "partial"
+        : "failed";
+  await completeNotificationDelivery(deliveryKey, {
+    status: returnStatus,
+    devicesReached: sentRetCount,
+    totalDevices: totalRetDevices,
+  });
   logs.push({
     weekNumber: Number(week.weekNumber),
     direction: "volta",
@@ -269,12 +347,7 @@ async function processReturnFlight(
     airline: week.returnAirline ?? null,
     flightNumber: week.returnFlightNumber ?? null,
     flightDatetime: week.returnFlightDatetime ?? null,
-    status:
-      sentRetCount === totalRetDevices
-        ? "success"
-        : sentRetCount > 0
-          ? "partial"
-          : "failed",
+    status: returnStatus,
     devicesReached: sentRetCount,
     totalDevices: totalRetDevices,
     isTest: 0,
@@ -286,14 +359,23 @@ export async function checkAndNotifyUpcomingFlights(): Promise<void> {
   ensureVapidConfigured();
   if (!vapidConfigured) return;
 
-  // ⚡ Bolt: Execute DB queries in parallel to reduce overall network/IO latency
-  const [weeks, settings, pushSubscriptions] = await Promise.all([
-    getAllFlightWeeks(),
-    getNotificationSettings(),
+  const now = new Date();
+  const currentYear = now.getFullYear();
+  const isCloseToNewYear = now.getMonth() === 11 && now.getDate() >= 29;
+  const yearsToCheck = isCloseToNewYear
+    ? [currentYear, currentYear + 1]
+    : [currentYear];
+
+  const settings = await getNotificationSettings();
+  if (settings.flightPushEnabled === false) return;
+
+  // Buscar somente exercícios que podem conter voos iminentes.
+  const [weeksByYear, pushSubscriptions] = await Promise.all([
+    Promise.all(yearsToCheck.map(year => getAllFlightWeeks(year))),
     // Buscar subscriptions uma única vez antes do loop para evitar N+1 queries ao banco
     getAllPushSubscriptions(),
   ]);
-  const now = new Date();
+  const weeks = weeksByYear.flat();
 
   const airlineNames: Record<string, string> = {
     LATAM: "LATAM",
@@ -377,53 +459,26 @@ export async function checkAndNotifyUpcomingFlights(): Promise<void> {
   }
 }
 
-/**
- * Inicia o job agendado que verifica voos a cada hora.
- * Deve ser chamado uma única vez na inicialização do servidor.
- */
-export function startFlightNotificationJob(): void {
-  const INTERVAL_MS = 60 * 60 * 1000; // 1 hora
-  const CLEANUP_INTERVAL_MS = 24 * 60 * 60 * 1000; // 1 dia
+/** Endpoint idempotente executado somente pela plataforma de agendamento. */
+export async function runScheduledFlightNotifications(
+  req: Request,
+  res: Response
+): Promise<void> {
+  try {
+    if (!isScheduledRequest(req)) {
+      res.status(403).json({ error: "cron-only" });
+      return;
+    }
 
-  // Executar imediatamente na inicialização (com delay de 10s para o servidor estabilizar)
-  setTimeout(() => {
-    checkAndNotifyUpcomingFlights().catch(err =>
-      console.error("[Push] Erro no job de notificações:", err)
-    );
-  }, 10_000);
-
-  // Executar a cada hora
-  setInterval(() => {
-    checkAndNotifyUpcomingFlights().catch(err =>
-      console.error("[Push] Erro no job de notificações:", err)
-    );
-  }, INTERVAL_MS);
-
-  // Executar limpeza de logs uma vez por dia (às 03:00 UTC)
-  const now = new Date();
-  const nextCleanup = new Date();
-  nextCleanup.setUTCHours(3, 0, 0, 0);
-  if (nextCleanup <= now) {
-    nextCleanup.setUTCDate(nextCleanup.getUTCDate() + 1);
+    await checkAndNotifyUpcomingFlights();
+    res.json({ ok: true });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error("[Push] Falha no callback agendado:", message);
+    res.status(500).json({
+      error: message,
+      context: { url: req.originalUrl },
+      timestamp: new Date().toISOString(),
+    });
   }
-  const delayToFirstCleanup = nextCleanup.getTime() - now.getTime();
-
-  setTimeout(() => {
-    cleanupOldLogs().catch(err =>
-      console.error("[Push] Erro na limpeza de logs:", err)
-    );
-    // Executar a cada dia após o primeiro agendamento
-    setInterval(() => {
-      cleanupOldLogs().catch(err =>
-        console.error("[Push] Erro na limpeza de logs:", err)
-      );
-    }, CLEANUP_INTERVAL_MS);
-  }, delayToFirstCleanup);
-}
-
-/**
- * Limpa logs de notificações com mais de 90 dias.
- */
-async function cleanupOldLogs(): Promise<void> {
-  await deleteOldNotificationLogs(90);
 }

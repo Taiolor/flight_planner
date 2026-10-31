@@ -1,24 +1,31 @@
-import { useState, useMemo } from "react";
+import { lazy, Suspense, useEffect, useMemo, useState, type FormEvent } from "react";
 import { trpc } from "@/lib/trpc";
 import { Link } from "wouter";
+import { Button } from "@/components/ui/button";
+import { LoginModal } from "@/components/auth/LoginModal";
+import { LoginRequiredScreen } from "@/components/auth/LoginRequiredMessageBox";
+import { useYear } from "@/contexts/YearContext";
+import { GlobalYearSelector } from "@/components/GlobalYearSelector";
+import { FinancialDashboardLoadingSkeleton } from "@/components/FinancialDashboardLoadingSkeleton";
+import { TooltipLabel } from "@/components/ui/tooltip-label";
+import { ContentReveal } from "@/components/ContentReveal";
+import { MetricCard } from "@/components/MetricCard";
+import { formatAirlineDisplayName } from "@/lib/airlinePresentation";
+import { queryCachePolicies } from "@/lib/queryCache";
 import {
-  BarChart,
-  Bar,
-  LineChart,
-  Line,
-  PieChart,
-  Pie,
-  Cell,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-  ReferenceLine,
-  Area,
-  AreaChart,
-} from "recharts";
+  parseMileagePurchasePriceToCents,
+  validateMileagePurchaseDraft,
+} from "@/lib/mileagePurchaseValidation";
+import {
+  getLatestMonthlyKpiComparisons,
+  type MonthlyKpiComparison,
+} from "@/lib/monthlyKpiComparison";
+import {
+  buildMonthlyBudgetEnvelopes,
+  getBudgetAlerts,
+  getBudgetInsight,
+} from "@/lib/financialBudget";
+import type { FinancialChartProps } from "@/components/FinancialCharts";
 import {
   TrendingUp,
   TrendingDown,
@@ -33,7 +40,30 @@ import {
   ChevronUp,
   AlertCircle,
   Info,
+  WalletCards,
+  Plus,
+  Pencil,
+  Trash2,
+  Save,
+  X,
+  type LucideIcon,
 } from "lucide-react";
+
+const FinancialChart = lazy(() => import("@/components/FinancialCharts"));
+
+function DeferredFinancialChart(props: FinancialChartProps) {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex h-[200px] items-center justify-center text-sm text-slate-400">
+          Carregando gráfico…
+        </div>
+      }
+    >
+      <FinancialChart {...props} />
+    </Suspense>
+  );
+}
 
 // ─── Constantes ───────────────────────────────────────────────────────────────
 
@@ -77,12 +107,19 @@ const AIRLINE_COLORS: Record<string, string> = {
   desconhecida: "#94A3B8",
 };
 
+type MileageDraft = {
+  purchaseDate: string;
+  miles: string;
+  program: string;
+  paidValue: string;
+};
+
 const AIRLINE_LABELS: Record<string, string> = {
   latam: "LATAM",
   gol: "GOL",
-  azul: "Azul",
-  onhappy: "OnHappy",
-  desconhecida: "Outra",
+  azul: "AZUL",
+  onhappy: "ONHAPPY",
+  desconhecida: "OUTRA",
 };
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -101,9 +138,35 @@ function formatMiles(value: number): string {
   return new Intl.NumberFormat("pt-BR").format(value) + " pts";
 }
 
+function formatPurchaseDate(value: string): string {
+  return new Intl.DateTimeFormat("pt-BR", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  }).format(new Date(`${value}T12:00:00`));
+}
+
+function displayAirline(airline: string | null | undefined): string {
+  const key = airline?.trim().toLowerCase() ?? "";
+  return formatAirlineDisplayName(AIRLINE_LABELS[key] ?? airline);
+}
+
 function formatPct(value: number): string {
   const sign = value >= 0 ? "+" : "";
   return `${sign}${value.toFixed(1)}%`;
+}
+
+function formatBudgetInput(cents: number): string {
+  return cents > 0 ? (cents / 100).toFixed(2) : "";
+}
+
+function toMonthlyKpiTrend(comparison: MonthlyKpiComparison | undefined) {
+  if (!comparison) return undefined;
+
+  return {
+    value: comparison.value,
+    label: `${MONTH_NAMES[comparison.currentMonth]}. vs. ${MONTH_NAMES[comparison.previousMonth]}.`,
+  };
 }
 
 // ─── Componentes auxiliares ───────────────────────────────────────────────────
@@ -114,56 +177,24 @@ function KpiCard({
   subtitle,
   icon: Icon,
   trend,
-  color = "blue",
+  accent = "blue",
 }: {
   title: string;
   value: string;
   subtitle?: string;
-  icon: React.ElementType;
+  icon: LucideIcon;
   trend?: { value: number; label: string };
-  color?: "blue" | "green" | "orange" | "purple" | "red";
+  accent?: "blue" | "green" | "orange" | "purple" | "red";
 }) {
-  const colorMap = {
-    blue: "from-blue-500 to-blue-700 text-white",
-    green: "from-emerald-500 to-emerald-700 text-white",
-    orange: "from-orange-500 to-orange-700 text-white",
-    purple: "from-purple-500 to-purple-700 text-white",
-    red: "from-red-500 to-red-700 text-white",
-  };
-  return (
-    <div
-      className={`rounded-2xl bg-gradient-to-br ${colorMap[color]} p-3 sm:p-5 shadow-lg overflow-hidden`}
-    >
-      <div className="flex items-start justify-between">
-        <div className="flex-1 min-w-0 overflow-hidden">
-          <p className="text-xs font-semibold uppercase tracking-wider opacity-80 mb-1">
-            {title}
-          </p>
-          <p className="text-sm sm:text-2xl font-bold break-all leading-tight">
-            {value}
-          </p>
-          {subtitle && (
-            <p className="text-xs opacity-75 mt-1 line-clamp-2">{subtitle}</p>
-          )}
-        </div>
-        <div className="ml-3 p-2 rounded-xl bg-white/20">
-          <Icon className="w-5 h-5" />
-        </div>
-      </div>
-      {trend && (
-        <div className="mt-3 flex items-center gap-1 text-xs">
-          {trend.value >= 0 ? (
-            <TrendingUp className="w-3.5 h-3.5 opacity-80" />
-          ) : (
-            <TrendingDown className="w-3.5 h-3.5 opacity-80" />
-          )}
-          <span className="opacity-90">
-            {formatPct(trend.value)} {trend.label}
-          </span>
-        </div>
-      )}
-    </div>
-  );
+  const accentMap = {
+    blue: "navy",
+    green: "green",
+    orange: "amber",
+    purple: "violet",
+    red: "rose",
+  } as const;
+
+  return <MetricCard title={title} value={value} subtitle={subtitle} icon={Icon} trend={trend} accent={accentMap[accent]} />;
 }
 
 function SectionHeader({
@@ -199,31 +230,217 @@ function SectionHeader({
 // ─── Componente principal ─────────────────────────────────────────────────────
 
 export default function FinancialDashboard() {
-  // Verificar autenticação
   const authCheckQuery = trpc.flightAuth.check.useQuery();
   const isAuthenticated = authCheckQuery.data?.authenticated ?? false;
 
-  const [selectedYear, setSelectedYear] = useState(2026);
+  const [showLoginModal, setShowLoginModal] = useState(false);
+
+  if (authCheckQuery.isLoading) {
+    return (
+      <div className="grid min-h-screen place-items-center bg-slate-950 text-white">
+        <div className="h-9 w-9 animate-spin rounded-full border-4 border-emerald-400 border-t-transparent" />
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return (
+      <main className="min-h-screen bg-slate-950 text-white">
+        <LoginRequiredScreen
+          icon={DollarSign}
+          title="Financeiro protegido"
+          description="Entre com a sessão interna para consultar investimentos, milhas e projeções do seu planejamento."
+          loginLabel="Entrar para ver o Financeiro"
+          onLogin={() => setShowLoginModal(true)}
+          resource="financial"
+        >
+          <Link href="/">
+            <Button variant="ghost" className="text-slate-600 hover:text-slate-950 dark:text-slate-300 dark:hover:text-white">
+              <ArrowLeft className="mr-2 h-4 w-4" /> Voltar ao planejamento
+            </Button>
+          </Link>
+        </LoginRequiredScreen>
+        <LoginModal open={showLoginModal} onOpenChange={setShowLoginModal} />
+      </main>
+    );
+  }
+
+  return <FinancialDashboardContent />;
+}
+
+function FinancialDashboardContent() {
+
+  const { selectedYear, availableYears } = useYear();
   const [showValues, setShowValues] = useState(false);
   const [inflationRate, setInflationRate] = useState(5);
   const [tripsPerMonth, setTripsPerMonth] = useState(4);
   const [showProjections, setShowProjections] = useState(true);
+  const [budgetDrafts, setBudgetDrafts] = useState<Record<string, string>>({});
+  const [budgetFeedback, setBudgetFeedback] = useState("");
+  const [copyAdjustmentPercent, setCopyAdjustmentPercent] = useState("0");
+  const [copyConfirmationOpen, setCopyConfirmationOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<"cash" | "miles" | "comparison">(
     "cash"
   );
+  const [mileageDraft, setMileageDraft] = useState<MileageDraft>({
+    purchaseDate: `${selectedYear}-01-01`,
+    miles: "",
+    program: "",
+    paidValue: "",
+  });
+  const [editingMileageId, setEditingMileageId] = useState<number | null>(null);
+  const [mileageFeedback, setMileageFeedback] = useState("");
+  const [mileageError, setMileageError] = useState("");
+
+  useEffect(() => {
+    setMileageDraft(current => ({
+      ...current,
+      purchaseDate: current.purchaseDate.startsWith(`${selectedYear}-`)
+        ? current.purchaseDate
+        : `${selectedYear}-01-01`,
+    }));
+  }, [selectedYear]);
 
   // ─── Queries ───────────────────────────────────────────────────────────────
   const { data: yearSummary, isLoading: loadingYear } =
     trpc.financial.getYearSummary.useQuery(
       { year: selectedYear },
-      { enabled: isAuthenticated }
+      queryCachePolicies.financial
     );
 
   const { data: weeklyData, isLoading: loadingWeekly } =
     trpc.financial.getWeeklyData.useQuery(
       { year: selectedYear },
-      { enabled: isAuthenticated }
+      queryCachePolicies.financial
     );
+
+  const { data: mileagePurchasesData, isLoading: loadingMileagePurchases } =
+    trpc.financial.getMileagePurchases.useQuery(
+      { year: selectedYear },
+      queryCachePolicies.financial
+    );
+
+  const { data: monthlyBudgets = [], isLoading: loadingBudgets } =
+    trpc.financial.getMonthlyBudgets.useQuery(
+      { year: selectedYear },
+      queryCachePolicies.financial
+    );
+  const utils = trpc.useUtils();
+  const saveMonthlyBudget = trpc.financial.upsertMonthlyBudget.useMutation({
+    onSuccess: (_, variables) => {
+      setBudgetDrafts(current => {
+        const next = { ...current };
+        delete next[`${variables.year}-${variables.month}`];
+        return next;
+      });
+      setBudgetFeedback(`Orçamento de ${MONTH_FULL_NAMES[variables.month]} atualizado.`);
+      void utils.financial.getMonthlyBudgets.invalidate({ year: variables.year });
+    },
+    onError: () => {
+      setBudgetFeedback("Não foi possível salvar o orçamento. Tente novamente.");
+    },
+  });
+  const copyMonthlyBudgets = trpc.financial.copyMonthlyBudgets.useMutation({
+    onSuccess: result => {
+      setCopyConfirmationOpen(false);
+      setBudgetFeedback(
+        result.copiedCount > 0
+          ? `${result.copiedCount} envelope(s) copiado(s) para ${result.targetYear}.`
+          : `Não há envelopes configurados em ${selectedYear} para copiar.`
+      );
+      void utils.financial.getMonthlyBudgets.invalidate({
+        year: result.targetYear,
+      });
+    },
+    onError: () => {
+      setBudgetFeedback("Não foi possível copiar os envelopes. Tente novamente.");
+    },
+  });
+
+  const resetMileageDraft = () => {
+    setEditingMileageId(null);
+    setMileageDraft({
+      purchaseDate: `${selectedYear}-01-01`,
+      miles: "",
+      program: "",
+      paidValue: "",
+    });
+  };
+
+  const saveMileagePurchase = trpc.financial.createMileagePurchase.useMutation({
+    onSuccess: () => {
+      setMileageFeedback("Compra de milhas registrada.");
+      setMileageError("");
+      resetMileageDraft();
+      void utils.financial.getMileagePurchases.invalidate({ year: selectedYear });
+    },
+    onError: error => setMileageError(error.message || "Não foi possível salvar a compra."),
+  });
+  const updateMileagePurchase = trpc.financial.updateMileagePurchase.useMutation({
+    onSuccess: () => {
+      setMileageFeedback("Compra de milhas atualizada.");
+      setMileageError("");
+      resetMileageDraft();
+      void utils.financial.getMileagePurchases.invalidate({ year: selectedYear });
+    },
+    onError: error => setMileageError(error.message || "Não foi possível atualizar a compra."),
+  });
+  const deleteMileagePurchase = trpc.financial.deleteMileagePurchase.useMutation({
+    onSuccess: () => {
+      setMileageFeedback("Compra de milhas removida.");
+      setMileageError("");
+      void utils.financial.getMileagePurchases.invalidate({ year: selectedYear });
+    },
+    onError: error => setMileageError(error.message || "Não foi possível remover a compra."),
+  });
+
+  const submitMileagePurchase = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const miles = Number(mileageDraft.miles);
+    const paidPriceCents = parseMileagePurchasePriceToCents(mileageDraft.paidValue);
+    const validationError = validateMileagePurchaseDraft(mileageDraft, selectedYear);
+    if (validationError || paidPriceCents === null) {
+      setMileageError(validationError ?? "Informe um valor pago válido.");
+      return;
+    }
+    setMileageError("");
+    setMileageFeedback("");
+    const payload = {
+      year: selectedYear,
+      purchaseDate: mileageDraft.purchaseDate,
+      miles,
+      program: mileageDraft.program.trim(),
+      paidPriceCents,
+    };
+    if (editingMileageId !== null) {
+      updateMileagePurchase.mutate({ id: editingMileageId, ...payload });
+    } else {
+      saveMileagePurchase.mutate(payload);
+    }
+  };
+
+  const startEditingMileagePurchase = (purchase: NonNullable<typeof mileagePurchasesData>["items"][number]) => {
+    setEditingMileageId(purchase.id);
+    setMileageDraft({
+      purchaseDate: purchase.purchaseDate,
+      miles: String(purchase.miles),
+      program: purchase.program,
+      paidValue: (purchase.paidPriceCents / 100).toFixed(2),
+    });
+    setMileageFeedback("");
+    setMileageError("");
+  };
+
+  const removeMileagePurchase = (id: number) => {
+    if (window.confirm("Remover esta compra de milhas?")) {
+      deleteMileagePurchase.mutate({ id, year: selectedYear });
+    }
+  };
+
+  const mileagePurchaseBusy =
+    saveMileagePurchase.isPending ||
+    updateMileagePurchase.isPending ||
+    deleteMileagePurchase.isPending;
 
   const { data: projections, isLoading: loadingProjections } =
     trpc.financial.getProjections.useQuery(
@@ -233,7 +450,10 @@ export default function FinancialDashboard() {
         inflationRate: inflationRate / 100,
         tripsPerMonth,
       },
-      { enabled: showProjections }
+      {
+        ...queryCachePolicies.financial,
+        enabled: showProjections,
+      }
     );
 
   // ─── Dados derivados ───────────────────────────────────────────────────────
@@ -257,7 +477,7 @@ export default function FinancialDashboard() {
     if (!yearSummary?.byAirline) return [];
     return Object.entries(yearSummary.byAirline)
       .map(([airline, data]) => ({
-        name: AIRLINE_LABELS[airline] ?? airline,
+        name: displayAirline(airline),
         airline,
         cashBRL: data.cashBRL,
         miles: data.miles,
@@ -308,6 +528,11 @@ export default function FinancialDashboard() {
     return { h1, h2, trend };
   }, [yearSummary]);
 
+  const monthlyKpiComparisons = useMemo(
+    () => getLatestMonthlyKpiComparisons(yearSummary?.byMonth ?? []),
+    [yearSummary]
+  );
+
   // Projeção por mês para gráfico
   const projectionChartData = useMemo(() => {
     if (!projections?.byMonth) return [];
@@ -319,14 +544,78 @@ export default function FinancialDashboard() {
     }));
   }, [projections]);
 
-  const isLoading = loadingYear || loadingWeekly;
+  const monthlyBudgetEnvelopes = useMemo(
+    () => buildMonthlyBudgetEnvelopes(weeklyData ?? [], monthlyBudgets),
+    [monthlyBudgets, weeklyData]
+  );
+  const budgetInsight = useMemo(
+    () => getBudgetInsight(monthlyBudgetEnvelopes),
+    [monthlyBudgetEnvelopes]
+  );
+  const budgetAlerts = useMemo(
+    () => getBudgetAlerts(monthlyBudgetEnvelopes),
+    [monthlyBudgetEnvelopes]
+  );
+  const nextPlanningYear =
+    availableYears[availableYears.indexOf(selectedYear) + 1] ?? null;
+  const budgetChartData = useMemo(
+    () =>
+      monthlyBudgetEnvelopes.map(envelope => ({
+        month: MONTH_NAMES[envelope.month],
+        budget: envelope.budgetCents / 100,
+        realizado: envelope.realizedCents / 100,
+        projetado: envelope.projectedCents / 100,
+      })),
+    [monthlyBudgetEnvelopes]
+  );
+  const saveBudgetForMonth = (month: number, fallbackCents: number) => {
+    const key = `${selectedYear}-${month}`;
+    const rawValue = budgetDrafts[key] ?? formatBudgetInput(fallbackCents);
+    const normalized = rawValue.trim().replace(",", ".");
+    const amount = normalized === "" ? 0 : Number(normalized);
+    if (!Number.isFinite(amount) || amount < 0) {
+      setBudgetFeedback("Informe um orçamento válido, igual ou maior que zero.");
+      return;
+    }
+    saveMonthlyBudget.mutate({
+      year: selectedYear,
+      month,
+      budgetCents: Math.round(amount * 100),
+    });
+  };
+  const copyBudgetsToNextYear = () => {
+    if (!nextPlanningYear) return;
+    const adjustmentPercent = Number(
+      copyAdjustmentPercent.trim().replace(",", ".")
+    );
+    if (!Number.isFinite(adjustmentPercent)) {
+      setBudgetFeedback("Informe um ajuste percentual válido.");
+      return;
+    }
+    copyMonthlyBudgets.mutate({
+      sourceYear: selectedYear,
+      targetYear: nextPlanningYear,
+      adjustmentPercent,
+    });
+  };
+
+  const budgetNarrative =
+    budgetInsight.status === "unconfigured"
+      ? "Defina os envelopes mensais para acompanhar quanto pode ser comprometido em cada período."
+      : budgetInsight.status === "exceeded"
+        ? `A projeção ultrapassa o orçamento anual. ${budgetInsight.largestPressureMonth ? `${MONTH_FULL_NAMES[budgetInsight.largestPressureMonth]} concentra a maior pressão.` : ""}`
+        : budgetInsight.status === "watch"
+          ? "A projeção se aproxima do limite planejado; acompanhe os meses em amarelo antes de emitir novos bilhetes."
+          : "A projeção atual permanece dentro do orçamento configurado para o exercício.";
+
+  const isLoading = loadingYear || loadingWeekly || loadingBudgets;
 
   // ─── Render ────────────────────────────────────────────────────────────────
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
       {/* Header */}
-      <header className="bg-gradient-to-r from-blue-600 via-purple-600 to-cyan-500 text-white px-4 py-3 flex items-center gap-3 shadow-lg sticky top-0 z-10">
+      <header className="bg-gradient-to-r from-[#071a36] via-[#102f61] to-[#17427e] text-white px-4 py-3 flex items-center gap-3 flex-wrap shadow-lg sticky top-0 z-10">
         <Link href="/">
           <button
             aria-label="Voltar para a página inicial"
@@ -339,93 +628,292 @@ export default function FinancialDashboard() {
         <div className="flex items-center gap-2 ml-2">
           <DollarSign className="w-5 h-5" />
           <h1 className="text-base font-bold tracking-wide">
-            Gestão Financeira
+            Gestão Financeira {selectedYear}
           </h1>
         </div>
         <div className="ml-auto flex items-center gap-2 flex-wrap">
-          {/* Seletor de ano */}
-          <select
-            aria-label="Selecionar ano de referência"
-            value={selectedYear}
-            onChange={e => setSelectedYear(Number(e.target.value))}
-            className="bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-400"
-          >
-            {[2024, 2025, 2026, 2027].map(y => (
-              <option key={y} value={y} className="bg-slate-800">
-                {y}
-              </option>
-            ))}
-          </select>
+          <GlobalYearSelector compact className="border-white/30 bg-white/10 text-white hover:bg-white/20" />
           {/* Toggle mostrar/ocultar valores */}
-          <button
-            aria-label={
-              showValues
-                ? "Ocultar valores financeiros"
-                : "Mostrar valores financeiros"
-            }
-            onClick={() => setShowValues(v => !v)}
-            className="flex items-center gap-2 px-3 py-2 rounded-xl bg-white/10 hover:bg-white/20 transition-colors text-sm font-medium"
-          >
-            {showValues ? (
-              <Eye className="w-4 h-4" />
-            ) : (
-              <EyeOff className="w-4 h-4" />
-            )}
-            <span className="hidden sm:inline">
-              {showValues ? "Ocultar" : "Mostrar"} valores
-            </span>
-          </button>
+          <TooltipLabel label={showValues ? "Ocultar valores financeiros" : "Mostrar valores financeiros"}>
+            <button
+              aria-label={
+                showValues
+                  ? "Ocultar valores financeiros"
+                  : "Mostrar valores financeiros"
+              }
+              onClick={() => setShowValues(v => !v)}
+              className="flex items-center gap-2 px-3 py-2 rounded-xl bg-white/10 hover:bg-white/20 disabled:cursor-not-allowed disabled:opacity-50 transition-colors text-sm font-medium"
+            >
+              {showValues ? (
+                <Eye className="w-4 h-4" />
+              ) : (
+                <EyeOff className="w-4 h-4" />
+              )}
+              <span className="hidden sm:inline">
+                {showValues ? "Ocultar" : "Mostrar"} valores
+              </span>
+            </button>
+          </TooltipLabel>
         </div>
       </header>
 
       <div className="max-w-7xl mx-auto px-3 sm:px-4 py-4 sm:py-8 space-y-6 sm:space-y-10">
-        {/* ── KPIs ── */}
         {isLoading ? (
-          <div className="grid grid-cols-1 xs:grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
-            {[...Array(4)].map((_, i) => (
-              <div
-                key={i}
-                className="h-32 rounded-2xl bg-slate-200 dark:bg-slate-800 animate-pulse"
-              />
-            ))}
-          </div>
+          <FinancialDashboardLoadingSkeleton />
         ) : (
+          <ContentReveal>
+          {/* ── KPIs ── */}
           <div className="grid grid-cols-1 xs:grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
             <KpiCard
               title="Total Investido"
               value={formatBRL(yearSummary?.totalCashBRL ?? 0, !showValues)}
               subtitle={`${yearSummary?.issuedCount ?? 0} viagens emitidas`}
               icon={DollarSign}
-              color="blue"
-              trend={
-                trendData
-                  ? { value: trendData.trend, label: "2º sem. vs 1º sem." }
-                  : undefined
-              }
+              accent="blue"
+              trend={toMonthlyKpiTrend(monthlyKpiComparisons.cash)}
             />
             <KpiCard
               title="Média por Viagem"
               value={formatBRL(yearSummary?.avgCashBRL ?? 0, !showValues)}
               subtitle="Passagens em dinheiro"
               icon={Plane}
-              color="green"
+              accent="green"
+              trend={toMonthlyKpiTrend(monthlyKpiComparisons.averageCash)}
             />
             <KpiCard
               title="Milhas SMILES"
               value={formatMiles(yearSummary?.totalSmilesPoints ?? 0)}
               subtitle="Pontos gastos no ano"
               icon={Star}
-              color="orange"
+              accent="orange"
+              trend={toMonthlyKpiTrend(monthlyKpiComparisons.smiles)}
             />
             <KpiCard
               title="Milhas LATAM Pass"
               value={formatMiles(yearSummary?.totalLatamPassPoints ?? 0)}
               subtitle="Pontos gastos no ano"
               icon={Star}
-              color="purple"
+              accent="purple"
+              trend={toMonthlyKpiTrend(monthlyKpiComparisons.latamPass)}
             />
           </div>
-        )}
+
+          <section
+            aria-labelledby="budget-envelope-title"
+            className="overflow-hidden rounded-2xl border border-violet-100 bg-white shadow-sm dark:border-violet-900/50 dark:bg-slate-900"
+          >
+            <div className="border-b border-violet-100 bg-gradient-to-r from-violet-50 via-white to-cyan-50 p-4 dark:border-violet-900/50 dark:from-violet-950/30 dark:via-slate-900 dark:to-cyan-950/20 sm:p-6">
+              <SectionHeader
+                title="Orçamento, realizado e projetado"
+                subtitle={`Envelope mensal de viagens para ${selectedYear}`}
+                icon={WalletCards}
+              />
+              <div
+                className={`rounded-xl border p-3 text-sm ${
+                  budgetInsight.status === "exceeded"
+                    ? "border-rose-200 bg-rose-50 text-rose-800 dark:border-rose-900/60 dark:bg-rose-950/30 dark:text-rose-200"
+                    : budgetInsight.status === "watch"
+                      ? "border-amber-200 bg-amber-50 text-amber-800 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-200"
+                      : "border-emerald-200 bg-emerald-50 text-emerald-800 dark:border-emerald-900/60 dark:bg-emerald-950/30 dark:text-emerald-200"
+                }`}
+              >
+                {budgetNarrative}
+              </div>
+              {budgetAlerts.length > 0 && (
+                <div
+                  role="alert"
+                  className="mt-3 flex gap-3 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-100"
+                >
+                  <AlertCircle className="mt-0.5 h-5 w-5 shrink-0" />
+                  <p>
+                    <strong>{budgetAlerts.length} envelope(s) em atenção.</strong>{" "}
+                    {budgetAlerts
+                      .slice(0, 2)
+                      .map(alert => `${MONTH_FULL_NAMES[alert.month]}: ${alert.utilizationPercent}%`)
+                      .join(" · ")}
+                    {budgetAlerts.length > 2
+                      ? " · Consulte os demais meses destacados abaixo."
+                      : ""}
+                  </p>
+                </div>
+              )}
+              <div className="mt-4 grid grid-cols-1 gap-3 xs:grid-cols-3">
+                <div className="rounded-xl bg-white/80 p-3 dark:bg-slate-800/80">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Orçamento anual</p>
+                  <p className="mt-1 text-lg font-bold text-slate-800 dark:text-slate-100">
+                    {formatBRL(budgetInsight.totalBudgetCents / 100, !showValues)}
+                  </p>
+                </div>
+                <div className="rounded-xl bg-white/80 p-3 dark:bg-slate-800/80">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Realizado</p>
+                  <p className="mt-1 text-lg font-bold text-emerald-700 dark:text-emerald-400">
+                    {formatBRL(budgetInsight.totalRealizedCents / 100, !showValues)}
+                  </p>
+                </div>
+                <div className="rounded-xl bg-white/80 p-3 dark:bg-slate-800/80">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Projetado</p>
+                  <p className="mt-1 text-lg font-bold text-violet-700 dark:text-violet-400">
+                    {formatBRL(budgetInsight.totalProjectedCents / 100, !showValues)}
+                  </p>
+                </div>
+              </div>
+              <p className="mt-3 text-xs text-slate-500 dark:text-slate-400">
+                {budgetInsight.pendingWithoutQuoteCount > 0
+                  ? `${budgetInsight.pendingWithoutQuoteCount} semana(s) pendente(s) ainda não possuem cotação e não entram na projeção.`
+                  : "A projeção considera valores já emitidos e as melhores cotações registradas das semanas pendentes."}
+              </p>
+              {showValues && nextPlanningYear && (
+                <div className="mt-4 rounded-xl border border-violet-200 bg-white/80 p-3 dark:border-violet-900/60 dark:bg-slate-800/80">
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-semibold text-slate-800 dark:text-slate-100">
+                        Copiar envelopes para {nextPlanningYear}
+                      </p>
+                      <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
+                        Reaplica os envelopes configurados com um ajuste percentual opcional.
+                      </p>
+                    </div>
+                    <label className="text-xs font-semibold text-slate-600 dark:text-slate-300" htmlFor="budget-copy-adjustment">
+                      Ajuste (%)
+                      <input
+                        id="budget-copy-adjustment"
+                        type="number"
+                        min="-50"
+                        max="100"
+                        step="0.5"
+                        inputMode="decimal"
+                        value={copyAdjustmentPercent}
+                        onChange={event => setCopyAdjustmentPercent(event.target.value)}
+                        className="mt-1 block w-24 rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-sm text-slate-800 focus:border-violet-500 focus:outline-none focus:ring-2 focus:ring-violet-200 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+                      />
+                    </label>
+                    <div className="flex gap-2">
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant={copyConfirmationOpen ? "default" : "outline"}
+                        disabled={copyMonthlyBudgets.isPending}
+                        onClick={() =>
+                          copyConfirmationOpen
+                            ? copyBudgetsToNextYear()
+                            : setCopyConfirmationOpen(true)
+                        }
+                        className={copyConfirmationOpen ? "bg-violet-600 text-white hover:bg-violet-700" : "border-violet-300 text-violet-700 hover:bg-violet-50 dark:border-violet-800 dark:text-violet-300 dark:hover:bg-violet-950/40"}
+                      >
+                        {copyMonthlyBudgets.isPending
+                          ? "Copiando"
+                          : copyConfirmationOpen
+                            ? "Confirmar cópia"
+                            : "Copiar orçamento"}
+                      </Button>
+                      {copyConfirmationOpen && (
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => setCopyConfirmationOpen(false)}
+                        >
+                          Cancelar
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                  {copyConfirmationOpen && (
+                    <p className="mt-3 text-xs text-violet-800 dark:text-violet-200">
+                      Confirme para substituir os envelopes existentes em {nextPlanningYear} pelos valores ajustados de {selectedYear}.
+                    </p>
+                  )}
+                </div>
+              )}
+            </div>
+
+            <div className="space-y-5 p-4 sm:p-6">
+              <DeferredFinancialChart
+                kind="monthlyBudget"
+                data={budgetChartData}
+                hideValues={!showValues}
+              />
+
+              <div aria-live="polite" className="min-h-4 text-xs text-slate-500 dark:text-slate-400">
+                {budgetFeedback}
+              </div>
+
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
+                {monthlyBudgetEnvelopes.map(envelope => {
+                  const statusStyle =
+                    envelope.status === "exceeded"
+                      ? "border-rose-200 bg-rose-50/60 dark:border-rose-900/60 dark:bg-rose-950/20"
+                      : envelope.status === "watch"
+                        ? "border-amber-200 bg-amber-50/60 dark:border-amber-900/60 dark:bg-amber-950/20"
+                        : "border-slate-200 bg-slate-50/60 dark:border-slate-800 dark:bg-slate-800/30";
+                  const draftKey = `${selectedYear}-${envelope.month}`;
+                  const isSavingThisMonth =
+                    saveMonthlyBudget.isPending &&
+                    saveMonthlyBudget.variables?.month === envelope.month;
+
+                  return (
+                    <article key={envelope.month} className={`rounded-xl border p-3 ${statusStyle}`}>
+                      <div className="flex items-center justify-between gap-3">
+                        <h3 className="font-bold text-slate-800 dark:text-slate-100">
+                          {MONTH_FULL_NAMES[envelope.month]}
+                        </h3>
+                        <span className="rounded-full bg-white/80 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-slate-500 dark:bg-slate-900/70 dark:text-slate-400">
+                          {envelope.status === "unconfigured" ? "Definir" : envelope.status === "exceeded" ? "Acima" : envelope.status === "watch" ? "Atenção" : "Em linha"}
+                        </span>
+                      </div>
+                      <div className="mt-3 grid grid-cols-2 gap-2 text-xs">
+                        <div>
+                          <p className="uppercase tracking-wide text-slate-400">Realizado</p>
+                          <p className="mt-0.5 font-semibold text-emerald-700 dark:text-emerald-400">
+                            {formatBRL(envelope.realizedCents / 100, !showValues)}
+                          </p>
+                        </div>
+                        <div className="text-right">
+                          <p className="uppercase tracking-wide text-slate-400">Projetado</p>
+                          <p className="mt-0.5 font-semibold text-violet-700 dark:text-violet-400">
+                            {formatBRL(envelope.projectedCents / 100, !showValues)}
+                          </p>
+                        </div>
+                      </div>
+                      {showValues ? (
+                        <>
+                          <label className="mt-3 block text-xs font-semibold text-slate-600 dark:text-slate-300" htmlFor={`budget-${selectedYear}-${envelope.month}`}>
+                            Orçamento mensal (R$)
+                          </label>
+                          <div className="mt-1 flex gap-2">
+                            <input
+                              id={`budget-${selectedYear}-${envelope.month}`}
+                              type="number"
+                              min="0"
+                              step="0.01"
+                              inputMode="decimal"
+                              value={budgetDrafts[draftKey] ?? formatBudgetInput(envelope.budgetCents)}
+                              onChange={event => setBudgetDrafts(current => ({ ...current, [draftKey]: event.target.value }))}
+                              placeholder="0,00"
+                              className="min-w-0 flex-1 rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-sm text-slate-800 focus:border-violet-500 focus:outline-none focus:ring-2 focus:ring-violet-200 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+                            />
+                            <Button
+                              type="button"
+                              size="sm"
+                              disabled={isSavingThisMonth}
+                              onClick={() => saveBudgetForMonth(envelope.month, envelope.budgetCents)}
+                              className="shrink-0 bg-violet-600 text-xs text-white hover:bg-violet-700"
+                            >
+                              {isSavingThisMonth ? "Salvando" : "Salvar"}
+                            </Button>
+                          </div>
+                        </>
+                      ) : (
+                        <p className="mt-3 text-xs text-slate-500 dark:text-slate-400">
+                          Exiba os valores para configurar este orçamento.
+                        </p>
+                      )}
+                    </article>
+                  );
+                })}
+              </div>
+            </div>
+          </section>
 
         {/* ── Tabs de análise ── */}
         <div>
@@ -476,39 +964,11 @@ export default function FinancialDashboard() {
                     Nenhum dado disponível para {selectedYear}
                   </div>
                 ) : (
-                  <ResponsiveContainer width="100%" height={220}>
-                    <BarChart
-                      data={monthlyChartData}
-                      margin={{ top: 5, right: 5, left: -15, bottom: 5 }}
-                    >
-                      <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                      <XAxis dataKey="month" tick={{ fontSize: 12 }} />
-                      <YAxis
-                        tickFormatter={v =>
-                          showValues ? `R$${(v / 1000).toFixed(0)}k` : "R$ ••"
-                        }
-                        tick={{ fontSize: 11 }}
-                      />
-                      <Tooltip
-                        formatter={(value: number) =>
-                          showValues
-                            ? [formatBRL(value), "Total"]
-                            : ["R$ ••••", "Total"]
-                        }
-                        labelFormatter={label => `Mês: ${label}`}
-                        contentStyle={{
-                          borderRadius: 12,
-                          border: "1px solid #e2e8f0",
-                        }}
-                      />
-                      <Bar
-                        dataKey="cashBRL"
-                        fill="#3B82F6"
-                        radius={[6, 6, 0, 0]}
-                        name="Gasto (R$)"
-                      />
-                    </BarChart>
-                  </ResponsiveContainer>
+                  <DeferredFinancialChart
+                    kind="monthlyCash"
+                    data={monthlyChartData}
+                    hideValues={!showValues}
+                  />
                 )}
               </div>
 
@@ -525,77 +985,11 @@ export default function FinancialDashboard() {
                     Nenhum dado disponível
                   </div>
                 ) : (
-                  <ResponsiveContainer width="100%" height={200}>
-                    <AreaChart
-                      data={monthlyChartData}
-                      margin={{ top: 5, right: 5, left: -15, bottom: 5 }}
-                    >
-                      <defs>
-                        <linearGradient
-                          id="cashGrad"
-                          x1="0"
-                          y1="0"
-                          x2="0"
-                          y2="1"
-                        >
-                          <stop
-                            offset="5%"
-                            stopColor="#3B82F6"
-                            stopOpacity={0.3}
-                          />
-                          <stop
-                            offset="95%"
-                            stopColor="#3B82F6"
-                            stopOpacity={0}
-                          />
-                        </linearGradient>
-                      </defs>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                      <XAxis dataKey="month" tick={{ fontSize: 12 }} />
-                      <YAxis
-                        tickFormatter={v =>
-                          showValues ? `R$${(v / 1000).toFixed(0)}k` : "R$ ••"
-                        }
-                        tick={{ fontSize: 11 }}
-                      />
-                      <Tooltip
-                        formatter={(value: number, name: string) => {
-                          if (!showValues) return ["R$ ••••", name];
-                          if (name === "cashBRL")
-                            return [formatBRL(value), "Gasto"];
-                          if (name === "avgPrice")
-                            return [formatBRL(value), "Média/viagem"];
-                          return [value, name];
-                        }}
-                        contentStyle={{
-                          borderRadius: 12,
-                          border: "1px solid #e2e8f0",
-                        }}
-                      />
-                      <Area
-                        type="monotone"
-                        dataKey="cashBRL"
-                        stroke="#3B82F6"
-                        strokeWidth={2}
-                        fill="url(#cashGrad)"
-                        name="cashBRL"
-                      />
-                      <Line
-                        type="monotone"
-                        dataKey="avgPrice"
-                        stroke="#F59E0B"
-                        strokeWidth={2}
-                        strokeDasharray="5 5"
-                        dot={false}
-                        name="avgPrice"
-                      />
-                      <Legend
-                        formatter={v =>
-                          v === "cashBRL" ? "Total mensal" : "Média por viagem"
-                        }
-                      />
-                    </AreaChart>
-                  </ResponsiveContainer>
+                  <DeferredFinancialChart
+                    kind="cashTrend"
+                    data={monthlyChartData}
+                    hideValues={!showValues}
+                  />
                 )}
                 {trendData && (
                   <div className="mt-4 grid grid-cols-3 gap-3">
@@ -643,12 +1037,146 @@ export default function FinancialDashboard() {
 
           {/* ── Tab: Milhas ── */}
           {activeTab === "miles" && (
-            <div
-              role="tabpanel"
-              id="tabpanel-miles"
-              aria-labelledby="tab-miles"
-              className="space-y-6"
-            >
+            <div role="tabpanel" id="tabpanel-miles" aria-labelledby="tab-miles" className="space-y-6">
+              <section
+                aria-labelledby="mileage-purchases-title"
+                className="overflow-hidden rounded-2xl border border-amber-100 bg-white shadow-sm dark:border-amber-900/50 dark:bg-slate-900"
+              >
+                <div className="border-b border-amber-100 bg-gradient-to-r from-amber-50 via-white to-orange-50 p-4 dark:border-amber-900/50 dark:from-amber-950/30 dark:via-slate-900 dark:to-orange-950/20 sm:p-6">
+                  <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                    <SectionHeader
+                      title="Compras de milhas"
+                      subtitle={`Registros do exercício ${selectedYear}`}
+                      icon={Star}
+                    />
+                    <div className="grid grid-cols-3 gap-2 sm:min-w-[360px]">
+                      <div className="rounded-xl bg-white/80 p-2.5 text-center dark:bg-slate-800/70">
+                        <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Compras</p>
+                        <p className="mt-1 text-lg font-bold text-slate-900 dark:text-white">{mileagePurchasesData?.summary.purchaseCount ?? 0}</p>
+                      </div>
+                      <div className="rounded-xl bg-white/80 p-2.5 text-center dark:bg-slate-800/70">
+                        <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Milhas</p>
+                        <p className="mt-1 text-sm font-bold text-amber-700 dark:text-amber-300">{formatMiles(mileagePurchasesData?.summary.totalMiles ?? 0)}</p>
+                      </div>
+                      <div className="rounded-xl bg-white/80 p-2.5 text-center dark:bg-slate-800/70">
+                        <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Investido</p>
+                        <p className="mt-1 text-sm font-bold text-orange-700 dark:text-orange-300">{formatBRL((mileagePurchasesData?.summary.totalPaidCents ?? 0) / 100, !showValues)}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-4 p-4 sm:p-6">
+                  <form onSubmit={submitMileagePurchase} className="rounded-xl border border-amber-200 bg-amber-50/60 p-3 dark:border-amber-900/60 dark:bg-amber-950/20 sm:p-4">
+                    <div className="mb-3 flex items-center justify-between gap-3">
+                      <h3 id="mileage-purchases-title" className="text-sm font-bold text-slate-900 dark:text-slate-100">
+                        {editingMileageId === null ? "Adicionar compra" : "Editar compra"}
+                      </h3>
+                      {editingMileageId !== null && (
+                        <Button type="button" variant="ghost" size="sm" onClick={resetMileageDraft} aria-label="Cancelar edição da compra de milhas">
+                          <X className="mr-1 h-4 w-4" /> Cancelar
+                        </Button>
+                      )}
+                    </div>
+                    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                      <label className="space-y-1 text-sm font-medium text-slate-700 dark:text-slate-300">
+                        <span>Data da compra</span>
+                        <input
+                          type="date"
+                          value={mileageDraft.purchaseDate}
+                          onChange={event => setMileageDraft(current => ({ ...current, purchaseDate: event.target.value }))}
+                          max={`${selectedYear}-12-31`}
+                          min={`${selectedYear}-01-01`}
+                          required
+                          className="h-10 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-900 outline-none transition focus:border-amber-500 focus:ring-2 focus:ring-amber-200 dark:border-slate-700 dark:bg-slate-950 dark:text-white dark:focus:ring-amber-900"
+                        />
+                      </label>
+                      <label className="space-y-1 text-sm font-medium text-slate-700 dark:text-slate-300">
+                        <span>Total de milhas compradas</span>
+                        <input
+                          type="number"
+                          min="1"
+                          step="1"
+                          inputMode="numeric"
+                          value={mileageDraft.miles}
+                          onChange={event => setMileageDraft(current => ({ ...current, miles: event.target.value }))}
+                          placeholder="Ex.: 50.000"
+                          required
+                          className="h-10 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-900 outline-none transition focus:border-amber-500 focus:ring-2 focus:ring-amber-200 dark:border-slate-700 dark:bg-slate-950 dark:text-white dark:focus:ring-amber-900"
+                        />
+                      </label>
+                      <label className="space-y-1 text-sm font-medium text-slate-700 dark:text-slate-300">
+                        <span>Programa ou companhia aérea</span>
+                        <input
+                          type="text"
+                          maxLength={100}
+                          value={mileageDraft.program}
+                          onChange={event => setMileageDraft(current => ({ ...current, program: event.target.value }))}
+                          placeholder="Ex.: SMILES, LATAM PASS"
+                          required
+                          className="h-10 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-900 outline-none transition focus:border-amber-500 focus:ring-2 focus:ring-amber-200 dark:border-slate-700 dark:bg-slate-950 dark:text-white dark:focus:ring-amber-900"
+                        />
+                      </label>
+                      <label className="space-y-1 text-sm font-medium text-slate-700 dark:text-slate-300">
+                        <span>Valor pago (R$)</span>
+                        <input
+                          type="number"
+                          min="0"
+                          step="0.01"
+                          inputMode="decimal"
+                          value={mileageDraft.paidValue}
+                          onChange={event => setMileageDraft(current => ({ ...current, paidValue: event.target.value }))}
+                          placeholder="Ex.: 799,90"
+                          required
+                          className="h-10 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-900 outline-none transition focus:border-amber-500 focus:ring-2 focus:ring-amber-200 dark:border-slate-700 dark:bg-slate-950 dark:text-white dark:focus:ring-amber-900"
+                        />
+                      </label>
+                    </div>
+                    {(mileageError || mileageFeedback) && (
+                      <p role="status" className={`mt-3 text-sm ${mileageError ? "text-rose-700 dark:text-rose-300" : "text-emerald-700 dark:text-emerald-300"}`}>
+                        {mileageError || mileageFeedback}
+                      </p>
+                    )}
+                    <div className="mt-3 flex justify-end">
+                      <Button type="submit" disabled={mileagePurchaseBusy} className="bg-amber-600 text-white hover:bg-amber-700">
+                        {editingMileageId === null ? <Plus className="mr-2 h-4 w-4" /> : <Save className="mr-2 h-4 w-4" />}
+                        {mileagePurchaseBusy ? "Salvando…" : editingMileageId === null ? "Adicionar compra" : "Salvar alterações"}
+                      </Button>
+                    </div>
+                  </form>
+
+                  <div className="space-y-2">
+                    {loadingMileagePurchases ? (
+                      <div className="h-20 animate-pulse rounded-xl bg-slate-100 dark:bg-slate-800" aria-label="Carregando compras de milhas" />
+                    ) : (mileagePurchasesData?.items ?? []).length === 0 ? (
+                      <div className="rounded-xl border border-dashed border-slate-200 p-6 text-center text-sm text-slate-500 dark:border-slate-700 dark:text-slate-400">
+                        Nenhuma compra de milhas registrada em {selectedYear}.
+                      </div>
+                    ) : (
+                      (mileagePurchasesData?.items ?? []).map(purchase => (
+                        <article key={purchase.id} className="flex flex-col gap-3 rounded-xl border border-slate-100 bg-slate-50/70 p-3 dark:border-slate-800 dark:bg-slate-800/40 sm:flex-row sm:items-center sm:justify-between">
+                          <div className="min-w-0">
+                            <div className="flex flex-wrap items-center gap-2">
+                              <p className="font-semibold text-slate-900 dark:text-slate-100">{purchase.program}</p>
+                              <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-800 dark:bg-amber-900/50 dark:text-amber-200">{formatMiles(purchase.miles)}</span>
+                            </div>
+                            <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">{formatPurchaseDate(purchase.purchaseDate)} · {formatBRL(purchase.paidPriceCents / 100, !showValues)}</p>
+                          </div>
+                          <div className="flex shrink-0 gap-2">
+                            <Button type="button" variant="ghost" size="sm" onClick={() => startEditingMileagePurchase(purchase)} aria-label={`Editar compra de ${purchase.program}`}>
+                              <Pencil className="mr-1 h-4 w-4" /> Editar
+                            </Button>
+                            <Button type="button" variant="ghost" size="sm" onClick={() => removeMileagePurchase(purchase.id)} aria-label={`Remover compra de ${purchase.program}`} className="text-rose-700 hover:text-rose-800 dark:text-rose-300">
+                              <Trash2 className="mr-1 h-4 w-4" /> Remover
+                            </Button>
+                          </div>
+                        </article>
+                      ))
+                    )}
+                  </div>
+                </div>
+              </section>
+
               <div className="bg-white dark:bg-slate-900 rounded-2xl p-3 sm:p-6 shadow-sm border border-slate-100 dark:border-slate-800">
                 <SectionHeader
                   title="Gastos em Milhas por Mês"
@@ -661,35 +1189,11 @@ export default function FinancialDashboard() {
                     Nenhum dado de milhas disponível
                   </div>
                 ) : (
-                  <ResponsiveContainer width="100%" height={220}>
-                    <BarChart
-                      data={monthlyChartData}
-                      margin={{ top: 5, right: 5, left: -15, bottom: 5 }}
-                    >
-                      <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                      <XAxis dataKey="month" tick={{ fontSize: 12 }} />
-                      <YAxis
-                        tickFormatter={v => `${(v / 1000).toFixed(0)}k`}
-                        tick={{ fontSize: 11 }}
-                      />
-                      <Tooltip
-                        formatter={(value: number) => [
-                          formatMiles(value),
-                          "Milhas",
-                        ]}
-                        contentStyle={{
-                          borderRadius: 12,
-                          border: "1px solid #e2e8f0",
-                        }}
-                      />
-                      <Bar
-                        dataKey="miles"
-                        fill="#F59E0B"
-                        radius={[6, 6, 0, 0]}
-                        name="Milhas (pts)"
-                      />
-                    </BarChart>
-                  </ResponsiveContainer>
+                  <DeferredFinancialChart
+                    kind="monthlyMiles"
+                    data={monthlyChartData}
+                    hideValues={!showValues}
+                  />
                 )}
               </div>
 
@@ -700,7 +1204,62 @@ export default function FinancialDashboard() {
                   subtitle="Semanas com passagens emitidas usando milhas"
                   icon={Calendar}
                 />
-                <div className="overflow-x-auto">
+                <div className="space-y-3 sm:hidden">
+                  {milesTableData.map(w => (
+                    <article
+                      key={w.weekNumber}
+                      className="rounded-xl border border-slate-100 bg-slate-50/60 p-3 dark:border-slate-800 dark:bg-slate-800/30"
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <p className="text-sm font-bold text-slate-800 dark:text-slate-100">
+                            Semana #{w.weekNumber}
+                          </p>
+                          <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
+                            {w.departureDate}
+                          </p>
+                        </div>
+                        {w.departureAirline && (
+                          <span
+                            className="shrink-0 rounded-full px-2 py-0.5 text-xs font-semibold text-white"
+                            style={{
+                              backgroundColor:
+                                AIRLINE_COLORS[w.departureAirline] ?? "#94A3B8",
+                            }}
+                          >
+                            {displayAirline(w.departureAirline)}
+                          </span>
+                        )}
+                      </div>
+                      <div className="mt-3 grid grid-cols-2 gap-2 text-sm">
+                        <div>
+                          <p className="text-xs uppercase tracking-wide text-slate-400">SMILES</p>
+                          <p className="mt-0.5 font-semibold text-orange-600 dark:text-orange-400">
+                            {w.smilesPoints ? formatMiles(w.smilesPoints) : "—"}
+                          </p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-xs uppercase tracking-wide text-slate-400">LATAM Pass</p>
+                          <p className="mt-0.5 font-semibold text-red-600 dark:text-red-400">
+                            {w.latamPassPoints ? formatMiles(w.latamPassPoints) : "—"}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="mt-3 border-t border-slate-200 pt-2 text-right dark:border-slate-700">
+                        <p className="text-xs uppercase tracking-wide text-slate-400">Total de milhas</p>
+                        <p className="font-bold text-slate-800 dark:text-slate-100">
+                          {w.totalMiles ? formatMiles(w.totalMiles) : "—"}
+                        </p>
+                      </div>
+                    </article>
+                  ))}
+                  {milesTableData.length === 0 && (
+                    <p className="py-8 text-center text-sm text-slate-400">
+                      Nenhuma viagem com milhas registrada
+                    </p>
+                  )}
+                </div>
+                <div className="hidden overflow-x-auto sm:block">
                   <table className="w-full text-sm">
                     <thead>
                       <tr className="border-b border-slate-100 dark:border-slate-800">
@@ -745,8 +1304,7 @@ export default function FinancialDashboard() {
                                   "#94A3B8",
                               }}
                             >
-                              {AIRLINE_LABELS[w.departureAirline ?? ""] ??
-                                w.departureAirline}
+                              {displayAirline(w.departureAirline)}
                             </span>
                           </td>
                           <td className="py-2.5 px-3 text-right text-orange-600 dark:text-orange-400 font-medium">
@@ -801,37 +1359,11 @@ export default function FinancialDashboard() {
                       Nenhum dado disponível
                     </div>
                   ) : (
-                    <ResponsiveContainer width="100%" height={240}>
-                      <PieChart>
-                        <Pie
-                          data={airlineChartData}
-                          dataKey="cashBRL"
-                          nameKey="name"
-                          cx="50%"
-                          cy="50%"
-                          outerRadius={90}
-                          label={({ name, percent }) =>
-                            `${name} ${(percent * 100).toFixed(0)}%`
-                          }
-                          labelLine={false}
-                        >
-                          {airlineChartData.map((entry, index) => (
-                            <Cell
-                              key={entry.airline}
-                              fill={AIRLINE_COLORS[entry.airline] ?? "#94A3B8"}
-                            />
-                          ))}
-                        </Pie>
-                        <Tooltip
-                          formatter={(value: number) =>
-                            showValues
-                              ? [formatBRL(value), "Total"]
-                              : ["R$ ••••", "Total"]
-                          }
-                          contentStyle={{ borderRadius: 12 }}
-                        />
-                      </PieChart>
-                    </ResponsiveContainer>
+                    <DeferredFinancialChart
+                      kind="airlineDistribution"
+                      data={airlineChartData}
+                      hideValues={!showValues}
+                    />
                   )}
                 </div>
 
@@ -848,51 +1380,11 @@ export default function FinancialDashboard() {
                       Nenhum dado disponível
                     </div>
                   ) : (
-                    <ResponsiveContainer width="100%" height={240}>
-                      <BarChart
-                        data={airlineChartData}
-                        layout="vertical"
-                        margin={{ top: 5, right: 20, left: 40, bottom: 5 }}
-                      >
-                        <CartesianGrid
-                          strokeDasharray="3 3"
-                          stroke="#e2e8f0"
-                          horizontal={false}
-                        />
-                        <XAxis
-                          type="number"
-                          tickFormatter={v =>
-                            showValues ? `R$${(v / 1000).toFixed(0)}k` : "R$ ••"
-                          }
-                          tick={{ fontSize: 11 }}
-                        />
-                        <YAxis
-                          type="category"
-                          dataKey="name"
-                          tick={{ fontSize: 12 }}
-                        />
-                        <Tooltip
-                          formatter={(value: number) =>
-                            showValues
-                              ? [formatBRL(value), "Total"]
-                              : ["R$ ••••", "Total"]
-                          }
-                          contentStyle={{ borderRadius: 12 }}
-                        />
-                        <Bar
-                          dataKey="cashBRL"
-                          radius={[0, 6, 6, 0]}
-                          name="Total (R$)"
-                        >
-                          {airlineChartData.map(entry => (
-                            <Cell
-                              key={entry.airline}
-                              fill={AIRLINE_COLORS[entry.airline] ?? "#94A3B8"}
-                            />
-                          ))}
-                        </Bar>
-                      </BarChart>
-                    </ResponsiveContainer>
+                    <DeferredFinancialChart
+                      kind="airlineComparison"
+                      data={airlineChartData}
+                      hideValues={!showValues}
+                    />
                   )}
                 </div>
               </div>
@@ -904,7 +1396,61 @@ export default function FinancialDashboard() {
                   subtitle="Viagens, gastos e médias"
                   icon={TrendingUp}
                 />
-                <div className="overflow-x-auto">
+                <div className="space-y-3 sm:hidden">
+                  {airlineChartData.map(row => {
+                    const totalCash = yearSummary?.totalCashBRL ?? 1;
+                    const pct = totalCash > 0 ? (row.cashBRL / totalCash) * 100 : 0;
+                    return (
+                      <article
+                        key={row.airline}
+                        className="rounded-xl border border-slate-100 bg-slate-50/60 p-3 dark:border-slate-800 dark:bg-slate-800/30"
+                      >
+                        <div className="flex items-center justify-between gap-3">
+                          <div className="flex min-w-0 items-center gap-2">
+                            <span
+                              className="h-3 w-3 shrink-0 rounded-full"
+                              style={{ backgroundColor: AIRLINE_COLORS[row.airline] ?? "#94A3B8" }}
+                            />
+                            <p className="truncate font-bold text-slate-800 dark:text-slate-100">
+                              {row.name}
+                            </p>
+                          </div>
+                          <span className="shrink-0 text-sm font-semibold text-slate-600 dark:text-slate-300">
+                            {row.count} viagens
+                          </span>
+                        </div>
+                        <div className="mt-3 grid grid-cols-2 gap-2 text-sm">
+                          <div>
+                            <p className="text-xs uppercase tracking-wide text-slate-400">Total gasto</p>
+                            <p className="mt-0.5 font-bold text-slate-800 dark:text-slate-100">
+                              {formatBRL(row.cashBRL, !showValues)}
+                            </p>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-xs uppercase tracking-wide text-slate-400">Média/viagem</p>
+                            <p className="mt-0.5 font-semibold text-slate-600 dark:text-slate-300">
+                              {formatBRL(row.avgCash, !showValues)}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="mt-3 flex items-center justify-between gap-3 border-t border-slate-200 pt-2 text-sm dark:border-slate-700">
+                          <span className="text-orange-600 dark:text-orange-400">
+                            {row.miles > 0 ? formatMiles(row.miles) : "Sem milhas"}
+                          </span>
+                          <span className="font-semibold text-slate-600 dark:text-slate-300">
+                            {pct.toFixed(0)}% do total
+                          </span>
+                        </div>
+                      </article>
+                    );
+                  })}
+                  {airlineChartData.length === 0 && (
+                    <p className="py-8 text-center text-sm text-slate-400">
+                      Nenhuma companhia com dados financeiros
+                    </p>
+                  )}
+                </div>
+                <div className="hidden overflow-x-auto sm:block">
                   <table className="w-full text-sm">
                     <thead>
                       <tr className="border-b border-slate-100 dark:border-slate-800">
@@ -1054,8 +1600,7 @@ export default function FinancialDashboard() {
                             AIRLINE_COLORS[w.departureAirline] ?? "#94A3B8",
                         }}
                       >
-                        {AIRLINE_LABELS[w.departureAirline] ??
-                          w.departureAirline}
+                        {displayAirline(w.departureAirline)}
                       </span>
                     )}
                   </div>
@@ -1078,7 +1623,7 @@ export default function FinancialDashboard() {
                                 AIRLINE_COLORS[w.returnAirline] ?? "#94A3B8",
                             }}
                           >
-                            {AIRLINE_LABELS[w.returnAirline] ?? w.returnAirline}
+                            {displayAirline(w.returnAirline)}
                           </span>
                         )}
                       </>
@@ -1214,8 +1759,7 @@ export default function FinancialDashboard() {
                               AIRLINE_COLORS[w.departureAirline] ?? "#94A3B8",
                           }}
                         >
-                          {AIRLINE_LABELS[w.departureAirline] ??
-                            w.departureAirline}
+                          {displayAirline(w.departureAirline)}
                         </span>
                       ) : (
                         <span className="text-slate-400 text-xs">—</span>
@@ -1230,7 +1774,7 @@ export default function FinancialDashboard() {
                               AIRLINE_COLORS[w.returnAirline] ?? "#94A3B8",
                           }}
                         >
-                          {AIRLINE_LABELS[w.returnAirline] ?? w.returnAirline}
+                          {displayAirline(w.returnAirline)}
                         </span>
                       ) : (
                         <span className="text-slate-400 text-xs">—</span>
@@ -1459,52 +2003,12 @@ export default function FinancialDashboard() {
                     <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-3">
                       Projeção {selectedYear + 1} vs Histórico {selectedYear}
                     </h3>
-                    <ResponsiveContainer width="100%" height={200}>
-                      <BarChart
-                        data={projectionChartData}
-                        margin={{ top: 5, right: 5, left: -15, bottom: 5 }}
-                      >
-                        <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                        <XAxis dataKey="month" tick={{ fontSize: 12 }} />
-                        <YAxis
-                          tickFormatter={v =>
-                            showValues ? `R$${(v / 1000).toFixed(0)}k` : "R$ ••"
-                          }
-                          tick={{ fontSize: 11 }}
-                        />
-                        <Tooltip
-                          formatter={(value: number, name: string) => {
-                            const label =
-                              name === "projetado"
-                                ? `Projetado ${selectedYear + 1}`
-                                : `Histórico ${selectedYear}`;
-                            return showValues
-                              ? [formatBRL(value), label]
-                              : ["R$ ••••", label];
-                          }}
-                          contentStyle={{ borderRadius: 12 }}
-                        />
-                        <Legend
-                          formatter={v =>
-                            v === "projetado"
-                              ? `Projetado ${selectedYear + 1}`
-                              : `Histórico ${selectedYear}`
-                          }
-                        />
-                        <Bar
-                          dataKey="historico"
-                          fill="#94A3B8"
-                          radius={[4, 4, 0, 0]}
-                          name="historico"
-                        />
-                        <Bar
-                          dataKey="projetado"
-                          fill="#A855F7"
-                          radius={[4, 4, 0, 0]}
-                          name="projetado"
-                        />
-                      </BarChart>
-                    </ResponsiveContainer>
+                    <DeferredFinancialChart
+                      kind="projection"
+                      data={projectionChartData}
+                      hideValues={!showValues}
+                      selectedYear={selectedYear}
+                    />
                   </div>
 
                   {/* Tabela de projeção por mês */}
@@ -1512,7 +2016,52 @@ export default function FinancialDashboard() {
                     <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-3">
                       Detalhe da Projeção por Mês
                     </h3>
-                    <div className="overflow-x-auto -mx-3 sm:mx-0 px-3 sm:px-0">
+                    <div className="space-y-3 sm:hidden">
+                      {projections.byMonth.map(m => (
+                        <article
+                          key={m.month}
+                          className="rounded-xl border border-slate-100 bg-slate-50/60 p-3 dark:border-slate-800 dark:bg-slate-800/30"
+                        >
+                          <div className="flex items-center justify-between gap-3">
+                            <p className="font-bold text-slate-800 dark:text-slate-100">
+                              {MONTH_FULL_NAMES[m.month]}
+                            </p>
+                            <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs font-semibold text-slate-600 dark:bg-slate-700 dark:text-slate-300">
+                              Fator {m.seasonFactor.toFixed(2)}×
+                            </span>
+                          </div>
+                          <div className="mt-3 grid grid-cols-2 gap-2 text-sm">
+                            <div>
+                              <p className="text-xs uppercase tracking-wide text-slate-400">Viagens</p>
+                              <p className="mt-0.5 font-semibold text-slate-700 dark:text-slate-300">
+                                {m.projectedTrips}
+                              </p>
+                            </div>
+                            <div className="text-right">
+                              <p className="text-xs uppercase tracking-wide text-slate-400">Preço/viagem</p>
+                              <p className="mt-0.5 font-semibold text-slate-700 dark:text-slate-300">
+                                {formatBRL(m.avgPricePerTrip, !showValues)}
+                              </p>
+                            </div>
+                          </div>
+                          <div className="mt-3 grid grid-cols-2 gap-2 border-t border-slate-200 pt-2 text-sm dark:border-slate-700">
+                            <div>
+                              <p className="text-xs uppercase tracking-wide text-slate-400">Projetado</p>
+                              <p className="mt-0.5 font-bold text-purple-700 dark:text-purple-400">
+                                {formatBRL(m.projectedCashBRL, !showValues)}
+                              </p>
+                            </div>
+                            <div className="text-right">
+                              <p className="text-xs uppercase tracking-wide text-slate-400">Variação</p>
+                              <p className={`mt-0.5 font-semibold ${m.variationVsHistoric !== null && m.variationVsHistoric > 0 ? "text-red-600 dark:text-red-400" : "text-green-600 dark:text-green-400"}`}>
+                                {m.variationVsHistoric !== null ? formatPct(m.variationVsHistoric) : "—"}
+                              </p>
+                            </div>
+                          </div>
+                        </article>
+                      ))}
+                    </div>
+                    <div className="hidden overflow-x-auto sm:block">
                       <table className="w-full text-sm min-w-[560px]">
                         <thead>
                           <tr className="border-b border-slate-100 dark:border-slate-800">
@@ -1667,6 +2216,8 @@ export default function FinancialDashboard() {
             </div>
           )}
         </div>
+          </ContentReveal>
+        )}
       </div>
     </div>
   );

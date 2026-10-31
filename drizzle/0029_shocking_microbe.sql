@@ -1,0 +1,1 @@
+CREATE INDEX `idx_notification_logs_year_sent_at_id` ON `notification_logs` (`year`,`sentAt`,`id`);

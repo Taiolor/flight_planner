@@ -1,0 +1,331 @@
+import { afterEach, describe, expect, it, vi } from "vitest";
+
+const state = vi.hoisted(() => {
+  class FlyIaRateLimitError extends Error {
+    constructor() {
+      super("Muitas perguntas em pouco tempo. Aguarde um minuto e tente novamente.");
+    }
+  }
+
+  class FlyIaProviderError extends Error {
+    constructor() {
+      super("O Fly.IA está indisponível no momento. Tente novamente em instantes.");
+    }
+  }
+
+  class GeminiBudgetExceededError extends Error {
+    constructor() {
+      super("O limite interno de orçamento do Fly.IA foi alcançado.");
+    }
+  }
+
+  return {
+    validateAuthSession: vi.fn(),
+    buildFlyIaContext: vi.fn(),
+    askFlyIa: vi.fn(),
+    getDeterministicFlyIaAnswer: vi.fn(),
+    consume: vi.fn(),
+    getGeminiBudgetSnapshot: vi.fn(),
+    recordGeminiUsage: vi.fn(),
+    createFlyIaSessionKey: vi.fn(() => "session-key"),
+    getFlyIaMemoryDashboard: vi.fn(),
+    getFlyIaTelemetryTimeline: vi.fn(),
+    getFlyIaTravelGuidanceAnswer: vi.fn(),
+    getDestinationWeather: vi.fn(),
+    getFlyIaSessionMemory: vi.fn(),
+    getFlyIaPromptStats: vi.fn(() => ({ contextChars: 150, historyChars: 80, payloadHistoryChars: 40, memoryChars: 32 })),
+    recordFlyIaContextMetric: vi.fn(),
+    saveFlyIaSessionMemory: vi.fn(),
+    FlyIaRateLimitError,
+    FlyIaProviderError,
+    GeminiBudgetExceededError,
+  };
+});
+
+vi.mock("./db", () => ({
+  validateAuthSession: state.validateAuthSession,
+}));
+
+vi.mock("./flyIa", () => ({
+  buildFlyIaContext: state.buildFlyIaContext,
+  askFlyIa: state.askFlyIa,
+  getDeterministicFlyIaAnswer: state.getDeterministicFlyIaAnswer,
+  FLY_IA_MODEL: "gemini-3.6-flash",
+  flyIaRateLimiter: { consume: state.consume },
+  createFlyIaRateLimiter: () => ({ consume: state.consume }),
+  FlyIaRateLimitError: state.FlyIaRateLimitError,
+  FlyIaProviderError: state.FlyIaProviderError,
+  getFlyIaPromptStats: state.getFlyIaPromptStats,
+}));
+
+vi.mock("./flyIaMemory", () => ({
+  createFlyIaSessionKey: state.createFlyIaSessionKey,
+  getFlyIaMemoryDashboard: state.getFlyIaMemoryDashboard,
+  getFlyIaSessionMemory: state.getFlyIaSessionMemory,
+  recordFlyIaContextMetric: state.recordFlyIaContextMetric,
+  saveFlyIaSessionMemory: state.saveFlyIaSessionMemory,
+}));
+
+vi.mock("./geminiBudget", () => ({
+  GeminiBudgetExceededError: state.GeminiBudgetExceededError,
+  getGeminiBudgetDashboard: vi.fn(),
+  getGeminiBudgetSnapshot: state.getGeminiBudgetSnapshot,
+  recordGeminiUsage: state.recordGeminiUsage,
+  updateGeminiBudgetSettings: vi.fn(),
+}));
+
+vi.mock("./flyIaVoiceTelemetry", () => ({
+  getFlyIaVoiceDashboard: vi.fn(),
+  getFlyIaTelemetryTimeline: state.getFlyIaTelemetryTimeline,
+}));
+
+vi.mock("./flyIaTravelGuidance", () => ({
+  getFlyIaTravelGuidanceAnswer: state.getFlyIaTravelGuidanceAnswer,
+}));
+
+vi.mock("./destinationWeather", () => ({
+  getDestinationWeather: state.getDestinationWeather,
+}));
+
+
+import { appRouter } from "./routers";
+
+function createCaller(authenticated = true) {
+  state.validateAuthSession.mockResolvedValue(
+    authenticated ? { email: "piloto@smartfly.test", role: "user" } : null
+  );
+
+  return appRouter.createCaller({
+    user: null,
+    req: {
+      headers: authenticated ? { cookie: "flight_session=valid-session" } : {},
+    },
+    res: {},
+  } as any);
+}
+
+const input = {
+  year: 2026,
+  messages: [{ role: "user" as const, content: "Qual é meu próximo voo?" }],
+};
+
+afterEach(() => {
+  state.validateAuthSession.mockReset();
+  state.buildFlyIaContext.mockReset();
+  state.askFlyIa.mockReset();
+  state.getDeterministicFlyIaAnswer.mockReset();
+  state.consume.mockReset();
+  state.getGeminiBudgetSnapshot.mockReset();
+  state.recordGeminiUsage.mockReset();
+  state.createFlyIaSessionKey.mockClear();
+  state.getFlyIaMemoryDashboard.mockReset();
+  state.getFlyIaTelemetryTimeline.mockReset();
+  state.getFlyIaTravelGuidanceAnswer.mockReset();
+  state.getDestinationWeather.mockReset();
+  state.getFlyIaSessionMemory.mockReset();
+  state.getFlyIaSessionMemory.mockResolvedValue(null);
+  state.getFlyIaPromptStats.mockClear();
+  state.getFlyIaPromptStats.mockReturnValue({ contextChars: 150, historyChars: 80, payloadHistoryChars: 40, memoryChars: 0 });
+  state.recordFlyIaContextMetric.mockReset();
+  state.recordFlyIaContextMetric.mockResolvedValue(undefined);
+  state.saveFlyIaSessionMemory.mockReset();
+  state.saveFlyIaSessionMemory.mockResolvedValue(undefined);
+});
+
+describe("flyIa.chat", () => {
+  it("rejeita visitantes sem sessão interna", async () => {
+    const caller = createCaller(false);
+
+    await expect(caller.flyIa.chat(input)).rejects.toMatchObject({
+      code: "UNAUTHORIZED",
+    });
+    expect(state.buildFlyIaContext).not.toHaveBeenCalled();
+  });
+
+  it("mapeia o rate limit para TOO_MANY_REQUESTS", async () => {
+    state.consume.mockImplementation(() => {
+      throw new state.FlyIaRateLimitError();
+    });
+    const caller = createCaller(true);
+
+    await expect(caller.flyIa.chat(input)).rejects.toMatchObject({
+      code: "TOO_MANY_REQUESTS",
+    });
+    expect(state.consume).toHaveBeenCalledWith("piloto@smartfly.test");
+  });
+
+  it("mapeia indisponibilidade do Gemini para SERVICE_UNAVAILABLE", async () => {
+    state.buildFlyIaContext.mockResolvedValue({ exercicio: 2026 });
+    state.askFlyIa.mockRejectedValue(new state.FlyIaProviderError());
+    state.getGeminiBudgetSnapshot.mockResolvedValue({ isAtLimit: false });
+    const caller = createCaller(true);
+
+    await expect(caller.flyIa.chat(input)).rejects.toMatchObject({
+      code: "SERVICE_UNAVAILABLE",
+    });
+  });
+
+  it("converte falhas inesperadas em indisponibilidade com código de diagnóstico", async () => {
+    state.getGeminiBudgetSnapshot.mockRejectedValue(new Error("database unavailable"));
+    const caller = createCaller(true);
+
+    await expect(caller.flyIa.chat(input)).rejects.toMatchObject({
+      code: "SERVICE_UNAVAILABLE",
+      message: expect.stringContaining("Código:"),
+    });
+  });
+
+  it("bloqueia novas perguntas quando o teto interno já foi atingido", async () => {
+    state.getGeminiBudgetSnapshot.mockResolvedValue({ isAtLimit: true });
+    const caller = createCaller(true);
+
+    await expect(caller.flyIa.chat(input)).rejects.toMatchObject({
+      code: "PRECONDITION_FAILED",
+    });
+    expect(state.buildFlyIaContext).not.toHaveBeenCalled();
+    expect(state.askFlyIa).not.toHaveBeenCalled();
+  });
+
+  it("devolve a resposta do Gemini para uma sessão autorizada", async () => {
+    const context = { exercicio: 2026, voosEmitidos: [] };
+    state.buildFlyIaContext.mockResolvedValue(context);
+    state.getDeterministicFlyIaAnswer.mockResolvedValue(null);
+    state.getGeminiBudgetSnapshot.mockResolvedValue({ isAtLimit: false });
+    state.askFlyIa.mockResolvedValue({
+      text: "Seu próximo voo está previsto para amanhã.",
+      usage: { inputTokens: 100, outputTokens: 30, totalTokens: 130 },
+    });
+    state.recordGeminiUsage.mockResolvedValue(undefined);
+    state.getFlyIaSessionMemory.mockResolvedValue({ summary: "O usuário discutiu o voo de abril.", sourceResponsesCount: 2 });
+    state.getFlyIaPromptStats.mockReturnValue({ contextChars: 150, historyChars: 80, payloadHistoryChars: 40, memoryChars: 32 });
+    state.saveFlyIaSessionMemory.mockResolvedValue(undefined);
+    state.recordFlyIaContextMetric.mockResolvedValue(undefined);
+    const caller = createCaller(true);
+
+    await expect(caller.flyIa.chat(input)).resolves.toEqual({
+      response: "Seu próximo voo está previsto para amanhã.",
+    });
+    expect(state.buildFlyIaContext).toHaveBeenCalledWith(2026);
+    expect(state.askFlyIa).toHaveBeenCalledWith(context, input.messages, "O usuário discutiu o voo de abril.");
+    expect(state.recordGeminiUsage).toHaveBeenCalledWith("gemini-3.6-flash", {
+      inputTokens: 100,
+      outputTokens: 30,
+      totalTokens: 130,
+    });
+    expect(state.saveFlyIaSessionMemory).toHaveBeenCalledWith(expect.objectContaining({
+      sessionKey: "session-key",
+      year: 2026,
+      existingSummary: "O usuário discutiu o voo de abril.",
+      sourceResponsesCount: 2,
+    }));
+    expect(state.recordFlyIaContextMetric).toHaveBeenCalledWith(expect.objectContaining({
+      outcome: "generated",
+      memoryChars: 32,
+      latencyMs: expect.any(Number),
+    }));
+  });
+
+  it("responde o próximo voo completo a partir dos dados persistidos sem chamar Gemini", async () => {
+    state.getDeterministicFlyIaAnswer.mockResolvedValue({
+      text: "**Próximo voo — ida**\n- **Data e hora:** 26/04/2026 às 22:05",
+      trackingUrl: "https://www.flightradar24.com/data/flights/g31234",
+    });
+    const caller = createCaller(true);
+
+    await expect(caller.flyIa.chat(input)).resolves.toEqual({
+      response: "**Próximo voo — ida**\n- **Data e hora:** 26/04/2026 às 22:05",
+      trackingUrl: "https://www.flightradar24.com/data/flights/g31234",
+    });
+    expect(state.getGeminiBudgetSnapshot).not.toHaveBeenCalled();
+    expect(state.askFlyIa).not.toHaveBeenCalled();
+  });
+
+  it("retorna a estimativa externa de rota antes de consultar Gemini", async () => {
+    const guidance = {
+      response: "**Estimativa de deslocamento até o aeroporto**\n- **Voo considerado (base SmartFly):** 26/10/2026 às 22:05",
+      routeUrl: "https://www.google.com/maps/dir/?api=1&origin=Paulista&destination=GRU&travelmode=driving",
+    };
+    state.getFlyIaTravelGuidanceAnswer.mockResolvedValue(guidance);
+    const caller = createCaller(true);
+    const travelInput = {
+      year: 2026,
+      messages: [{ role: "user" as const, content: "Quanto tempo eu demoro saindo da Paulista até o aeroporto?" }],
+    };
+
+    await expect(caller.flyIa.chat(travelInput)).resolves.toEqual(guidance);
+    expect(state.getFlyIaTravelGuidanceAnswer).toHaveBeenCalledWith(2026, travelInput.messages);
+    expect(state.getDeterministicFlyIaAnswer).not.toHaveBeenCalled();
+    expect(state.getGeminiBudgetSnapshot).not.toHaveBeenCalled();
+    expect(state.askFlyIa).not.toHaveBeenCalled();
+  });
+});
+
+
+describe("flyIaMemory router", () => {
+  it("impede o painel para usuários sem papel administrativo", async () => {
+    state.validateAuthSession.mockResolvedValue({ email: "piloto@smartfly.test", role: "user" });
+    const caller = appRouter.createCaller({ user: null, req: { headers: { cookie: "flight_session=valid-session" } }, res: {} } as any);
+
+    await expect(caller.flyIaMemory.dashboard()).rejects.toMatchObject({ code: "FORBIDDEN" });
+  });
+
+  it("retorna indicadores somente para administradores", async () => {
+    state.validateAuthSession.mockResolvedValue({ email: "admin@smartfly.test", role: "admin" });
+    state.getFlyIaMemoryDashboard.mockResolvedValue({ activeSessions: 1, retentionHours: 8, metrics: { requests: 2 } });
+    const caller = appRouter.createCaller({ user: null, req: { headers: { cookie: "flight_session=admin-session" } }, res: {} } as any);
+
+    await expect(caller.flyIaMemory.dashboard()).resolves.toMatchObject({ activeSessions: 1 });
+  });
+});
+
+describe("flyIaTelemetry router", () => {
+  it("impede a série temporal para usuários sem papel administrativo", async () => {
+    state.validateAuthSession.mockResolvedValue({ email: "piloto@smartfly.test", role: "user" });
+    const caller = appRouter.createCaller({ user: null, req: { headers: { cookie: "flight_session=valid-session" } }, res: {} } as any);
+
+    await expect(caller.flyIaTelemetry.timeline()).rejects.toMatchObject({ code: "FORBIDDEN" });
+    expect(state.getFlyIaTelemetryTimeline).not.toHaveBeenCalled();
+  });
+
+  it("entrega somente a série agregada para administradores", async () => {
+    state.validateAuthSession.mockResolvedValue({ email: "admin@smartfly.test", role: "admin" });
+    state.getFlyIaTelemetryTimeline.mockResolvedValue([{ date: "2026-08-21", label: "21/08", totalTokens: 1200, audioDurationMs: 3000 }]);
+    const caller = appRouter.createCaller({ user: null, req: { headers: { cookie: "flight_session=admin-session" } }, res: {} } as any);
+
+    await expect(caller.flyIaTelemetry.timeline()).resolves.toEqual([{ date: "2026-08-21", label: "21/08", totalTokens: 1200, audioDurationMs: 3000 }]);
+  });
+});
+
+describe("destinationWeather router", () => {
+  const weatherInput = { airportCode: "NVT", flightDate: "2026-08-28" };
+
+  it("permite a previsão pública limitada sem sessão interna", async () => {
+    state.getDestinationWeather.mockResolvedValue({
+      available: true,
+      airportCode: "NVT",
+      destinationLabel: "Navegantes",
+    });
+    const caller = createCaller(false);
+
+    await expect(caller.destinationWeather.forecast(weatherInput)).resolves.toMatchObject({
+      available: true,
+      airportCode: "NVT",
+    });
+    expect(state.getDestinationWeather).toHaveBeenCalledWith("NVT", "2026-08-28");
+  });
+
+  it("encaminha somente código de aeroporto e data do voo para a fonte de previsão", async () => {
+    state.getDestinationWeather.mockResolvedValue({
+      available: true,
+      airportCode: "NVT",
+      destinationLabel: "Navegantes",
+    });
+    const caller = createCaller(true);
+
+    await expect(caller.destinationWeather.forecast(weatherInput)).resolves.toMatchObject({
+      available: true,
+      airportCode: "NVT",
+    });
+    expect(state.getDestinationWeather).toHaveBeenCalledWith("NVT", "2026-08-28");
+  });
+});

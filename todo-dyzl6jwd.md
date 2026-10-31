@@ -1,0 +1,12 @@
+# Project TODO
+
+- [x] Mapear o fluxo atual de passagens adicionais por semana e identificar lacunas para ida, volta e somente ida.
+- [x] Consolidar as regras de dados para salvar, atualizar e remover cada trecho preservando o vínculo com a semana selecionada.
+- [x] Implementar ou ajustar as operações protegidas de inclusão, edição e exclusão de passagens.
+- [x] Implementar os controles de interface para inclusão, edição e exclusão de ida, volta e somente ida dentro da mesma semana.
+- [x] Cobrir as regras de passagens semanais com testes unitários e validar tipos, testes, build e interface.
+- [x] Registrar a versão validada em checkpoint e apresentar o resumo da entrega.
+- [x] Substituir os controles textuais de inserção e remoção por botões visuais de mais e menos no painel de passagens de cada semana.
+- [x] Atualizar testes de interação, validar tipos e build e registrar o checkpoint da alteração.
+- [x] Garantir que o controle de incluir passagem adicional apareça em todas as semanas de todos os meses, mesmo quando já houver bilhete emitido.
+- [x] Cobrir a disponibilidade mensal em testes, validar tipos, suíte e build e registrar a versão atualizada.

@@ -1,0 +1,244 @@
+# Project TODO
+
+- [x] Auditar a estrutura e os botões atuais do cabeçalho nas telas relevantes
+- [x] Definir uma hierarquia de ações coerente para desktop e mobile
+- [x] Padronizar e reorganizar os controles do cabeçalho
+- [x] Corrigir a compatibilidade de JSX e concluir a validação automatizada do novo cabeçalho
+- [x] Cobrir a nova estrutura com teste automatizado
+- [x] Validar visualmente em desktop e mobile e registrar o resultado
+- [x] Registrar a auditoria visual: 320 px e 375 px reorganizam as ações em linhas sem sobreposição; 390 px mantém controles alcançáveis; 1280 px preserva a hierarquia compacta e sem overflow
+- [x] Criar regressão estrutural que preserve a quebra controlada dos grupos de ações em telas estreitas
+- [x] Inspecionar os seis erros de tipagem de autenticação em FinancialDashboard.tsx
+- [x] Confirmar a referência tipada de autenticação na tela financeira, já resolvida no estado compartilhado atual
+- [x] Executar teste focal, checagem de tipos e build de produção da correção financeira
+- [x] Inspecionar o fluxo atual de carregamento do dashboard financeiro e os skeletons reutilizáveis
+- [x] Adicionar um skeleton visual alinhado aos KPIs, abas e conteúdo financeiro
+- [x] Corrigir a compatibilidade JSX do primitive Skeleton para validar o novo estado de carregamento
+- [x] Cobrir o estado de carregamento com teste e validar em desktop e mobile
+- [x] Adicionar regressão de integração que comprove o uso do skeleton pela rota financeira durante isLoading
+- [x] Inspecionar o quadro Variação de Preços por Mês e o padrão atual de preferências persistentes
+- [x] Implementar o controle de recolher ou expandir com persistência da última escolha
+- [x] Cobrir acessibilidade, persistência e responsividade do quadro com testes
+- [x] Adicionar regressão responsiva do cabeçalho e conteúdo expansível do quadro de preços
+- [x] Mapear os gráficos e painéis restantes da Home para expansão ou recolhimento persistente
+- [x] Estender as preferências persistentes a todos os painéis e gráficos aplicáveis
+- [x] Criar o controle global para expandir ou recolher todos os quadros da Home
+- [x] Cobrir persistência, acessibilidade e responsividade do novo padrão em testes
+- [x] Adicionar regressão de integração para sincronização e persistência do controle global
+- [x] Adicionar regressão responsiva do botão global e dos painéis sincronizados
+- [x] Mapear os painéis da Home e o armazenamento de preferências para perfis, atalhos e prioridades
+- [x] Criar perfis de layout persistentes para os painéis da Home
+- [x] Adicionar atalho de teclado acessível para expandir ou recolher todos os painéis
+- [x] Permitir fixar painéis prioritários com preferência persistente
+- [x] Cobrir comportamento, persistência, acessibilidade e responsividade com testes
+- [x] Adicionar integração do atalho global e dos controles de perfil ou prioridade da Home
+- [x] Adicionar regressão responsiva específica da faixa de organização em mobile e desktop
+- [x] Adicionar regressão de classes responsivas para a faixa de perfis, atalho e prioridades
+- [x] Inspecionar a estrutura atual de painéis prioritários e seu armazenamento persistente
+- [x] Implementar a reordenação livre e persistente dos painéis prioritários
+- [x] Cobrir reordenação, acessibilidade e responsividade com testes
+- [x] Inspecionar preferências e controles atuais para arrastar e soltar, ordem padrão e conjuntos nomeados
+- [x] Implementar arrastar e soltar com alternativa por botões acessíveis
+- [x] Adicionar restauração da ordem padrão dos painéis prioritários
+- [x] Permitir salvar, aplicar e excluir conjuntos de prioridades nomeados
+- [x] Cobrir persistência, interações, acessibilidade e responsividade com testes
+- [x] Definir recomendações de design minimalista, futurista e funcional para a Home
+- [x] Gerar imagem conceitual da Home para avaliação visual
+- [x] Incorporar o Calendário como referência funcional e atalho principal na imagem conceitual da Home
+- [x] Mapear dados e rotas existentes para os cards semanais e o atalho ao Calendário
+- [x] Promover o Calendário a ação operacional prioritária na Home
+- [x] Implementar a seção Planejamento por semanas com cards de bilhetes reais
+- [x] Posicionar o Planejamento por semanas imediatamente após o Resumo Anual, conforme a hierarquia operacional definida
+- [x] Cobrir dados, navegação, acessibilidade e responsividade das duas implementações
+- [x] Inspecionar navegação do Calendário e dados disponíveis nos cards semanais
+- [x] Abrir a semana correspondente ao card diretamente no Calendário
+- [x] Adicionar mini prévia mensal contextual aos cards semanais
+- [x] Permitir favoritar semanas com preferência persistente
+- [x] Cobrir persistência, navegação, acessibilidade e responsividade das novas interações
+- [x] Inspecionar o cálculo temporal atual dos cards do Planejamento por semanas
+- [x] Mostrar sempre semana anterior, atual e próxima semana no resumo semanal
+- [x] Criar uma janela operacional fixa com os rótulos anterior, atual e próxima
+- [x] Confirmar a integração do helper temporal e os rótulos anterior, atual e próxima nos cards semanais
+- [x] Cobrir a seleção temporal e a responsividade com testes
+- [x] Registrar a validação: testes focais, tipos e build aprovados; suíte completa confirmou 498 testes locais, com uma falha externa 503 na integração Gemini
+- [x] Adicionar regressão responsiva dos cards anterior, atual e próxima semana em mobile e desktop
+- [x] Inspecionar a estrutura mensal e o estado expansível de Janeiro a Dezembro
+- [x] Confirmar que os meses são renderizados pela lista agrupada e já possuem expansão individual reutilizável
+- [x] Criar o frame Gestão de Passagens para agrupar todos os meses
+- [x] Adicionar controle global para recolher ou expandir todos os meses
+- [x] Cobrir funcionalidade, acessibilidade e responsividade do novo agrupamento
+- [x] Adicionar teste de integração do botão global com meses visíveis e estado aria-expanded
+- [x] Adicionar regressão renderizada da composição responsiva do cabeçalho de Gestão de Passagens
+- [x] Confirmar os arquivos do frame e da regressão de interação antes da validação focal
+- [x] Corrigir a compatibilidade JSX do frame Gestão de Passagens no ambiente de testes
+- [x] Mapear dados, estados e blocos de Planejamento anual e Gestão de Passagens atualmente na Home
+- [x] Definir rota dedicada reutilizando a lógica de dados existente e mantendo a Home focada em visão resumida
+- [x] Confirmar a rota /gestao-passagens e sua composição dedicada com o contexto anual existente
+- [x] Corrigir a compatibilidade de tipagem da rota principal após adicionar o modo da Home
+- [x] Criar a nova página dedicada de Gestão de Passagens
+- [x] Mover os controles mensais, filtros e resumos anuais para a página dedicada
+- [x] Adicionar acesso direto à Gestão de Passagens no cabeçalho
+- [x] Cobrir navegação, dados, acessibilidade e responsividade da nova página
+- [x] Adicionar integração renderizada que comprove os blocos anuais movidos na página dedicada
+- [x] Validar em runtime o acesso de cabeçalho e os controles principais da Gestão de Passagens
+- [x] Adicionar teste renderizado da rota dedicada com Resumo Anual, Filtros e Gestão de Passagens
+- [x] Validar em runtime o link de Gestão de Passagens no cabeçalho e a expansão global de meses
+- [x] Corrigir a compatibilidade JSX da página dedicada no ambiente de testes
+- [x] Alterar o rótulo do botão principal de Abrir calendário para Calendário
+- [x] Atualizar a regressão do cabeçalho para validar o rótulo Calendário
+- [x] Inspecionar os controles e estados da funcionalidade Layout dos quadros
+- [x] Ocultar completamente Layout dos quadros da Home sem remover a implementação
+- [x] Cobrir a ausência visual e a preservação reversível do recurso com testes
+- [x] Atualizar a regressão global de painéis para reconhecer o atalho desativado por flag
+- [x] Inspecionar a composição e as quebras atuais do cabeçalho mobile
+- [x] Definir duas linhas móveis: contexto e conta na primeira; preferências utilitárias na segunda
+- [x] Reorganizar os controles do cabeçalho para duas linhas no mobile
+- [x] Cobrir a nova composição móvel com teste e validação visual
+- [x] Adicionar regressão estrutural explícita dos dois grupos de linha do cabeçalho mobile
+- [x] Isolar as consultas da regressão mobile para evitar colisões entre instâncias renderizadas
+- [x] Inspecionar ações móveis e recursos de acessibilidade disponíveis no cabeçalho
+- [x] Definir Calendário como ação fixa e concentrar os utilitários em um menu móvel único
+- [x] Adicionar uma ação prioritária fixa no mobile
+- [x] Agrupar as preferências utilitárias em um controle móvel compacto
+- [x] Implementar dicas acionadas por toque prolongado nos ícones móveis
+- [x] Ajustar as regressões de dica por toque e das linhas móveis após a nova estrutura de preferências
+- [x] Isolar o cenário de preferências compactas para evitar colisões entre renderizações de teste
+- [x] Encaminhar eventos e referência no componente de dica para permitir o acionamento do menu de preferências
+- [x] Alinhar o teste do menu de preferências ao evento de ponteiro usado pelo gatilho móvel
+- [x] Inspecionar rotas, preferências e padrões móveis existentes
+- [x] Definir navegação inferior com Home, Calendário, Gestão e Cotações; ação prioritária persistente entre Calendário e Gestão
+- [x] Formalizar em helper a arquitetura da barra inferior e a preferência persistente de ação prioritária
+- [x] Atualizar a regressão do cabeçalho para validar a ação prioritária configurável
+- [x] Adicionar barra de navegação inferior para uso diário no mobile
+- [x] Permitir escolher e persistir a ação prioritária do cabeçalho
+- [x] Adicionar feedback háptico com degradação segura para dispositivos sem suporte
+- [x] Cobrir persistência, interação, acessibilidade e responsividade das três evoluções
+- [x] Cobrir interação, acessibilidade e responsividade das três melhorias
+- [x] Adicionar integração da Home para persistência e reidratação da ação prioritária móvel
+- [x] Adicionar regressão responsiva do App e da barra inferior para espaçamento e visibilidade móveis
+- [x] Renderizar a Home real para validar persistência e reidratação da ação prioritária móvel
+- [x] Validar na Home real a alternância do link prioritário entre Calendário e Gestão
+- [x] Corrigir a compatibilidade de JSX da Home exposta pela regressão integrada
+- [x] Corrigir o botão Gestão no cabeçalho móvel para impedir quebra visual entre ícone e rótulo
+- [x] Transformar a marca Smart Fly no cabeçalho em um link acessível para a Home
+- [x] Transformar a imagem do logo Smart Fly no cabeçalho em um link acessível para a Home
+- [x] Transformar a imagem do logo Smart Fly no cabeçalho em um link acessível para a Home
+- [x] Identificar a origem do número exibido ao lado da semana no detalhamento do Calendário
+- [x] Corrigir as flags numéricas no cabeçalho do detalhe de bilhete para remover o zero indevido
+- [x] Auditar outras renderizações que podem exibir flags numéricas desativadas
+- [x] Mover o atalho Gráfico do cabeçalho para o menu suspenso de navegação
+- [x] Renomear o atalho administrativo Locais consentidos para Locais de Acesso
+- [x] Remover a indicação de Terminal do cabeçalho resumido da semana na gestão de bilhetes
+- [x] Mapear e substituir os acentos azul-brilhante da Gestão de Passagens por azul-marinho intenso
+- [x] Auditar os demais blocos da Gestão de Passagens para eliminar acentos azul-brilhante remanescentes
+- [x] Adicionar regressão renderizada que comprove a paleta azul-marinho nos controles e meses da Gestão
+- [x] Auditar os demais blocos da Gestão de Passagens para eliminar acentos azul-brilhante remanescentes
+- [x] Adicionar regressão renderizada que comprove a paleta azul-marinho nos controles e meses da Gestão
+- [x] Estender a paleta azul-marinho elegante aos demais módulos operacionais
+- [x] Criar uma preferência visual persistente de intensidade da paleta azul-marinho
+- [x] Revisar cores de companhias aéreas para preservar identificação sem azuis claros ou intensos
+- [x] Próxima ação: reduzir o botão Aparência do cabeçalho ao ícone atual, mantendo acessibilidade
+- [x] Auditar e substituir variantes azul-brilhante remanescentes nos módulos operacionais
+- [x] Expandir as regressões da paleta azul-marinho para módulos operacionais críticos
+- [x] Substituir explicitamente os acentos azul-brilhante restantes em Admin, Telemetria, Changelog e Home
+- [x] Cobrir variantes azul e módulos restantes com regressões finais de paleta
+- [x] Substituir explicitamente os acentos azul-brilhante remanescentes em AdminNotifications e Home
+- [x] Adicionar regressões estruturais para AdminNotifications e blocos restantes da Home
+- [x] Reexecutar e registrar a auditoria final de acentos azuis dos módulos operacionais
+- [x] Organizar os filtros de período da Telemetria em uma única linha distribuída e acessível
+- [x] Aplicar #4B0082 ao fundo dos dias com voos cancelados no Calendário
+- [x] Adicionar legenda roxa de voos cancelados à Gestão de Passagens
+- [x] Persistir o último período escolhido nos filtros de Telemetria
+- [x] Exibir totais de eventos diretamente nos filtros de período da Telemetria
+- [x] Exibir estado neutro quando o total de um período da Telemetria falhar
+- [x] Cobrir falha individual de total por período com regressão automatizada
+- [x] Simular falha de query de total por período em teste renderizado da Telemetria
+- [x] Revalidar tipos, build e suíte completa após a regressão integrada de erro
+- [x] Corrigir o fundo e o contraste do card Total investido na Gestão Financeira
+- [x] Aplicar padrão de contraste azul-marinho aos cards financeiros secundários
+- [x] Inventariar e revisar todas as telas da plataforma sob o design system azul-marinho
+- [x] Identificar melhorias de consistência, acessibilidade e responsividade entre telas
+- [x] Entregar recomendações priorizadas para a evolução do design system
+- [x] Adaptar o Calendário para uma coluna em telas de até 359 px
+- [x] Criar tokens e componentes compartilhados AppPageHeader, StatusPill e AccessGate
+- [x] Localizar e redesenhar a página 404 no padrão Smart Fly
+- [x] Harmonizar o filtro de empresas do Gráfico em uma escala azul-marinho
+- [x] Transformar os filtros da Gestão de Passagens em painel inferior no mobile
+- [x] Criar e aplicar o componente compartilhado MetricCard na Home e no Financeiro
+- [x] Adicionar uma legenda de status persistente acima do Calendário
+- [x] Exibir contador de filtros ativos no gatilho da Gestão de Passagens
+- [x] Permitir recolher e persistir a preferência da legenda de status do Calendário
+- [x] Exibir comparação mensal baseada em dados reais nos KPIs financeiros
+- [x] Corrigir a causa transitória da consulta flight_weeks no backend e no cliente
+- [x] Adicionar regressão de compatibilidade da projeção completa de flight_weeks
+- [x] Registrar telemetria minimizada para falhas de leitura de flight_weeks, inclusive as recuperadas pelo retry
+- [x] Exibir estado de erro da Home com botão acessível para tentar novamente
+- [x] Alertar a área administrativa quando houver divergência permanente de schema
+- [x] Alinhar os ícones instaláveis Android e iOS ao logotipo oficial SF do menu
+- [x] Padronizar os favicons de desktop com o logotipo oficial SF
+- [x] Adicionar uma experiência guiada e acessível para instalação do aplicativo
+- [x] Aplicar a assinatura visual SF aos e-mails e notificações enviados pela plataforma
+- [x] Registrar histórico de instalações somente após consentimento explícito do usuário
+- [x] Permitir preferências de canal por tipo de aviso para notificações push e e-mail
+- [x] Exibir prévia segura dos e-mails no painel administrativo
+- [x] Criar apresentação detalhada do Smart Fly e da Central de decisão na Home
+- [x] Implementar a Central de decisão na Home com ranking, próxima viagem e atalhos contextuais
+- [x] Cobrir a Central de decisão com testes de regras, acessibilidade, navegação e responsividade
+- [x] Adicionar fila secundária recolhível com preferência persistente e validada
+- [x] Exibir preço e tendência real nos itens prioritários da Central de decisão
+- [x] Permitir ajuste manual e persistente de relevância para prioridades por semana
+- [x] Adicionar animação de carregamento sutil e acessível à splash antes da transição de conteúdo
+- [x] Exibir percentual somente quando o progresso real de inicialização estiver disponível
+- [x] Exibir mensagem contextual e acessível quando a abertura detectar modo offline
+- [x] Aplicar variação sazonal sutil e automática à identidade visual da splash
+- [x] Exibir a última sincronização conhecida quando o aplicativo abrir offline
+- [x] Oferecer tela de recuperação acessível quando não houver dados locais disponíveis
+- [x] Cachear e apresentar as próximas viagens disponíveis para consulta offline
+- [x] Cobrir cache de próximas viagens com testes de validade, expiração e recuperação
+- [x] Permitir recolher ou expandir integralmente a Central de decisão com preferência persistente
+- [x] Cobrir a sanfona integral da Central com testes de acessibilidade e responsividade
+- [x] Adicionar atalho de teclado acessível para expandir ou recolher a Central de decisão
+- [x] Permitir fixar a Central no topo da Home com preferência persistente e reversível
+- [x] Exibir resumo útil das prioridades enquanto a Central estiver recolhida
+- [x] Cobrir atalho, fixação, resumo, persistência e responsividade com regressões automatizadas
+- [x] Corrigir a exibição dos dados de clima e tempo nos cards do Calendário
+- [x] Cobrir a previsão meteorológica do Calendário com regressões de sucesso e contingência
+- [x] Exibir ícone meteorológico coerente com a condição prevista em cada card
+- [x] Mostrar a previsão horária mais próxima do horário de cada voo
+- [x] Destacar alerta operacional de chuva intensa ou vento forte
+- [x] Cobrir ícones, previsão horária, alertas e contingências com regressões automatizadas
+- [x] Exibir direção e intensidade do vento no horário mais próximo do voo
+- [x] Mostrar nascer e pôr do sol previstos na data do voo
+- [x] Permitir ocultar alertas meteorológicos com preferência local persistente e validada
+- [x] Cobrir dados meteorológicos, preferência e acessibilidade com regressões automatizadas
+- [x] Exibir sensação térmica no horário mais próximo do voo
+- [x] Destacar visibilidade reduzida como alerta operacional contextual
+- [x] Comparar as condições de clima da origem e do destino em cada trecho
+- [x] Cobrir sensação térmica, visibilidade, comparação e contingências com regressões automatizadas
+- [x] Corrigir o carregamento de ícones, imagens e marcas de companhias aéreas na versão publicada
+- [x] Corrigir a exibição visível do mapa na tela Locais de Acesso após publicação
+- [x] Cobrir ativos e mapa com regressões de produção e contingência
+- [x] Corrigir a entrega de imagens, ícones e logos que falha exclusivamente no domínio publicado
+- [x] Validar as URLs de ativos finais no domínio publicado, inclusive em navegação sem cache
+- [x] Restaurar a consulta de previsão meteorológica que passou a falhar no Calendário publicado
+- [x] Corrigir o controle de ocultar detalhes da previsão nos cards de bilhetes do Calendário
+- [x] Remover o controle redundante de ocultar alertas dos detalhes meteorológicos do bilhete
+- [x] Compactar o modal de detalhes do bilhete e manter o fechamento sempre acessível em celular e desktop
+- [x] Validar o modal compactado no domínio publicado em uma sessão sem preferência meteorológica anterior
+- [x] Reposicionar clima e tempo abaixo do localizador e do link de rastreio nos detalhes do bilhete do Calendário
+- [x] Validar no domínio publicado a nova ordem entre rastreamento e clima nos detalhes do bilhete
+- [x] Exibir o controle de mostrar ou ocultar valores diretamente no cabeçalho móvel da Home
+- [x] Corrigir o dimensionamento e a área clicável de fechamento do detalhe de bilhete em telas móveis
+- [x] Validar no domínio publicado o cabeçalho móvel e o modal de bilhete em largura crítica
+- [x] Corrigir o contraste do rótulo Exportar PDF no menu suspenso móvel
+- [x] Validar a legibilidade de Exportar PDF no menu móvel do domínio publicado
+- [x] Remover o rótulo visual Avisos da ação de notificações no cabeçalho desktop
+- [x] Atualizar a página de Novidades com as evoluções verificáveis do último mês
+- [x] Auditar tooltips dos botões funcionais e completar descrições nos controles sem orientação suficiente
+- [x] Substituir títulos nativos por tooltips padronizados do Radix UI nos controles iconográficos auditados
+- [x] Aplicar tooltips padronizados do Radix UI em todas as telas administrativas
+- [x] Definir uma convenção global de posicionamento e atraso para tooltips Radix
+- [x] Ampliar o padrão de tooltips para telas administrativas futuras
+- [x] Auditar e validar tooltips administrativos em largura crítica de 320 px
+- [x] Ajustar posicionamento dos tooltips em telas com rolagem horizontal para evitar cortes e sobreposição
+- [x] Adicionar fade-in e fade-out suaves aos tooltips Radix com suporte a redução de movimento

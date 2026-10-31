@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
-import { Bell, Settings2, Clock, CheckCircle2 } from "lucide-react";
+import { Bell, Settings2, Clock, CheckCircle2, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { TooltipLabel } from "@/components/ui/tooltip-label";
 import {
   Select,
   SelectContent,
@@ -83,7 +84,7 @@ function NotificationOption({
       <Select value={String(value)} onValueChange={v => onChange(Number(v))}>
         <SelectTrigger
           aria-label={ariaLabel}
-          className="bg-slate-800 border-slate-600 text-white h-10 text-sm w-full"
+          className="bg-slate-800 border-slate-600 text-white h-10 text-sm w-full transition-[border-color,background-color,box-shadow] duration-200 hover:border-cyan-400/70 hover:bg-slate-700/80 hover:shadow-sm focus-visible:ring-2 focus-visible:ring-cyan-300 motion-reduce:transition-none"
         >
           <SelectValue />
         </SelectTrigger>
@@ -108,6 +109,10 @@ interface NotificationSettingsFormProps {
   setAviso1: (val: number) => void;
   aviso2: number;
   setAviso2: (val: number) => void;
+  flightPushEnabled: boolean;
+  setFlightPushEnabled: (value: boolean) => void;
+  ticketEmailEnabled: boolean;
+  setTicketEmailEnabled: (value: boolean) => void;
   onSave: () => void;
   isPending: boolean;
   saved: boolean;
@@ -118,18 +123,48 @@ function NotificationSettingsForm({
   setAviso1,
   aviso2,
   setAviso2,
+  flightPushEnabled,
+  setFlightPushEnabled,
+  ticketEmailEnabled,
+  setTicketEmailEnabled,
   onSave,
   isPending,
   saved,
 }: NotificationSettingsFormProps) {
   return (
-    <div className="space-y-4 p-1">
+    <div className="space-y-4 p-1 animate-in fade-in slide-in-from-top-1 duration-300 motion-reduce:animate-none">
       <p className="text-xs text-slate-400 leading-relaxed">
         Configure com quantas horas de antecedência deseja receber avisos push
         antes de cada voo. Defina como{" "}
         <strong className="text-slate-300">Desativado</strong> para não receber
         aquele aviso.
       </p>
+
+      <fieldset className="space-y-2 rounded-lg border border-slate-700 bg-slate-800/60 p-3">
+        <legend className="px-1 text-xs font-semibold uppercase tracking-wide text-slate-300">
+          Canais por tipo de aviso
+        </legend>
+        <label className="flex cursor-pointer items-center justify-between gap-3 text-sm text-slate-200">
+          <span><strong>Voos próximos</strong><span className="block text-xs text-slate-400">Notificação push nos dispositivos ativos</span></span>
+          <input
+            type="checkbox"
+            checked={flightPushEnabled}
+            onChange={event => setFlightPushEnabled(event.target.checked)}
+            aria-label="Ativar notificações push para voos próximos"
+            className="size-4 accent-cyan-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-300"
+          />
+        </label>
+        <label className="flex cursor-pointer items-center justify-between gap-3 text-sm text-slate-200">
+          <span><strong>Alterações de bilhetes</strong><span className="block text-xs text-slate-400">E-mail para destinatários cadastrados</span></span>
+          <input
+            type="checkbox"
+            checked={ticketEmailEnabled}
+            onChange={event => setTicketEmailEnabled(event.target.checked)}
+            aria-label="Ativar e-mails para alterações de bilhetes"
+            className="size-4 accent-cyan-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-300"
+          />
+        </label>
+      </fieldset>
 
       <NotificationOption
         label="Aviso 1"
@@ -176,11 +211,13 @@ function NotificationSettingsForm({
       <Button
         onClick={onSave}
         disabled={isPending}
-        className="w-full h-10 text-sm font-medium bg-blue-600 hover:bg-blue-700 text-white"
+        aria-busy={isPending}
+        aria-live="polite"
+        className="w-full h-10 text-sm font-medium bg-blue-600 text-white shadow-sm transition-[transform,background-color,box-shadow] duration-200 hover:bg-blue-700 hover:-translate-y-0.5 hover:shadow-md active:translate-y-0 active:scale-[0.98] focus-visible:ring-2 focus-visible:ring-cyan-300 motion-reduce:transform-none motion-reduce:transition-none"
       >
         {isPending ? (
           <span className="flex items-center gap-2">
-            <span className="animate-spin w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full" />
+            <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
             Salvando...
           </span>
         ) : saved ? (
@@ -199,16 +236,20 @@ function NotificationSettingsForm({
 interface NotificationSettingsPopupProps {
   isAuthenticated: boolean;
   onLoginRequired: () => void;
+  triggerClassName?: string;
 }
 
 export function NotificationSettingsPopup({
   isAuthenticated,
   onLoginRequired,
+  triggerClassName,
 }: NotificationSettingsPopupProps) {
   const [open, setOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [aviso1, setAviso1] = useState<number>(1440);
   const [aviso2, setAviso2] = useState<number>(0);
+  const [flightPushEnabled, setFlightPushEnabled] = useState(true);
+  const [ticketEmailEnabled, setTicketEmailEnabled] = useState(true);
   const [saved, setSaved] = useState(false);
 
   // Detectar mobile
@@ -230,6 +271,8 @@ export function NotificationSettingsPopup({
     if (settingsQuery.data) {
       setAviso1(settingsQuery.data.aviso1Minutes);
       setAviso2(settingsQuery.data.aviso2Minutes);
+      setFlightPushEnabled(settingsQuery.data.flightPushEnabled);
+      setTicketEmailEnabled(settingsQuery.data.ticketEmailEnabled);
     }
   }, [settingsQuery.data]);
 
@@ -257,7 +300,12 @@ export function NotificationSettingsPopup({
   };
 
   const handleSave = () => {
-    updateMutation.mutate({ aviso1Minutes: aviso1, aviso2Minutes: aviso2 });
+    updateMutation.mutate({
+      aviso1Minutes: aviso1,
+      aviso2Minutes: aviso2,
+      flightPushEnabled,
+      ticketEmailEnabled,
+    });
   };
 
   // Botão de abertura
@@ -266,12 +314,10 @@ export function NotificationSettingsPopup({
       variant="ghost"
       size="sm"
       onClick={isMobile ? handleOpen : undefined}
-      title="Configurar agendamentos de notificação"
       aria-label="Configurar agendamentos de notificação"
-      className="flex items-center gap-1.5 text-xs h-8 px-2.5 text-slate-300 hover:text-white hover:bg-white/10"
+      className={triggerClassName ?? "flex items-center gap-1.5 text-xs h-8 px-2.5 text-slate-300 transition-[transform,background-color,color,box-shadow] duration-200 hover:-translate-y-0.5 hover:text-white hover:bg-white/10 hover:shadow-md active:translate-y-0 active:scale-95 focus-visible:ring-2 focus-visible:ring-cyan-300 motion-reduce:transform-none motion-reduce:transition-none"}
     >
       <Settings2 className="w-4 h-4" />
-      <span className="hidden sm:inline">Avisos</span>
     </Button>
   );
 
@@ -279,7 +325,9 @@ export function NotificationSettingsPopup({
   if (isMobile) {
     return (
       <>
-        {TriggerButton}
+        <TooltipLabel label="Configurar agendamentos de notificação">
+          {TriggerButton}
+        </TooltipLabel>
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogContent className="bg-slate-900 border border-white/10 text-white max-w-sm w-[calc(100vw-2rem)] rounded-2xl p-4">
             <DialogHeader>
@@ -293,6 +341,10 @@ export function NotificationSettingsPopup({
               setAviso1={setAviso1}
               aviso2={aviso2}
               setAviso2={setAviso2}
+              flightPushEnabled={flightPushEnabled}
+              setFlightPushEnabled={setFlightPushEnabled}
+              ticketEmailEnabled={ticketEmailEnabled}
+              setTicketEmailEnabled={setTicketEmailEnabled}
               onSave={handleSave}
               isPending={updateMutation.isPending}
               saved={saved}
@@ -315,18 +367,18 @@ export function NotificationSettingsPopup({
         handleOpen();
       }}
     >
+      <TooltipLabel label="Configurar agendamentos de notificação">
       <PopoverTrigger asChild>
         <Button
           variant="ghost"
           size="sm"
-          title="Configurar agendamentos de notificação"
           aria-label="Configurar agendamentos de notificação"
-          className="flex items-center gap-1.5 text-xs h-8 px-2.5 text-slate-300 hover:text-white hover:bg-white/10"
+          className={triggerClassName ?? "flex items-center gap-1.5 text-xs h-8 px-2.5 text-slate-300 transition-[transform,background-color,color,box-shadow] duration-200 hover:-translate-y-0.5 hover:text-white hover:bg-white/10 hover:shadow-md active:translate-y-0 active:scale-95 focus-visible:ring-2 focus-visible:ring-cyan-300 motion-reduce:transform-none motion-reduce:transition-none"}
         >
           <Settings2 className="w-4 h-4" />
-          <span className="hidden sm:inline">Avisos</span>
         </Button>
       </PopoverTrigger>
+      </TooltipLabel>
       <PopoverContent
         align="end"
         className="w-80 bg-slate-900 border border-white/10 text-white rounded-xl p-4 shadow-2xl"
@@ -341,6 +393,10 @@ export function NotificationSettingsPopup({
           setAviso1={setAviso1}
           aviso2={aviso2}
           setAviso2={setAviso2}
+          flightPushEnabled={flightPushEnabled}
+          setFlightPushEnabled={setFlightPushEnabled}
+          ticketEmailEnabled={ticketEmailEnabled}
+          setTicketEmailEnabled={setTicketEmailEnabled}
           onSave={handleSave}
           isPending={updateMutation.isPending}
           saved={saved}

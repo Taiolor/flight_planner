@@ -26,16 +26,48 @@ interface WeekData {
   ticketType?: string | null;
   departureRescheduled?: number | boolean | null;
   returnRescheduled?: number | boolean | null;
+  departureCancelled?: number | boolean | null;
+  returnCancelled?: number | boolean | null;
+  additionalFlights?: AdditionalFlightData[];
+}
+
+interface AdditionalFlightData {
+  id: number;
+  isTicketIssued: number;
+  departureAirline?: string | null;
+  returnAirline?: string | null;
+  departureFlightNumber?: string | null;
+  returnFlightNumber?: string | null;
+  departureLocator?: string | null;
+  returnLocator?: string | null;
+  departureFlightDatetime?: string | null;
+  returnFlightDatetime?: string | null;
+  departureAirport?: string | null;
+  returnAirport?: string | null;
+  ticketType?: string | null;
+  departureRescheduled?: number | boolean | null;
+  returnRescheduled?: number | boolean | null;
+  departureCancelled?: number | boolean | null;
+  returnCancelled?: number | boolean | null;
 }
 
 interface PriceMap {
   [weekNumber: number]: { [airline: string]: string };
 }
 
-interface FlightPdfExportProps {
+export interface FlightPdfExportProps {
+  year: number;
   weeksData: WeekData[];
   priceMap: PriceMap;
   totalInvested: number;
+}
+
+export function getPdfReportSubtitle(year: number): string {
+  return `Relatório de Passagens Aéreas ${year}`;
+}
+
+export function getPdfFilename(year: number): string {
+  return `SmartFly-Passagens-${year}.pdf`;
 }
 
 const AIRLINE_COLORS: Record<
@@ -61,6 +93,14 @@ export function formatAirlineName(airline: string | null | undefined): string {
 
 export function formatRescheduleStatus(value: number | boolean | null | undefined): string {
   return isRescheduled(value) ? "Remarcado" : "Não remarcado";
+}
+
+export function formatFlightStatus(
+  rescheduled: number | boolean | null | undefined,
+  cancelled: number | boolean | null | undefined
+): string {
+  if (isRescheduled(cancelled)) return "Cancelado";
+  return formatRescheduleStatus(rescheduled);
 }
 
 function formatDatetime(dt: string | null | undefined): string {
@@ -97,6 +137,7 @@ interface FlightDetailsProps {
   flightDatetime?: string | null;
   airport?: string | null;
   rescheduled?: boolean;
+  cancelled?: boolean;
 }
 
 function FlightDetailRow({
@@ -191,6 +232,7 @@ function FlightDetailsSection({
   flightDatetime,
   airport,
   rescheduled = false,
+  cancelled = false,
 }: FlightDetailsProps) {
   return (
     <div
@@ -250,13 +292,13 @@ function FlightDetailsSection({
                   display: "inline-block",
                   padding: "3px 8px",
                   borderRadius: "999px",
-                  background: rescheduled ? "#fee2e2" : "#dcfce7",
-                  color: rescheduled ? "#b91c1c" : "#166534",
+                  background: cancelled ? "#e2e8f0" : rescheduled ? "#fee2e2" : "#dcfce7",
+                  color: cancelled ? "#334155" : rescheduled ? "#b91c1c" : "#166534",
                   fontSize: "11px",
                   fontWeight: 700,
                 }}
               >
-                {formatRescheduleStatus(rescheduled)}
+                {formatFlightStatus(rescheduled, cancelled)}
               </span>
             }
           />
@@ -276,7 +318,7 @@ function FlightDetailsSection({
   );
 }
 
-function CoverHeader() {
+function CoverHeader({ year }: { year: number }) {
   return (
     <div
       style={{
@@ -311,7 +353,7 @@ function CoverHeader() {
           Smart Fly
         </div>
         <div style={{ fontSize: "14px", opacity: 0.75 }}>
-          Relatório de Passagens Aéreas 2026
+          {getPdfReportSubtitle(year)}
         </div>
       </div>
     </div>
@@ -354,9 +396,11 @@ function StatCard({
 }
 
 function CoverPage({
+  year,
   issued,
   totalInvested,
 }: {
+  year: number;
   issued: WeekData[];
   totalInvested: number;
 }) {
@@ -373,7 +417,7 @@ function CoverPage({
         boxSizing: "border-box",
       }}
     >
-      <CoverHeader />
+      <CoverHeader year={year} />
 
       <div
         style={{
@@ -443,6 +487,7 @@ function WeekCard({
       : null;
   const depAirlineInfo = AIRLINE_COLORS[depAirlineKey];
   const retAirlineInfo = AIRLINE_COLORS[retAirlineKey];
+  const additionalFlights = week.additionalFlights?.filter(flight => !!flight.isTicketIssued) ?? [];
 
   return (
     <div
@@ -504,6 +549,7 @@ function WeekCard({
           flightDatetime={week.departureFlightDatetime}
           airport={week.departureAirport}
           rescheduled={isRescheduled(week.departureRescheduled)}
+          cancelled={isRescheduled(week.departureCancelled)}
         />
         {!isOneway && (
           <FlightDetailsSection
@@ -516,9 +562,49 @@ function WeekCard({
             flightDatetime={week.returnFlightDatetime}
             airport={week.returnAirport}
             rescheduled={isRescheduled(week.returnRescheduled)}
+            cancelled={isRescheduled(week.returnCancelled)}
           />
         )}
       </div>
+      {additionalFlights.map((flight, index) => {
+        const additionalOneway = flight.ticketType === "oneway";
+        const departureKey = flight.departureAirline?.toLowerCase() ?? "";
+        const returnKey = flight.returnAirline?.toLowerCase() ?? "";
+        return (
+          <div key={flight.id} style={{ borderTop: "1px dashed #cbd5e1" }}>
+            <div style={{ padding: "8px 20px", color: "#6d28d9", fontSize: "11px", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.06em" }}>
+              Voo adicional {index + 1}{additionalOneway ? " • somente ida" : ""}
+            </div>
+            <div style={{ display: "flex", flexDirection: additionalOneway ? "column" : "row" }}>
+              <FlightDetailsSection
+                title={additionalOneway ? "→ IDA • SOMENTE IDA" : "→ IDA"}
+                titleColor="#6d28d9"
+                borderRight={!additionalOneway}
+                airline={flight.departureAirline}
+                airlineInfo={AIRLINE_COLORS[departureKey]}
+                flightNumber={flight.departureFlightNumber}
+                locator={flight.departureLocator}
+                flightDatetime={flight.departureFlightDatetime}
+                airport={flight.departureAirport}
+                rescheduled={isRescheduled(flight.departureRescheduled)}
+                cancelled={isRescheduled(flight.departureCancelled)}
+              />
+              {!additionalOneway && <FlightDetailsSection
+                title="↩ VOLTA"
+                titleColor="#ea580c"
+                airline={flight.returnAirline}
+                airlineInfo={AIRLINE_COLORS[returnKey]}
+                flightNumber={flight.returnFlightNumber}
+                locator={flight.returnLocator}
+                flightDatetime={flight.returnFlightDatetime}
+                airport={flight.returnAirport}
+                rescheduled={isRescheduled(flight.returnRescheduled)}
+                cancelled={isRescheduled(flight.returnCancelled)}
+              />}
+            </div>
+          </div>
+        );
+      })}
     </div>
   );
 }
@@ -747,15 +833,18 @@ function addCanvasToPdfHelper(
   }
 }
 
-// ─── Botão de exportação ─────────────────────────────────────────────────────
-export function ExportPdfButton({
+export async function exportFlightPdf({
+  year,
   weeksData,
   priceMap,
   totalInvested,
-}: FlightPdfExportProps) {
-  const [exporting, setExporting] = useState(false);
-
-  const issued = weeksData.filter(w => !!w.isTicketIssued && !w.isDeleted);
+}: FlightPdfExportProps): Promise<void> {
+  const issued = weeksData.filter(
+    week =>
+      !week.isDeleted &&
+      (!!week.isTicketIssued || week.additionalFlights?.some(flight => !!flight.isTicketIssued))
+  );
+  if (issued.length === 0) return;
 
   // Agrupar por mês
   const byMonth: Record<string, WeekData[]> = {};
@@ -766,50 +855,62 @@ export function ExportPdfButton({
   });
   const months = Object.entries(byMonth);
 
-  const handleExport = async () => {
-    if (issued.length === 0) return;
-    setExporting(true);
+  const pdf = new jsPDF({
+    orientation: "portrait",
+    unit: "mm",
+    format: "a4",
+  });
+  const pdfW = pdf.internal.pageSize.getWidth();
+  const pdfH = pdf.internal.pageSize.getHeight();
 
-    try {
-      const pdf = new jsPDF({
-        orientation: "portrait",
-        unit: "mm",
-        format: "a4",
-      });
-      const pdfW = pdf.internal.pageSize.getWidth();
-      const pdfH = pdf.internal.pageSize.getHeight();
+  // 1. Capa
+  const coverCanvas = await renderPageToCanvas(
+    <CoverPage year={year} issued={issued} totalInvested={totalInvested} />
+  );
+  addCanvasToPdfHelper(pdf, coverCanvas, true, pdfW, pdfH);
 
-      // 1. Capa
-      const coverCanvas = await renderPageToCanvas(
-        <CoverPage issued={issued} totalInvested={totalInvested} />
+  // 2. Um cartão completo por página para nunca cortar os dados de um bilhete
+  for (let i = 0; i < months.length; i++) {
+    const [monthLabel, weeks] = months[i];
+    const monthTotal = weeks.reduce((acc, w) => {
+      const prices = priceMap[w.weekNumber];
+      if (!prices) return acc;
+      const airline = w.departureAirline?.toLowerCase();
+      const price = airline && prices[airline] ? parseFloat(prices[airline]) : 0;
+      return acc + (isNaN(price) ? 0 : price);
+    }, 0);
+
+    for (const week of weeks) {
+      const weekCanvas = await renderPageToCanvas(
+        <MonthPage
+          monthLabel={monthLabel}
+          weeks={[week]}
+          priceMap={priceMap}
+          monthTotalOverride={monthTotal}
+        />
       );
-      addCanvasToPdfHelper(pdf, coverCanvas, true, pdfW, pdfH);
+      addCanvasToPdfHelper(pdf, weekCanvas, false, pdfW, pdfH);
+    }
+  };
 
-      // 2. Um cartão completo por página para nunca cortar os dados de um bilhete
-      for (let i = 0; i < months.length; i++) {
-        const [monthLabel, weeks] = months[i];
-        const monthTotal = weeks.reduce((acc, w) => {
-          const prices = priceMap[w.weekNumber];
-          if (!prices) return acc;
-          const airline = w.departureAirline?.toLowerCase();
-          const price = airline && prices[airline] ? parseFloat(prices[airline]) : 0;
-          return acc + (isNaN(price) ? 0 : price);
-        }, 0);
+  pdf.save(getPdfFilename(year));
+}
 
-        for (const week of weeks) {
-          const weekCanvas = await renderPageToCanvas(
-            <MonthPage
-              monthLabel={monthLabel}
-              weeks={[week]}
-              priceMap={priceMap}
-              monthTotalOverride={monthTotal}
-            />
-          );
-          addCanvasToPdfHelper(pdf, weekCanvas, false, pdfW, pdfH);
-        }
-      }
+// Mantido para usos diretos fora da Home. A Home utiliza o acionador leve
+// DeferredPdfExportButton para adiar este módulo pesado até o clique.
+export function ExportPdfButton(props: FlightPdfExportProps) {
+  const [exporting, setExporting] = useState(false);
+  const hasIssuedTickets = props.weeksData.some(
+    week =>
+      !week.isDeleted &&
+      (!!week.isTicketIssued || week.additionalFlights?.some(flight => !!flight.isTicketIssued))
+  );
 
-      pdf.save("SmartFly-Passagens-2026.pdf");
+  const handleExport = async () => {
+    if (!hasIssuedTickets) return;
+    setExporting(true);
+    try {
+      await exportFlightPdf(props);
     } catch (err) {
       console.error("[PDF Export Error]", err);
       alert("Erro ao gerar o PDF. Tente novamente.");
@@ -823,9 +924,9 @@ export function ExportPdfButton({
       size="sm"
       variant="outline"
       onClick={handleExport}
-      disabled={exporting || issued.length === 0}
+      disabled={exporting || !hasIssuedTickets}
       title={
-        issued.length === 0
+        !hasIssuedTickets
           ? "Nenhum bilhete emitido para exportar"
           : "Exportar relatório em PDF"
       }
