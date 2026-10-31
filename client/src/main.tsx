@@ -6,6 +6,10 @@ import { createRoot } from "react-dom/client";
 import superjson from "superjson";
 import App from "./App";
 import "./index.css";
+import {
+  getDevelopmentCacheNames,
+  shouldRegisterServiceWorker,
+} from "./lib/serviceWorkerPolicy";
 
 // Detecta se o erro é HTML em vez de JSON (ocorre quando o servidor está reiniciando após hibernação)
 const isHtmlResponse = (error: unknown): boolean => {
@@ -100,6 +104,25 @@ createRoot(document.getElementById("root")!).render(
 
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
-    navigator.serviceWorker.register("/sw.js").catch(() => {});
+    if (shouldRegisterServiceWorker(import.meta.env.PROD, true)) {
+      navigator.serviceWorker.register("/sw.js").catch(() => {});
+      return;
+    }
+
+    // Remover um SW de uma sessão PWA para que a prévia use o bundle atual.
+    void navigator.serviceWorker
+      .getRegistrations()
+      .then(registrations =>
+        Promise.all(registrations.map(registration => registration.unregister()))
+      )
+      .then(() => caches.keys())
+      .then(cacheNames =>
+        Promise.all(
+          getDevelopmentCacheNames(cacheNames).map(cacheName =>
+            caches.delete(cacheName)
+          )
+        )
+      )
+      .catch(() => {});
   });
 }
