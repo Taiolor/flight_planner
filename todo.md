@@ -981,3 +981,14 @@
 - [x] Timeout de consulta limpo em `finally` após sucesso, rejeição externa e esgotamento do prazo, sem mudar o contrato de respostas.
 - [x] Validação: 38 testes focados do Fly.IA; `pnpm check`; suíte completa com 807 aprovados e 2 ignorados; `pnpm build`; `git diff --check` aprovados.
 - [x] Frontend, skin, logo e correções de abertura preservados, sem alterações em `client/src`, `client/index.html` ou `client/public`.
+
+## Navegação do Dev e conferência da produção — 31/10/2026
+
+- [x] Produção verificada pelo HTML/JS/CSS públicos: `/index-CqcmdRGi.js`, `/assets/index-B0Rhvi-U.css`, marcador de artefato `96a6bc95`, publicado em 23/10/2026. Este marcador não é SHA Git e não demonstra publicação do HEAD local.
+- [x] Antes da correção, produção e Dev tinham o mesmo comportamento nas cinco larguras: rótulos de Calendário/Gestão/Entrar ocultos abaixo de 640 px; três atalhos condicionados à sessão/papel. Bundle publicado contém os três destinos, portanto não faltavam suas implementações.
+- [x] Cabeçalho do Dev ajustado pontualmente: rótulos de Calendário, Gestão e Entrar sempre visíveis; navegação na primeira linha e preferências/conta na segunda no mobile; sem restaurar commits antigos, mudar skin ou reinstalar dependências.
+- [x] Painel de avisos, Locais de Acesso e Uso de IA sempre descobríveis no menu flutuante: sem sessão, clique solicita login; usuário não administrador tem os dois atalhos exclusivos desabilitados; administrador mantém navegação normal.
+- [x] Proteções de backend e correções de abertura/Fly.IA preservadas sem modificações.
+- [x] 38 testes focados aprovados e quatro regressões novas; TypeScript, suíte completa de 811 testes aprovados e 2 ignorados, build e diff check aprovados.
+- [x] Teste de navegador em 320/375/390/640/1280 px confirmou rótulos visíveis, três atalhos presentes, ausência de overflow horizontal e abertura de login sem navegar/carregar dados protegidos.
+- [ ] Publicação deste novo checkpoint depende da ação de publicar; não substituir a produção durante a validação do Dev.

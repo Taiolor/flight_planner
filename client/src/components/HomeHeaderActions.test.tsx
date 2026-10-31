@@ -181,10 +181,10 @@ describe("HomeHeaderActions", () => {
       "utf8"
     );
 
-    expect(source).toContain("flex w-full flex-nowrap items-center gap-1 sm:gap-2");
+    expect(source).toContain("grid-cols-[minmax(0,1fr)_auto]");
     expect(source).toContain("<DropdownMenuItem onSelect={onShowChart}>");
-    expect(source).toContain("h-10 w-10 shrink-0");
-    expect(source).toContain("inline-flex h-10 w-10 shrink-0 items-center justify-center whitespace-nowrap");
+    expect(source).toContain("inline-flex h-10 shrink-0 items-center justify-center");
+    expect(source).not.toContain('hidden whitespace-nowrap sm:inline');
     expect(source).toContain("sm:min-w-[6.75rem]");
     expect(source).toContain("data-mobile-primary-action={mobilePrimaryAction}");
     expect(source).toContain("data-calendar-navigation");
@@ -201,7 +201,7 @@ describe("HomeHeaderActions", () => {
     expect(source).toContain("min-w-[88px]");
   });
 
-  it("estrutura o mobile em exatamente dois grupos de controles sem quebra interna", () => {
+  it("organiza rótulos na primeira linha e conta/preferências na segunda sem esconder os textos", () => {
     const { container } = render(
       <HomeHeaderActions
         selectedYear={2026}
@@ -229,13 +229,19 @@ describe("HomeHeaderActions", () => {
       container.querySelectorAll('[aria-label="Ações do planejamento"] > div')
     );
     const mobileLines = allGroups.filter(
-      line => !line.className.includes("hidden w-full sm:flex")
+      line => !line.hasAttribute("data-header-desktop-preferences")
     );
     const scope = within(container);
-    expect(mobileLines).toHaveLength(2);
-    expect(mobileLines[0]?.className).toContain("flex-nowrap");
-    expect(mobileLines[1]?.className).toContain("sm:hidden");
-    expect(scope.getByRole("link", { name: "Calendário" }).className).toContain("h-10 w-10");
+    expect(mobileLines).toHaveLength(3);
+    expect(container.querySelector('[data-header-navigation]')?.className).toContain("col-span-2");
+    expect(container.querySelector('[data-header-account-actions]')?.className).toContain("row-start-2");
+    expect(container.querySelector('[data-header-mobile-preferences]')?.className).toContain("row-start-2");
+    for (const name of ["Calendário", "Abrir Gestão de Passagens"]) {
+      const link = scope.getByRole("link", { name });
+      expect(link.className).toContain("h-10");
+      expect(link.querySelector("span")?.className).not.toContain("hidden");
+    }
+    expect(scope.getByRole("button", { name: "Entrar" }).querySelector("span")?.className).not.toContain("hidden");
     expect(scope.queryByRole("button", { name: "Gráfico" })).toBeNull();
     expect(scope.getByRole("button", { name: "Abrir preferências" }).className).toContain("flex-1");
   });
@@ -346,5 +352,78 @@ describe("HomeHeaderActions", () => {
     fireEvent.click(screen.getByRole("menuitemradio", { name: "Intenso" }));
 
     expect(onNavyIntensityChange).toHaveBeenCalledWith("intense");
+  });
+
+  it.each(["Painel de avisos", "Locais de Acesso", "Uso de IA"])(
+    "mantém %s visível e solicita login sem navegar para dados protegidos",
+    name => {
+      const onSignIn = vi.fn();
+      render(
+        <HomeHeaderActions
+          selectedYear={2026}
+          theme="light"
+          colorPreset="ocean"
+          colorPresetOptions={{ ocean: { name: "Azul" } }}
+          hideValues={false}
+          pushStatus="default"
+          pushSubscribed={false}
+          pushLoading={false}
+          isAuthenticated={false}
+          isAdmin={false}
+          pdfExport={<button type="button">Exportar PDF</button>}
+          onShowChart={vi.fn()}
+          onToggleTheme={vi.fn()}
+          onColorPresetChange={vi.fn()}
+          onToggleValues={vi.fn()}
+          onToggleNotifications={vi.fn()}
+          onSignIn={onSignIn}
+          onSignOut={vi.fn()}
+        />
+      );
+      fireEvent.pointerDown(screen.getByRole("button", { name: "Abrir navegação" }));
+      const item = screen.getByRole("menuitem", { name });
+      const pathBeforeClick = window.location.pathname;
+      expect(item.getAttribute("aria-description")).toContain("Login");
+      fireEvent.click(item);
+      expect(onSignIn).toHaveBeenCalledOnce();
+      expect(window.location.pathname).toBe(pathBeforeClick);
+    }
+  );
+
+  it("mantém os atalhos exclusivos desabilitados para uma conta sem papel administrativo", () => {
+    const onSignIn = vi.fn();
+    render(
+      <HomeHeaderActions
+        selectedYear={2026}
+        theme="light"
+        colorPreset="ocean"
+        colorPresetOptions={{ ocean: { name: "Azul" } }}
+        hideValues={false}
+        pushStatus="default"
+        pushSubscribed={false}
+        pushLoading={false}
+        isAuthenticated
+        isAdmin={false}
+        pdfExport={<button type="button">Exportar PDF</button>}
+        onShowChart={vi.fn()}
+        onToggleTheme={vi.fn()}
+        onColorPresetChange={vi.fn()}
+        onToggleValues={vi.fn()}
+        onToggleNotifications={vi.fn()}
+        onSignIn={onSignIn}
+        onSignOut={vi.fn()}
+      />
+    );
+    fireEvent.pointerDown(screen.getByRole("button", { name: "Abrir navegação" }));
+    expect(screen.getByRole("menuitem", { name: "Painel de avisos" }).getAttribute("aria-disabled")).toBeNull();
+    for (const name of ["Locais de Acesso", "Uso de IA"]) {
+      const item = screen.getByRole("menuitem", { name });
+      expect(item.getAttribute("aria-disabled")).toBe("true");
+      expect(item.getAttribute("aria-description")).toContain("administradores");
+      const pathBeforeClick = window.location.pathname;
+      fireEvent.click(item);
+      expect(window.location.pathname).toBe(pathBeforeClick);
+    }
+    expect(onSignIn).not.toHaveBeenCalled();
   });
 });
