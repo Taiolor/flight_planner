@@ -61,9 +61,15 @@ const formatDateBR = (dateStr: string): string => {
   return `${day}/${month}/${year}`;
 };
 
+/** ⚡ Bolt: Hoist static BRL currency formatter singleton to avoid repeated allocations in render loop */
+const BRL_FORMATTER = new Intl.NumberFormat("pt-BR", {
+  style: "currency",
+  currency: "BRL",
+});
+
 /** Formata centavos para BRL */
 const formatCurrency = (cents: number): string =>
-  (cents / 100).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+  BRL_FORMATTER.format(cents / 100);
 
 /** URL padrão do Kayak para GRU → NVT */
 const buildKayakUrl = (departureDate: string, returnDate: string): string => {

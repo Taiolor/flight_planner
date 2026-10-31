@@ -35,3 +35,7 @@
 ## 2026-10-31 - Hoist Intl.NumberFormat Singletons in FinancialDashboard
 **Learning:** Constructing `new Intl.NumberFormat(...)` inside helper functions (`formatBRL` and `formatMiles`) in `FinancialDashboard.tsx` caused dozens of expensive locale formatter instantiations on every React render cycle across KPI cards, chart tooltips, and table rows.
 **Action:** Always hoist `Intl.NumberFormat` and `Intl.DateTimeFormat` instances with static options to module-scoped constants (`BRL_FORMATTER`, `MILES_FORMATTER`) and call `.format(value)` inside render helpers.
+
+## 2026-10-31 - Hoist BRL_FORMATTER in FlightQuotes
+**Learning:** In `FlightQuotes.tsx`, the `formatCurrency` utility invoked `(cents / 100).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })` directly. Because `toLocaleString` creates a new `Intl.NumberFormat` instance under the hood on every invocation, rendering dozens of quote cards triggered substantial object allocations and garbage collector overhead.
+**Action:** Always extract and hoist `Intl.NumberFormat` instances to module-level singletons when formatting currencies across lists and tables.
