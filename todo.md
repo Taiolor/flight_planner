@@ -958,3 +958,16 @@
 - [x] Implementar animações responsivas e feedback de hover sem alterar os fluxos de negócio em Cotações, notificações e compartilhamento por e-mail
 - [x] Validar reduced motion, mobile em 320/375/390 px, TypeScript, 808 testes aprovados (2 ignorados) e build de produção
 - [x] Registrar a entrega e salvar checkpoint revisável
+
+## Correção de inicialização do desenvolvimento — 31/10/2026
+
+- [x] Diagnóstico confirmado por HTTP: o processo do pnpm existia, mas a porta 3000 não estava ouvindo após falha de instalação.
+- [x] Definida política explícita `allowBuilds.pnpm: false`, mantendo `esbuild: true`; instalação congelada passa sem liberar scripts desnecessários.
+- [x] Servidor reiniciado; HTML, entry JavaScript e WebP institucional respondem HTTP 200.
+- [x] Preservada a skin da produção; mantido o logo principal com fallback para o PNG institucional `/apple-touch-icon.png` já existente.
+- [x] Guard independente do bundle exibe mensagem e botão acessível “Tentar novamente” em erro do entry ou após 12 segundos, sem recarga automática e sem fingir conclusão/revelar uma Home vazia.
+- [x] Evento de conclusão real do splash cancela o guard e seus listeners.
+- [x] Guard externo same-origin `pwa-startup-guard.d2a8bc10.js` compatível com CSP restritiva, versionado por hash e incluído no build sem liberar scripts inline/eval.
+- [x] 23 testes focados aprovados; `pnpm install --frozen-lockfile`, `pnpm check`, `pnpm build` e `git diff --check` aprovados.
+- [x] Navegador: splash removida, root visível, logo carregado e nenhuma imagem quebrada.
+- [ ] Fora deste escopo: duas falhas preexistentes em `server/flyIaTravelGuidance.test.ts`; suíte geral com 796 aprovados, 2 ignorados e 2 falhas.

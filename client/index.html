@@ -211,6 +211,19 @@
         margin: 16px 0 0;
         min-height: 17px;
       }
+      .pwa-splash-retry {
+        background: rgba(255, 255, 255, 0.14);
+        border: 1px solid rgba(255, 255, 255, 0.5);
+        border-radius: 10px;
+        color: #fff;
+        cursor: pointer;
+        font: 600 14px/1.4 Roboto, system-ui, sans-serif;
+        margin-top: 18px;
+        min-height: 44px;
+        padding: 10px 18px;
+      }
+      .pwa-splash-retry:focus-visible { outline: 2px solid #fff; outline-offset: 4px; }
+      #pwa-startup-splash[data-startup-error="true"] .pwa-splash-loader { display: none; }
       .pwa-splash-progress {
         color: rgba(255, 255, 255, 0.78);
         display: none;
@@ -309,16 +322,19 @@
   <body>
     <div id="pwa-startup-splash" aria-label="Carregando o Smart Fly">
       <div class="pwa-splash-content">
-        <img class="pwa-splash-logo" src="/smartfly-assets/smartfly-sf-pwa-icon_783c04c6.webp?v=20260827" alt="" />
+        <img id="pwa-splash-logo" class="pwa-splash-logo" src="/smartfly-assets/smartfly-sf-pwa-icon_783c04c6.webp?v=20260827" data-fallback-src="/apple-touch-icon.png" alt="" />
         <strong class="pwa-splash-title">Smart Fly</strong>
         <p class="pwa-splash-subtitle">Preparando suas viagens</p>
         <p class="pwa-splash-status" id="pwa-splash-status" role="status" aria-live="polite" aria-atomic="true">Verificando a inicialização</p>
         <span class="pwa-splash-loader" aria-hidden="true"></span>
         <span class="pwa-splash-progress" id="pwa-splash-progress" aria-hidden="true"></span>
+        <button id="pwa-splash-retry" class="pwa-splash-retry" type="button" hidden aria-describedby="pwa-splash-status">Tentar novamente</button>
       </div>
     </div>
     <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
+    <!-- Independente do bundle: falhas de carregamento nunca ficam sem explicação. -->
+    <script id="pwa-startup-guard" src="/pwa-startup-guard.d2a8bc10.js"></script>
+    <script id="app-entry" type="module" src="/src/main.tsx"></script>
     <script
       defer
       src="%VITE_ANALYTICS_ENDPOINT%/umami"

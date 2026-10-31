@@ -19,10 +19,13 @@ describe("PwaStartupSplash", () => {
   it("inicia a transição e remove a abertura quando ela termina", () => {
     document.body.innerHTML = '<div id="pwa-startup-splash"><span id="pwa-splash-status"></span><span id="pwa-splash-progress"></span></div><div id="root"></div>';
 
+    const ready = vi.fn();
+    window.addEventListener("smartfly:startup-ready", ready, { once: true });
     dismissPwaStartupSplash();
 
     const splash = document.getElementById("pwa-startup-splash");
     expect(splash?.dataset.ready).toBe("true");
+    expect(ready).toHaveBeenCalledOnce();
     expect(document.getElementById("root")?.dataset.pwaRevealed).toBe("true");
     splash?.dispatchEvent(new Event("transitionend"));
     expect(document.getElementById("pwa-startup-splash")).toBeNull();

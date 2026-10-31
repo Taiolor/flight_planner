@@ -60,6 +60,7 @@ export function dismissPwaStartupSplash() {
   const remove = () => splash.remove();
   document.getElementById("root")?.setAttribute("data-pwa-revealed", "true");
   splash.dataset.ready = "true";
+  window.dispatchEvent(new Event("smartfly:startup-ready"));
   splash.addEventListener("transitionend", remove, { once: true });
   const fallback = window.setTimeout(remove, splashFadeOutMs + 180);
 
