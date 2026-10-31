@@ -1064,14 +1064,13 @@ export default function FlightQuotes() {
     <div className="min-h-screen bg-slate-50 dark:bg-slate-900 transition-colors duration-300">
       {/* Cabeçalho com botão voltar */}
       <header className="bg-gradient-to-r from-[#071a36] via-[#102f61] to-[#17427e] text-white px-4 py-3 flex items-center gap-3 shadow-lg sticky top-0 z-10 flex-wrap">
-        <Link href="/">
-          <a
-            aria-label="Voltar para a página inicial"
-            className="flex items-center gap-1.5 text-white/80 hover:text-white transition-colors text-sm font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-blue-700 rounded-sm"
-          >
-            <ArrowLeft className="w-4 h-4" aria-hidden="true" />
-            Voltar
-          </a>
+        <Link
+          href="/"
+          aria-label="Voltar para a página inicial"
+          className="flex items-center gap-1.5 text-white/80 hover:text-white transition-colors text-sm font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-blue-700 rounded-sm"
+        >
+          <ArrowLeft className="w-4 h-4" aria-hidden="true" />
+          Voltar
         </Link>
         <div className="flex items-center gap-2 ml-2">
           <Plane className="w-5 h-5" />

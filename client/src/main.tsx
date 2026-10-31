@@ -10,6 +10,10 @@ import { queryCachePolicies } from "./lib/queryCache";
 import { getTrpcProcedure } from "./lib/performanceTelemetry";
 import { isRetryableDatabaseQueryError } from "./lib/queryErrorRecovery";
 import { PwaStartupSplashController } from "./components/PwaStartupSplash";
+import {
+  getDevelopmentCacheNames,
+  shouldRegisterServiceWorker,
+} from "./lib/serviceWorkerPolicy";
 
 // Detecta se o erro é HTML em vez de JSON (ocorre quando o servidor está reiniciando após hibernação)
 const isHtmlResponse = (error: unknown): boolean => {
@@ -60,12 +64,17 @@ const redirectToLoginIfUnauthorized = (error: unknown) => {
   window.dispatchEvent(new CustomEvent("flight:require-login"));
 };
 
+const isExpectedUnauthorizedError = (error: unknown): boolean =>
+  error instanceof TRPCClientError &&
+  (error.message === UNAUTHED_ERR_MSG ||
+    error.message === "Faça login para acessar.");
+
 queryClient.getQueryCache().subscribe(event => {
   if (event.type === "updated" && event.action.type === "error") {
     const error = event.query.state.error;
     redirectToLoginIfUnauthorized(error);
     // Suprimir log de erro para respostas HTML transitórias (servidor reiniciando)
-    if (!isHtmlResponse(error)) {
+    if (!isHtmlResponse(error) && !isExpectedUnauthorizedError(error)) {
       console.error("[API Query Error]", error);
     }
   }
@@ -75,7 +84,7 @@ queryClient.getMutationCache().subscribe(event => {
   if (event.type === "updated" && event.action.type === "error") {
     const error = event.mutation.state.error;
     redirectToLoginIfUnauthorized(error);
-    if (!isHtmlResponse(error)) {
+    if (!isHtmlResponse(error) && !isExpectedUnauthorizedError(error)) {
       console.error("[API Mutation Error]", error);
     }
   }
@@ -133,6 +142,24 @@ createRoot(document.getElementById("root")!).render(
 
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
-    navigator.serviceWorker.register("/sw.js?v=20260905-map-osm").catch(() => {});
+    if (shouldRegisterServiceWorker(import.meta.env.PROD, true)) {
+      navigator.serviceWorker.register("/sw.js?v=20260905-map-osm").catch(() => {});
+      return;
+    }
+
+    void navigator.serviceWorker
+      .getRegistrations()
+      .then(registrations =>
+        Promise.all(registrations.map(registration => registration.unregister()))
+      )
+      .then(() => caches.keys())
+      .then(cacheNames =>
+        Promise.all(
+          getDevelopmentCacheNames(cacheNames).map(cacheName =>
+            caches.delete(cacheName)
+          )
+        )
+      )
+      .catch(() => {});
   });
 }
