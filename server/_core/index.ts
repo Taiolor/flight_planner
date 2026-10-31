@@ -3,7 +3,6 @@ import express from "express";
 import { createServer } from "http";
 import net from "net";
 import { createExpressMiddleware } from "@trpc/server/adapters/express";
-import { registerOAuthRoutes } from "./oauth";
 import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
@@ -43,7 +42,7 @@ const generalLimiter = rateLimit({
   message: { error: "Muitas requisições. Tente novamente em alguns minutos." },
 });
 
-// Rate limiter para rotas de autenticação: 20 requisições por IP a cada 15 minutos
+// Rate limiter para procedimentos tRPC sensíveis: 20 requisições por IP a cada 15 minutos
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutos
   max: 20,
@@ -106,12 +105,6 @@ async function startServer() {
       },
     })
   );
-
-  // Rate limiting mais restrito para rotas de autenticação OAuth
-  app.use("/api/oauth", authLimiter);
-
-  // OAuth callback under /api/oauth/callback
-  registerOAuthRoutes(app);
 
   // O middleware é registrado uma única vez antes do adaptador tRPC.
   app.use("/api/trpc", createTrpcLoginRateLimiter(authLimiter));
