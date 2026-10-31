@@ -160,7 +160,7 @@ const releases: Release[] = [
           "Remoção de type assertions 'any' em Home.tsx",
           "Extração de componente WeekFlightCard",
           "213 testes (49 novos adicionados)",
-          "Cobertura completa do useAuth hook",
+          "Cobertura completa do fluxo de login proprietário",
           "Testes para integração Google Calendar",
         ],
       },

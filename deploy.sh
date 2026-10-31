@@ -54,10 +54,6 @@ step "Verificando variáveis de ambiente"
 REQUIRED_VARS=(
   "DATABASE_URL"
   "JWT_SECRET"
-  "VITE_APP_ID"
-  "OAUTH_SERVER_URL"
-  "VITE_OAUTH_PORTAL_URL"
-  "OWNER_OPEN_ID"
   "BUILT_IN_FORGE_API_URL"
   "BUILT_IN_FORGE_API_KEY"
   "VITE_FRONTEND_FORGE_API_KEY"
@@ -156,7 +152,7 @@ SERVER_PID=$!
 
 # Aguardar o servidor subir (até 15 segundos)
 RETRIES=15
-until curl -sf "http://localhost:$PORT/api/trpc/auth.me" -o /dev/null 2>&1; do
+until curl -sf "http://localhost:$PORT/api/trpc/flightAuth.check?input=%7B%22json%22%3A%7B%7D%7D" -o /dev/null 2>&1; do
   RETRIES=$((RETRIES - 1))
   if [[ $RETRIES -le 0 ]]; then
     kill "$SERVER_PID" 2>/dev/null || true

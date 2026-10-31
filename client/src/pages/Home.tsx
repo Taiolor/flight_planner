@@ -612,7 +612,7 @@ export default function Home() {
   const [lastUpdateTime, setLastUpdateTime] = useState<Date | null>(null);
 
   // Escutar evento global de requer login (disparado pelo main.tsx quando query protegida falha)
-  // Garante que o modal de login proprietário seja aberto em vez do Manus OAuth externo
+  // Garante que o modal de login proprietário seja aberto em vez de uma página externa
   useEffect(() => {
     const handleRequireLogin = () => setShowLoginModal(true);
     window.addEventListener("flight:require-login", handleRequireLogin);

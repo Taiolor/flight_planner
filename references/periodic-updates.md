@@ -15,7 +15,7 @@ Two flavors. The difference is what runs at trigger time:
 
 Decision: AGENT cron only if the trigger genuinely needs **agentic capabilities** — i.e. tool use beyond a single LLM call: web browsing, file manipulation, shell, deep research, multi-step planning, etc. A one-shot LLM completion belongs inline in a Heartbeat handler. Do not attempt to replicate complex agentic flows using website-inbuilt capabilities, if it could be outsourced to AGENT cron. End-user-defined schedules (UI on this site lets a user pick when X runs) are **always** Heartbeat — see §3.
 
-Both flavors hit the **same** `/api/scheduled/*` endpoint with the **same** auth shape: `sdk.authenticateRequest(req)` returns `user.isCron === true` with `user.taskUid` set.
+Both flavors hit the **same** `/api/scheduled/*` endpoint with the **same** auth shape: `getSessionFromCookie(req)` returns `user.isCron === true` with `user.taskUid` set.
 
 ---
 
@@ -36,7 +36,7 @@ Both flavors hit the **same** `/api/scheduled/*` endpoint with the **same** auth
 Required pieces (assumes the `schedule_cron_task_uid` column from Facts #2 is already on the business row):
 
 1. tRPC mutation that calls `createHeartbeatJob(...)` and persists the returned `taskUid` to that column.
-2. Express handler at `/api/scheduled/<name>` that authenticates via `sdk.authenticateRequest`, looks up the business row by `taskUid`, runs the work.
+2. Express handler at `/api/scheduled/<name>` that authenticates via `getSessionFromCookie`, looks up the business row by `taskUid`, runs the work.
 3. Explicit `app.post("/api/scheduled/<name>", handler)` in `server/_core/index.ts` before the Vite/static fallthrough — `/api/scheduled/*` is not auto-registered.
 
 A one-time setup walkthrough — do all three steps in one pass; they're a single workflow, not independent options.
@@ -68,12 +68,12 @@ await db
   .where(eq(campaigns.id, campaign.id));
 ```
 
-`sessionToken` MUST be the decoded `app_session_id` cookie value, not the raw `Cookie` header — forge attributes the cron to the requesting end-user via this token. Apply your normal ownership check on the business row before scheduling.
+`sessionToken` MUST be the decoded `flight_session` cookie value, not the raw `Cookie` header — forge attributes the cron to the requesting end-user via this token. Apply your normal ownership check on the business row before scheduling.
 
 **Step 2 — Express handler at `/api/scheduled/<name>` runs on each trigger.** Look up the business row by `user.taskUid` (never by `req.body` fields — the body is attacker-controllable; `taskUid` is set by the cron system). Wrap with try/catch and on 500 return `{ error, stack, context: { url, taskUid }, timestamp }` so the platform Investigate flow can surface it.
 
 ```ts
-const user = await sdk.authenticateRequest(req);
+const user = await getSessionFromCookie(req);
 if (!user.isCron || !user.taskUid)
   return res.status(403).json({ error: "cron-only" });
 
@@ -132,11 +132,11 @@ If the AGENT cron needs to write back to **this** site, the only path in is the 
 2. Save a checkpoint and ask the user to Deploy.
 3. In the cron prompt, instruct the agent to POST via `curl` (not python libs) using two auto-injected envs:
    - `$SCHEDULED_TASK_ENDPOINT_BASE` — base URL of this site
-   - `$SCHEDULED_TASK_COOKIE` — the raw `app_session_id` JWT value
+   - `$SCHEDULED_TASK_COOKIE` — the raw `flight_session` JWT value
    ```sh
    curl -X POST "$SCHEDULED_TASK_ENDPOINT_BASE/api/scheduled/news" \
      -H "Content-Type: application/json" \
-     -H "Cookie: app_session_id=$SCHEDULED_TASK_COOKIE" \
+     -H "Cookie: flight_session=$SCHEDULED_TASK_COOKIE" \
      -d '{"title":"…","body":"…"}'
    ```
 
@@ -188,7 +188,7 @@ listHeartbeatJobs(userSession: string, pagination?: { page?: number; pageSize?: 
   : Promise<{ total: number; actorUserId: string; jobs: HeartbeatJobInfo[] }>;
 ```
 
-`userSession` is the **decoded `app_session_id` cookie value**, NOT the raw Cookie header. All four functions throw `TRPCError` (UNAUTHORIZED / NOT_FOUND / TOO_MANY_REQUESTS / FORBIDDEN / BAD_REQUEST) — let trpc bubble them.
+`userSession` is the **decoded `flight_session` cookie value**, NOT the raw Cookie header. All four functions throw `TRPCError` (UNAUTHORIZED / NOT_FOUND / TOO_MANY_REQUESTS / FORBIDDEN / BAD_REQUEST) — let trpc bubble them.
 
 ### 5b. Sandbox CLI — `manus-heartbeat`
 
