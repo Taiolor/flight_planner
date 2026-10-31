@@ -220,7 +220,7 @@ function DashboardLayoutContent({
                 aria-expanded={!isCollapsed}
                 title="Toggle navigation"
               >
-                <PanelLeft className="h-4 w-4 text-muted-foreground" />
+                <PanelLeft className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
               </button>
               {!isCollapsed ? (
                 <div className="flex items-center gap-2 min-w-0">
