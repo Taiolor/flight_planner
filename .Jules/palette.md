@@ -117,3 +117,8 @@
 
 **Learning:** In `CalendarView.tsx`, the toggle button for the Brazil World Cup panel had `aria-expanded` but lacked `aria-controls` linking it to the collapsible container's `id`, as well as `focus-visible` ring styles. Similarly, in `FinancialDashboard.tsx`, the "Mostrar/Ocultar valores" toggle button lacked `aria-pressed={showValues}` and `aria-hidden="true"` on its decorative icons.
 **Action:** Always pair `aria-expanded` on collapsible trigger buttons with a matching `aria-controls="<id>"` and container `id`, and ensure stateful toggle buttons expose `aria-pressed` and `focus-visible:ring-2`.
+
+## 2026-10-31 - Form Label Association and Live Feedback in NotificationSettingsPopup
+
+**Learning:** In `NotificationSettingsPopup.tsx`, the select dropdown inputs for notification lead times had textual `<label>` tags that were not associated with the corresponding `<SelectTrigger>` elements via `htmlFor` and `id`. Additionally, the modal/popover trigger buttons lacked explicit `focus-visible:ring-2` styles for keyboard navigation, and the save state feedback ("Salvando..." / "Salvo!") lacked `aria-live="polite"`, preventing assistive screen readers from announcing operation completion.
+**Action:** Always link labels to Radix `SelectTrigger` components with explicit `htmlFor` and `id` props, declare `aria-live="polite"` on asynchronous operation status containers, and apply `focus-visible:ring-2` indicators to interactive triggers.

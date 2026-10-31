@@ -61,29 +61,34 @@ function NotificationOption({
     ? "from-purple-500 to-cyan-500"
     : "from-cyan-500 to-purple-500";
   const textClass = isFirst ? "text-purple-400" : "text-cyan-400";
+  const selectId = `notification-antecedencia-${index}`;
 
   return (
     <div className="space-y-1.5">
       <div className="flex items-center gap-2">
         <div
+          aria-hidden="true"
           className={`w-5 h-5 rounded-full bg-gradient-to-br ${gradientClass} flex items-center justify-center text-xs font-bold text-white flex-shrink-0`}
         >
           {index}
         </div>
-        <label className="text-sm font-medium text-slate-200">{label}</label>
+        <label htmlFor={selectId} className="text-sm font-medium text-slate-200">
+          {label}
+        </label>
         {value > 0 && (
           <span
             className={`ml-auto text-xs flex items-center gap-1 ${textClass}`}
           >
-            <Clock className="w-3 h-3" />
+            <Clock className="w-3 h-3" aria-hidden="true" />
             {getAvisoLabel(value)}
           </span>
         )}
       </div>
       <Select value={String(value)} onValueChange={v => onChange(Number(v))}>
         <SelectTrigger
+          id={selectId}
           aria-label={ariaLabel}
-          className="bg-slate-800 border-slate-600 text-white h-10 text-sm w-full"
+          className="bg-slate-800 border-slate-600 text-white h-10 text-sm w-full focus-visible:ring-2 focus-visible:ring-cyan-400"
         >
           <SelectValue />
         </SelectTrigger>
@@ -176,16 +181,19 @@ function NotificationSettingsForm({
       <Button
         onClick={onSave}
         disabled={isPending}
-        className="w-full h-10 text-sm font-medium bg-blue-600 hover:bg-blue-700 text-white"
+        className="w-full h-10 text-sm font-medium bg-blue-600 hover:bg-blue-700 text-white focus-visible:ring-2 focus-visible:ring-blue-400 focus-visible:outline-none"
       >
         {isPending ? (
-          <span className="flex items-center gap-2">
-            <span className="animate-spin w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full" />
+          <span className="flex items-center gap-2" aria-live="polite">
+            <span
+              className="animate-spin w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full"
+              aria-hidden="true"
+            />
             Salvando...
           </span>
         ) : saved ? (
-          <span className="flex items-center gap-2">
-            <CheckCircle2 className="w-4 h-4 text-green-400" />
+          <span className="flex items-center gap-2" aria-live="polite">
+            <CheckCircle2 className="w-4 h-4 text-green-400" aria-hidden="true" />
             Salvo!
           </span>
         ) : (
@@ -268,9 +276,9 @@ export function NotificationSettingsPopup({
       onClick={isMobile ? handleOpen : undefined}
       title="Configurar agendamentos de notificação"
       aria-label="Configurar agendamentos de notificação"
-      className="flex items-center gap-1.5 text-xs h-8 px-2.5 text-slate-300 hover:text-white hover:bg-white/10"
+      className="flex items-center gap-1.5 text-xs h-8 px-2.5 text-slate-300 hover:text-white hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-white/50 focus-visible:outline-none"
     >
-      <Settings2 className="w-4 h-4" />
+      <Settings2 className="w-4 h-4" aria-hidden="true" />
       <span className="hidden sm:inline">Avisos</span>
     </Button>
   );
@@ -284,7 +292,7 @@ export function NotificationSettingsPopup({
           <DialogContent className="bg-slate-900 border border-white/10 text-white max-w-sm w-[calc(100vw-2rem)] rounded-2xl p-4">
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2 text-sm font-semibold">
-                <Bell className="w-4 h-4 text-blue-400" />
+                <Bell className="w-4 h-4 text-blue-400" aria-hidden="true" />
                 Agendamento de Avisos
               </DialogTitle>
             </DialogHeader>
@@ -321,9 +329,9 @@ export function NotificationSettingsPopup({
           size="sm"
           title="Configurar agendamentos de notificação"
           aria-label="Configurar agendamentos de notificação"
-          className="flex items-center gap-1.5 text-xs h-8 px-2.5 text-slate-300 hover:text-white hover:bg-white/10"
+          className="flex items-center gap-1.5 text-xs h-8 px-2.5 text-slate-300 hover:text-white hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-white/50 focus-visible:outline-none"
         >
-          <Settings2 className="w-4 h-4" />
+          <Settings2 className="w-4 h-4" aria-hidden="true" />
           <span className="hidden sm:inline">Avisos</span>
         </Button>
       </PopoverTrigger>
@@ -333,7 +341,7 @@ export function NotificationSettingsPopup({
         style={{ boxShadow: "0 8px 32px rgba(0,0,0,0.5)" }}
       >
         <div className="flex items-center gap-2 mb-3 pb-3 border-b border-white/10">
-          <Bell className="w-4 h-4 text-blue-400" />
+          <Bell className="w-4 h-4 text-blue-400" aria-hidden="true" />
           <span className="font-semibold text-sm">Agendamento de Avisos</span>
         </div>
         <NotificationSettingsForm
