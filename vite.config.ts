@@ -158,6 +158,73 @@ const plugins = [
   vitePluginManusDebugCollector(),
 ];
 
+const MANUAL_CHUNK_GROUPS: Record<string, readonly string[]> = {
+  "vendor-react": ["react", "react-dom"],
+  "vendor-ui": [
+    "@radix-ui/react-accordion",
+    "@radix-ui/react-alert-dialog",
+    "@radix-ui/react-aspect-ratio",
+    "@radix-ui/react-avatar",
+    "@radix-ui/react-checkbox",
+    "@radix-ui/react-collapsible",
+    "@radix-ui/react-context-menu",
+    "@radix-ui/react-dialog",
+    "@radix-ui/react-dropdown-menu",
+    "@radix-ui/react-hover-card",
+    "@radix-ui/react-label",
+    "@radix-ui/react-menubar",
+    "@radix-ui/react-navigation-menu",
+    "@radix-ui/react-popover",
+    "@radix-ui/react-progress",
+    "@radix-ui/react-radio-group",
+    "@radix-ui/react-scroll-area",
+    "@radix-ui/react-select",
+    "@radix-ui/react-separator",
+    "@radix-ui/react-slider",
+    "@radix-ui/react-slot",
+    "@radix-ui/react-switch",
+    "@radix-ui/react-tabs",
+    "@radix-ui/react-toggle",
+    "@radix-ui/react-toggle-group",
+    "@radix-ui/react-tooltip",
+  ],
+  "vendor-trpc": [
+    "@trpc/client",
+    "@trpc/react-query",
+    "@tanstack/react-query",
+  ],
+  "vendor-charts": ["recharts"],
+  "vendor-pdf": ["jspdf", "html2canvas"],
+  "vendor-forms": ["react-hook-form", "@hookform/resolvers"],
+  "vendor-utils": [
+    "date-fns",
+    "clsx",
+    "tailwind-merge",
+    "class-variance-authority",
+  ],
+};
+
+function manualChunks(id: string): string | undefined {
+  const normalizedId = id.replaceAll("\\", "/");
+  if (!normalizedId.includes("/node_modules/")) return undefined;
+
+  for (const [chunkName, dependencies] of Object.entries(
+    MANUAL_CHUNK_GROUPS
+  )) {
+    if (
+      dependencies.some(
+        dependency =>
+          normalizedId.includes(`/node_modules/${dependency}/`) ||
+          normalizedId.endsWith(`/node_modules/${dependency}`)
+      )
+    ) {
+      return chunkName;
+    }
+  }
+
+  return undefined;
+}
+
 export default defineConfig({
   plugins,
   resolve: {
@@ -176,51 +243,7 @@ export default defineConfig({
     emptyOutDir: true,
     rollupOptions: {
       output: {
-        manualChunks: {
-          "vendor-react": ["react", "react-dom"],
-          "vendor-ui": [
-            "@radix-ui/react-accordion",
-            "@radix-ui/react-alert-dialog",
-            "@radix-ui/react-aspect-ratio",
-            "@radix-ui/react-avatar",
-            "@radix-ui/react-checkbox",
-            "@radix-ui/react-collapsible",
-            "@radix-ui/react-context-menu",
-            "@radix-ui/react-dialog",
-            "@radix-ui/react-dropdown-menu",
-            "@radix-ui/react-hover-card",
-            "@radix-ui/react-label",
-            "@radix-ui/react-menubar",
-            "@radix-ui/react-navigation-menu",
-            "@radix-ui/react-popover",
-            "@radix-ui/react-progress",
-            "@radix-ui/react-radio-group",
-            "@radix-ui/react-scroll-area",
-            "@radix-ui/react-select",
-            "@radix-ui/react-separator",
-            "@radix-ui/react-slider",
-            "@radix-ui/react-slot",
-            "@radix-ui/react-switch",
-            "@radix-ui/react-tabs",
-            "@radix-ui/react-toggle",
-            "@radix-ui/react-toggle-group",
-            "@radix-ui/react-tooltip",
-          ],
-          "vendor-trpc": [
-            "@trpc/client",
-            "@trpc/react-query",
-            "@tanstack/react-query",
-          ],
-          "vendor-charts": ["recharts"],
-          "vendor-pdf": ["jspdf", "html2canvas"],
-          "vendor-forms": ["react-hook-form", "@hookform/resolvers"],
-          "vendor-utils": [
-            "date-fns",
-            "clsx",
-            "tailwind-merge",
-            "class-variance-authority",
-          ],
-        },
+        manualChunks,
         chunkFileNames: "chunks/[name]-[hash].js",
         entryFileNames: "[name]-[hash].js",
         assetFileNames: "assets/[name]-[hash][extname]",
