@@ -192,10 +192,10 @@ export const appRouter = router({
     subscribe: flightProtectedProcedure
       .input(
         z.object({
-          endpoint: z.string().max(2048),
+          endpoint: z.string().max(1024),
           p256dh: z.string().max(255),
           auth: z.string().max(255),
-          userAgent: z.string().max(1024).optional(),
+          userAgent: z.string().max(255).optional(),
         })
       )
       .mutation(async ({ input }) => {
@@ -210,7 +210,7 @@ export const appRouter = router({
 
     // Remover subscription do dispositivo
     unsubscribe: publicProcedure
-      .input(z.object({ endpoint: z.string().max(2048) }))
+      .input(z.object({ endpoint: z.string().max(1024) }))
       .mutation(async ({ input }) => {
         await deletePushSubscription(input.endpoint);
         return { success: true };
@@ -218,7 +218,7 @@ export const appRouter = router({
 
     // Verificar se este dispositivo já tem subscription ativa
     checkSubscription: publicProcedure
-      .input(z.object({ endpoint: z.string().max(2048) }))
+      .input(z.object({ endpoint: z.string().max(1024) }))
       .query(async ({ input }) => {
         const sub = await getPushSubscriptionByEndpoint(input.endpoint);
         return { subscribed: !!sub };
