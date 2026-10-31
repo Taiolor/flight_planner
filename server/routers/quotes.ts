@@ -275,7 +275,7 @@ export const quotesRouter = router({
 
   /** Listar cotações de uma semana específica */
   getByWeek: protectedProcedure
-    .input(z.object({ weekNumber: z.number().int().positive() }))
+    .input(z.object({ weekNumber: z.number().int().positive().max(53) }))
     .query(async ({ input }) => {
       return getFlightQuotesByWeek(input.weekNumber);
     }),
@@ -293,12 +293,14 @@ export const quotesRouter = router({
   fetchFromApi: protectedProcedure
     .input(
       z.object({
-        weekNumber: z.number().int().positive(),
+        weekNumber: z.number().int().positive().max(53),
         departureDate: z
           .string()
+          .max(10)
           .regex(/^\d{4}-\d{2}-\d{2}$/, "Formato YYYY-MM-DD"),
         returnDate: z
           .string()
+          .max(10)
           .regex(/^\d{4}-\d{2}-\d{2}$/, "Formato YYYY-MM-DD"),
       })
     )
@@ -395,21 +397,23 @@ export const quotesRouter = router({
   saveManual: protectedProcedure
     .input(
       z.object({
-        weekNumber: z.number().int().positive(),
+        weekNumber: z.number().int().positive().max(53),
         departureDate: z
           .string()
+          .max(10)
           .regex(/^\d{4}-\d{2}-\d{2}$/, "Formato YYYY-MM-DD"),
         returnDate: z
           .string()
+          .max(10)
           .regex(/^\d{4}-\d{2}-\d{2}$/, "Formato YYYY-MM-DD"),
-        price: z.number().positive("Preço deve ser positivo"),
-        airline: z.string().optional(),
-        outboundAirline: z.string().optional(),
-        returnAirline: z.string().optional(),
-        outboundDeparture: z.string().optional(),
-        outboundArrival: z.string().optional(),
-        returnDeparture: z.string().optional(),
-        returnArrival: z.string().optional(),
+        price: z.number().positive("Preço deve ser positivo").max(1_000_000),
+        airline: z.string().max(100).optional(),
+        outboundAirline: z.string().max(100).optional(),
+        returnAirline: z.string().max(100).optional(),
+        outboundDeparture: z.string().max(32).optional(),
+        outboundArrival: z.string().max(32).optional(),
+        returnDeparture: z.string().max(32).optional(),
+        returnArrival: z.string().max(32).optional(),
       })
     )
     .mutation(async ({ input }) => {

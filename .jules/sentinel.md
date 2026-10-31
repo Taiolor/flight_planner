@@ -43,3 +43,9 @@
 **Vulnerability:** Resource Exhaustion / Denial of Service (DoS) via excessively long string inputs.
 **Learning:** Using `z.string()` without length boundaries for fields like `email` or `password` allows attackers to send arbitrarily large payloads (e.g., millions of characters). This can tie up the event loop during string parsing, trigger payload size limits downstream, or cause excessive CPU usage if the long string is passed to expensive hashing functions like `crypto.createHash('sha256')`.
 **Prevention:** Always append explicit max length limits (e.g., `.max(255)`) to `z.string()` schemas for unbounded user inputs, especially for authentication and email-related fields.
+
+
+## 2026-10-31 - Enforce Bounds on Quotes Router Inputs
+**Vulnerability:** Unbounded string and numeric inputs in `quotesRouter` (`server/routers/quotes.ts`), specifically in `saveManual`, `fetchFromApi`, and `getByWeek`.
+**Learning:** Leaving optional string fields (`airline`, `outboundAirline`, `returnAirline`, `outboundDeparture`, `outboundArrival`, `returnDeparture`, `returnArrival`) as bare `z.string().optional()` and numeric fields (`weekNumber`, `price`) without `.max()` bounds allows oversized payloads that can trigger database column truncation errors or memory/CPU exhaustion.
+**Prevention:** Always pair `z.string()` and `z.number()` in tRPC input schemas with explicit `.max(...)` constraints aligned with the Drizzle database column definitions (`varchar(100)`, `varchar(32)`, `weekNumber <= 53`).

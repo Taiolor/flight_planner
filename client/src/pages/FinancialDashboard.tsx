@@ -87,18 +87,24 @@ const AIRLINE_LABELS: Record<string, string> = {
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
+// ⚡ Bolt Optimization: Reuse module-scoped Intl.NumberFormat singletons instead of
+// instantiating new formatters on every KPI card, table cell, and chart tooltip render.
+const BRL_FORMATTER = new Intl.NumberFormat("pt-BR", {
+  style: "currency",
+  currency: "BRL",
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2,
+});
+
+const MILES_FORMATTER = new Intl.NumberFormat("pt-BR");
+
 function formatBRL(value: number, hidden = false): string {
   if (hidden) return "R$ ••••";
-  return new Intl.NumberFormat("pt-BR", {
-    style: "currency",
-    currency: "BRL",
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(value);
+  return BRL_FORMATTER.format(value);
 }
 
 function formatMiles(value: number): string {
-  return new Intl.NumberFormat("pt-BR").format(value) + " pts";
+  return MILES_FORMATTER.format(value) + " pts";
 }
 
 function formatPct(value: number): string {
@@ -363,13 +369,14 @@ export default function FinancialDashboard() {
                 ? "Ocultar valores financeiros"
                 : "Mostrar valores financeiros"
             }
+            aria-pressed={showValues}
             onClick={() => setShowValues(v => !v)}
-            className="flex items-center gap-2 px-3 py-2 rounded-xl bg-white/10 hover:bg-white/20 transition-colors text-sm font-medium"
+            className="flex items-center gap-2 px-3 py-2 rounded-xl bg-white/10 hover:bg-white/20 transition-colors text-sm font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
           >
             {showValues ? (
-              <Eye className="w-4 h-4" />
+              <Eye className="w-4 h-4" aria-hidden="true" />
             ) : (
-              <EyeOff className="w-4 h-4" />
+              <EyeOff className="w-4 h-4" aria-hidden="true" />
             )}
             <span className="hidden sm:inline">
               {showValues ? "Ocultar" : "Mostrar"} valores

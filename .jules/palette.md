@@ -97,3 +97,9 @@
 
 **Learning:** In standard HTML inputs like `<input type="range">`, the associated `<label>` text must correctly link to the `input` field via `htmlFor` and `id` properties. Omitting them directly results in inputs lacking accessible names, which breaks usability for screen reader users.
 **Action:** When adding or reviewing filter controls with native HTML form elements like ranges or checkboxes, verify that matching `id` and `htmlFor` props are explicitly set and functional.
+
+
+## 2026-10-31 - ARIA Controls on Collapsible World Cup Panel and Toggle States in FinancialDashboard
+
+**Learning:** In `CalendarView.tsx`, the toggle button for the Brazil World Cup panel had `aria-expanded` but lacked `aria-controls` linking it to the collapsible container's `id`, as well as `focus-visible` ring styles. Similarly, in `FinancialDashboard.tsx`, the "Mostrar/Ocultar valores" toggle button lacked `aria-pressed={showValues}` and `aria-hidden="true"` on its decorative icons.
+**Action:** Always pair `aria-expanded` on collapsible trigger buttons with a matching `aria-controls="<id>"` and container `id`, and ensure stateful toggle buttons expose `aria-pressed` and `focus-visible:ring-2`.

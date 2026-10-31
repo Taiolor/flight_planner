@@ -3,7 +3,7 @@
  * Helpers de banco de dados para a página de Gestão Financeira.
  * Agrega dados de flight_weeks e flight_prices para análises financeiras.
  */
-import { and, eq, isNotNull } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { getDb } from "./db";
 import { flightWeeks, flightPrices } from "../drizzle/schema";
 
@@ -72,19 +72,6 @@ function parseMonth(dateStr: string): number {
     if (parts.length >= 2) return parseInt(parts[1], 10);
   }
   return 0;
-}
-
-function parseYear(dateStr: string): number {
-  if (!dateStr) return new Date().getFullYear();
-  if (dateStr.includes("-")) {
-    const parts = dateStr.split("-");
-    if (parts.length >= 1) return parseInt(parts[0], 10);
-  }
-  if (dateStr.includes("/")) {
-    const parts = dateStr.split("/");
-    if (parts.length >= 3) return parseInt(parts[2], 10);
-  }
-  return new Date().getFullYear();
 }
 
 // ─── Funções exportadas ───────────────────────────────────────────────────────

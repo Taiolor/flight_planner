@@ -377,7 +377,7 @@ export default function CalendarView({
         </div>
         <button
           onClick={() => setShowCupPanel((v: boolean) => !v)}
-          className="flex items-center gap-1 bg-transparent hover:bg-slate-50 border border-slate-300/50 text-slate-400 hover:text-slate-600 text-xs px-1.5 py-0.5 rounded transition-all duration-200 sm:ml-auto"
+          className="flex items-center gap-1 bg-transparent hover:bg-slate-50 border border-slate-300/50 text-slate-400 hover:text-slate-600 text-xs px-1.5 py-0.5 rounded transition-all duration-200 sm:ml-auto focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
           title={showCupPanel ? "Ocultar Copa 2026" : "Mostrar Copa 2026"}
           aria-label={
             showCupPanel
@@ -385,8 +385,9 @@ export default function CalendarView({
               : "Mostrar painel da Copa do Mundo 2026"
           }
           aria-expanded={showCupPanel}
+          aria-controls="world-cup-panel-container"
         >
-          <span className="text-xs">🇧🇷</span>
+          <span className="text-xs" aria-hidden="true">🇧🇷</span>
         </button>
         <div className="hidden md:flex items-center gap-2 lg:gap-4 text-xs flex-wrap">
           <span className="flex items-center gap-1">
@@ -438,6 +439,7 @@ export default function CalendarView({
       {/* Painel Copa Brasil - Sanfona Discreto */}
       <div className="px-4 max-w-7xl mx-auto">
         <div
+          id="world-cup-panel-container"
           className={`overflow-hidden transition-all duration-300 ease-in-out ${
             showCupPanel ? "max-h-96 py-3" : "max-h-0 py-0"
           }`}
