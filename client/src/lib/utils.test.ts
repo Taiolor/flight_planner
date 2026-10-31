@@ -69,5 +69,21 @@ describe("extractTime utility", () => {
     expect(extractTime("2026-09-05T")).toBe("");
     expect(extractTime(null)).toBe("");
     expect(extractTime(undefined)).toBe("");
+    expect(extractTime("")).toBe("");
+  });
+
+  it("handles invalid formats without separators gracefully", () => {
+    expect(extractTime("2026-09-05")).toBe("");
+    expect(extractTime("just-a-string")).toBe("");
+  });
+
+  it("handles strings with separators but no time values", () => {
+    expect(extractTime("2026-09-05 ")).toBe("");
+    expect(extractTime(" ")).toBe("");
+  });
+
+  it("handles short time formats appropriately", () => {
+    expect(extractTime("2026-09-05T14")).toBe("14");
+    expect(extractTime("05/09/2026 8:")).toBe("8:");
   });
 });
