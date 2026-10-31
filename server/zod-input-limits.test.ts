@@ -1,14 +1,25 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
+
+vi.stubEnv("JWT_SECRET", "test-secret");
+vi.stubEnv("AUTH_EMAIL", "taiolor@gmail.com");
+
+vi.mock("./db", async importOriginal => ({
+  ...(await importOriginal<typeof import("./db")>()),
+  validateAuthSession: vi
+    .fn()
+    .mockResolvedValue({ email: "taiolor@gmail.com" }),
+}));
+
 import { appRouter } from "./routers";
 import type { TrpcContext } from "./_core/context";
 import type { User } from "../drizzle/schema";
 
-function createContext(user: User | null): TrpcContext {
+function createContext(user: User | null, cookie = ""): TrpcContext {
   return {
     user,
     req: {
       protocol: "https",
-      headers: { cookie: "" },
+      headers: { cookie },
     } as TrpcContext["req"],
     res: {
       clearCookie: () => undefined,
@@ -20,7 +31,7 @@ function createContext(user: User | null): TrpcContext {
 describe("Zod input length limits", () => {
   it("rejects notifyOwner content above 5000 characters", async () => {
     const caller = appRouter.createCaller(
-      createContext({ role: "admin" } as User)
+      createContext({ role: "admin" } as User, "flight_session=admin-token")
     );
 
     await expect(

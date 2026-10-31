@@ -5,6 +5,7 @@ vi.stubEnv("JWT_SECRET", "test-secret");
 
 import { appRouter } from "./routers";
 import type { TrpcContext } from "./_core/context";
+import { notifyOwner } from "./_core/notification";
 
 vi.mock("./_core/env", () => ({
   ENV: {
@@ -27,7 +28,10 @@ vi.mock("./db", () => ({
   upsertFlightPrice: vi.fn().mockResolvedValue(undefined),
   deleteFlightPrice: vi.fn().mockResolvedValue(undefined),
   upsertUser: vi.fn().mockResolvedValue(undefined),
-  getUserByOpenId: vi.fn().mockResolvedValue(undefined),
+}));
+
+vi.mock("./_core/notification", () => ({
+  notifyOwner: vi.fn().mockResolvedValue(true),
 }));
 
 function createTestContext(cookieOverride = ""): TrpcContext {
@@ -138,6 +142,53 @@ describe("flightAuth.logout", () => {
 
     expect(result.success).toBe(true);
     expect(clearedCookies).toContain("flight_session");
+  });
+});
+
+describe("system.notifyOwner", () => {
+  beforeEach(() => {
+    process.env.JWT_SECRET = "test-secret";
+    vi.mocked(notifyOwner).mockClear();
+  });
+
+  it("allows the configured admin email with a valid flight session", async () => {
+    const { validateAuthSession } = await import("./db");
+    (validateAuthSession as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+      email: "taiolor@gmail.com",
+    });
+
+    const caller = appRouter.createCaller(
+      createTestContext("flight_session=admin-token")
+    );
+    const result = await caller.system.notifyOwner({
+      title: "Teste",
+      content: "Mensagem administrativa",
+    });
+
+    expect(result).toEqual({ success: true });
+    expect(notifyOwner).toHaveBeenCalledWith({
+      title: "Teste",
+      content: "Mensagem administrativa",
+    });
+  });
+
+  it("rejects a valid session from a non-admin email", async () => {
+    const { validateAuthSession } = await import("./db");
+    (validateAuthSession as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+      email: "user@example.com",
+    });
+
+    const caller = appRouter.createCaller(
+      createTestContext("flight_session=user-token")
+    );
+
+    await expect(
+      caller.system.notifyOwner({
+        title: "Teste",
+        content: "Mensagem administrativa",
+      })
+    ).rejects.toThrow("Acesso administrativo não autorizado.");
+    expect(notifyOwner).not.toHaveBeenCalled();
   });
 });
 

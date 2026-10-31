@@ -2,6 +2,7 @@ import { TRPCError } from "@trpc/server";
 import { parse } from "cookie";
 import { validateAuthSession } from "./db";
 import { publicProcedure } from "./_core/trpc";
+import { ENV } from "./_core/env";
 
 export const SESSION_COOKIE = "flight_session";
 
@@ -30,5 +31,26 @@ export const flightProtectedProcedure = publicProcedure.use(
         flightSession: session,
       },
     });
+  }
+);
+
+/**
+ * Administrative access for the proprietary authentication flow.
+ * The configured login email is the owner/admin identity; the password is
+ * never read by this middleware and remains confined to the login mutation.
+ */
+export const flightAdminProcedure = flightProtectedProcedure.use(
+  async ({ ctx, next }) => {
+    const configuredAdminEmail = ENV.authEmail.trim().toLowerCase();
+    const sessionEmail = ctx.flightSession.email.trim().toLowerCase();
+
+    if (!configuredAdminEmail || sessionEmail !== configuredAdminEmail) {
+      throw new TRPCError({
+        code: "FORBIDDEN",
+        message: "Acesso administrativo não autorizado.",
+      });
+    }
+
+    return next({ ctx });
   }
 );
