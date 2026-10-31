@@ -12,3 +12,8 @@ Este arquivo registra os aprendizados e padrões de testes automatizados identif
 
 **Learning:** The financial aggregation module (`server/financialDb.ts`) lacked dedicated unit tests verifying that `getFinancialSummaryByMonth` and `getFinancialYearSummary` properly exclude unissued tickets (`isTicketIssued === 0`), sort months chronologically, group unknown airlines under `"desconhecida"`, and avoid division-by-zero when no tickets are issued.
 **Action:** Leverage the optional `prefetchedWeekData` parameter in aggregation functions to write fast, deterministic unit tests covering both multi-month/multi-airline rollups and empty-state boundary conditions.
+
+## 2026-10-31 - Schema Boundary Validation Tests for Quotes & Travel Procedures
+
+**Learning:** While `server/quotes.test.ts` verified simple arithmetic and date formatting functions, it lacked automated validation tests for tRPC input schemas (`getByWeek`, `fetchFromApi`, `saveManual`, and `shareByEmail`). This left input boundaries (such as upper limits on week numbers, negative prices, and maximum string lengths) untested against potential regression or malicious payloads.
+**Action:** Always maintain dedicated schema validation tests in `server/*.test.ts` verifying that boundary values, oversized strings, and negative numeric inputs are strictly rejected by Zod schemas before reaching database and email handlers.
