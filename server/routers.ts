@@ -205,10 +205,10 @@ export const appRouter = router({
     subscribe: flightProtectedProcedure
       .input(
         z.object({
-          endpoint: z.string(),
-          p256dh: z.string(),
-          auth: z.string(),
-          userAgent: z.string().optional(),
+          endpoint: z.string().max(2048),
+          p256dh: z.string().max(255),
+          auth: z.string().max(255),
+          userAgent: z.string().max(255).optional(),
         })
       )
       .mutation(async ({ input }) => {
@@ -223,7 +223,7 @@ export const appRouter = router({
 
     // Remover subscription do dispositivo
     unsubscribe: publicProcedure
-      .input(z.object({ endpoint: z.string() }))
+      .input(z.object({ endpoint: z.string().max(2048) }))
       .mutation(async ({ input }) => {
         await deletePushSubscription(input.endpoint);
         return { success: true };
@@ -231,7 +231,7 @@ export const appRouter = router({
 
     // Verificar se este dispositivo já tem subscription ativa
     checkSubscription: publicProcedure
-      .input(z.object({ endpoint: z.string() }))
+      .input(z.object({ endpoint: z.string().max(2048) }))
       .query(async ({ input }) => {
         const sub = await getPushSubscriptionByEndpoint(input.endpoint);
         return { subscribed: !!sub };
@@ -679,11 +679,11 @@ export const appRouter = router({
     updateWeekDates: flightProtectedProcedure
       .input(
         z.object({
-          weekNumber: z.number(),
-          departureDate: z.string(),
-          returnDate: z.string(),
-          departureDayOfWeek: z.string(),
-          returnDayOfWeek: z.string(),
+          weekNumber: z.number().int().positive().max(53),
+          departureDate: z.string().max(20),
+          returnDate: z.string().max(20),
+          departureDayOfWeek: z.string().max(20),
+          returnDayOfWeek: z.string().max(20),
         })
       )
       .mutation(async ({ input }) => {
@@ -700,9 +700,9 @@ export const appRouter = router({
     savePrice: flightProtectedProcedure
       .input(
         z.object({
-          weekNumber: z.number(),
-          airline: z.string(),
-          price: z.string(),
+          weekNumber: z.number().int().positive().max(53),
+          airline: z.string().max(50),
+          price: z.string().max(20),
         })
       )
       .mutation(async ({ input }) => {
@@ -1112,7 +1112,7 @@ export const appRouter = router({
       .input(
         z.object({
           email: z.string().email("E-mail inválido").max(255),
-          name: z.string().optional(),
+          name: z.string().max(100).optional(),
         })
       )
       .mutation(async ({ input }) => {
@@ -1151,8 +1151,8 @@ export const appRouter = router({
     updateRecipient: flightProtectedProcedure
       .input(
         z.object({
-          emailId: z.number(),
-          name: z.string().optional(),
+          emailId: z.number().int().positive(),
+          name: z.string().max(100).optional(),
         })
       )
       .mutation(async ({ input }) => {
@@ -1187,22 +1187,22 @@ export const appRouter = router({
     shareByEmail: flightProtectedProcedure
       .input(
         z.object({
-          weekNumber: z.number(),
-          weekLabel: z.string(),
-          departureDate: z.string(),
-          departureTime: z.string(),
-          departureAirport: z.string(),
-          departureAirline: z.string(),
-          departureFlightNumber: z.string(),
-          departureLocator: z.string(),
-          departureTerminal: z.string().optional(),
-          returnDate: z.string(),
-          returnTime: z.string(),
-          returnAirport: z.string(),
-          returnAirline: z.string(),
-          returnFlightNumber: z.string(),
-          returnLocator: z.string(),
-          returnTerminal: z.string().optional(),
+          weekNumber: z.number().int().positive().max(53),
+          weekLabel: z.string().max(100),
+          departureDate: z.string().max(20),
+          departureTime: z.string().max(10),
+          departureAirport: z.string().max(10),
+          departureAirline: z.string().max(50),
+          departureFlightNumber: z.string().max(20),
+          departureLocator: z.string().max(20),
+          departureTerminal: z.string().max(20).optional(),
+          returnDate: z.string().max(20),
+          returnTime: z.string().max(10),
+          returnAirport: z.string().max(10),
+          returnAirline: z.string().max(50),
+          returnFlightNumber: z.string().max(20),
+          returnLocator: z.string().max(20),
+          returnTerminal: z.string().max(20).optional(),
         })
       )
       .mutation(async ({ input }) => {

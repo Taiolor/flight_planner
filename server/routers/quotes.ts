@@ -410,10 +410,10 @@ export const quotesRouter = router({
         airline: z.string().max(100).optional(),
         outboundAirline: z.string().max(100).optional(),
         returnAirline: z.string().max(100).optional(),
-        outboundDeparture: z.string().max(32).optional(),
-        outboundArrival: z.string().max(32).optional(),
-        returnDeparture: z.string().max(32).optional(),
-        returnArrival: z.string().max(32).optional(),
+        outboundDeparture: z.string().max(30).optional(),
+        outboundArrival: z.string().max(30).optional(),
+        returnDeparture: z.string().max(30).optional(),
+        returnArrival: z.string().max(30).optional(),
       })
     )
     .mutation(async ({ input }) => {

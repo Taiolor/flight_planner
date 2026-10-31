@@ -71,3 +71,9 @@
 **Vulnerability:** Unbounded string and numeric inputs in `quotesRouter` (`server/routers/quotes.ts`), specifically in `saveManual`, `fetchFromApi`, and `getByWeek`.
 **Learning:** Leaving optional string fields (`airline`, `outboundAirline`, `returnAirline`, `outboundDeparture`, `outboundArrival`, `returnDeparture`, `returnArrival`) as bare `z.string().optional()` and numeric fields (`weekNumber`, `price`) without `.max()` bounds allows oversized payloads that can trigger database column truncation errors or memory/CPU exhaustion.
 **Prevention:** Always pair `z.string()` and `z.number()` in tRPC input schemas with explicit `.max(...)` constraints aligned with the Drizzle database column definitions (`varchar(100)`, `varchar(32)`, `weekNumber <= 53`).
+
+## 2026-10-31 - Enforce Input Bounds on System Procedures (`server/routers.ts`)
+
+**Vulnerability:** Resource Exhaustion & Payload Abuse via Unbounded Input Schemas
+**Learning:** Several tRPC endpoints in `server/routers.ts` (`shareByEmail`, `push.subscribe`, `flights.updateWeekDates`, `flights.savePrice`, and `ticketNotifications`) lacked `.max(...)` boundaries on strings (e.g. `endpoint`, `userAgent`, flight details) and integers (e.g. `weekNumber`, `emailId`). Attackers could submit massive payloads that consume excessive RAM during JSON/Zod parsing or trigger unexpected SQL errors downstream.
+**Prevention:** Always specify precise `.max(...)` upper bounds on all Zod strings and numbers in tRPC procedures, mirroring expected network protocol standards and database storage limits.
