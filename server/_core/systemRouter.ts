@@ -17,7 +17,7 @@ export const systemRouter = router({
     .input(
       z.object({
         title: z.string().min(1, "title is required").max(255),
-        content: z.string().min(1, "content is required").max(10000),
+        content: z.string().min(1, "content is required").max(5000),
       })
     )
     .mutation(async ({ input }) => {
