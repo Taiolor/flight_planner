@@ -1,5 +1,6 @@
 import { Resend } from "resend";
 import { ENV } from "./env";
+import { escapeHtml } from "./escapeHtml";
 
 /**
  * Email notification for ticket changes
@@ -43,16 +44,6 @@ function getResendClient(): Resend {
 /**
  * Format ticket change details for email body
  */
-
-function escapeHtml(unsafe: string | number | null | undefined): string {
-  if (unsafe == null) return "";
-  return String(unsafe)
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;");
-}
 
 function formatTicketDetails(notification: TicketChangeNotification): string {
   const {
@@ -137,10 +128,10 @@ function formatTicketDetails(notification: TicketChangeNotification): string {
     html += `
       <div style="margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid #ddd;">
         <h4 style="color: #0d47a1; margin: 0 0 10px 0;">🔵 Voo de Ida</h4>
-        <p><strong>Data:</strong> ${departureDate || "—"}</p>
+        <p><strong>Data:</strong> ${escapeHtml(departureDate) || "—"}</p>
         <p><strong>Companhia Aérea:</strong> ${escapeHtml(departureAirline) || "—"}</p>
         <p><strong>Número do Voo:</strong> ${escapeHtml(departureFlightNumber) || "—"}</p>
-        <p><strong>Data/Hora de Partida:</strong> ${departureFlightDatetime || "—"}</p>
+        <p><strong>Data/Hora de Partida:</strong> ${escapeHtml(departureFlightDatetime) || "—"}</p>
         <p><strong>Localizador:</strong> <span style="font-family: monospace; background-color: #fff9c4; padding: 2px 6px; border-radius: 3px; font-weight: bold;">${escapeHtml(departureLocator) || "—"}</span></p>
       </div>
     `;
@@ -151,10 +142,10 @@ function formatTicketDetails(notification: TicketChangeNotification): string {
     html += `
       <div>
         <h4 style="color: #0d47a1; margin: 0 0 10px 0;">🔴 Voo de Volta</h4>
-        <p><strong>Data:</strong> ${returnDate || "—"}</p>
+        <p><strong>Data:</strong> ${escapeHtml(returnDate) || "—"}</p>
         <p><strong>Companhia Aérea:</strong> ${escapeHtml(returnAirline) || "—"}</p>
         <p><strong>Número do Voo:</strong> ${escapeHtml(returnFlightNumber) || "—"}</p>
-        <p><strong>Data/Hora de Partida:</strong> ${returnFlightDatetime || "—"}</p>
+        <p><strong>Data/Hora de Partida:</strong> ${escapeHtml(returnFlightDatetime) || "—"}</p>
         <p><strong>Localizador:</strong> <span style="font-family: monospace; background-color: #fff9c4; padding: 2px 6px; border-radius: 3px; font-weight: bold;">${escapeHtml(returnLocator) || "—"}</span></p>
       </div>
     `;
