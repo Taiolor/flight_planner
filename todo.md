@@ -970,4 +970,14 @@
 - [x] Guard externo same-origin `pwa-startup-guard.d2a8bc10.js` compatível com CSP restritiva, versionado por hash e incluído no build sem liberar scripts inline/eval.
 - [x] 23 testes focados aprovados; `pnpm install --frozen-lockfile`, `pnpm check`, `pnpm build` e `git diff --check` aprovados.
 - [x] Navegador: splash removida, root visível, logo carregado e nenhuma imagem quebrada.
-- [ ] Fora deste escopo: duas falhas preexistentes em `server/flyIaTravelGuidance.test.ts`; suíte geral com 796 aprovados, 2 ignorados e 2 falhas.
+- [x] Duas falhas preexistentes em `server/flyIaTravelGuidance.test.ts` corrigidas na etapa seguinte a pedido do usuário; suíte geral agora com 807 aprovados, 2 ignorados e nenhuma falha.
+
+## Fly.IA — correção de testes de deslocamento — 31/10/2026
+
+- [x] Confirmada a causa das duas falhas: fixture de voo em 26/10/2026 já passada em relação ao relógio real; preservada a regra que não considera voos de datas passadas como próximos.
+- [x] Fixado o relógio dos testes em 25/10/2026 no fuso de São Paulo, com restauração entre testes, sem mudar datas ou horários da aplicação.
+- [x] Adicionadas regressões para avanço do calendário, seleção do próximo voo futuro, retorno após ida passada e aeroportos corretos, bilhete não emitido, cancelamento e exclusão.
+- [x] Adicionadas regressões para perguntas sem origem de deslocamento, ausência de rota e timeout de dez segundos.
+- [x] Timeout de consulta limpo em `finally` após sucesso, rejeição externa e esgotamento do prazo, sem mudar o contrato de respostas.
+- [x] Validação: 38 testes focados do Fly.IA; `pnpm check`; suíte completa com 807 aprovados e 2 ignorados; `pnpm build`; `git diff --check` aprovados.
+- [x] Frontend, skin, logo e correções de abertura preservados, sem alterações em `client/src`, `client/index.html` ou `client/public`.

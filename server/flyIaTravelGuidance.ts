@@ -39,6 +39,7 @@ export async function getFlyIaTravelGuidanceAnswer(year: number, messages: FlyIa
   if (!next) return { response: "Não há um próximo voo emitido e ativo registrado para definir o aeroporto de destino da rota." };
 
   const destination = getAirportAddress(next.flight.airportFrom);
+  let routeTimeout: ReturnType<typeof setTimeout> | undefined;
   try {
     const directions = await Promise.race([
       makeRequest<DirectionsResponse>("/maps/api/directions/json", {
@@ -49,7 +50,9 @@ export async function getFlyIaTravelGuidanceAnswer(year: number, messages: FlyIa
         language: "pt-BR",
         region: "br",
       }),
-      new Promise<never>((_, reject) => setTimeout(() => reject(new Error("route timeout")), 10_000)),
+      new Promise<never>((_, reject) => {
+        routeTimeout = setTimeout(() => reject(new Error("route timeout")), 10_000);
+      }),
     ]);
     const leg = directions.routes?.[0]?.legs?.[0];
     if (!leg) throw new Error("route unavailable");
@@ -70,5 +73,7 @@ export async function getFlyIaTravelGuidanceAnswer(year: number, messages: FlyIa
   } catch (error) {
     console.error("[Fly.IA Route] Não foi possível consultar a estimativa de deslocamento", error instanceof Error ? error.name : "unknown");
     return { response: "Não consegui consultar a estimativa de rota agora. O horário do seu voo continua sendo o registrado na base do SmartFly." };
+  } finally {
+    if (routeTimeout !== undefined) clearTimeout(routeTimeout);
   }
 }
