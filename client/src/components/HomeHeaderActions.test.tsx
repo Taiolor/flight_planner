@@ -426,4 +426,49 @@ describe("HomeHeaderActions", () => {
     }
     expect(onSignIn).not.toHaveBeenCalled();
   });
+
+  it.each([
+    { status: "unsubscribed", subscribed: false, loading: false, label: "Ativar notificações", disabled: false },
+    { status: "subscribed", subscribed: true, loading: false, label: "Desativar notificações", disabled: false },
+    { status: "unsupported", subscribed: false, loading: false, label: "Notificações indisponíveis neste ambiente", disabled: true },
+    { status: "loading", subscribed: false, loading: true, label: "Atualizando notificações", disabled: true },
+  ])("preserva os quatro controles desktop no estado $status", state => {
+    const onToggleNotifications = vi.fn();
+    const { container } = render(
+      <HomeHeaderActions
+        selectedYear={2026}
+        theme="light"
+        colorPreset="ocean"
+        colorPresetOptions={{ ocean: { name: "Azul" } }}
+        hideValues={false}
+        pushStatus={state.status}
+        pushSubscribed={state.subscribed}
+        pushLoading={state.loading}
+        isAuthenticated
+        isAdmin
+        notificationSettings={<button type="button" aria-label="Configurar agendamentos de notificação">Configurar</button>}
+        pdfExport={<button type="button">Exportar PDF</button>}
+        onShowChart={vi.fn()}
+        onToggleTheme={vi.fn()}
+        onColorPresetChange={vi.fn()}
+        onToggleValues={vi.fn()}
+        onToggleNotifications={onToggleNotifications}
+        onSignIn={vi.fn()}
+        onSignOut={vi.fn()}
+      />
+    );
+    const controls = container.querySelector('[data-header-desktop-preferences]')!;
+    expect(Array.from(controls.querySelectorAll("button")).map(button => button.getAttribute("aria-label"))).toEqual([
+      "Abrir preferências de aparência",
+      "Ocultar valores",
+      state.label,
+      "Configurar agendamentos de notificação",
+    ]);
+    const bell = within(controls as HTMLElement).getByRole("button", { name: state.label }) as HTMLButtonElement;
+    expect(bell.disabled).toBe(state.disabled);
+    expect(bell.getAttribute("aria-busy")).toBe(state.loading ? "true" : null);
+    fireEvent.click(bell);
+    expect(onToggleNotifications).toHaveBeenCalledTimes(state.disabled ? 0 : 1);
+    expect(screen.getByRole("button", { name: "Abrir conta" })).toBeTruthy();
+  });
 });

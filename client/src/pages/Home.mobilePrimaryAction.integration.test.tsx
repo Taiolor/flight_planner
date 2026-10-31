@@ -1,6 +1,6 @@
 /** @vitest-environment jsdom */
 import React from "react";
-import { fireEvent, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   DEFAULT_HOME_DASHBOARD_PREFERENCES,
@@ -14,6 +14,7 @@ const mutate = vi.fn();
 const emptyQuery = { data: [], isLoading: false, isFetching: false };
 const weeksQuery = { data: [] as any[], isLoading: false, isFetching: false };
 const authQuery = { data: { authenticated: false } };
+const pricesQuery = { data: [] as any[], isLoading: false, isFetching: false };
 const mutationResult = { mutate };
 const themeState = {
   theme: "light",
@@ -87,8 +88,12 @@ vi.mock("@/components/PassageManagementFrame", () => ({
 }));
 
 vi.mock("@/components/HomeCharts", () => ({
-  AnnualSpendChart: () => null,
+  AnnualSpendChart: () => <div data-testid="annual-spend-chart">Gráfico mensal carregado</div>,
   PriceVariationCharts: () => null,
+}));
+
+vi.mock("@/components/SkeletonChart", () => ({
+  SkeletonChart: () => <div data-testid="chart-skeleton">Carregando gráfico</div>,
 }));
 
 vi.mock("@/hooks/usePullToRefresh", () => ({
@@ -112,7 +117,7 @@ vi.mock("@/lib/trpc", () => ({
     flights: {
       getWeeks: { useQuery: () => weeksQuery },
       getProgressComparison: { useQuery: () => emptyQuery },
-      getPrices: { useQuery: () => emptyQuery },
+      getPrices: { useQuery: () => pricesQuery },
       getPublicPrices: { useQuery: () => emptyQuery },
       ensureYearWeeks: { useMutation: () => mutationResult },
       updateWeekStatus: { useMutation: () => mutationResult },
@@ -125,6 +130,10 @@ vi.mock("@/lib/trpc", () => ({
     destinationWeather: {
       forecast: { useQuery: () => ({ data: undefined, isLoading: false, isFetching: false }) },
     },
+    notificationSettings: {
+      get: { useQuery: () => emptyQuery },
+      update: { useMutation: () => mutationResult },
+    },
     useUtils: () => trpcUtils,
   },
 }));
@@ -134,11 +143,16 @@ describe("Home mobile primary action", () => {
     window.localStorage.clear();
     weeksQuery.data = [];
     weeksQuery.isFetching = false;
+    authQuery.data.authenticated = false;
+    pricesQuery.data = [];
     invalidate.mockClear();
     mutate.mockClear();
   });
 
-  afterEach(() => window.localStorage.clear());
+  afterEach(() => {
+    cleanup();
+    window.localStorage.clear();
+  });
 
   it("oferece a marca Smart Fly como retorno acessível para a Home", () => {
     const { unmount } = render(<Home />);
@@ -222,5 +236,29 @@ describe("Home mobile primary action", () => {
     expect(
       container.querySelector(".management-navy-theme .bg-blue-600")
     ).toBeTruthy();
+  });
+
+  it("mostra os totais de pontos e permite carregar o gráfico mensal após autenticar", async () => {
+    authQuery.data.authenticated = true;
+    weeksQuery.data = [{
+      weekNumber: 1,
+      departureDate: "04/03/2026",
+      returnDate: "09/03/2026",
+      isTicketIssued: 1,
+      ticketType: "roundtrip",
+      smilesPoints: 1000,
+      latamPassPoints: 2000,
+    }];
+    pricesQuery.data = [{ weekNumber: 1, airline: "gol", price: "350.50" }];
+
+    const view = render(<Home />);
+    expect(screen.getByText("Total SMILES")).toBeTruthy();
+    expect(screen.getByText("Total LATAM PASS")).toBeTruthy();
+    expect(screen.queryByTestId("annual-spend-chart")).toBeNull();
+    fireEvent.click(await screen.findByRole("button", { name: "Carregar gráfico mensal" }));
+    expect(await screen.findByTestId("annual-spend-chart")).toBeTruthy();
+    expect(screen.queryByRole("button", { name: "Carregar gráfico mensal" })).toBeNull();
+    expect(screen.getByText("Gasto por Mês (R$)")).toBeTruthy();
+    view.unmount();
   });
 });

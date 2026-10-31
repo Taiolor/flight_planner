@@ -137,7 +137,9 @@ export function HomeHeaderActions({
     React.useState<HeaderTransitionDestination | null>(null);
   const notificationsAvailable = pushStatus !== "unsupported";
   const notificationsBlocked = pushStatus === "denied";
-  const notificationLabel = pushLoading
+  const notificationLabel = !notificationsAvailable
+    ? "Notificações indisponíveis neste ambiente"
+    : pushLoading
     ? "Atualizando notificações"
     : notificationsBlocked
       ? "Notificações bloqueadas"
@@ -563,19 +565,19 @@ export function HomeHeaderActions({
         </Button>
         </TooltipLabel>
 
-        {notificationsAvailable && (
           <TooltipLabel label={notificationLabel}>
           <Button
             size="sm"
             variant="outline"
             className={`${iconButtonClass} ${pushSubscribed ? "border-emerald-200 bg-emerald-500/25" : ""} ${notificationsBlocked ? "border-red-300 bg-red-500/20 opacity-60" : ""}`}
             aria-label={notificationLabel}
-            disabled={pushLoading || notificationsBlocked}
+            aria-busy={pushLoading || undefined}
+            disabled={pushLoading || notificationsBlocked || !notificationsAvailable}
             onClick={onToggleNotifications}
           >
             {pushLoading ? (
               <span className="size-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-            ) : notificationsBlocked ? (
+            ) : notificationsBlocked || !notificationsAvailable ? (
               <BellOff className="size-4" />
             ) : pushSubscribed ? (
               <BellRing className="size-4" />
@@ -584,9 +586,8 @@ export function HomeHeaderActions({
             )}
           </Button>
           </TooltipLabel>
-        )}
 
-        {pushSubscribed && notificationSettings}
+        {notificationSettings}
       </div>
     </div>
   );

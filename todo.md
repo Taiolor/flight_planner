@@ -992,3 +992,17 @@
 - [x] 38 testes focados aprovados e quatro regressões novas; TypeScript, suíte completa de 811 testes aprovados e 2 ignorados, build e diff check aprovados.
 - [x] Teste de navegador em 320/375/390/640/1280 px confirmou rótulos visíveis, três atalhos presentes, ausência de overflow horizontal e abertura de login sem navegar/carregar dados protegidos.
 - [ ] Publicação deste novo checkpoint depende da ação de publicar; não substituir a produção durante a validação do Dev.
+
+## Referências de produção — cabeçalho e Resumo Anual — 31/10/2026
+
+- [x] Conferida a referência enviada: primeira linha Ano/Calendário/Gestão/menu/conta; segunda linha Aparência/valores/push/configuração dos avisos.
+- [x] Configuração dos avisos agora presente no desktop independentemente da assinatura push; visitante continua sem consulta privada e seu clique solicita login.
+- [x] Sino mantido na posição correspondente; estados sem suporte ou sem permissão ficam desabilitados, sem simular assinatura ativa nem pedir permissão automaticamente.
+- [x] Hook push alinhado à política de SW: Dev não aguarda um worker desativado; produção tem espera máxima de 10 segundos e limpeza do timer após resolução, timeout e unmount. Permissão `default` sem assinatura não é tratada como negativa.
+- [x] Resumo Anual conferido no Dev com login real: 29 bilhetes, indicadores SMILES/LATAM PASS e botão “Carregar gráfico mensal” presentes; clique montou o gráfico lazy, sem alterar valores ou preferências.
+- [x] `Home.tsx` não foi alterado: HEAD e base correspondente à produção `6f3bfd01` têm o mesmo blob `853651c908ef7326c09f970391f9c81724a7f984`. Não realizado rollback nem exposição pública de preços privados.
+- [x] Capturas autenticadas salvas fora do projeto, com valores financeiros ocultos; sessão técnica encerrada após os testes.
+- [x] Regressão da Home real cobre indicadores e clique de carregamento; adicionadas regressões de presença/ordem dos quatro controles, login no popup e timeout/limpeza de push.
+- [x] Validação final: 31 testes focados; 825 testes aprovados e 2 ignorados na suíte completa; `pnpm check`, `pnpm build` e `git diff --check` aprovados.
+- [x] Auditoria final em 320/375/390/640/1280 px sem overflow/sobreposição, com os três atalhos protegidos presentes e solicitação de login validada.
+- [ ] Revisão futura distinta da paridade: o gráfico atual usa meses de março a dezembro; avaliar inclusão de janeiro/fevereiro para cobertura anual completa.

@@ -71,4 +71,19 @@ describe("NotificationSettingsPopup", () => {
       ticketEmailEnabled: true,
     }));
   });
+
+  it("solicita login e não busca configurações quando o visitante abre o controle", async () => {
+    const onLoginRequired = vi.fn();
+    const mutate = vi.fn();
+    mocks.get.mockReturnValue({ data: undefined });
+    mocks.update.mockReturnValue({ mutate, isPending: false });
+
+    render(<NotificationSettingsPopup isAuthenticated={false} onLoginRequired={onLoginRequired} />);
+    fireEvent.click(screen.getByRole("button", { name: "Configurar agendamentos de notificação" }));
+
+    await waitFor(() => expect(onLoginRequired).toHaveBeenCalledOnce());
+    expect(mocks.get.mock.calls.every(([, options]) => options.enabled === false)).toBe(true);
+    expect(screen.queryByRole("button", { name: "Salvar configurações" })).toBeNull();
+    expect(mutate).not.toHaveBeenCalled();
+  });
 });
