@@ -7,7 +7,7 @@
  * Semana corrente e futuras: cor normal, totalmente interativas
  */
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, memo, useCallback } from "react";
 import { flightData } from "@/lib/flightData";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
@@ -154,7 +154,7 @@ const formatFlightDatetime = (iso: string | null): string => {
 };
 
 /** Linha de cotação individual */
-const QuoteRow = ({
+const QuoteRow = memo(({
   quote,
   onDelete,
   isPast,
@@ -369,10 +369,10 @@ const QuoteRow = ({
       )}
     </div>
   );
-};
+});
 
 /** Card de semana — aparência e interatividade variam conforme status */
-const WeekCard = ({
+const WeekCard = memo(({
   week,
   quotes,
   apiUsage,
@@ -844,7 +844,7 @@ const WeekCard = ({
       )}
     </div>
   );
-};
+});
 
 // ─── Componente principal ─────────────────────────────────────────────────────
 
@@ -910,16 +910,16 @@ export default function FlightQuotes() {
     return map;
   }, [allQuotes]);
 
-  const handleFetchApi = (
+  const handleFetchApi = useCallback((
     weekNumber: number,
     departureDate: string,
     returnDate: string
   ) => {
     setLoadingWeek(weekNumber);
     fetchFromApi.mutate({ weekNumber, departureDate, returnDate });
-  };
+  }, [fetchFromApi.mutate]);
 
-  const handleSaveManual = (
+  const handleSaveManual = useCallback((
     weekNumber: number,
     departureDate: string,
     returnDate: string,
@@ -938,11 +938,11 @@ export default function FlightQuotes() {
       price,
       ...details,
     });
-  };
+  }, [saveManual.mutate]);
 
-  const handleDelete = (id: number) => {
+  const handleDelete = useCallback((id: number) => {
     deleteQuote.mutate({ id });
-  };
+  }, [deleteQuote.mutate]);
 
   const usagePercent = Math.round(
     (apiUsage.requestsUsed / apiUsage.requestsLimit) * 100
