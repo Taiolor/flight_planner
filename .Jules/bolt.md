@@ -1,7 +1,36 @@
+## 2025-03-05 - Avoid String Replacement for Refactoring
+
+**Learning:** When attempting to refactor complex TypeScript logic using string replacement methods (`replace`), it's incredibly easy to mismatch braces resulting in frustrating SyntaxErrors (like `Declaration or statement expected`). The replacement approach is fragile.
+**Action:** When modifying a large code block, rewrite the targeted function/block carefully and precisely. Or, use an Abstract Syntax Tree (AST) transformer if possible. Do not rely on simple string or regex replacements for nested conditional logic.
+
+## 2025-03-05 - Optimize Static Configurations Retrieval
+
+**Learning:** Functions fetching relatively static configuration from a database (like `getTicketNotificationEmails`) can introduce N+1 or redundant DB calls if invoked multiple times per request or loop.
+**Action:** Implement a short Time-to-Live (TTL) in-memory cache for the function response, and strictly invalidate it during any corresponding mutations (`addTicketNotificationEmail`, `removeTicketNotificationEmail`, etc.). Also refactor calling code to fetch exactly once per workflow context.
+
+## 2025-03-05 - Avoid O(N\*M) Array Allocations in React Render Loop
+
+**Learning:** Computations inside `.map` functions within JSX render cycles (such as array filtering and grouping logic) run on _every_ component update. For dynamic forms where keystrokes trigger re-renders, this can cause significant input lag due to thousands of redundant iterations and garbage-collected intermediate array allocations per keystroke.
+**Action:** Consolidate expensive data derivations and object/array allocations into a single-pass `useMemo` block hoisted outside the render loop, tying it specifically to the lifecycle of the base data (e.g. `weeksData`), instead of placing it inside the `.map` render logic.
+
+## 2025-03-05 - Direct Loop Instead of Multiple Array Filtering
+
+**Learning:** Combining `.filter().map()` inside a component render loops forces React to allocate intermediate arrays on every render and loops over the elements twice.
+**Action:** When mapping over items that were previously filtered from an array in a render loop, combine the logic into a direct `.map()` on the pre-filtered array (e.g. `feriadosIntervaloCopa.map(...)`) or use a traditional `for` loop to avoid intermediate allocations and reduce iteration count.
+
+## 2026-07-28 - Optimize redundant upsert user query
+
+**Learning:** In MySQL/Drizzle, `INSERT ... ON DUPLICATE KEY UPDATE` does not support returning the row directly. Faking the returned object locally (e.g. setting `id: 0`) is dangerous as it corrupts internal state. To implement an optimization, the `SELECT` query must be moved into the helper function (`upsertUser`) but protected by a `returnRecord` flag so hot paths do not execute unneeded SELECT statements.
+**Action:** When asked to optimize redundant queries on MySQL upserts, avoid faking records. Use optional flags to gate follow-up queries inside the repository module to satisfy callers who need the object while keeping performance fast for callers who don't.
+
+## 2026-07-28 - Eager Map Initialization for O(1) Lookups
+
+**Learning:** When retrieving data inside loops or heavily used functions using `Array.prototype.find()` on static arrays, the time complexity balloons to O(N * M), leading to CPU overhead and rendering delays.
+**Action:** When working with static arrays that are frequently queried by a unique identifier (like an ID or week number), initialize a `Map` eagerly at module load time to enable O(1) lookups, preventing repeated O(N) array traversals during runtime or render cycles.
+
 ## 2026-09-11 - Resolving N+1 Database Queries via Batching
 **Learning:** Resolving N+1 database insertion bottlenecks within loops can be solved cleanly without compromising component reusability. By pre-allocating an array for data objects inside the outer execution context, passing it down to inner processing functions via reference (`Array.prototype.push`), and executing a single bulk insert using Drizzle ORM (`db.insert(table).values(data)`), we preserve the original functional modularity while eliminating sequential I/O overhead.
 **Action:** When diagnosing N+1 database writes across sequential iterations or nested helper functions, implement in-memory accumulation to gather all required payloads, then execute a single batched write operation. Ensure related unit tests are updated to capture array arguments correctly (e.g., using `.toHaveBeenCalledWith([ { ... } ])`).
-
 
 ## 2026-10-31 - Hoist Intl.NumberFormat Singletons in FinancialDashboard
 **Learning:** Constructing `new Intl.NumberFormat(...)` inside helper functions (`formatBRL` and `formatMiles`) in `FinancialDashboard.tsx` caused dozens of expensive locale formatter instantiations on every React render cycle across KPI cards, chart tooltips, and table rows.

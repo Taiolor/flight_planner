@@ -1,6 +1,7 @@
 import { COOKIE_NAME } from "@shared/const";
 import { quotesRouter } from "./routers/quotes";
 import { financialRouter } from "./routers/financial";
+import { julesRouter } from "./routers/jules";
 import crypto from "crypto";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
@@ -1087,6 +1088,11 @@ export const appRouter = router({
   // Financial Dashboard
   // =====================
   financial: financialRouter,
+
+  // =====================
+  // Google Jules Squad Dashboard
+  // =====================
+  jules: julesRouter,
 
   // =====================
   // Ticket Notification Emails
