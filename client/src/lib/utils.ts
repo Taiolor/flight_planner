@@ -21,3 +21,12 @@ export function extractTime(dt: string | null | undefined): string {
   const timePart = dt.includes("T") ? dt.split("T")[1] : dt.split(" ")[1];
   return timePart ? timePart.slice(0, 5) : "";
 }
+
+/** Formata data para o padrão brasileiro DD/MM/YYYY (aceita ISO YYYY-MM-DD ou DD/MM/YYYY). */
+export function formatDateBR(dateStr: string | null | undefined): string {
+  if (!dateStr) return "";
+  if (dateStr.includes("/")) return dateStr;
+  const [year, month, day] = dateStr.split("-");
+  if (!year || !month || !day) return dateStr;
+  return `${day.padStart(2, "0")}/${month.padStart(2, "0")}/${year}`;
+}

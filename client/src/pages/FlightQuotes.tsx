@@ -47,19 +47,9 @@ import {
 } from "lucide-react";
 import { Link } from "wouter";
 import { useTheme } from "@/contexts/ThemeContext";
-import { toIsoDate } from "@/lib/utils";
+import { toIsoDate, formatDateBR } from "@/lib/utils";
 
-const EMPTY_ARRAY: any[] = [];
-
-// ─── Utilitários de data ─────────────────────────────────────────────────────
-
-/** Formata DD/MM/YYYY para exibição (ou converte ISO → BR) */
-const formatDateBR = (dateStr: string): string => {
-  if (!dateStr) return "";
-  if (dateStr.includes("/")) return dateStr;
-  const [year, month, day] = dateStr.split("-");
-  return `${day}/${month}/${year}`;
-};
+const EMPTY_ARRAY: never[] = [];
 
 /** Formata centavos para BRL */
 const formatCurrency = (cents: number): string =>

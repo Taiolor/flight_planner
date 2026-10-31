@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { cn, extractTime, toIsoDate } from "./utils";
+import { cn, extractTime, formatDateBR, toIsoDate } from "./utils";
 
 describe("cn utility", () => {
   it("merges basic class names", () => {
@@ -69,5 +69,25 @@ describe("extractTime utility", () => {
     expect(extractTime("2026-09-05T")).toBe("");
     expect(extractTime(null)).toBe("");
     expect(extractTime(undefined)).toBe("");
+  });
+});
+
+describe("formatDateBR utility", () => {
+  it("converts ISO YYYY-MM-DD to DD/MM/YYYY", () => {
+    expect(formatDateBR("2026-03-15")).toBe("15/03/2026");
+  });
+
+  it("pads single digit months and days from ISO strings", () => {
+    expect(formatDateBR("2026-3-5")).toBe("05/03/2026");
+  });
+
+  it("returns already formatted BR dates without changes", () => {
+    expect(formatDateBR("15/03/2026")).toBe("15/03/2026");
+  });
+
+  it("handles empty or falsy inputs gracefully", () => {
+    expect(formatDateBR("")).toBe("");
+    expect(formatDateBR(null)).toBe("");
+    expect(formatDateBR(undefined)).toBe("");
   });
 });
