@@ -242,3 +242,4 @@
 - [x] Auditar e validar tooltips administrativos em largura crítica de 320 px
 - [x] Ajustar posicionamento dos tooltips em telas com rolagem horizontal para evitar cortes e sobreposição
 - [x] Adicionar fade-in e fade-out suaves aos tooltips Radix com suporte a redução de movimento
+- [x] Alinhar a composição e visibilidade dos botões do cabeçalho de desenvolvimento à versão publicada em produção

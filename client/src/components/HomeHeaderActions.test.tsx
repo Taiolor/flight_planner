@@ -181,10 +181,10 @@ describe("HomeHeaderActions", () => {
       "utf8"
     );
 
-    expect(source).toContain("grid-cols-[minmax(0,1fr)_auto]");
+    expect(source).toContain("flex w-full flex-col gap-2");
     expect(source).toContain("<DropdownMenuItem onSelect={onShowChart}>");
-    expect(source).toContain("inline-flex h-10 shrink-0 items-center justify-center");
-    expect(source).not.toContain('hidden whitespace-nowrap sm:inline');
+    expect(source).toContain("inline-flex h-10 w-10 shrink-0 items-center justify-center");
+    expect(source).toContain('hidden whitespace-nowrap sm:inline');
     expect(source).toContain("sm:min-w-[6.75rem]");
     expect(source).toContain("data-mobile-primary-action={mobilePrimaryAction}");
     expect(source).toContain("data-calendar-navigation");
@@ -232,16 +232,16 @@ describe("HomeHeaderActions", () => {
       line => !line.hasAttribute("data-header-desktop-preferences")
     );
     const scope = within(container);
-    expect(mobileLines).toHaveLength(3);
-    expect(container.querySelector('[data-header-navigation]')?.className).toContain("col-span-2");
-    expect(container.querySelector('[data-header-account-actions]')?.className).toContain("row-start-2");
-    expect(container.querySelector('[data-header-mobile-preferences]')?.className).toContain("row-start-2");
+    expect(mobileLines).toHaveLength(2);
+    expect(container.querySelector('[data-header-navigation]')?.className).toContain("flex-1");
+    expect(container.querySelector('[data-header-account-actions]')?.className).not.toContain("row-start-2");
+    expect(container.querySelector('[data-header-mobile-preferences]')?.className).toContain("w-full");
     for (const name of ["Calendário", "Abrir Gestão de Passagens"]) {
       const link = scope.getByRole("link", { name });
       expect(link.className).toContain("h-10");
-      expect(link.querySelector("span")?.className).not.toContain("hidden");
+      expect(link.querySelector("span")?.className).toContain("hidden");
     }
-    expect(scope.getByRole("button", { name: "Entrar" }).querySelector("span")?.className).not.toContain("hidden");
+    expect(scope.getByRole("button", { name: "Entrar" }).querySelector("span")?.className).toContain("hidden");
     expect(scope.queryByRole("button", { name: "Gráfico" })).toBeNull();
     expect(scope.getByRole("button", { name: "Abrir preferências" }).className).toContain("flex-1");
   });

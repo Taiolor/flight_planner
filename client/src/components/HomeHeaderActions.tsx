@@ -195,10 +195,11 @@ export function HomeHeaderActions({
 
   return (
     <div
-      className="grid w-full grid-cols-[minmax(0,1fr)_auto] items-center gap-2 lg:w-auto"
+      className="flex w-full flex-col gap-2 lg:w-auto lg:items-end"
       aria-label="Ações do planejamento"
     >
-        <div className="col-span-2 flex min-w-0 items-center gap-1 sm:col-span-1 sm:gap-2" data-header-navigation>
+      <div className="flex w-full flex-nowrap items-center gap-1 sm:gap-2 lg:w-auto lg:justify-end">
+        <div className="flex min-w-0 flex-1 items-center gap-1 sm:flex-none sm:gap-2" data-header-navigation>
           <GlobalYearSelector
             className={`${headerButtonClass} min-w-[88px] bg-slate-950/20 text-white hover:bg-white/18 sm:min-w-[104px]`}
           />
@@ -217,12 +218,12 @@ export function HomeHeaderActions({
                 mobilePrimaryAction === "calendar" ? "calendar" : "passages",
                 primaryMeta.href
               )}
-              className={`order-first inline-flex h-10 shrink-0 items-center justify-center rounded-xl bg-white px-2 text-xs font-semibold text-slate-900 shadow-sm transition-[transform,background-color,opacity] duration-150 hover:bg-slate-100 active:scale-[0.97] focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-slate-800 sm:px-3 sm:text-sm ${
+              className={`order-first inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white px-0 font-semibold text-slate-900 shadow-sm transition-[transform,background-color,opacity] duration-150 hover:bg-slate-100 active:scale-[0.97] focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-slate-800 sm:w-auto sm:px-3 ${
                 navigatingDestination === (mobilePrimaryAction === "calendar" ? "calendar" : "passages") ? "scale-[0.98] opacity-80" : ""
               }`}
             >
               {mobilePrimaryAction === "calendar" ? <CalendarDays className="size-4" aria-hidden="true" /> : <Ticket className="size-4" aria-hidden="true" />}
-              <span className="ml-1 whitespace-nowrap sm:ml-1.5">{mobilePrimaryAction === "calendar" ? "Calendário" : "Gestão"}</span>
+              <span className="ml-1.5 hidden whitespace-nowrap sm:inline">{mobilePrimaryAction === "calendar" ? "Calendário" : "Gestão"}</span>
             </Link>
             </TooltipLabel>
           </MobileLongPressHint>
@@ -240,18 +241,18 @@ export function HomeHeaderActions({
                 mobilePrimaryAction === "calendar" ? "passages" : "calendar",
                 mobilePrimaryAction === "calendar" ? "/gestao-passagens" : "/calendar"
               )}
-              className={`${headerButtonClass} inline-flex h-10 shrink-0 items-center justify-center whitespace-nowrap px-2 text-xs sm:min-w-[6.75rem] sm:px-3 sm:text-sm ${
+              className={`${headerButtonClass} inline-flex h-10 w-10 shrink-0 items-center justify-center whitespace-nowrap px-0 sm:w-auto sm:min-w-[6.75rem] sm:px-3 ${
                 navigatingDestination === (mobilePrimaryAction === "calendar" ? "passages" : "calendar") ? "scale-[0.98] opacity-80" : ""
               }`}
             >
               {mobilePrimaryAction === "calendar" ? <Ticket className="size-4" aria-hidden="true" /> : <CalendarDays className="size-4" aria-hidden="true" />}
-              <span className="ml-1 whitespace-nowrap sm:ml-1.5">{mobilePrimaryAction === "calendar" ? "Gestão" : "Calendário"}</span>
+              <span className="ml-1.5 hidden whitespace-nowrap sm:inline">{mobilePrimaryAction === "calendar" ? "Gestão" : "Calendário"}</span>
             </Link>
             </TooltipLabel>
           </MobileLongPressHint>
         </div>
 
-        <div className="col-start-2 row-start-2 flex shrink-0 items-center gap-1 sm:row-start-1 sm:gap-2" data-header-account-actions>
+        <div className="flex shrink-0 items-center gap-1 sm:gap-2" data-header-account-actions>
           <MobileLongPressHint label="Mais opções">
           <DropdownMenu>
             <TooltipLabel label="Mais opções">
@@ -418,18 +419,19 @@ export function HomeHeaderActions({
               <Button
                 size="sm"
                 variant="outline"
-                className={`${headerButtonClass} shrink-0 px-2 text-xs sm:px-3 sm:text-sm`}
+                className={`${iconButtonClass} shrink-0 sm:w-auto sm:px-3`}
                 onClick={onSignIn}
               >
                 <LogIn className="size-4" aria-hidden="true" />
-                <span className="ml-1 whitespace-nowrap sm:ml-1.5">Entrar</span>
+                <span className="ml-1.5 hidden sm:inline">Entrar</span>
               </Button>
               </TooltipLabel>
             </MobileLongPressHint>
           )}
         </div>
+      </div>
 
-      <div className="col-start-1 row-start-2 flex min-w-0 items-center gap-1 sm:hidden" data-header-mobile-preferences>
+      <div className="flex w-full items-center gap-1 sm:hidden" data-header-mobile-preferences>
         <MobileLongPressHint label={hideValues ? "Exibir valores" : "Ocultar valores"}>
           <TooltipLabel label={hideValues ? "Exibir valores" : "Ocultar valores"}>
           <Button
@@ -512,7 +514,7 @@ export function HomeHeaderActions({
         </DropdownMenu>
       </div>
 
-      <div className="col-span-2 row-start-2 hidden w-full sm:flex sm:flex-nowrap sm:items-center sm:gap-2 lg:w-auto lg:justify-end" data-header-desktop-preferences>
+      <div className="hidden w-full sm:flex sm:flex-nowrap sm:items-center sm:gap-2 lg:w-auto lg:justify-end" data-header-desktop-preferences>
         <DropdownMenu>
           <TooltipLabel label="Aparência">
           <DropdownMenuTrigger asChild>
