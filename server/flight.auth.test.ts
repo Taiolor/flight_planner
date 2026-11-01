@@ -1,4 +1,4 @@
-import { describe, expect, it, vi, beforeEach } from "vitest";
+import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
 
 // Set environment variable BEFORE importing appRouter
 vi.stubEnv("JWT_SECRET", "test-secret");
@@ -617,5 +617,66 @@ describe("flights.updateWeekStatus with airline fields", () => {
         departureAirline: "latam",
       })
     ).rejects.toThrow("Faça login para acessar.");
+  });
+});
+
+describe("flightAuth cookie scope regression", () => {
+  const previousNodeEnv = process.env.NODE_ENV;
+  afterEach(() => {
+    if (previousNodeEnv === undefined) delete process.env.NODE_ENV;
+    else process.env.NODE_ENV = previousNodeEnv;
+  });
+
+  it("sets the partitioned development cookie for eight hours and expires the old Lax cookie", async () => {
+    process.env.NODE_ENV = "development";
+    const ctx = createTestContext();
+    ctx.res.cookie = vi.fn();
+    ctx.res.clearCookie = vi.fn();
+    await appRouter.createCaller(ctx).flightAuth.login({ email: "taiolor@gmail.com", password: "#Salvar2026" });
+    expect(ctx.res.cookie).toHaveBeenCalledWith("flight_session", expect.any(String), {
+      httpOnly: true, path: "/", secure: true, sameSite: "none", partitioned: true, maxAge: 8 * 60 * 60 * 1000,
+    });
+    expect(ctx.res.clearCookie).toHaveBeenCalledWith("flight_session", {
+      httpOnly: true, path: "/", secure: true, sameSite: "lax",
+    });
+  });
+
+  it("does not change the production scope or expire an unrelated partition", async () => {
+    process.env.NODE_ENV = "production";
+    const ctx = createTestContext();
+    ctx.res.cookie = vi.fn();
+    ctx.res.clearCookie = vi.fn();
+    await appRouter.createCaller(ctx).flightAuth.login({ email: "taiolor@gmail.com", password: "#Salvar2026" });
+    expect(ctx.res.cookie).toHaveBeenCalledWith("flight_session", expect.any(String), {
+      httpOnly: true, path: "/", secure: true, sameSite: "lax", maxAge: 8 * 60 * 60 * 1000,
+    });
+    expect(ctx.res.clearCookie).not.toHaveBeenCalled();
+  });
+
+  it("revokes the session and clears both development cookie scopes without maxAge", async () => {
+    process.env.NODE_ENV = "development";
+    const ctx = createTestContext("flight_session=development-session-test");
+    ctx.res.clearCookie = vi.fn();
+    const { deleteAuthSession } = await import("./db");
+    await appRouter.createCaller(ctx).flightAuth.logout();
+    expect(deleteAuthSession).toHaveBeenCalledWith("development-session-test");
+    expect(ctx.res.clearCookie).toHaveBeenCalledTimes(2);
+    expect(ctx.res.clearCookie).toHaveBeenNthCalledWith(1, "flight_session", {
+      httpOnly: true, path: "/", secure: true, sameSite: "none", partitioned: true,
+    });
+    expect(ctx.res.clearCookie).toHaveBeenNthCalledWith(2, "flight_session", {
+      httpOnly: true, path: "/", secure: true, sameSite: "lax",
+    });
+  });
+
+  it("clears only the host-only Lax cookie on production logout", async () => {
+    process.env.NODE_ENV = "production";
+    const ctx = createTestContext("flight_session=production-session-test");
+    ctx.res.clearCookie = vi.fn();
+    await appRouter.createCaller(ctx).flightAuth.logout();
+    expect(ctx.res.clearCookie).toHaveBeenCalledTimes(1);
+    expect(ctx.res.clearCookie).toHaveBeenCalledWith("flight_session", {
+      httpOnly: true, path: "/", secure: true, sameSite: "lax",
+    });
   });
 });

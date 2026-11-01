@@ -23,11 +23,34 @@ function isSecureRequest(req: Request) {
 
 export function getSessionCookieOptions(
   req: Request
-): Pick<CookieOptions, "domain" | "httpOnly" | "path" | "sameSite" | "secure"> {
+): Pick<CookieOptions, "domain" | "httpOnly" | "path" | "sameSite" | "secure" | "partitioned"> {
+  const secure = isSecureRequest(req);
+  // A prévia HTTPS pode estar incorporada em outro site. CHIPS mantém a sessão
+  // isolada por site incorporador, sem abrir o cookie de produção para terceiros.
+  if (process.env.NODE_ENV === "development" && secure) {
+    return {
+      httpOnly: true,
+      path: "/",
+      sameSite: "none",
+      secure: true,
+      partitioned: true,
+    };
+  }
+
   return {
     httpOnly: true,
     path: "/",
     // Security: Use lax instead of none to mitigate CSRF attacks since API and Web share domains
+    sameSite: "lax",
+    secure,
+  };
+}
+
+/** Perfil host-only anterior, usado apenas para apagar cookies legados no Dev. */
+export function getLegacySessionCookieOptions(req: Request): CookieOptions {
+  return {
+    httpOnly: true,
+    path: "/",
     sameSite: "lax",
     secure: isSecureRequest(req),
   };

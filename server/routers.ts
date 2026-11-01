@@ -4,7 +4,7 @@ import { memoriesRouter } from "./routers/memories";
 import { additionalFlightsRouter } from "./routers/additionalFlights";
 import { operationalRouter } from "./routers/operational";
 import crypto from "crypto";
-import { getSessionCookieOptions } from "./_core/cookies";
+import { getLegacySessionCookieOptions, getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import { publicProcedure, router } from "./_core/trpc";
 import { z } from "zod";
@@ -214,6 +214,9 @@ export const appRouter = router({
 
         // Definir cookie de sessão (8 horas)
         const cookieOptions = getSessionCookieOptions(ctx.req);
+        if (cookieOptions.partitioned) {
+          ctx.res.clearCookie(SESSION_COOKIE, getLegacySessionCookieOptions(ctx.req));
+        }
         ctx.res.cookie(SESSION_COOKIE, token, {
           ...cookieOptions,
           maxAge: 8 * 60 * 60 * 1000,
@@ -244,7 +247,10 @@ export const appRouter = router({
         await deleteAuthSession(sessionToken);
       }
       const cookieOptions = getSessionCookieOptions(ctx.req);
-      ctx.res.clearCookie(SESSION_COOKIE, { ...cookieOptions, maxAge: -1 });
+      ctx.res.clearCookie(SESSION_COOKIE, cookieOptions);
+      if (cookieOptions.partitioned) {
+        ctx.res.clearCookie(SESSION_COOKIE, getLegacySessionCookieOptions(ctx.req));
+      }
       return { success: true };
     }),
   }),

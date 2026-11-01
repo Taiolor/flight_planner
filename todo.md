@@ -1006,3 +1006,18 @@
 - [x] Validação final: 31 testes focados; 825 testes aprovados e 2 ignorados na suíte completa; `pnpm check`, `pnpm build` e `git diff --check` aprovados.
 - [x] Auditoria final em 320/375/390/640/1280 px sem overflow/sobreposição, com os três atalhos protegidos presentes e solicitação de login validada.
 - [ ] Revisão futura distinta da paridade: o gráfico atual usa meses de março a dezembro; avaliar inclusão de janeiro/fevereiro para cobertura anual completa.
+
+## Sessão do Dev incorporado — 01/11/2026
+
+Reproduzido o relato com chamadas reais no Chromium: o login respondia 200/sucesso em ambos os contextos, mas em iframe cross-site o cookie `SameSite=Lax` não era armazenado (zero cookies), e `flightAuth.check` retornava `authenticated:false`. Em aba normal, a mesma autenticação funcionava.
+
+- [x] Perfil exclusivo do Dev HTTPS com `HttpOnly`, `Secure`, `SameSite=None`, `Partitioned` e `Path=/`; produção e localhost HTTP permanecem Lax/host-only, sem alteração de CSP ou CORS.
+- [x] Login remove o cookie legado Lax no Dev; logout revoga a sessão e expira ambos os escopos, sem `maxAge` depreciado em `clearCookie`.
+- [x] Modal só confirma sucesso após cancelar checagem anônima pendente e buscar uma sessão nova (`staleTime:0`); invalida dados depois da confirmação, não libera permissões otimisticamente e informa falha de persistência/conexão sem fechar o modal.
+- [x] Bloqueados cliques/Enter duplicados; feedback “Confirmando sessão...” com `aria-busy`, mensagens com `role=alert` e limpeza da senha após sucesso.
+- [x] Transporte em iframe de teste e aba normal: sessão/admin confirmados, leitura protegida HTTP 200, persistência após recarregar, logout com sessão falsa e leitura protegida HTTP 401. Tokens/senhas não registrados; sessões técnicas revogadas.
+- [x] Fluxo visual real em aba normal: conta e gráfico mensal liberados, três atalhos habilitados, persistência após reload e logout conferidos. O documento sintético de teste incorporado valida o transporte, não equivale à UI real do host de preview.
+- [x] 35 testes focados aprovados (15 regressões novas); suíte completa com 840 aprovados e 2 ignorados; TypeScript, build e diff check aprovados.
+- [x] Home, CSS, skin, splash, assets, dependências e schema intactos; nenhuma publicação em produção realizada.
+
+Limitação de navegador: se cookies particionados não forem suportados e cookies de terceiros forem bloqueados, a mensagem de verificação orienta abrir o Dev em uma nova aba, sem transferir tokens para localStorage ou expor cookies ao JavaScript.

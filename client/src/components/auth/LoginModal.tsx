@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -23,28 +23,41 @@ export function LoginModal({ open, onOpenChange }: LoginModalProps) {
   const [loginPassword, setLoginPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loginError, setLoginError] = useState("");
+  const [isVerifyingSession, setIsVerifyingSession] = useState(false);
+  const loginInProgress = useRef(false);
 
   const loginMutation = trpc.flightAuth.login.useMutation();
   const authUtils = trpc.useUtils();
+  const isLoggingIn = loginMutation.isPending || isVerifyingSession;
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
+    if (loginInProgress.current || !loginEmail || !loginPassword) return;
+    loginInProgress.current = true;
     setLoginError("");
-    loginMutation.mutate(
-      { email: loginEmail, password: loginPassword },
-      {
-        onSuccess: () => {
-          onOpenChange(false);
-          setLoginEmail("");
-          setLoginPassword("");
-          authUtils.flightAuth.check.invalidate();
-          authUtils.flights.getWeeks.invalidate();
-          toast.success("Login realizado com sucesso!");
-        },
-        onError: err => {
-          setLoginError(err.message || "E-mail ou senha incorretos.");
-        },
+    try {
+      await loginMutation.mutateAsync({ email: loginEmail, password: loginPassword });
+      setIsVerifyingSession(true);
+      // Não reutilizar uma checagem anônima em andamento ou armazenada no cache.
+      await authUtils.flightAuth.check.cancel();
+      const session = await authUtils.flightAuth.check.fetch(undefined, { staleTime: 0 });
+      if (!session.authenticated) {
+        throw new Error(
+          "O navegador não confirmou a sessão. Abra a prévia em uma nova aba e tente novamente."
+        );
       }
-    );
+      // A checagem atualiza todos os observadores de autenticação; os demais dados
+      // devem ser reconsultados com o cookie confirmado, sem liberação otimista.
+      await authUtils.invalidate();
+      onOpenChange(false);
+      setLoginEmail("");
+      setLoginPassword("");
+      toast.success("Login realizado com sucesso!");
+    } catch (err) {
+      setLoginError(err instanceof Error ? err.message : "Não foi possível entrar. Tente novamente.");
+    } finally {
+      setIsVerifyingSession(false);
+      loginInProgress.current = false;
+    }
   };
 
   return (
@@ -61,7 +74,7 @@ export function LoginModal({ open, onOpenChange }: LoginModalProps) {
             Faça login para editar preços, datas e status dos bilhetes.
           </p>
           {loginError && (
-            <div className="bg-red-50 border border-red-200 text-red-700 rounded-lg px-4 py-2 text-sm flex items-center gap-2">
+            <div role="alert" className="bg-red-50 border border-red-200 text-red-700 rounded-lg px-4 py-2 text-sm flex items-center gap-2">
               <AlertCircle className="w-4 h-4 flex-shrink-0" />
               {loginError}
             </div>
@@ -119,15 +132,16 @@ export function LoginModal({ open, onOpenChange }: LoginModalProps) {
           </Button>
           <Button
             onClick={handleLogin}
-            disabled={loginMutation.isPending || !loginEmail || !loginPassword}
+            disabled={isLoggingIn || !loginEmail || !loginPassword}
+            aria-busy={isLoggingIn}
             className="bg-blue-600 hover:bg-blue-700"
           >
-            {loginMutation.isPending ? (
+            {isLoggingIn ? (
               <Loader2 className="w-4 h-4 animate-spin mr-2" />
             ) : (
               <Lock className="w-4 h-4 mr-2" />
             )}
-            Entrar
+            {isVerifyingSession ? "Confirmando sessão..." : "Entrar"}
           </Button>
         </DialogFooter>
       </DialogContent>
