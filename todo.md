@@ -1021,3 +1021,14 @@ Reproduzido o relato com chamadas reais no Chromium: o login respondia 200/suces
 - [x] Home, CSS, skin, splash, assets, dependências e schema intactos; nenhuma publicação em produção realizada.
 
 Limitação de navegador: se cookies particionados não forem suportados e cookies de terceiros forem bloqueados, a mensagem de verificação orienta abrir o Dev em uma nova aba, sem transferir tokens para localStorage ou expor cookies ao JavaScript.
+
+## Alinhamento GitHub, login e bundle — 01/11/2026
+
+- [x] Após reautorização com permissão Workflows, `Taiolor/flight_planner/main` atualizado por fast-forward de `61b1d7bb` para o commit exato solicitado `917e206edf13b0695512065f21dec809e9888d65`. Não removida CI nem usado force push.
+- [x] Investigação adicional do login: login real iniciado dentro de Financeiro e navegação autenticada em `/financeiro`, `/admin/notifications`, `/admin/telemetria`, `/admin/gemini` e `/gestao-passagens`; sessão/admin verdadeiros, nenhuma tela de login remanescente, nenhum 401/403 ou erro JavaScript. Logout real confirmado e sessão técnica revogada. Não reproduzida nova falha nesse Dev atualizado; a validação anterior de transporte CHIPS no iframe continua válida, mas não substitui o navegador local do usuário.
+- [x] Build baseline limpo confirmado: 32 arquivos JS; entry `index-x3zq55yX.js`, 1.010.869 bytes brutos e 267.560 bytes gzip.
+- [x] `AIChatBox`/Streamdown movidos para React.lazy dentro do diálogo Fly.IA, sob condição explícita de abertura e Suspense local acessível. Launcher, autenticação, sugestões, clima, voz, telemetrias, Home, CSS, splash, service worker e dependências preservados.
+- [x] Entry otimizado `index-DP0rrsBP.js`: 503.370 bytes brutos e 118.366 bytes gzip — redução de 50,20% e 55,76%, respectivamente. O módulo adiado não é eliminado: passa a carregar ao abrir o chat. Aviso original de chunk acima de 1.000 kB eliminado sem elevar o limite.
+- [x] Teste do build compilado com CSP estrita: renderizador não solicitado na Home, para visitante ou depois de login com chat fechado; solicitado na abertura autenticada; Markdown renderizado; logout confirmado. Resposta do provedor simulada para evitar chamada paga, com login e consultas reais. Script externo Umami bloqueado pela CSP já existente, fora do escopo; nenhum erro de execução do chat.
+- [x] Três regressões novas de carga sob demanda e adaptação assíncrona dos testes existentes preservando todas as expectativas de resposta/voz/sugestões. TypeScript, build e diff check aprovados; suíte completa com 843 aprovados e 2 ignorados.
+- [x] Nenhuma publicação no domínio de produção, alteração de dados financeiros ou autorização automática de GPS/push.

@@ -1,4 +1,3 @@
-import { AIChatBox } from "@/components/AIChatBox";
 import { Button } from "@/components/ui/button";
 import { TooltipLabel } from "@/components/ui/tooltip-label";
 import {
@@ -22,8 +21,12 @@ import {
   type FlyIaSuggestionPreferences,
 } from "@/lib/flyIaSuggestions";
 import { Bot, Compass, Info, MessageCircle, RotateCcw, ShieldCheck, SlidersHorizontal, Sparkles, Trash2, X } from "lucide-react";
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import React, { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
+
+// O launcher e a proteção de sessão continuam imediatos. Markdown e seus
+// parsers só entram na rede quando o diálogo autenticado é aberto.
+const AIChatBox = lazy(() => import("./AIChatBox").then(module => ({ default: module.AIChatBox })));
 
 const SUGGESTED_PROMPTS = [
   "Qual é meu próximo voo?",
@@ -425,6 +428,11 @@ export default function FlyIA() {
         </DialogHeader>
 
         <div className="min-h-0 flex-1">
+          {open && <Suspense fallback={
+            <div role="status" aria-live="polite" className="grid h-full min-h-40 place-items-center bg-white text-sm text-slate-500 dark:bg-slate-950 dark:text-slate-400">
+              Preparando o Fly.IA...
+            </div>
+          }>
           <AIChatBox
             messages={messages}
             onSendMessage={sendMessage}
@@ -458,6 +466,7 @@ export default function FlyIA() {
               onTranscriptConsumed: () => setVoiceTranscript(null),
             }}
           />
+          </Suspense>}
         </div>
 
         <div className="flex items-center gap-1.5 border-t border-slate-100 bg-white px-4 py-2 text-[11px] text-slate-400 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-500">

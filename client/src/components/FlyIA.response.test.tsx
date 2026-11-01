@@ -103,14 +103,17 @@ Reflect.set(globalThis, "IS_REACT_ACT_ENVIRONMENT", true);
 let root: Root | null = null;
 let host: HTMLDivElement | null = null;
 
-function mount(width?: number) {
+async function mount(width?: number) {
   host = document.createElement("div");
   if (width) host.style.width = `${width}px`;
   document.body.appendChild(host);
   root = createRoot(host);
   state.rerender = () => root?.render(<FlyIA />);
   act(() => root?.render(<FlyIA />));
-  act(() => document.querySelector<HTMLButtonElement>('button[aria-label="Abrir Fly.IA"]')?.click());
+  await act(async () => {
+    document.querySelector<HTMLButtonElement>('button[aria-label="Abrir Fly.IA"]')?.click();
+    await vi.dynamicImportSettled();
+  });
 }
 
 function sendQuestion() {
@@ -137,12 +140,12 @@ afterEach(() => {
 });
 
 describe("Fly.IA response flow", () => {
-  it("envia a pergunta, mostra carregamento e renderiza a resposta retornada", () => {
+  it("envia a pergunta, mostra carregamento e renderiza a resposta retornada", async () => {
     state.mutate.mockImplementation(() => {
       state.isPending = true;
       act(() => state.rerender());
     });
-    mount();
+    await mount();
 
     sendQuestion();
 
@@ -161,8 +164,8 @@ describe("Fly.IA response flow", () => {
     expect(document.body.textContent).toContain("Fly.IA pronta");
   });
 
-  it("encaminha a previsão estruturada para o cartão visual do chat", () => {
-    mount();
+  it("encaminha a previsão estruturada para o cartão visual do chat", async () => {
+    await mount();
     sendQuestion();
 
     act(() => {
@@ -188,12 +191,12 @@ describe("Fly.IA response flow", () => {
     expect(document.querySelector("[data-testid='weather-destination']")?.textContent).toBe("Navegantes: Chuva fraca");
   });
 
-  it("mostra um retorno visível no chat quando o provedor falha", () => {
+  it("mostra um retorno visível no chat quando o provedor falha", async () => {
     state.mutate.mockImplementation(() => {
       state.isPending = true;
       act(() => state.rerender());
     });
-    mount();
+    await mount();
 
     sendQuestion();
     act(() => {
@@ -207,8 +210,8 @@ describe("Fly.IA response flow", () => {
     expect(state.toastError).toHaveBeenCalledWith("O Fly.IA está indisponível no momento.");
   });
 
-  it("mantém os detalhes completos ao perguntar novamente pelo próximo voo", () => {
-    mount();
+  it("mantém os detalhes completos ao perguntar novamente pelo próximo voo", async () => {
+    await mount();
 
     sendQuestion();
     act(() => state.options.onSuccess({ response: COMPLETE_NEXT_FLIGHT }));
@@ -233,8 +236,8 @@ describe("Fly.IA response flow", () => {
     expect(document.body.textContent).toContain("Terminal:** 2");
   });
 
-  it("prioriza o tema escolhido durante a conversa e remove a preferência ao limpar", () => {
-    mount();
+  it("prioriza o tema escolhido durante a conversa e remove a preferência ao limpar", async () => {
+    await mount();
     sendQuestion();
     act(() => state.options.onSuccess({ response: "Seu próximo voo sai às 22:05." }));
 
@@ -257,8 +260,8 @@ describe("Fly.IA response flow", () => {
       .toBe("Quais são os detalhes do próximo voo?");
   });
 
-  it("permite pausar a adaptação, redefinir o tema e sinaliza sugestões adaptadas", () => {
-    mount();
+  it("permite pausar a adaptação, redefinir o tema e sinaliza sugestões adaptadas", async () => {
+    await mount();
     sendQuestion();
     act(() => state.options.onSuccess({ response: "Seu próximo voo sai às 22:05." }));
     act(() => state.onFollowUpPromptSelected?.("Há algum voo cancelado ou remarcado?"));
@@ -279,8 +282,8 @@ describe("Fly.IA response flow", () => {
     expect(document.querySelector('[data-testid="flyia-adapted-suggestions-indicator"]')).toBeNull();
   });
 
-  it("limpa todas as preferências e restaura a ordem padrão das sugestões", () => {
-    mount();
+  it("limpa todas as preferências e restaura a ordem padrão das sugestões", async () => {
+    await mount();
     sendQuestion();
     act(() => state.options.onSuccess({ response: "Seu próximo voo sai às 22:05." }));
     act(() => state.onFollowUpPromptSelected?.("Há algum voo cancelado ou remarcado?"));
@@ -294,8 +297,8 @@ describe("Fly.IA response flow", () => {
       .toBe("Quais são os detalhes do próximo voo?");
   });
 
-  it("explica a adaptação, limita a quantidade e alterna para o modo explorar", () => {
-    mount();
+  it("explica a adaptação, limita a quantidade e alterna para o modo explorar", async () => {
+    await mount();
 
     const help = document.querySelector<HTMLButtonElement>('button[aria-label="Como funcionam as sugestões"]');
     act(() => help?.click());
@@ -321,8 +324,8 @@ describe("Fly.IA response flow", () => {
   it.each([
     { label: "celular", width: 320 },
     { label: "desktop", width: 1280 },
-  ])("mantém controles acessíveis e fluidos em $label", ({ width }) => {
-    mount(width);
+  ])("mantém controles acessíveis e fluidos em $label", async ({ width }) => {
+    await mount(width);
     sendQuestion();
     act(() => state.options.onSuccess({ response: "Seu próximo voo sai às 22:05." }));
     act(() => state.onFollowUpPromptSelected?.("Há algum voo cancelado ou remarcado?"));
@@ -371,7 +374,7 @@ describe("Fly.IA response flow", () => {
     Reflect.set(globalThis, "fetch", upload);
 
     try {
-      mount();
+      await mount();
       const start = document.querySelector<HTMLButtonElement>('button[aria-label="Falar uma pergunta"]');
       await act(async () => { start?.click(); await Promise.resolve(); });
       expect(getUserMedia).toHaveBeenCalledWith({ audio: true });
@@ -412,7 +415,7 @@ describe("Fly.IA response flow", () => {
     Object.defineProperty(navigator, "mediaDevices", { configurable: true, value: { getUserMedia } });
 
     try {
-      mount();
+      await mount();
       const start = document.querySelector<HTMLButtonElement>('button[aria-label="Falar uma pergunta"]');
       await act(async () => { start?.click(); await Promise.resolve(); });
 
@@ -434,7 +437,7 @@ describe("Fly.IA response flow", () => {
     Object.defineProperty(navigator, "mediaDevices", { configurable: true, value: undefined });
 
     try {
-      mount();
+      await mount();
       const start = document.querySelector<HTMLButtonElement>('button[aria-label="Falar uma pergunta"]');
       await act(async () => { start?.click(); });
 
