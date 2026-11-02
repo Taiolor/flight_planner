@@ -1,3 +1,5 @@
+import { escapeHtml } from "./_core/escapeHtml";
+
 type OperationalReportOverview = {
   totals: {
     pendingPurchases: number;
@@ -6,16 +8,6 @@ type OperationalReportOverview = {
   };
   decisions: Array<{ title: string; description: string; severity: string }>;
 };
-
-function escapeHtml(value: string) {
-  return value.replace(/[&<>'"]/g, character => ({
-    "&": "&amp;",
-    "<": "&lt;",
-    ">": "&gt;",
-    "'": "&#39;",
-    '"': "&quot;",
-  })[character] ?? character);
-}
 
 function formatCurrency(cents: number) {
   return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(cents / 100);
