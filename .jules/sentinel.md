@@ -43,3 +43,9 @@
 **Vulnerability:** Resource Exhaustion / Denial of Service (DoS) via excessively long string inputs.
 **Learning:** Using `z.string()` without length boundaries for fields like `email` or `password` allows attackers to send arbitrarily large payloads (e.g., millions of characters). This can tie up the event loop during string parsing, trigger payload size limits downstream, or cause excessive CPU usage if the long string is passed to expensive hashing functions like `crypto.createHash('sha256')`.
 **Prevention:** Always append explicit max length limits (e.g., `.max(255)`) to `z.string()` schemas for unbounded user inputs, especially for authentication and email-related fields.
+
+## 2024-11-01 - Avoid Redundant escapeHtml Implementations
+
+**Vulnerability:** Redundant, potentially flawed custom `escapeHtml` implementations scattered throughout the codebase.
+**Learning:** Re-implementing security-critical functions like `escapeHtml` locally within files (e.g. `server/operationalReport.ts`) bypasses the centralized logic in `server/_core/escapeHtml.ts`. This increases the risk of introducing flawed escaping logic, such as incorrect handling of `null` values or missing character entity encodings, which could lead to XSS/HTML injection vulnerabilities.
+**Prevention:** Always use the centralized `escapeHtml` utility from `server/_core/escapeHtml.ts` to sanitize user-provided data and prevent HTML injection/XSS.
