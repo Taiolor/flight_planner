@@ -329,6 +329,7 @@ export function CityBackgroundCarousel() {
               target="_blank"
               rel="noreferrer"
               className="block truncate text-[10px] text-slate-300 underline-offset-2 hover:text-white hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+              aria-label={`Foto: ${activeBackdrop.credit} (abre em nova aba)`}
             >
               Foto: {activeBackdrop.credit}
             </a>
