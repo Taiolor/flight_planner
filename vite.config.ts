@@ -183,6 +183,10 @@ export default defineConfig({
           if (id.includes("@trpc/") || id.includes("@tanstack/react-query")) return "vendor-trpc";
           if (id.includes("react-hook-form") || id.includes("@hookform/resolvers")) return "vendor-forms";
           if (id.includes("date-fns") || id.includes("/clsx/") || id.includes("tailwind-merge") || id.includes("class-variance-authority")) return "vendor-utils";
+          // ⚡ Bolt Performance Optimization: Separa lucide-react e recharts em chunks de vendor próprios
+          // para evitar que bloqueiem o carregamento inicial em rotas que não os utilizam.
+          if (id.includes("lucide-react")) return "vendor-icons";
+          if (id.includes("recharts")) return "vendor-recharts";
           return undefined;
         },
         chunkFileNames: "chunks/[name]-[hash].js",

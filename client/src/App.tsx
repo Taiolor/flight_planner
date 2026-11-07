@@ -11,10 +11,10 @@ import UsageTelemetry from "./components/UsageTelemetry";
 import { MobileBottomNavigation } from "./components/MobileBottomNavigation";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import { YearProvider } from "./contexts/YearContext";
-import Home from "./pages/Home";
 import { Toaster } from "sonner";
 
-// Code splitting: carrega CalendarView, AdminNotifications, FlightQuotes, Changelog e FinancialDashboard apenas quando necessário
+// Code splitting: carrega Home, CalendarView, AdminNotifications, FlightQuotes, Changelog e FinancialDashboard apenas quando necessário. (Home carregado por lazy loading para reduzir bundle size no carregamento inicial)
+const Home = lazy(() => import("./pages/Home"));
 const CalendarView = lazy(() => import("./pages/CalendarView"));
 const AdminNotifications = lazy(() => import("./pages/AdminNotifications"));
 const FlightQuotes = lazy(() => import("./pages/FlightQuotes"));
@@ -43,7 +43,9 @@ function Router() {
   return (
     <Switch>
       <Route path={"/"}>
-        <Home />
+        <Suspense fallback={<PageLoader />}>
+          <Home />
+        </Suspense>
       </Route>
       <Route path={"/gestao-passagens"}>
         <Suspense fallback={<PageLoader />}>
