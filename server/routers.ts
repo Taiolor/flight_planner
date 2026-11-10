@@ -438,10 +438,10 @@ export const appRouter = router({
     subscribe: flightProtectedProcedure
       .input(
         z.object({
-          endpoint: z.string(),
-          p256dh: z.string(),
-          auth: z.string(),
-          userAgent: z.string().optional(),
+          endpoint: z.string().max(2048),
+          p256dh: z.string().max(255),
+          auth: z.string().max(255),
+          userAgent: z.string().max(255).optional(),
         })
       )
       .mutation(async ({ input }) => {
@@ -456,7 +456,7 @@ export const appRouter = router({
 
     // Remover subscription do dispositivo
     unsubscribe: publicProcedure
-      .input(z.object({ endpoint: z.string() }))
+      .input(z.object({ endpoint: z.string().max(2048) }))
       .mutation(async ({ input }) => {
         await deletePushSubscription(input.endpoint);
         return { success: true };
@@ -464,7 +464,7 @@ export const appRouter = router({
 
     // Verificar se este dispositivo já tem subscription ativa
     checkSubscription: publicProcedure
-      .input(z.object({ endpoint: z.string() }))
+      .input(z.object({ endpoint: z.string().max(2048) }))
       .query(async ({ input }) => {
         const sub = await getPushSubscriptionByEndpoint(input.endpoint);
         return { subscribed: !!sub };
@@ -995,10 +995,10 @@ export const appRouter = router({
         z.object({
           year: z.number().int().min(2020).max(2100),
           weekNumber: z.number(),
-          departureDate: z.string(),
-          returnDate: z.string(),
-          departureDayOfWeek: z.string(),
-          returnDayOfWeek: z.string(),
+          departureDate: z.string().max(255),
+          returnDate: z.string().max(255),
+          departureDayOfWeek: z.string().max(255),
+          returnDayOfWeek: z.string().max(255),
         })
       )
       .mutation(async ({ input }) => {
@@ -1018,8 +1018,8 @@ export const appRouter = router({
         z.object({
           year: z.number().int().min(2020).max(2100),
           weekNumber: z.number(),
-          airline: z.string(),
-          price: z.string(),
+          airline: z.string().max(255),
+          price: z.string().max(255),
         })
       )
       .mutation(async ({ input }) => {
@@ -1609,21 +1609,21 @@ export const appRouter = router({
       .input(
         z.object({
           weekNumber: z.number(),
-          weekLabel: z.string(),
-          departureDate: z.string(),
-          departureTime: z.string(),
-          departureAirport: z.string(),
-          departureAirline: z.string(),
-          departureFlightNumber: z.string(),
-          departureLocator: z.string(),
-          departureTerminal: z.string().optional(),
-          returnDate: z.string(),
-          returnTime: z.string(),
-          returnAirport: z.string(),
-          returnAirline: z.string(),
-          returnFlightNumber: z.string(),
-          returnLocator: z.string(),
-          returnTerminal: z.string().optional(),
+          weekLabel: z.string().max(255),
+          departureDate: z.string().max(255),
+          departureTime: z.string().max(255),
+          departureAirport: z.string().max(255),
+          departureAirline: z.string().max(255),
+          departureFlightNumber: z.string().max(255),
+          departureLocator: z.string().max(255),
+          departureTerminal: z.string().max(255).optional(),
+          returnDate: z.string().max(255),
+          returnTime: z.string().max(255),
+          returnAirport: z.string().max(255),
+          returnAirline: z.string().max(255),
+          returnFlightNumber: z.string().max(255),
+          returnLocator: z.string().max(255),
+          returnTerminal: z.string().max(255).optional(),
         })
       )
       .mutation(async ({ input }) => {
@@ -1742,13 +1742,13 @@ export const appRouter = router({
         .input(
           z.object({
             weekNumber: z.number(),
-            airline: z.string(),
-            flightNumber: z.string(),
-            departureAirport: z.string(),
-            arrivalAirport: z.string(),
+            airline: z.string().max(255),
+            flightNumber: z.string().max(255),
+            departureAirport: z.string().max(255),
+            arrivalAirport: z.string().max(255),
             departureTime: z.date(),
             arrivalTime: z.date(),
-            locator: z.string(),
+            locator: z.string().max(255),
             isReturn: z.boolean(),
           })
         )
@@ -1777,18 +1777,18 @@ export const appRouter = router({
         .input(
           z.object({
             weekNumber: z.number(),
-            departureAirline: z.string(),
-            departureFlightNumber: z.string(),
-            departureAirport: z.string(),
-            arrivalAirport: z.string(),
+            departureAirline: z.string().max(255),
+            departureFlightNumber: z.string().max(255),
+            departureAirport: z.string().max(255),
+            arrivalAirport: z.string().max(255),
             departureTime: z.date(),
             departureArrivalTime: z.date(),
-            departureLocator: z.string(),
-            returnAirline: z.string(),
-            returnFlightNumber: z.string(),
+            departureLocator: z.string().max(255),
+            returnAirline: z.string().max(255),
+            returnFlightNumber: z.string().max(255),
             returnTime: z.date(),
             returnArrivalTime: z.date(),
-            returnLocator: z.string(),
+            returnLocator: z.string().max(255),
           })
         )
         .mutation(async ({ input }) => {
