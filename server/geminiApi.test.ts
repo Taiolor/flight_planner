@@ -40,7 +40,7 @@ describe("Gemini API configuration", () => {
     expect(result.candidates?.[0]?.content?.parts?.[0]?.text?.trim()).toBeTruthy();
   }, 30_000);
 
-  it("conclui uma pergunta autenticada do Fly.IA pela mutation tRPC", async () => {
+  runLiveGeminiTest("conclui uma pergunta autenticada do Fly.IA pela mutation tRPC", async () => {
     expect(ENV.authEmail, "AUTH_EMAIL deve estar configurado para a reprodução autenticada").toBeTruthy();
     const token = await createAuthSession(ENV.authEmail!);
 
