@@ -320,6 +320,7 @@ describe("Fly.IA", () => {
   });
 
   it("retorna texto válido do Gemini e traduz falhas do provedor", async () => {
+    vi.stubEnv("GEMINI_API_KEY", "mocked-key");
     vi.stubGlobal(
       "fetch",
       vi.fn().mockResolvedValue({
@@ -330,6 +331,9 @@ describe("Fly.IA", () => {
         }),
       })
     );
+
+    const { ENV } = await import("./_core/env");
+    ENV.geminiApiKey = "mocked-key";
 
     await expect(
       askFlyIa(context as never, [{ role: "user", content: "Olá" }])
