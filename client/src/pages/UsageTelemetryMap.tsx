@@ -121,14 +121,18 @@ function UsageTelemetryMapContent() {
     )
   );
 
-  const totalEvents = useMemo(
-    () => (summaryQuery.data ?? []).reduce((total, item) => total + Number(item.count), 0),
-    [summaryQuery.data]
-  );
-  const locatedEvents = useMemo(
-    () => (summaryQuery.data ?? []).reduce((total, item) => total + Number(item.located), 0),
-    [summaryQuery.data]
-  );
+  // ⚡ Bolt: Combine multiple independent .reduce() passes into a single loop
+  // to avoid redundant O(N) array traversals and allocations.
+  const { totalEvents, locatedEvents } = useMemo(() => {
+    let totalEventsCount = 0;
+    let locatedEventsCount = 0;
+    const data = summaryQuery.data ?? [];
+    for (const item of data) {
+      totalEventsCount += Number(item.count);
+      locatedEventsCount += Number(item.located);
+    }
+    return { totalEvents: totalEventsCount, locatedEvents: locatedEventsCount };
+  }, [summaryQuery.data]);
   const periodEventTotals = useMemo(
     () =>
       PERIOD_FILTERS.map((option, index) => ({
